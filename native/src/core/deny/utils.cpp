@@ -20,7 +20,10 @@ atomic_flag skip_pkg_rescan;
 atomic_flag *p_skip_pkg_rescan = &skip_pkg_rescan;
 
 bool sulist_enabled = false;
-static const char *table_name = "hidelist";
+// Use the `denylist` table (not `hidelist`) as the default hide set. External ptrace-Zygisk
+// implementations (ReZygisk / NeoZygisk) read `denylist`, so this makes the apps configured in the
+// Magisk app's DenyList UI take effect for them. SuList mode still switches to `sulist` below.
+static const char *table_name = "denylist";
 
 // For the following data structures:
 // If package name == ISOLATED_MAGIC, or app ID == -1, it means isolated service
@@ -452,7 +455,7 @@ int enable_deny() {
         if (access("/proc/self/ns/mnt", F_OK) != 0) {
             LOGW("The kernel does not support mount namespace\n");
             sulist_enabled = false;
-            table_name = "hidelist";
+            table_name = "denylist";
             update_sulist_config(false);
             return DenyResponse::NO_NS;
         }
@@ -491,7 +494,7 @@ int enable_deny() {
 
     daemon_error:
     sulist_enabled = false;
-    table_name = "hidelist";
+    table_name = "denylist";
     update_sulist_config(false);
     return DenyResponse::ERROR;
 }
