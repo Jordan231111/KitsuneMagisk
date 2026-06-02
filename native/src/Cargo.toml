@@ -23,7 +23,7 @@ ecdsa = "0.16"
 rsa = "0.9"
 x509-cert = "0.2"
 der = "0.7"
-bytemuck = "1.23"
+bytemuck = "1.25"
 fdt = "0.1"
 
 [workspace.dependencies.argh]
