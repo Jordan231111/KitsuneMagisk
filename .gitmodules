@@ -1,6 +1,6 @@
 [submodule "selinux"]
 	path = native/src/external/selinux
-	url = https://github.com/1q23lyc45/selinux
+	url = https://github.com/LSPosed/selinux.git
 [submodule "busybox"]
 	path = native/src/external/busybox
 	url = https://github.com/topjohnwu/ndk-busybox.git
