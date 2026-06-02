@@ -51,6 +51,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := init-ld
 LOCAL_SRC_FILES := init/preload.c
 LOCAL_STRIP_MODE := --strip-all
+# ondk r27.1 lld segfaults (0xC0000005) doing LTO codegen for an aarch64 shared
+# object on this Windows host. init-ld is a tiny single-file preloader, so LTO
+# buys nothing here -- disable it to dodge the linker crash.
+LOCAL_CFLAGS := -fno-lto
+LOCAL_LDFLAGS := -fno-lto
 include $(BUILD_SHARED_LIBRARY)
 
 endif
