@@ -7,6 +7,9 @@ on:
       - kitsune
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Magisk artifacts
@@ -47,6 +50,28 @@ jobs:
           name: ${{ github.sha }}-symbols
           path: app/build/outputs
           compression-level: 9
+
+      - name: Publish rolling release
+        if: github.ref == 'refs/heads/kitsune' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: kitsune-rolling
+          name: Kitsune Magisk (rolling)
+          prerelease: true
+          fail_on_unmatched_files: false
+          body: |
+            Rolling build from `kitsune` @ ${{ github.sha }}.
+            Universal APKs (armeabi-v7a, arm64-v8a, x86, x86_64).
+
+            - `app-release.apk` — release build
+            - `app-debug.apk` — debug build (verbose logging)
+
+            Built-in Zygisk is removed for security (commit 2ef8f00); use ReZygisk.
+          files: |
+            out/app-release.apk
+            out/app-debug.apk
+            out/stub-release.apk
+            out/stub-debug.apk
 
 
   test:
