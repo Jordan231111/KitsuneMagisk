@@ -28,7 +28,14 @@ python build.py all        # debug    -> out/app-debug.apk
 ```
 APKs are universal (armeabi-v7a, arm64-v8a, x86, x86_64).
 
-## CI
+## CI / releases
 `.github/workflows/android.yml` builds **release + debug** for **all four ABIs** on every push to
-`kitsune`, and publishes a **versioned GitHub Release** (`v31.0-<build>`, one permanent release per
-build — canary-style, the way Magisk forks shipped during active dev) with both universal APKs.
+`kitsune` and publishes a real, **full GitHub Release per commit** (`v31.0-<short-commit>` — the
+Magisk "canary" model shipped as legit releases; the short hash is the version the APK reports),
+with both universal APKs attached. You can also trigger it manually from the **Actions** tab
+("Run workflow") or `gh workflow run "Magisk CI" --ref kitsune`. Releases never expire (unlike CI
+artifacts); prune old ones whenever you like.
+
+To cut a blessed **stable** milestone later (e.g. `v31.1`), bump `magisk.versionCode` and tag the
+commit — the per-commit releases above are the rolling/canary line; a stable line is an additive
+step, not a replacement.

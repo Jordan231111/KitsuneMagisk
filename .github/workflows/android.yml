@@ -52,19 +52,25 @@ jobs:
           path: app/build/outputs
           compression-level: 9
 
-      # Publish a real, versioned GitHub Release (one permanent release per build,
-      # canary-style — the way Magisk forks shipped during active dev). v31.0 tracks
-      # magisk.versionCode=31000 in gradle.properties; the build number keeps tags unique.
+      # Publish a real, versioned GitHub Release on every kitsune push — one permanent
+      # full release per commit (the Magisk "canary" model, shipped as legit releases).
+      # Tag = v31.0-<short commit>: v31.0 tracks magisk.versionCode=31000, and the short
+      # SHA is exactly the version string the APK reports (build.py: git rev-parse --short=8).
+      - name: Compute version tag
+        id: ver
+        run: echo "tag=v31.0-$(echo '${{ github.sha }}' | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
       - name: Publish release
         if: github.ref == 'refs/heads/kitsune' && github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v31.0-${{ github.run_number }}
-          name: Kitsune Magisk v31.0 (build ${{ github.run_number }})
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: Kitsune Magisk ${{ steps.ver.outputs.tag }}
           prerelease: false
           fail_on_unmatched_files: false
           body: |
             Kitsune Magisk **v31.0** (versionCode 31000) — commit `${{ github.sha }}`.
+            The short hash in the tag is the exact version this APK reports.
             Universal APKs (armeabi-v7a, arm64-v8a, x86, x86_64).
 
             - `app-release.apk` — release build
