@@ -30,4 +30,5 @@ APKs are universal (armeabi-v7a, arm64-v8a, x86, x86_64).
 
 ## CI
 `.github/workflows/android.yml` builds **release + debug** for **all four ABIs** on every push to
-`kitsune`, and publishes a **rolling GitHub Release** (`kitsune-rolling`) with both universal APKs.
+`kitsune`, and publishes a **versioned GitHub Release** (`v31.0-<build>`, one permanent release per
+build — canary-style, the way Magisk forks shipped during active dev) with both universal APKs.
