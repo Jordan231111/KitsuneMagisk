@@ -1,4 +1,5 @@
 name: Magisk CI
+# Builds release + debug APKs for all ABIs and publishes a rolling GitHub Release.
 
 on:
   push:
