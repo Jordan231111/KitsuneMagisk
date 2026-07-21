@@ -1,5 +1,7 @@
 # Magisk Documentation
 
+- [KitsuneMagisk Current Support Status](status.md)
+- [KitsuneMagisk Development Roadmap](../DEVELOPMENT_ROADMAP.md)
 - [Installation Instructions](install.md)
 - [Frequently Asked Questions](faq.md)
 - [Release Notes](releases/index.md)

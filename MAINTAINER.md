@@ -1,41 +1,57 @@
-# Kitsune Magisk — maintenance notes
+# KitsuneMagisk maintainer guide
 
-A maintenance continuation of **Kitsune Magisk** (Magisk Delta lineage), based on the
-`VisionR1/KitsuneMagisk` snapshot (version **31000 / 31.0-kitsune**), with the fixes needed to
-build and ship via CI again after upstream development stalled.
+This file is the short operational guide. The authoritative technical detail and acceptance criteria
+are in [`DEVELOPMENT_ROADMAP.md`](DEVELOPMENT_ROADMAP.md); current public claims are in
+[`docs/status.md`](docs/status.md).
 
-## Fixes applied on top of the VisionR1 snapshot
-- **selinux submodule URL** (`.gitmodules`): the upstream `1q23lyc45/selinux` remote is unreachable
-  (HTTP 404). Re-pointed to `LSPosed/selinux`, which hosts the **identical pinned commit
-  `8c6acc0d7792cda5f203dfd8e94c633e9dbfdeae`**. Without this, `git submodule update` (and therefore
-  CI checkout) fails.
-- **`init-ld` linker fix** (`native/src/Android.mk`): disable LTO for the tiny `libinit-ld.so`
-  preloader (`-fno-lto`). The ondk r27.1 `lld` segfaults during LTO codegen for an aarch64 shared
-  object on some hosts (notably Windows); LTO is pointless for a single-file preloader, so this is
-  behavior-neutral.
+## How to use the roadmap
 
-## Zygisk
-Built-in Zygisk was removed upstream (commit `2ef8f00`, *"Remove Zygisk"*) due to multiple security
-vulnerabilities and is no longer supported. Use **[ReZygisk](https://github.com/PerformanC/ReZygisk)**
-for Zygisk support (it provides the Zygisk API for Magisk/Kitsune, KernelSU and APatch).
+Work through the **Proposed pull-request sequence** in order. For each PR, use the relevant P0/P1/P2
+section as its detailed specification and test checklist. The priority sections explain *what must be
+true*; the PR sequence explains *how to land the work in reviewable increments*.
 
-## Building
+Do not try to complete every checkbox before starting PR 1. Do not combine several numbered PRs into
+one large upstream merge.
+
+## Branch roles
+
+- `kitsune`: current working System Mode reference. Keep the name. Apply only tests and fixes needed
+  for another release from this line.
+- `next-system`: v30.7-based forward port. Port System Mode before Hide/SuList, external Zygisk, or
+  early-mount work.
+- official Magisk `master`: observation and selective-backport source, not the first port base.
+
+When `next-system` passes the documented parity gate, promote it to `kitsune` and preserve the old
+implementation as an annotated tag. Do not maintain two permanent product lines.
+
+## Current engineering facts
+
+- The current version label is a compatibility value, not proof of a Magisk 31 core.
+- `95a048f0` repaired checkout of the existing 2023 SELinux object; it did not update SELinux.
+- `25fa2159` fixes normal DenyList interoperability for fresh/reselected configurations, but needs a
+  transactional migration for existing `hidelist` data.
+- Official Magisk still contains built-in Zygisk. This fork lineage removed it; external provider and
+  SuList support must be qualified by exact provider version.
+- Generic AVD smoke tests cover normal Magisk boot integration. They do not qualify persistent
+  Direct-System on LDPlayer, MuMu, Nox, or BlueStacks.
+
+## Build and test
+
 ```sh
 export ANDROID_SDK_ROOT=/path/to/android-sdk
-python build.py ndk        # install the ondk (Magisk NDK, r27.1)
-python build.py -r all     # release  -> out/app-release.apk
-python build.py all        # debug    -> out/app-debug.apk
+git submodule update --init --recursive
+./build.py ndk
+./build.py all
+./build.py -r all
 ```
-APKs are universal (armeabi-v7a, arm64-v8a, x86, x86_64).
 
-## CI / releases
-`.github/workflows/android.yml` builds **release + debug** for **all four ABIs** on every push to
-`kitsune` and publishes a real, **full GitHub Release per commit** (`v31.0-<short-commit>` — the
-Magisk "canary" model shipped as legit releases; the short hash is the version the APK reports),
-with both universal APKs attached. You can also trigger it manually from the **Actions** tab
-("Run workflow") or `gh workflow run "Magisk CI" --ref kitsune`. Releases never expire (unlike CI
-artifacts); prune old ones whenever you like.
+The GitHub workflow builds both variants and runs the existing API 23/29/35 AVD smoke matrix on
+`dev`/`kitsune` pushes and manual dispatches. It no longer publishes any release automatically.
+PR2 adds pull-request/static/unit gates and an optional manual canary that can run only after those
+gates pass.
 
-To cut a blessed **stable** milestone later (e.g. `v31.1`), bump `magisk.versionCode` and tag the
-commit — the per-commit releases above are the rolling/canary line; a stable line is an additive
-step, not a replacement.
+## Review rule
+
+For boot, init, mount, database, or SELinux changes, require a reproducible failing case and a test
+that distinguishes the old behavior from the proposed behavior. Compilation alone is not evidence
+that System Mode survives a cold boot or can restore the original image.
