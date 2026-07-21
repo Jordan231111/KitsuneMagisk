@@ -748,23 +748,23 @@ Those meanings conflict. Android requires future app updates to use a higher `ve
 - Current Dependabot PRs have no checks.
 - Every `kitsune` push becomes a non-prerelease GitHub Release.
 
-PR1 contains the immediate stable-release freeze. PR2 adds pull-request CI and the aggregate gate; the extended matrix and final stable-release workflow remain part of PR16.
+PR1 and PR2 contain these immediate failures. The extended matrix and final stable-release workflow remain part of PR16.
 
 ### TODO
 
-- [ ] Add `pull_request` CI that builds the project and runs the relevant tests.
+- [x] Add `pull_request` CI that builds the project and runs the relevant tests.
 - [ ] Split workflows:
   - `ci.yml`: build, static checks, unit tests, and emulator smoke tests; never publishes;
   - `nightly.yml`: extended emulator/device matrix and upstream comparison;
   - `release.yml`: manual dispatch after the required product tests pass.
-- [ ] Add concurrency groups and cancel superseded PR runs.
-- [x] Keep ordinary builds as Actions artifacts and disable automatic publication. PR2 may add an explicitly requested, tested canary marked as prerelease.
+- [x] Add concurrency groups and cancel superseded PR runs.
+- [x] Keep ordinary builds as Actions artifacts; publish only an explicitly requested, tested canary marked as prerelease. Do not label each commit as stable.
 - [x] Keep stable publication disabled until PR16 implements and passes all product release gates.
 - [x] Do not attach the debug APK to a release. The documentation also warns that ADB shell receives root automatically in this fork’s debug native code.
 - [ ] Publish a SHA-256 checksum for the exact tested APK.
-- [ ] Ensure the canary APK is byte-for-byte the artifact that passed tests; do not rebuild after approval with different inputs.
+- [x] Ensure the canary APK is byte-for-byte the artifact that passed tests; do not rebuild after approval with different inputs.
 - [ ] Add a release smoke job that installs the downloaded GitHub Release asset, not just the pre-upload workspace copy.
-- [ ] Do not run unreviewed public-PR code on the personal machine used for commercial-emulator qualification; use disposable snapshots or GitHub-hosted runners.
+- [x] Do not run unreviewed public-PR code on the personal machine used for commercial-emulator qualification; current PR CI uses only disposable GitHub-hosted runners.
 
 ### Acceptance criteria
 
@@ -1183,7 +1183,7 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 
 ## PR 1 — Product charter, honest status, and release freeze
 
-**Implementation status (2026-07-21): implemented on this branch; pending review/merge.**
+**Implementation status (2026-07-21): implemented in the preceding stacked PR1; pending merge.**
 
 - Add an active README/status, this roadmap, and the current support statement.
 - State that persistent System Mode is the primary product and that support is version/capability-specific, not “all emulators” by assertion.
@@ -1195,7 +1195,7 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 
 ## PR 2 — CI product gate
 
-**Implementation status (2026-07-21): planned as the next stacked change.**
+**Implementation status (2026-07-21): implemented on this branch; pending review/merge. Local static checks, all-ABI release/debug builds, and all configured JVM test tasks pass; the API 23/29/35 jobs run on this PR after it is pushed. Extended qualification and stable-release automation remain PR16.**
 
 - Add pull-request triggers, compile/static checks, relevant unit tests, and emulator smoke tests.
 - Ensure publication occurs only after the required tests pass.
