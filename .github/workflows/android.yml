@@ -1,23 +1,72 @@
 name: Kitsune CI
 
 on:
+  pull_request:
   push:
     branches:
       - dev
       - kitsune
+      - next-system
   workflow_dispatch:
+    inputs:
+      publish_canary:
+        description: Publish the tested release APKs as an experimental canary
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
+concurrency:
+  group: kitsune-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  build:
-    name: Build Kitsune artifacts
+  static:
+    name: Source checks
     runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed-line whitespace
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git diff --check "$BASE_SHA...$HEAD_SHA"
+          elif git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+            git diff --check "$BEFORE_SHA..$HEAD_SHA"
+          else
+            git show --check --format= "$HEAD_SHA"
+          fi
+
+      - name: Parse shell scripts
+        run: |
+          while IFS= read -r -d '' file; do
+            echo "bash -n $file"
+            bash -n "$file"
+          done < <(git ls-files -z '*.sh')
+
+      - name: Parse Python sources
+        run: |
+          while IFS= read -r -d '' file; do
+            echo "parse $file"
+            python3 -c 'import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text(), filename=sys.argv[1])' "$file"
+          done < <(git ls-files -z '*.py')
+
+  build:
+    name: Build and JVM tests
+    runs-on: ubuntu-latest
+    needs: static
     env:
       SCCACHE_DIRECT: false
-    strategy:
-      fail-fast: false
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -34,7 +83,17 @@ jobs:
       - name: Build debug
         run: ./build.py -v all
 
+      - name: Run JVM unit-test tasks
+        run: >-
+          ./gradlew
+          :app:testDebugUnitTest
+          :app:shared:testDebugUnitTest
+          :native:testDebugUnitTest
+          :stub:testDebugUnitTest
+          -PconfigPath="$PWD/config.prop"
+
       - name: Stop Gradle daemon
+        if: always()
         run: ./gradlew --stop
 
       - name: Upload build artifact
@@ -42,14 +101,18 @@ jobs:
         with:
           name: ${{ github.sha }}
           path: out
+          if-no-files-found: error
           compression-level: 9
+          retention-days: 14
 
       - name: Upload mapping and native debug symbols
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-symbols
           path: app/build/outputs
+          if-no-files-found: error
           compression-level: 9
+          retention-days: 14
 
   emulator:
     name: AVD API ${{ matrix.api }}
@@ -85,3 +148,63 @@ jobs:
 
       - name: Patch, boot, and test AVD
         run: scripts/avd_test.sh ${{ matrix.api }}
+
+  product-gate:
+    name: Product gate
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - static
+      - build
+      - emulator
+    steps:
+      - name: Require every product check
+        env:
+          STATIC_RESULT: ${{ needs.static.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          EMULATOR_RESULT: ${{ needs.emulator.result }}
+        run: |
+          test "$STATIC_RESULT" = success
+          test "$BUILD_RESULT" = success
+          test "$EMULATOR_RESULT" = success
+
+  publish-canary:
+    name: Publish tested canary
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_canary }}
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - product-gate
+    permissions:
+      contents: write
+    steps:
+      - name: Download tested artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.sha }}
+          path: out
+
+      - name: Compute canary tag
+        id: version
+        run: echo "tag=kitsune-canary-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish experimental canary
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: KitsuneMagisk ${{ steps.version.outputs.tag }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          body: |
+            Experimental KitsuneMagisk canary built from `${{ github.sha }}`.
+
+            This artifact passed source checks, debug/release compilation, JVM test tasks,
+            and the existing API 23/29/35 normal-Magisk AVD smoke matrix. That matrix does
+            not yet qualify persistent Direct-System/System Mode on commercial emulators.
+
+            `31.0-kitsune` is an inherited compatibility value, not a claim that this tree
+            contains a newer Magisk core than official Magisk.
+          files: |
+            out/app-release.apk
+            out/stub-release.apk

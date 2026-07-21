@@ -45,10 +45,10 @@ git submodule update --init --recursive
 ./build.py -r all
 ```
 
-The GitHub workflow builds both variants and runs the existing API 23/29/35 AVD smoke matrix on
-`dev`/`kitsune` pushes and manual dispatches. It no longer publishes any release automatically.
-PR2 adds pull-request/static/unit gates and an optional manual canary that can run only after those
-gates pass.
+The GitHub workflow runs source/static checks, both build variants, JVM test tasks, and the existing
+API 23/29/35 AVD smoke matrix on pull requests. Normal pushes do not publish a stable release. A
+canary can be published only by manually dispatching the workflow with publication enabled, after
+the aggregate product gate passes.
 
 ## Review rule
 
