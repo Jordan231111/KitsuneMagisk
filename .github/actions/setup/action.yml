@@ -1,4 +1,5 @@
 name: Magisk Setup
+description: Set up the JDK, Python, compiler cache, Gradle cache, and ONDK used by Kitsune CI
 runs:
   using: "composite"
   steps:
