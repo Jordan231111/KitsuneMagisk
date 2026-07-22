@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "boundaries": [
+    {
+      "id": "boot-container",
+      "inputs": ["boot", "init_boot", "vendor_boot", "recovery", "payload.bin"],
+      "input_owner": "device vendor, user-selected firmware, or update package",
+      "privileged_consumer": "magiskboot and installer",
+      "failure_impact": ["parser crash", "partial image", "unbootable target", "signature confusion"],
+      "required_controls": ["size/offset validation", "write-to-new-file", "sign/verify", "stock digest", "recovery image"],
+      "lab_targets": ["device boot corpus", "UBSan C/C++ surface", "patch/unpatch/sign/verify", "AVD boot"]
+    },
+    {
+      "id": "cpio-compression-dtb",
+      "inputs": ["ramdisk CPIO", "gzip/xz/lz4/bzip2/lzma", "DTB/DTBO"],
+      "input_owner": "firmware or module/installer payload",
+      "privileged_consumer": "magiskboot native and Rust parsers",
+      "failure_impact": ["out-of-bounds access", "decompression bomb", "incorrect patch", "boot failure"],
+      "required_controls": ["bounded corpus", "timeout", "sanitizer", "round-trip fixture", "no partial overwrite"],
+      "lab_targets": ["device malformed boot corpus", "minimal boot v0 round trip"]
+    },
+    {
+      "id": "selinux-policy",
+      "inputs": ["binary policy", "split CIL", "module sepolicy.rule", "CLI statements"],
+      "input_owner": "platform/vendor policy and root-approved modules",
+      "privileged_consumer": "magiskpolicy, magiskinit, libsepol",
+      "failure_impact": ["parser memory fault", "partial policy", "unexpected allow", "boot denial", "permissive state"],
+      "required_controls": ["load/save/reload", "semantic comparison", "sanitizer", "enforcing boot", "no live permissive probe"],
+      "lab_targets": ["device malformed policy corpus", "real policy round trip"]
+    },
+    {
+      "id": "daemon-socket",
+      "inputs": ["request code", "framed payload", "file descriptors", "caller credentials"],
+      "input_owner": "apps, shell, manager, and root clients",
+      "privileged_consumer": "magiskd",
+      "failure_impact": ["privilege-boundary bypass", "confused deputy", "daemon crash", "resource exhaustion"],
+      "required_controls": ["peer credential binding", "length limits", "timeouts", "unknown opcode rejection", "fuzz framing"]
+    },
+    {
+      "id": "magisksu-policy",
+      "inputs": ["UID", "multiuser identity", "database policy", "prompt result", "mount namespace mode"],
+      "input_owner": "requesting process and manager policy UI",
+      "privileged_consumer": "MagiskSU daemon path",
+      "failure_impact": ["unauthorized root", "wrong-user policy", "stale grant", "namespace leakage"],
+      "required_controls": ["UID/package/certificate binding", "multiuser tests", "revoke/timeout", "shared UID tests"]
+    },
+    {
+      "id": "sqlite-state",
+      "inputs": ["legacy database", "concurrent writes", "migration SQL", "filesystem faults"],
+      "input_owner": "prior Kitsune/Magisk versions and privileged daemon",
+      "privileged_consumer": "magiskd policy/database layer",
+      "failure_impact": ["lost grants/hide rows", "fail-open policy", "downgrade corruption"],
+      "required_controls": ["external backup", "transaction", "audit row", "process-death recovery", "ENOSPC/read-only tests"],
+      "lab_targets": ["450 opcode interruptions", "abrupt child death", "database-full", "read-only"]
+    },
+    {
+      "id": "module-package",
+      "inputs": ["ZIP paths", "module.prop", "customize.sh", "boot scripts", "sepolicy.rule"],
+      "input_owner": "explicitly root-approved third-party module",
+      "privileged_consumer": "module installer and boot-stage shell",
+      "failure_impact": ["arbitrary root by design", "unintended path deletion", "bootloop", "policy broadening"],
+      "required_controls": ["clear trust warning", "strict module ID", "archive traversal defense", "timeouts", "safe-mode removal"],
+      "lab_targets": ["seeded module metadata property test", "KITSUNE-2026-001"]
+    },
+    {
+      "id": "update-network",
+      "inputs": ["channel URL", "redirect", "JSON metadata", "APK bytes", "changelog"],
+      "input_owner": "project service or explicitly configured custom endpoint",
+      "privileged_consumer": "manager and stub package installer",
+      "failure_impact": ["arbitrary APK install", "downgrade", "cleartext interception", "parser failure"],
+      "required_controls": ["HTTPS", "no TLS downgrade redirect", "schema", "length/digest", "monotonic version", "fail closed"],
+      "lab_targets": ["3000 seeded URL cases", "transport policy regression", "PR10 metadata tamper suite"]
+    },
+    {
+      "id": "doctor-kernel-evidence",
+      "inputs": ["mountinfo", "getprop", "device-mapper", "ext4 superblock", "path probes"],
+      "input_owner": "running kernel/emulator image and potentially misleading vendor properties",
+      "privileged_consumer": "System Mode preflight and host adapter",
+      "failure_impact": ["unsafe mutation approved", "wrong adapter", "false recovery claim"],
+      "required_controls": ["capability evidence over brand", "stable reason codes", "property mutation tests", "recovery tuple"],
+      "lab_targets": ["850 seeded doctor/mount cases", "immutable AVD", "MuMu port 16384 read-only record"]
+    },
+    {
+      "id": "host-emulator-adapter",
+      "inputs": ["instance name", "ADB serial", "image path", "snapshot ID", "restore command"],
+      "input_owner": "maintainer host and vendor emulator",
+      "privileged_consumer": "host test/install automation",
+      "failure_impact": ["wrong device mutation", "host image loss", "user instance deletion", "false persistence result"],
+      "required_controls": ["explicit serial", "narrow owned temp paths", "refuse existing AVD", "byte-verified restore", "delete only owned AVD"]
+    },
+    {
+      "id": "manager-package-identity",
+      "inputs": ["original manager APK", "hidden/repackaged APK", "dyn/current.apk", "stored package/UID/certificate"],
+      "input_owner": "Android package manager, hidden-manager flow, or elevated attacker",
+      "privileged_consumer": "magiskd manager discovery and policy authority",
+      "failure_impact": ["untrusted root-policy authority", "manager lockout", "unsafe recovery"],
+      "required_controls": ["release signature enforcement", "UID/certificate binding", "trusted stub recovery", "debug/release separation"],
+      "lab_targets": ["signature source contract", "PR6 replacement/recovery AVD scenario"]
+    }
+  ]
+}

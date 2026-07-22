@@ -1,9 +1,14 @@
 package com.topjohnwu.magisk.core.repository
 
 import com.topjohnwu.magisk.core.Config
+import com.topjohnwu.magisk.core.di.enforceUpdateTransportPolicy
+import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.net.URI
+import kotlin.random.Random
 
 class UpdateChannelPolicyTest {
 
@@ -68,5 +73,54 @@ class UpdateChannelPolicyTest {
             assertTrue(result is UpdateEndpointResolution.Remote)
             assertEquals(expected, (result as UpdateEndpointResolution.Remote).url)
         }
+    }
+
+    @Test
+    fun `seeded URL property corpus agrees with the fail-closed contract`() {
+        val random = Random(0x4B175A)
+        val alphabet = (
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
+                ":/?#[]@!$&'()*+,;=%._- \\\t\n"
+            ).toCharArray()
+        repeat(2_000) {
+            val candidate = buildString {
+                repeat(random.nextInt(0, 160)) {
+                    append(alphabet[random.nextInt(alphabet.size)])
+                }
+            }
+            val normalized = candidate.trim()
+            val expected = runCatching { URI(normalized) }.getOrNull()?.let { uri ->
+                normalized.isNotEmpty() &&
+                    uri.scheme?.lowercase() == "https" &&
+                    !uri.host.isNullOrBlank() &&
+                    uri.userInfo == null &&
+                    uri.fragment == null &&
+                    (uri.port == -1 || uri.port in 1..65535)
+            } == true
+            val actual = UpdateChannelPolicy.resolve(Config.Value.CUSTOM_CHANNEL, candidate)
+            assertEquals(candidate, expected, actual is UpdateEndpointResolution.Remote)
+        }
+    }
+
+    @Test
+    fun `generated valid HTTPS URLs remain accepted`() {
+        val random = Random(0x48545450)
+        repeat(1_000) { index ->
+            val host = "node${random.nextInt(1, 1_000_000)}.example.test"
+            val port = if (index % 3 == 0) ":${random.nextInt(1, 65536)}" else ""
+            val url = "https://$host$port/channel/${random.nextInt()}.json?build=$index"
+            assertTrue(
+                url,
+                UpdateChannelPolicy.resolve(Config.Value.CUSTOM_CHANNEL, url) is
+                    UpdateEndpointResolution.Remote
+            )
+        }
+    }
+
+    @Test
+    fun `transport follows same-scheme redirects but rejects scheme transitions`() {
+        val client = OkHttpClient.Builder().enforceUpdateTransportPolicy().build()
+        assertTrue(client.followRedirects)
+        assertFalse(client.followSslRedirects)
     }
 }

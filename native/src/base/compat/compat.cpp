@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sched.h>
+#include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/syscall.h>
@@ -64,6 +66,28 @@ ssize_t getline(char **buf, size_t *bufsiz, FILE *fp) {
 }
 
 // Missing system call wrappers
+
+// The API 23 i686 static libc omits these wrappers. Ordinary optimized builds
+// discard the unused paths from parser-only executables, while sanitizer
+// instrumentation intentionally keeps them reachable. Supply the same direct
+// syscall/bitset semantics for lab builds so x86 receives equivalent coverage.
+#if defined(KITSUNE_SANITIZE_BUILD) && defined(__i386__)
+[[gnu::weak]]
+int sigfillset(sigset_t *set) {
+    memset(set, 0xFF, sizeof(*set));
+    return 0;
+}
+
+[[gnu::weak]]
+int setns(int fd, int nstype) {
+    return syscall(__NR_setns, fd, nstype);
+}
+
+[[gnu::weak]]
+int unshare(int flags) {
+    return syscall(__NR_unshare, flags);
+}
+#endif
 
 [[gnu::weak]]
 ssize_t readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz) {

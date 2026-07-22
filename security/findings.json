@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "findings": [
+    {
+      "id": "KITSUNE-2026-001",
+      "classification": "privileged_reliability_path_safety",
+      "status": "fixed",
+      "surface": "module_metadata_installer",
+      "regression": "tests/security_lab/test_module_metadata.py",
+      "retirement_gate": "official pre-mutation module-ID validation passes the property corpus"
+    },
+    {
+      "id": "KITSUNE-2026-002",
+      "classification": "local_denial_of_service_parser_hardening",
+      "status": "fixed",
+      "surface": "magiskboot_boot_image_parser",
+      "regression": "tools/security_lab/device_corpus.py:boot",
+      "retirement_gate": "inherited parser passes the exact seed, malformed corpus, and all-ABI sign/verify"
+    },
+    {
+      "id": "KITSUNE-2026-003",
+      "classification": "defined_output_portability",
+      "status": "reviewed_hold",
+      "surface": "vendored_libsepol_policy_writer",
+      "regression": "tools/security_lab/device_corpus.py:policy-load-save-reload",
+      "retirement_gate": "reachable selinux pin uses an unsigned flag expression and passes the four-ABI corpus"
+    }
+  ]
+}

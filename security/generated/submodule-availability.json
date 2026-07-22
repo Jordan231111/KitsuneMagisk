@@ -1,0 +1,4205 @@
+{
+  "gitlinks": [
+    {
+      "commit": "1a69b16d36d754e67510bd8eb25cc8ccf62015af",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "3550d1e61cba0cf482e1d3cf8e92b0f74aae38f9",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "657f4ab3036aca81bdf415a32b65ea76efae88fe",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "773c24b7fc7e6931c0932cd53943813eb4ebd027",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "8195a4d6161dd16d67ece6e643670ae9d3118cdb",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "a161491bfd2348254dd4a92129905074c61fa93a",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "b362c0ef3880a0044978de9a5207b4a50f7efc30",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "b4ecd93f1c55eef81b8973c3470af42992833019",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "bc576a9659651703dc4cd4eaebaa9293381a2ac8",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "c4377ed6c22a93a4ea6ff4782f5a53e70327cb28",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "cf6885477098756bd9e6ff0342a69bd0787b24f2",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "d3ff482c9b46f58626fdcb6289ffa0cefbf2afcc",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "e0b4d1c1e4889fdbd66cc3cb0d2a457ba8e4f693",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "ea6552615d25fb107fd8ecab06a80102acdc1354",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "ff6938280e5e37bba7965b2fc59c76b2c6bc7c65",
+      "local_object_present": false,
+      "path": "MagiskManager",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "00d655f346fe6182d508d76d6b75d8e7357fcb9d",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "0c782edf2114621056093406d808d03bdfed1a9f",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "0d9527921ab1abb1f361f765a7df2c295ab09af6",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "15ed3e52f2b096a5e86b4e245fc969c49f0446d1",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "19af5f9e0be9e725264d85552fd60f46bffff32d",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "1adf331268476405f22725518335ef49f6999fd9",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "267395bfa2b5077717aadcc3cdd0634443fbad03",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "2df351d378c0d3f674db43a3b86b59fc23ab5f6a",
+      "local_object_present": false,
+      "path": "app",
+      "remote_error": "https://github.com/topjohnwu/MagiskManager.git: fatal: remote error: upload-pack: not our ref 2df351d378c0d3f674db43a3b86b59fc23ab5f6a",
+      "remote_reachable": false,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "2e02af994e78a5bd94fb11e31228803b6cb5fba2",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "310b266251da60e649922e11cd3af1455e48304a",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "3f38579529014c4801c157c0d78d0260d5c61b42",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "499a157946f0063aea0795b204a1f2858591d8d3",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "49ba7ad22e60a7be6d6009149d6cedd3c3628051",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "4ff39f88172ce7da33ad0a5063a7c75894f6e48c",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "52d478df1a687070680f057308f3d66bff9f1623",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "630f2b7d199808d54b57f22ae0d7794baed51590",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "6764a98409fac8da30218ec87b7f7e6fcfcef4c9",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "759e905c3c61018ae736e313d0272e215086f6e2",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "77430a282f8a2dbea79e8ddc0df8f463dbb70767",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "7b9ddc9b3b946c125af021058170f4fa9a44e07f",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "836d9afe1756070971731198d39e69c78cf3b527",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "863b13a6946c851a4df1043acb8c5003a1b0f3c0",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "91337218b314c853ad441aa38947394a68afcb08",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "96eaa833f561e645ba99f87ec9d376fc338b0861",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "a0466085fe3b5eb8929c893d02459e6d94ecb115",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "a1871e4bc3b11fa5e17275527f87b18ce7a475b7",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "b05d2d3a2dc7835d0d074986903a0f633ccc0f15",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "b885ccbd632eddcabc13781a10d3fec4a4215b39",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "c461fc6daa7096398f9227a10bcb4cec271cb5e7",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "c840a30c3045a29a937f21f4becda3eee834f013",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "d5408d1f09f886e3bb492d96e25f0c9f48781c4a",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "de2285d5e920ad020f5f2348264b67dc34e0882d",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "df9c40c035998fdd8a7b0c85a4980cd44447c320",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "e6c1dd532d2910285d503f271183839446495360",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "e79d764148a493aeb82fa590301a4301f662ff76",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "e86015badc0d6aa3b633bd9cb50620bbf05819b6",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "f37f330670b1dba2cc76d52d07587c7c605e096a",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "fd6cbb138c839ca77d4b99137911bb59f2f36876",
+      "local_object_present": true,
+      "path": "app",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "e3a1a4d91f5606833a83a0cba13b13ef6635ef5e",
+      "local_object_present": false,
+      "path": "core/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "67d818584d505503c2bdbd15aec43e6219642762",
+      "local_object_present": false,
+      "path": "core/jni/external/bzip2",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nemequ/bzip2.git",
+      "url_candidates": [
+        "https://github.com/nemequ/bzip2.git"
+      ]
+    },
+    {
+      "commit": "22a65c5331c22979d416738eb756b9541672e00d",
+      "local_object_present": false,
+      "path": "core/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc"
+      ]
+    },
+    {
+      "commit": "c10863b98e1503af90616ae99725ecd120265dfb",
+      "local_object_present": false,
+      "path": "core/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "2fefdfc40fe5e675253fcaf03558ca3dca0a0550",
+      "local_object_present": false,
+      "path": "core/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "8e849a5639cf217e9c3c4ac081d8c14a12a3ae03",
+      "local_object_present": false,
+      "path": "core/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "3d566cd519017eee1a400e7961ff14058dfaf33c",
+      "local_object_present": false,
+      "path": "core/jni/external/xz",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/xz-mirror/xz.git",
+      "url_candidates": [
+        "https://github.com/xz-mirror/xz.git"
+      ]
+    },
+    {
+      "commit": "2f4062a923038bf58cdead1da8c3b84e778daa7b",
+      "local_object_present": false,
+      "path": "core/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "5c338cd0a7f3b85305dcc960c8533da9d7ff2f27",
+      "local_object_present": false,
+      "path": "core/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "d4620e1654bd23e832840d0704c4cb967b159639",
+      "local_object_present": false,
+      "path": "core/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "d7a6127273407a32bccf75e70fa7bbe84c14e4f8",
+      "local_object_present": false,
+      "path": "core/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "edab891427b8018b09cc6883e924b2c7e81b4a31",
+      "local_object_present": false,
+      "path": "core/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "8b15e42253091a28c33a5e5e827d7750576d54dd",
+      "local_object_present": false,
+      "path": "core/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "a9d966dc7ab97006445315ef3c13f2d2e020fffc",
+      "local_object_present": false,
+      "path": "core/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "d946e4cf8667e79327b06ca24bbaeae600681c5e",
+      "local_object_present": false,
+      "path": "core/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "ed5dd827e9092bc87a6f89e211a50092485d4e91",
+      "local_object_present": false,
+      "path": "core/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "05f41928cd0f72ddab557c8db6c2fc11c3fd08e6",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "13bf1b27b42dd2f5c4d4152a0c76528c798fa589",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "389299afd103337ec3ab787278ac56ac249f9195",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "39b6df27b3d72c706010e6773d4bb50a202a1543",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "47ccf4b1f5e178e3883ee6c43217f4c7b9700c0f",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "4956d826fbdbad35645260aa3edb3b746651cceb",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "99c74b31be15a239fdffe4a727d2d83feb52b8bb",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "f520fe36bd503cd7fee779b3b5c68723f6e0d098",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "f5ceee547c294b8e188860c451882dd71a5909df",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "fdd700f3e5c2f9d7688d2434d4dbee8c12524411",
+      "local_object_present": false,
+      "path": "java",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskManager.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskManager.git"
+      ]
+    },
+    {
+      "commit": "2178671c6ef5322f2695cb0ee56df4195d8218ae",
+      "local_object_present": false,
+      "path": "jni/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "90c9c4fd96f77e26e3550df310adbe39369d8057",
+      "local_object_present": false,
+      "path": "jni/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "90c9c4fd96f77e26e3550df310adbe39369d8057",
+      "local_object_present": false,
+      "path": "jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e3a1a4d91f5606833a83a0cba13b13ef6635ef5e",
+      "local_object_present": false,
+      "path": "jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "67d818584d505503c2bdbd15aec43e6219642762",
+      "local_object_present": false,
+      "path": "jni/external/bzip2",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nemequ/bzip2.git",
+      "url_candidates": [
+        "https://github.com/nemequ/bzip2.git"
+      ]
+    },
+    {
+      "commit": "22a65c5331c22979d416738eb756b9541672e00d",
+      "local_object_present": false,
+      "path": "jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc"
+      ]
+    },
+    {
+      "commit": "fe50bd1ecc1da273a7627a76dcd38da9d77e496f",
+      "local_object_present": false,
+      "path": "jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc"
+      ]
+    },
+    {
+      "commit": "c10863b98e1503af90616ae99725ecd120265dfb",
+      "local_object_present": false,
+      "path": "jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "b5cefe452bff3c07d3e768f2e2bdcf01eb146ef5",
+      "local_object_present": false,
+      "path": "jni/external/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "2fefdfc40fe5e675253fcaf03558ca3dca0a0550",
+      "local_object_present": false,
+      "path": "jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "3d566cd519017eee1a400e7961ff14058dfaf33c",
+      "local_object_present": false,
+      "path": "jni/external/xz",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/xz-mirror/xz.git",
+      "url_candidates": [
+        "https://github.com/xz-mirror/xz.git"
+      ]
+    },
+    {
+      "commit": "03c8079858f68a335a9b75b34f4623221750a6fe",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "193d160bed24f75d2dd440063bfc00d7920cf789",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "2e6bea23acc073aa9b3890c50342dd4a3dc8e754",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "3c6a170138cacb1f817c65181bd6e3ef15cfca9e",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "3e106a9dc53400b2dde2e80cff277a5552a447ac",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "45cff2b51b039bb86f5ba165377172620309dcb7",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "4c7e081e158b1d6a56a76b98f61d880f3d8a994d",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "5529dab84e44856679406edd6560d26c61e1e715",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "6600772dca2c02a2528429759aeb7856361bfcb4",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "7bb8b9039c96278f904e3e7fa07953cd5e5b5113",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "7f6cd5e469806a8f857a60de00396628837446df",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "8ee9984e4e0a0ce1917d4b131205c79a15f85876",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "93b66d26ff86a22dec12cec862a7cdd1db50a454",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "9de3c582c02e63fdc9642a230baf2201b747557c",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "9e96824161ddf1d6af516f44cad4d0e904a7abed",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "a0be47ab8b2e1d7778a73a5b5a8122b1881368b5",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "a65c7ee2fcb0ecc546603e97384ef49ad6f245d5",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "b7e717ee8c49d3f2ae153b8ea8de6c932032c20a",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "c0c38022ea20816bcf402a46ee37208d355bcc40",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "c1c6f55f8f51cd24b5f926059e32d4a70a422430",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "ca75dd07283ff5fb9fec32f106ba8c58642742a0",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "ca79e58ab9548eeaaf741d21bdfeabb253a2e95f",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "cd498711bc6b03375c0e7ca62708e9f34b71a339",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "d7a6127273407a32bccf75e70fa7bbe84c14e4f8",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "dc9670c439845519470db4583a8ab9f282d1da87",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "e5b6121d176ee75cbfce58c471cd5d9dc1eb7caa",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "e99185f0116b9b9620d5e794f7c0751ac7133149",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "f66a820e14e1df23948b06dbe631c781c029abe0",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "feec3e82558b1640e2deb88fde19e50fe589bbcb",
+      "local_object_present": false,
+      "path": "jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "278ea80348b7e36bf2d37f2aabf6af6ed64d8f0c",
+      "local_object_present": false,
+      "path": "jni/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "602750457f2383f9a726eb12d2907f4ed282be91",
+      "local_object_present": false,
+      "path": "jni/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "7cfa31b27065249b4d35cd1c7ceef4c2453b48b8",
+      "local_object_present": false,
+      "path": "jni/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "b0579533d17f527137633825724231cafb245ebd",
+      "local_object_present": false,
+      "path": "jni/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "b5cefe452bff3c07d3e768f2e2bdcf01eb146ef5",
+      "local_object_present": false,
+      "path": "jni/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "ca5279deaa9de6ac695af1c710353d616428e229",
+      "local_object_present": false,
+      "path": "jni/ndk-compression",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-compression.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-compression.git"
+      ]
+    },
+    {
+      "commit": "3a6db7dbafdfb46fd09705ba1ab5477cacb87155",
+      "local_object_present": false,
+      "path": "jni/resetprop",
+      "remote_error": "https://github.com/topjohnwu/resetprop.git: fatal: repository 'https://github.com/topjohnwu/resetprop.git/' not found; https://github.com:topjohnwu/resetprop.git: fatal: unable to access 'https://github.com:topjohnwu/resetprop.git/': URL rejected: Port number was not a decimal number between 0 and 65535",
+      "remote_reachable": false,
+      "url": "https://github.com/topjohnwu/resetprop.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/resetprop.git",
+        "https://github.com:topjohnwu/resetprop.git"
+      ]
+    },
+    {
+      "commit": "5bafa01da8ea6c82742f96673a89dd6ca668372d",
+      "local_object_present": false,
+      "path": "jni/resetprop",
+      "remote_error": "https://github.com/topjohnwu/resetprop.git: fatal: repository 'https://github.com/topjohnwu/resetprop.git/' not found; https://github.com:topjohnwu/resetprop.git: fatal: unable to access 'https://github.com:topjohnwu/resetprop.git/': URL rejected: Port number was not a decimal number between 0 and 65535",
+      "remote_reachable": false,
+      "url": "https://github.com/topjohnwu/resetprop.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/resetprop.git",
+        "https://github.com:topjohnwu/resetprop.git"
+      ]
+    },
+    {
+      "commit": "6b77de934dd13f77f3e1f8345d77a520d2e9b491",
+      "local_object_present": false,
+      "path": "jni/resetprop",
+      "remote_error": "https://github.com/topjohnwu/resetprop.git: fatal: repository 'https://github.com/topjohnwu/resetprop.git/' not found; https://github.com:topjohnwu/resetprop.git: fatal: unable to access 'https://github.com:topjohnwu/resetprop.git/': URL rejected: Port number was not a decimal number between 0 and 65535",
+      "remote_reachable": false,
+      "url": "https://github.com/topjohnwu/resetprop.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/resetprop.git",
+        "https://github.com:topjohnwu/resetprop.git"
+      ]
+    },
+    {
+      "commit": "96949566fb99b2b74b9bb80398ea45ee90ceb592",
+      "local_object_present": false,
+      "path": "jni/resetprop",
+      "remote_error": "https://github.com/topjohnwu/resetprop.git: fatal: repository 'https://github.com/topjohnwu/resetprop.git/' not found; https://github.com:topjohnwu/resetprop.git: fatal: unable to access 'https://github.com:topjohnwu/resetprop.git/': URL rejected: Port number was not a decimal number between 0 and 65535",
+      "remote_reachable": false,
+      "url": "https://github.com/topjohnwu/resetprop.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/resetprop.git",
+        "https://github.com:topjohnwu/resetprop.git"
+      ]
+    },
+    {
+      "commit": "0b14ed89aa516778284094c0980eebb498464779",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "11a8f7c25d689d84c4eae8ef6245af57a51b1dc5",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "2fefdfc40fe5e675253fcaf03558ca3dca0a0550",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "3d9b8bcb0561e8b2fd8cf54b150e458d35c73a18",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "91e9179a23435bbadada5474ce09a2aea3dadcd6",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "a96d57f47efd2a7dff0d12188ef77058d6177257",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "d2f80c3bcc095526855d97d9202da2158fbced5c",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "d7c6efa178620474c0de1d5caefb991a94c537c5",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "df7346cd5b27f8a66f84669a9ed1d9c272692b17",
+      "local_object_present": false,
+      "path": "jni/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "2fe4d9706148d19c4ff2dce9119f40ae0641925a",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "32d2df0f08a2f23e53e2f0763b714154961a9456",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "3a0df56605bc9226b4c989979c1d4e9a8a565ad4",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "443af5f760b94f8728b4a4c82adf911717d4dc52",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "7dea682713cc81532291c8e8365b13b5a592e9c6",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "9a14931175dfabe4008679343b358cc16c02cbd4",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "9f35fa0fa3f9b52c2b6b31253bade848019d7ab2",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "b56a757f2e3ad7c3930121d0c355d24fcd6ee53e",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "be1dcb7264e8a20b101a93d01bd671a7f56d07c3",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "c69db035ee32e34256c3cd8562e28bc4f5fba2db",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "dd2d556962df6d38c98e6003113c0cb899facc30",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "f760a9d0c2fb86786d880c72b83d82d16cb35301",
+      "local_object_present": false,
+      "path": "jni/sepolicy-inject",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/sepolicy-inject",
+      "url_candidates": [
+        "https://github.com/topjohnwu/sepolicy-inject"
+      ]
+    },
+    {
+      "commit": "12cc7b7885c67b17340b4637b67e190148927a7e",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "1bb2cea5c0c27544c715cea0443cf4453647e625",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "1bbf96a0a7a942798df58883a376b8024d0fae7f",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "1d2eb13cae13380bbccff4b0ba77c14140158ea8",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "28fe87cb5fceaea282977513074500f2811180b4",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "34fede71678201a0c7a7183d3ac0f8777f9238b2",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "356b2c0f5ffa117515aeb242b30121e6ef9e13c3",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "38cc9dfec88bca246725d79157657e43e9363425",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "4035d5b0379ddb69ce037c54587bd222710d0396",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "4335c588fec05f0abefbd930ae39ea96e3b7e6fe",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "4f570658cce06f5b07edb8cc4c2cd0f900bfec11",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "5a41e8882a8762e6dc1815e49002776b634a4ea1",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "6de95e0d9bb6aa3e657a7e1492eed1b632c9f186",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "78106aa409c09584aa9b17001a9017904aee443f",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "7b1d3cf08e3376983837242e74f9d220bbbcc7cb",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "8475cecfeb47fbc596898fb9fb296b5027bdc46b",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "85b080113f43bccd6764cefe9144d82dc0492426",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "86a113a53646946a4b603b48860aecd9a8318daa",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "8770e8fb88a5688a1635ea384085b6d09b4242c6",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "8d8355d87d7bc53d8540d4591ee0a3430ea081ca",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "9120f71f197e3cabf68c55154e30501679fb3aa8",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "91ea6801679ddd0b05c893065520acb29f713e6f",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "9a1043574a0109e98872bc6e3fe2dcd2f406849a",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "9dab3bc8ab28792993711f0a2450f9332b172687",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "9f46330c968803f69e6132961fba559be5c8876a",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "a9d966dc7ab97006445315ef3c13f2d2e020fffc",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "addbe81c82e178952e9560d6ba027b1dbe8b840c",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "b174f179112e8d8ef5c08232d92c32c6fa31ace0",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "b1d6ff60e0f7d533746097058b4d4815d39270aa",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "b499ac8abacc9d009d110146e2f681a9b0a66f19",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "b76adde10953c6d8d9cb034dd42ae068310c0229",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "c42c44a55254416fc2ccdb89395f42e8a580a67f",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "c5583620349aa7700435bda0b0f356c3510e550e",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "c66632227b69ed4ded45518852474592a4b3bca8",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "c912c192e0d03119a14d7b772caa5d77bc4b7999",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "d364ed2d7721cbfc5652c66a51e97408cd6be458",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "dd0127a3919b7ebed930f3e7aed6e3ff3684f714",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "e2821025ef7348085958ac8f76e51b08b0e9647f",
+      "local_object_present": false,
+      "path": "jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git",
+        "https://github.com/topjohnwu/Superuser.git"
+      ]
+    },
+    {
+      "commit": "04d8621fd3eb6d5e2863924daca49d37f89a2f09",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "11161740368e80ec8074e5b6abd96ec550335712",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "13c70496b49380c66ab8fbd6fcfcccb40ca06f60",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "172151eb0dd8c774459beaf6b116c63f8cf528aa",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "183821743b51aea48951536eed61c52ecb35d46e",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "1dcc6befca9c7a5a89d8dfd95943220bd534d6cb",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "23132f3d45089f9c0e495ec5365993f4b2ef348c",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "272bfb363b36afe39b161b1397da827a3d0e0551",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "41288302eda410e0834aebdec4d83be4ab9e4435",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "427bfafa9b7672c5be27055171f5fd6c3f11410b",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "47a1fdda34cbf51932199586b4ddb3c2d4f76af2",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "4a9bb0541b4b4d2d93bc244c11b070b13a90933c",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "4f5bf4ad8361c46441db19bd61605d0de324f19e",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "6e22deb3006f5ab49d50b1840540a64ae6eb4a34",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "76822933adc85c853daa6743d93433461f620849",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "78f06dcf1ea2a52de3d08f913333720abd59c58b",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "84c72abfcf76f26f789ec4596286f7c0379c485e",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "84ce191c8e3e69869617991c275f1b724422c604",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "869ebbfa97d9b47b2707adb10a01d1bfacd52191",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "975e061b4676ab1019908cd81c3377d7499e830e",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "99cca1408cfe177221b04811aa2b6fe172eb7587",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "a57ccd7378e6858f9b2a564c75517ed4b41fcd39",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "a962c97a5b225ff1972084c85cfdb799a992fb44",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "b7cba59ffb2720b09a0bd81bf40f2a85db64153e",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "c2479d10d92d5a30ffa79ee73476b0c4707bf762",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "c4f0c98aeb9902aff5104a7519261022709d26a5",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "d5fcb3daedcc5481296c0002889c5d7cdd957a43",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e05a1f2a733be6f961f2fd4b5093a92caeb5a752",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e074d81e4698bfff7043431e6e185da5e978a536",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e0e3c284ab280b68400249a5ca30b6f5ba2327ae",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e1895e6c952b631022987391179fcbd64726a28d",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e3a1a4d91f5606833a83a0cba13b13ef6635ef5e",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e68ef0927385fb72a3fd414e206f915f4517b79f",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "e8f5c72a76b627796ff47e0796ba04ad10c2efc3",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "ea7af29f75f0e831c365b3fa5abe5c7aa33d3953",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "f090ba21963024627921ab6bad00801ec7b549a4",
+      "local_object_present": false,
+      "path": "native/jni/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "67d818584d505503c2bdbd15aec43e6219642762",
+      "local_object_present": false,
+      "path": "native/jni/external/bzip2",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nemequ/bzip2.git",
+      "url_candidates": [
+        "https://github.com/nemequ/bzip2.git"
+      ]
+    },
+    {
+      "commit": "650e64bc3970625f580a61ad9cfc65faa5cdd948",
+      "local_object_present": false,
+      "path": "native/jni/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "22a65c5331c22979d416738eb756b9541672e00d",
+      "local_object_present": false,
+      "path": "native/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc",
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "88f18909db731a627456f26d779445f84e449536",
+      "local_object_present": false,
+      "path": "native/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc",
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "b6910bec11614980a21e46fbccc35934b671bd81",
+      "local_object_present": false,
+      "path": "native/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc",
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "c0c2e115f82ed3bc5f9d3f9e5380f0f7e81a1c21",
+      "local_object_present": false,
+      "path": "native/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc",
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "d37f6b20107e952064e3f77e9d6915a9c09d10a6",
+      "local_object_present": false,
+      "path": "native/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc",
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "e54388015af1fb4bf04d0bca99caba1074d9cc42",
+      "local_object_present": false,
+      "path": "native/jni/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc",
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "0aa67c3ffea069bdb58fe3b5e7aad06934afb292",
+      "local_object_present": false,
+      "path": "native/jni/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "9b40e8b93627e0aef4ee8ad1b9f3aea913ee32c0",
+      "local_object_present": false,
+      "path": "native/jni/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "b74fd5905f1064c1a33b213fca58b45441651ad1",
+      "local_object_present": false,
+      "path": "native/jni/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "cca5298bc3fbb19b607008925b10acd0ee06e03d",
+      "local_object_present": false,
+      "path": "native/jni/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "f61fcee091736dd0ae38670876157e9862ac6ff8",
+      "local_object_present": false,
+      "path": "native/jni/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "398e36c756a3067de8e2b35dd380baef040dfe0d",
+      "local_object_present": false,
+      "path": "native/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "641b453d9db536ee020851bfcb1dc39f61006f0a",
+      "local_object_present": false,
+      "path": "native/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "c10863b98e1503af90616ae99725ecd120265dfb",
+      "local_object_present": false,
+      "path": "native/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "d44371841a2f1728a3f36839fd4b7e872d0927d3",
+      "local_object_present": false,
+      "path": "native/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "dfed9fa1d77f0434306d377c4da1f7191d3ba08a",
+      "local_object_present": false,
+      "path": "native/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "fdf2ef5809ca875c454510610764d9125ef2ebbd",
+      "local_object_present": false,
+      "path": "native/jni/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "1f355c50a4025a3549cbeeb6cb29b639d8721323",
+      "local_object_present": false,
+      "path": "native/jni/external/mincrypt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/mincrypt.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/mincrypt.git"
+      ]
+    },
+    {
+      "commit": "ac33afa79e57e198b9eeec231140d64816a0bb1e",
+      "local_object_present": false,
+      "path": "native/jni/external/mincrypt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/mincrypt.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/mincrypt.git"
+      ]
+    },
+    {
+      "commit": "d443357d300f263179e04ef0893e6b8f040c9451",
+      "local_object_present": false,
+      "path": "native/jni/external/mincrypt",
+      "remote_error": "https://github.com/topjohnwu/mincrypt.git: fatal: remote error: upload-pack: not our ref d443357d300f263179e04ef0893e6b8f040c9451",
+      "remote_reachable": false,
+      "url": "https://github.com/topjohnwu/mincrypt.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/mincrypt.git"
+      ]
+    },
+    {
+      "commit": "04cd1f94cc513b4cb3eac924c74039ccc05a944b",
+      "local_object_present": false,
+      "path": "native/jni/external/nanopb",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nanopb/nanopb.git",
+      "url_candidates": [
+        "https://github.com/nanopb/nanopb.git"
+      ]
+    },
+    {
+      "commit": "1466e6f953835b191a7f5acf0c06c941d4cd33d9",
+      "local_object_present": false,
+      "path": "native/jni/external/nanopb",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nanopb/nanopb.git",
+      "url_candidates": [
+        "https://github.com/nanopb/nanopb.git"
+      ]
+    },
+    {
+      "commit": "3626b5c40e2457629ac60a563dde523be7c10bb4",
+      "local_object_present": false,
+      "path": "native/jni/external/nanopb",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nanopb/nanopb.git",
+      "url_candidates": [
+        "https://github.com/nanopb/nanopb.git"
+      ]
+    },
+    {
+      "commit": "3c69a905b16df149e1bda12f25e0522073a24678",
+      "local_object_present": false,
+      "path": "native/jni/external/nanopb",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nanopb/nanopb.git",
+      "url_candidates": [
+        "https://github.com/nanopb/nanopb.git"
+      ]
+    },
+    {
+      "commit": "c9124132a604047d0ef97a09c0e99cd9bed2c818",
+      "local_object_present": false,
+      "path": "native/jni/external/nanopb",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nanopb/nanopb.git",
+      "url_candidates": [
+        "https://github.com/nanopb/nanopb.git"
+      ]
+    },
+    {
+      "commit": "7684faf186806e2c88554a78188c18185b21f127",
+      "local_object_present": false,
+      "path": "native/jni/external/parallel-hashmap",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/greg7mdp/parallel-hashmap.git",
+      "url_candidates": [
+        "https://github.com/greg7mdp/parallel-hashmap.git"
+      ]
+    },
+    {
+      "commit": "465fb3954c063a938aafdec7ed9a15b3cd196086",
+      "local_object_present": false,
+      "path": "native/jni/external/pcre",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/pcre",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/pcre"
+      ]
+    },
+    {
+      "commit": "8e12681a1a252fd581830b2f65d1e154a2030bb9",
+      "local_object_present": false,
+      "path": "native/jni/external/pcre",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/pcre",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/pcre"
+      ]
+    },
+    {
+      "commit": "986dc24ace8aea66189a95510813747155fa3800",
+      "local_object_present": false,
+      "path": "native/jni/external/pcre",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/pcre",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/pcre"
+      ]
+    },
+    {
+      "commit": "4d28de872cc6feac1ec5859ca50ca46c9f5d46ec",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "4d7d59c49675eef4a18c2b1f73e630bf675811f9",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "8e849a5639cf217e9c3c4ac081d8c14a12a3ae03",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "969114cff6ee973f47a3c84cacdef77e504d7bd9",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "a54be053299c04658d64229468a004ca40b6b4d5",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "c49f5e9d8ee90d256dfdb778701894e100cdfca0",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "c61cf3916dc8f19ef2236078ff87f7a33fce6a52",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "d0f582372b0bafe0fe0cf7bb12f9e88857d65b92",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "f3ed885ca09143d2f08f50f49c761e9afc5b3301",
+      "local_object_present": false,
+      "path": "native/jni/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "9180bd74098fd41f808d3968e2e52b4f5db92c99",
+      "local_object_present": false,
+      "path": "native/jni/external/xhook",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/iqiyi/xHook.git",
+      "url_candidates": [
+        "https://github.com/iqiyi/xHook.git"
+      ]
+    },
+    {
+      "commit": "2327a461e1afce862c22269b80d3517801103c1b",
+      "local_object_present": false,
+      "path": "native/jni/external/xz",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/xz-mirror/xz.git",
+      "url_candidates": [
+        "https://github.com/xz-mirror/xz.git"
+      ]
+    },
+    {
+      "commit": "3d566cd519017eee1a400e7961ff14058dfaf33c",
+      "local_object_present": false,
+      "path": "native/jni/external/xz",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/xz-mirror/xz.git",
+      "url_candidates": [
+        "https://github.com/xz-mirror/xz.git"
+      ]
+    },
+    {
+      "commit": "b5be61cc06088bb07f488f9baf7d447ff47b37c1",
+      "local_object_present": false,
+      "path": "native/jni/external/xz",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/xz-mirror/xz.git",
+      "url_candidates": [
+        "https://github.com/xz-mirror/xz.git"
+      ]
+    },
+    {
+      "commit": "3a0aa2b3df38ad6298f91c4d8afef708bb4f088e",
+      "local_object_present": false,
+      "path": "native/jni/external/zlib",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/zlib",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/zlib"
+      ]
+    },
+    {
+      "commit": "7809db48d831bdba8c0beed0b9fedb5d88a17de0",
+      "local_object_present": false,
+      "path": "native/jni/external/zopfli",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/zopfli",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/zopfli",
+        "https://github.com/google/zopfli.git"
+      ]
+    },
+    {
+      "commit": "831773bc28e318b91a3255fa12c9fcde1606058b",
+      "local_object_present": false,
+      "path": "native/jni/external/zopfli",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/zopfli",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/zopfli",
+        "https://github.com/google/zopfli.git"
+      ]
+    },
+    {
+      "commit": "21a557a1840392e1b802480814cbb86607534814",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "26dfbb30285ce8858d1051870620b6d5925f3128",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "2f4062a923038bf58cdead1da8c3b84e778daa7b",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "31110b192721f9c721efb154333d1110cd9800b8",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "52a6a7bce87d78761239072640a350e078bad53e",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "c69477616292e593973913d5badd5110700e88a6",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "c69dc0f036de99254abd83ddfcd176b04cc382b2",
+      "local_object_present": false,
+      "path": "native/jni/magiskpolicy",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/magiskpolicy.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/magiskpolicy.git"
+      ]
+    },
+    {
+      "commit": "001294317f7d8b3e209567005edd25df0dc6e3c6",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "248f8a2a39acf51bf4cb603a32e70430b851edf4",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "29d5740205753f911123e6672a53d8d3414e49dc",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "2c5a36a8da625079a0617c0d06f96f444c4d4bf4",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "42eab87edc319747a1b04cd6df2972a138efc1d1",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "69b226b005e3f87c4c872fa3382e05006969118e",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "a56fb9d869dd809c7339119459bfdc88c2dd8404",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "c71ebb26505ac11e8bd9c6a6c69099ec3c2b7596",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "ead8c03a3a6eed6621ffcf4bc2fd12429da3596e",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "ed5dd827e9092bc87a6f89e211a50092485d4e91",
+      "local_object_present": false,
+      "path": "native/jni/su",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/MagiskSU.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/MagiskSU.git"
+      ]
+    },
+    {
+      "commit": "e295323a34fbad51f3954604f30f9c5517b43b40",
+      "local_object_present": true,
+      "path": "native/src/external/_xDL",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/hexhacking/xDL.git",
+      "url_candidates": [
+        "https://github.com/hexhacking/xDL.git"
+      ]
+    },
+    {
+      "commit": "2fecd81d606364a8b07b942ed01697bbd3a62193",
+      "local_object_present": false,
+      "path": "native/src/external/argh",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/argh.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/argh.git"
+      ]
+    },
+    {
+      "commit": "1c0ca97aafb9698ab7770ce1f67af1a84b469cdb",
+      "local_object_present": true,
+      "path": "native/src/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "7236867ef10bb9aeb68a7796a51f3fa269a23e4a",
+      "local_object_present": true,
+      "path": "native/src/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "b0f643d5353c2c0156358d87043e25a77bae3047",
+      "local_object_present": true,
+      "path": "native/src/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "c04fc757cd79481dbf5bf36e7ff6f6ffdb443867",
+      "local_object_present": true,
+      "path": "native/src/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "c2479d10d92d5a30ffa79ee73476b0c4707bf762",
+      "local_object_present": true,
+      "path": "native/src/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "c8a45a3422e38b62a38ba7f5e4e91d3dcacf78f2",
+      "local_object_present": true,
+      "path": "native/src/external/busybox",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/ndk-busybox.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/ndk-busybox.git"
+      ]
+    },
+    {
+      "commit": "67d818584d505503c2bdbd15aec43e6219642762",
+      "local_object_present": true,
+      "path": "native/src/external/bzip2",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nemequ/bzip2.git",
+      "url_candidates": [
+        "https://github.com/nemequ/bzip2.git"
+      ]
+    },
+    {
+      "commit": "0ca1dea7e4e741b48fe94697b563cff712322591",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "1602918648775f79672898abb83877dc2ca3a890",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "17233ab90ea37dd86b1867b22c3f243e8a98cd10",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "2afb00eb00575864009cbc62bd7a27842633c6b6",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "49bbd472a250e75315a9183586fab1e0c0982618",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "6ec46be760069d4645204b09b96e8dd414c3ac2e",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "6f5a10ac125e5f8f83b022b5196deba8051b3e26",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "795cab5ab6a5ed1fad9432fd7dcea20ca137b5c1",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "7a03e7b0ec410d9f5e927d816261b9aff1c57fa8",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "9790b7ee48d3c396c94ef69e164004f50a1f5587",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "9dfa67b4d543f1b6bf2e936f560fbe77ca2a226a",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "ba8166a48cf9424d0fb46691c64467c20da7cdfe",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "ee73137c106cb01a506a98a460457aecef5a1217",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "f7f43a51a998f31e6fc22622ace5d9bb1026c3e4",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "f7f5d092b28e8ba8ae073f2be72cc6cb96c52843",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "f800c65e1c088240c8336a0a5f0d9346dfea0697",
+      "local_object_present": false,
+      "path": "native/src/external/crt0",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/crt0.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/crt0.git"
+      ]
+    },
+    {
+      "commit": "08cb6347041a757b1ad7f44abac56ffd8540dc71",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "09864b46d76f32a5c6dbb6d15112cca6d1793340",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "0ea6d507cee40da9581b71bd531a4e3ac0a37164",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "16abd4d2b4a1fed0198670e82ccd7569152e570f",
+      "local_object_present": false,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "49f3912d9c6e02dc05facccce5dbda5451016ab2",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "650e64bc3970625f580a61ad9cfc65faa5cdd948",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "667377297a1cc0e1ab3dfc82fa56da83e59d0378",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "7535230afbea588119afd35a057a1f5f609a47f9",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "b09b91554b392523f633b9e3cbe0b43273528c71",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "ce439b25bf7ac4201859c4433560d896523aad44",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "d363e8e62f75999131bdacc9fe4941366ea4a3be",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "f05bbb7c8fa6639685fb6bb8708dc6ea55d9ddbb",
+      "local_object_present": true,
+      "path": "native/src/external/cxx-rs",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/cxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/cxx.git"
+      ]
+    },
+    {
+      "commit": "c0c2e115f82ed3bc5f9d3f9e5380f0f7e81a1c21",
+      "local_object_present": false,
+      "path": "native/src/external/dtc",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/dgibson/dtc.git",
+      "url_candidates": [
+        "https://github.com/dgibson/dtc.git"
+      ]
+    },
+    {
+      "commit": "12c8f4e93f196a700137e983dcceeac43cf807f2",
+      "local_object_present": true,
+      "path": "native/src/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "82090ae75f7d284f2647a67f3f80f28f54eaddfc",
+      "local_object_present": true,
+      "path": "native/src/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "9b40e8b93627e0aef4ee8ad1b9f3aea913ee32c0",
+      "local_object_present": true,
+      "path": "native/src/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "d5117df3ba7704aab06c3a30b97c7529c931662b",
+      "local_object_present": true,
+      "path": "native/src/external/libcxx",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/libcxx.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/libcxx.git"
+      ]
+    },
+    {
+      "commit": "1afe99bb166be7924ca529b6be6f8474902f4838",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "1ff11177b0d4ef04e5e9e9a231c8ea64edee4023",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "204a1636884d397617101e2bae3a78dd3febb163",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "5d2b820cf968fcd8162697d208ad406805b6db25",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "772a1b168cb6feaea8e8021309f1fce942e2fa49",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "7d609ac3c2d8faa0c830b0904024ef5c81a98e6e",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "c202f29df9c0a925fca987f9539525163c590cc0",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "cef80a97a73184b4def9b3e1148884365fc173fd",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "d935c30d149f1d5cf934505c37bfdb5f5601572d",
+      "local_object_present": false,
+      "path": "native/src/external/lsplt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/LSPlt.git",
+      "url_candidates": [
+        "https://github.com/LSPosed/LSPlt.git",
+        "https://github.com/PerformanC/LSPlt"
+      ]
+    },
+    {
+      "commit": "d44371841a2f1728a3f36839fd4b7e872d0927d3",
+      "local_object_present": true,
+      "path": "native/src/external/lz4",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/lz4/lz4.git",
+      "url_candidates": [
+        "https://github.com/lz4/lz4.git"
+      ]
+    },
+    {
+      "commit": "1f355c50a4025a3549cbeeb6cb29b639d8721323",
+      "local_object_present": false,
+      "path": "native/src/external/mincrypt",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/mincrypt.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/mincrypt.git"
+      ]
+    },
+    {
+      "commit": "c9124132a604047d0ef97a09c0e99cd9bed2c818",
+      "local_object_present": false,
+      "path": "native/src/external/nanopb",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/nanopb/nanopb.git",
+      "url_candidates": [
+        "https://github.com/nanopb/nanopb.git"
+      ]
+    },
+    {
+      "commit": "401552da80b0971f818e648621260720ad40934e",
+      "local_object_present": true,
+      "path": "native/src/external/parallel-hashmap",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/greg7mdp/parallel-hashmap.git",
+      "url_candidates": [
+        "https://github.com/greg7mdp/parallel-hashmap.git"
+      ]
+    },
+    {
+      "commit": "7684faf186806e2c88554a78188c18185b21f127",
+      "local_object_present": true,
+      "path": "native/src/external/parallel-hashmap",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/greg7mdp/parallel-hashmap.git",
+      "url_candidates": [
+        "https://github.com/greg7mdp/parallel-hashmap.git"
+      ]
+    },
+    {
+      "commit": "8e12681a1a252fd581830b2f65d1e154a2030bb9",
+      "local_object_present": true,
+      "path": "native/src/external/pcre",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/pcre",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/pcre"
+      ]
+    },
+    {
+      "commit": "217e831ad6e75a751ee08b2cacc6cd1787a83894",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "3007b80e911ca5feebfe30fec067f2f9cc0ee22e",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "379e9d7e9d0c96f8b0188f8c592a047f9099a486",
+      "local_object_present": false,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "48fcf8bba0635dc597bef75994294fd055d9f0ba",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "81d604a9d5f34306d22121391d350e0027191cb5",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "8c6acc0d7792cda5f203dfd8e94c633e9dbfdeae",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "9786b2ebe6e041e1a07c211ead46d0941e96e2ee",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "be1b39a657fee7faacfae548b75cb53302043a01",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "d0f582372b0bafe0fe0cf7bb12f9e88857d65b92",
+      "local_object_present": true,
+      "path": "native/src/external/selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/LSPosed/selinux.git",
+      "url_candidates": [
+        "https://github.com/1q23lyc45/selinux",
+        "https://github.com/LSPosed/selinux.git",
+        "https://github.com/topjohnwu/selinux.git"
+      ]
+    },
+    {
+      "commit": "049ceb6791e0a590a9a73b7fa1a3d952a791df91",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "14b35941f4437a06685daee4464acea58a87ad57",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "3420071fe291bb1031356ac81d802c923705b2cd",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "3b4b3f0c64bb83f955acb10fe1f2716a91c335dd",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "7eaf17aa39f1ce156906e36ae3a599054326c307",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "80b217db022ac7c46431b81b1f85bbe1aeddf49a",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "9f60663aca9eb05700e9cbb8e0570c296b01779c",
+      "local_object_present": false,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "b7c2088565fbe13d22fe074960332e89615bb4aa",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "cabe129f5472ca10af82f3147fd8916d45b7d74e",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "e0282aa56cc9e70a593b428f172cb8cad95c0879",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "e1a3e77d2376be2ba747baa7ba16b34554b14956",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "f081b497cddba591e65c96eedac29db9a0082131",
+      "local_object_present": true,
+      "path": "native/src/external/system_properties",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/system_properties.git",
+      "url_candidates": [
+        "https://github.com/topjohnwu/system_properties.git"
+      ]
+    },
+    {
+      "commit": "2327a461e1afce862c22269b80d3517801103c1b",
+      "local_object_present": true,
+      "path": "native/src/external/xz",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/xz-mirror/xz.git",
+      "url_candidates": [
+        "https://github.com/xz-mirror/xz.git"
+      ]
+    },
+    {
+      "commit": "3a0aa2b3df38ad6298f91c4d8afef708bb4f088e",
+      "local_object_present": true,
+      "path": "native/src/external/zlib",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://android.googlesource.com/platform/external/zlib",
+      "url_candidates": [
+        "https://android.googlesource.com/platform/external/zlib"
+      ]
+    },
+    {
+      "commit": "831773bc28e318b91a3255fa12c9fcde1606058b",
+      "local_object_present": true,
+      "path": "native/src/external/zopfli",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/google/zopfli.git",
+      "url_candidates": [
+        "https://github.com/google/zopfli.git"
+      ]
+    },
+    {
+      "commit": "df7346cd5b27f8a66f84669a9ed1d9c272692b17",
+      "local_object_present": false,
+      "path": "selinux",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/topjohnwu/selinux",
+      "url_candidates": [
+        "https://github.com/topjohnwu/selinux"
+      ]
+    },
+    {
+      "commit": "334efd1923c563e19d00e655dfbfb2f9f7031bb1",
+      "local_object_present": true,
+      "path": "tools/termux-elf-cleaner",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/termux/termux-elf-cleaner.git",
+      "url_candidates": [
+        "https://github.com/termux/termux-elf-cleaner.git"
+      ]
+    },
+    {
+      "commit": "55b68119abfca84c9bff009d6505c24862610ca1",
+      "local_object_present": true,
+      "path": "tools/termux-elf-cleaner",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/termux/termux-elf-cleaner.git",
+      "url_candidates": [
+        "https://github.com/termux/termux-elf-cleaner.git"
+      ]
+    },
+    {
+      "commit": "9c739fffcf477768e2855cd243b167721d19b2de",
+      "local_object_present": true,
+      "path": "tools/termux-elf-cleaner",
+      "remote_error": null,
+      "remote_reachable": true,
+      "url": "https://github.com/termux/termux-elf-cleaner.git",
+      "url_candidates": [
+        "https://github.com/termux/termux-elf-cleaner.git"
+      ]
+    }
+  ],
+  "historical_gitlinks_included": true,
+  "refs": {
+    "f943ecddd11d0e648877ffb1f917c16767b8f7cc": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+    "upstream/master": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
+    "v30.7": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac"
+  },
+  "remote_probe_performed": true,
+  "schema_version": 1,
+  "summary": {
+    "gitlink_count": 373,
+    "local_object_missing_count": 284,
+    "missing_url_count": 0,
+    "remote_object_missing_count": 6
+  },
+  "validation": {
+    "expected_unavailable_count": 6,
+    "observed_unavailable_count": 6,
+    "passed": true,
+    "restored_but_still_disposed": [],
+    "unknown_unavailable": []
+  }
+}

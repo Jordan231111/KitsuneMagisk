@@ -1,0 +1,1878 @@
+{
+  "packages": {
+    "cargo:aho-corasick@1.1.2": {
+      "evidence": "https://github.com/BurntSushi/aho-corasick",
+      "license": "Unlicense OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:ansi_term@0.12.1": {
+      "evidence": "https://github.com/ogham/rust-ansi-term",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:argh@0.1.12": {
+      "evidence": "https://github.com/google/argh",
+      "license": "BSD-3-Clause",
+      "source": "cargo-metadata"
+    },
+    "cargo:argh_derive@0.1.12": {
+      "evidence": "https://github.com/google/argh",
+      "license": "BSD-3-Clause",
+      "source": "cargo-metadata"
+    },
+    "cargo:argh_shared@0.1.12": {
+      "evidence": "https://github.com/google/argh",
+      "license": "BSD-3-Clause",
+      "source": "cargo-metadata"
+    },
+    "cargo:atty@0.2.14": {
+      "evidence": "https://github.com/softprops/atty",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:autocfg@1.1.0": {
+      "evidence": "https://github.com/cuviper/autocfg",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:base16ct@0.2.0": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/base16ct",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:base64ct@1.6.0": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/base64ct",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:bitflags@1.3.2": {
+      "evidence": "https://github.com/bitflags/bitflags",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:block-buffer@0.10.4": {
+      "evidence": "https://github.com/RustCrypto/utils",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:bytemuck@1.23.2": {
+      "evidence": "https://github.com/Lokathor/bytemuck",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:bytemuck_derive@1.10.1": {
+      "evidence": "https://github.com/Lokathor/bytemuck",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:byteorder@1.5.0": {
+      "evidence": "https://github.com/BurntSushi/byteorder",
+      "license": "Unlicense OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:cc@1.0.83": {
+      "evidence": "https://github.com/rust-lang/cc-rs",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:cfg-if@1.0.1": {
+      "evidence": "https://github.com/rust-lang/cfg-if",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:clap@2.34.0": {
+      "evidence": "https://github.com/clap-rs/clap",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:codespan-reporting@0.11.1": {
+      "evidence": "https://github.com/brendanzab/codespan",
+      "license": "Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:const-oid@0.9.6": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/const-oid",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:cpufeatures@0.2.12": {
+      "evidence": "https://github.com/RustCrypto/utils",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:crypto-bigint@0.5.5": {
+      "evidence": "https://github.com/RustCrypto/crypto-bigint",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:crypto-common@0.1.6": {
+      "evidence": "https://github.com/RustCrypto/traits",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:cxx@1.0.105": {
+      "evidence": "native/src/external/cxx-rs/Cargo.toml",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:der@0.7.10": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/der",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:der_derive@0.7.2": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/der/derive",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:digest@0.10.7": {
+      "evidence": "https://github.com/RustCrypto/traits",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:ecdsa@0.16.9": {
+      "evidence": "https://github.com/RustCrypto/signatures/tree/master/ecdsa",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:elliptic-curve@0.13.8": {
+      "evidence": "https://github.com/RustCrypto/traits/tree/master/elliptic-curve",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:env_logger@0.7.1": {
+      "evidence": "https://github.com/sebasmagri/env_logger/",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:fdt@0.1.5": {
+      "evidence": "https://github.com/repnop/fdt",
+      "license": "MPL-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:ff@0.13.0": {
+      "evidence": "https://github.com/zkcrypto/ff",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:flagset@0.4.4": {
+      "evidence": "https://github.com/enarx/flagset",
+      "license": "Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:generic-array@0.14.7": {
+      "evidence": "https://github.com/fizyk20/generic-array.git",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:getrandom@0.2.12": {
+      "evidence": "https://github.com/rust-random/getrandom",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:group@0.13.0": {
+      "evidence": "https://github.com/zkcrypto/group",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:hermit-abi@0.1.19": {
+      "evidence": "https://github.com/hermitcore/libhermit-rs",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:hkdf@0.12.4": {
+      "evidence": "https://github.com/RustCrypto/KDFs/",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:hmac@0.12.1": {
+      "evidence": "https://github.com/RustCrypto/MACs",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:humantime@1.3.0": {
+      "evidence": "registry+https://github.com/rust-lang/crates.io-index",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:lazy_static@1.4.0": {
+      "evidence": "https://github.com/rust-lang-nursery/lazy-static.rs",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:libc@0.2.175": {
+      "evidence": "https://github.com/rust-lang/libc",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:libm@0.2.8": {
+      "evidence": "https://github.com/rust-lang/libm",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:log@0.4.20": {
+      "evidence": "https://github.com/rust-lang/log",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:memchr@2.7.1": {
+      "evidence": "https://github.com/BurntSushi/memchr",
+      "license": "Unlicense OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:minimal-lexical@0.2.1": {
+      "evidence": "https://github.com/Alexhuszagh/minimal-lexical",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:nom@7.1.3": {
+      "evidence": "https://github.com/Geal/nom",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:num-bigint-dig@0.8.4": {
+      "evidence": "https://github.com/dignifiedquire/num-bigint",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:num-derive@0.4.2": {
+      "evidence": "https://github.com/rust-num/num-derive",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:num-integer@0.1.45": {
+      "evidence": "https://github.com/rust-num/num-integer",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:num-iter@0.1.43": {
+      "evidence": "https://github.com/rust-num/num-iter",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:num-traits@0.2.19": {
+      "evidence": "https://github.com/rust-num/num-traits",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:p256@0.13.2": {
+      "evidence": "https://github.com/RustCrypto/elliptic-curves/tree/master/p256",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:p384@0.13.1": {
+      "evidence": "https://github.com/RustCrypto/elliptic-curves/tree/master/p384",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:p521@0.13.3": {
+      "evidence": "https://github.com/RustCrypto/elliptic-curves/tree/master/p521",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:pb-rs@0.10.0": {
+      "evidence": "https://github.com/tafia/quick-protobuf",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:pem-rfc7468@0.7.0": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/pem-rfc7468",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:pkcs1@0.7.5": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/pkcs1",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:pkcs8@0.10.2": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/pkcs8",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:ppv-lite86@0.2.17": {
+      "evidence": "https://github.com/cryptocorrosion/cryptocorrosion",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:primeorder@0.13.6": {
+      "evidence": "https://github.com/RustCrypto/elliptic-curves/tree/master/primeorder",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:proc-macro2@1.0.78": {
+      "evidence": "https://github.com/dtolnay/proc-macro2",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:quick-error@1.2.3": {
+      "evidence": "http://github.com/tailhook/quick-error",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:quick-protobuf@0.8.1": {
+      "evidence": "https://github.com/tafia/quick-protobuf",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:quote@1.0.35": {
+      "evidence": "https://github.com/dtolnay/quote",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:rand@0.8.5": {
+      "evidence": "https://github.com/rust-random/rand",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:rand_chacha@0.3.1": {
+      "evidence": "https://github.com/rust-random/rand",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:rand_core@0.6.4": {
+      "evidence": "https://github.com/rust-random/rand",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:regex-automata@0.4.5": {
+      "evidence": "https://github.com/rust-lang/regex/tree/master/regex-automata",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:regex-syntax@0.8.2": {
+      "evidence": "https://github.com/rust-lang/regex/tree/master/regex-syntax",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:regex@1.10.3": {
+      "evidence": "https://github.com/rust-lang/regex",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:rfc6979@0.4.0": {
+      "evidence": "https://github.com/RustCrypto/signatures/tree/master/rfc6979",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:rsa@0.9.8": {
+      "evidence": "https://github.com/RustCrypto/RSA",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:sec1@0.7.3": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/sec1",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:serde@1.0.196": {
+      "evidence": "https://github.com/serde-rs/serde",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:serde_derive@1.0.196": {
+      "evidence": "https://github.com/serde-rs/serde",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:sha1@0.10.6": {
+      "evidence": "https://github.com/RustCrypto/hashes",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:sha2@0.10.9": {
+      "evidence": "https://github.com/RustCrypto/hashes",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:signature@2.2.0": {
+      "evidence": "https://github.com/RustCrypto/traits/tree/master/signature",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:size@0.4.1": {
+      "evidence": "https://github.com/neosmart/prettysize-rs",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:smallvec@1.13.1": {
+      "evidence": "https://github.com/servo/rust-smallvec",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:spin@0.5.2": {
+      "evidence": "https://github.com/mvdnes/spin-rs.git",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:spki@0.7.3": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/spki",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:strsim@0.8.0": {
+      "evidence": "https://github.com/dguo/strsim-rs",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:subtle@2.5.0": {
+      "evidence": "https://github.com/dalek-cryptography/subtle",
+      "license": "BSD-3-Clause",
+      "source": "cargo-metadata"
+    },
+    "cargo:syn@2.0.48": {
+      "evidence": "https://github.com/dtolnay/syn",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:termcolor@1.4.1": {
+      "evidence": "https://github.com/BurntSushi/termcolor",
+      "license": "Unlicense OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:textwrap@0.11.0": {
+      "evidence": "https://github.com/mgeisler/textwrap",
+      "license": "MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:thiserror-impl@1.0.65": {
+      "evidence": "https://github.com/dtolnay/thiserror",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:thiserror@1.0.65": {
+      "evidence": "https://github.com/dtolnay/thiserror",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:tls_codec@0.4.1": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/tls_codec",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:tls_codec_derive@0.4.1": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/tls_codec/derive",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:typenum@1.17.0": {
+      "evidence": "https://github.com/paholg/typenum",
+      "license": "MIT OR Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:unicode-ident@1.0.12": {
+      "evidence": "https://github.com/dtolnay/unicode-ident",
+      "license": "(MIT OR Apache-2.0) AND Unicode-DFS-2016",
+      "source": "cargo-metadata"
+    },
+    "cargo:unicode-width@0.1.11": {
+      "evidence": "https://github.com/unicode-rs/unicode-width",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:vec_map@0.8.2": {
+      "evidence": "https://github.com/contain-rs/vec-map",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:version_check@0.9.4": {
+      "evidence": "https://github.com/SergioBenitez/version_check",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:wasi@0.11.0+wasi-snapshot-preview1": {
+      "evidence": "https://github.com/bytecodealliance/wasi",
+      "license": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:winapi-i686-pc-windows-gnu@0.4.0": {
+      "evidence": "https://github.com/retep998/winapi-rs",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:winapi-util@0.1.6": {
+      "evidence": "https://github.com/BurntSushi/winapi-util",
+      "license": "Unlicense/MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:winapi-x86_64-pc-windows-gnu@0.4.0": {
+      "evidence": "https://github.com/retep998/winapi-rs",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:winapi@0.3.9": {
+      "evidence": "https://github.com/retep998/winapi-rs",
+      "license": "MIT/Apache-2.0",
+      "source": "cargo-metadata"
+    },
+    "cargo:x509-cert@0.2.5": {
+      "evidence": "https://github.com/RustCrypto/formats/tree/master/x509-cert",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:zeroize@1.7.0": {
+      "evidence": "https://github.com/RustCrypto/utils/tree/master/zeroize",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "cargo:zeroize_derive@1.4.2": {
+      "evidence": "https://github.com/RustCrypto/utils/tree/master/zeroize/derive",
+      "license": "Apache-2.0 OR MIT",
+      "source": "cargo-metadata"
+    },
+    "gradle:androidx.activity:activity-ktx@1.8.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/activity/activity-ktx/1.8.1/activity-ktx-1.8.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.activity:activity@1.8.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/activity/activity/1.8.1/activity-1.8.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.annotation:annotation-experimental@1.4.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-experimental/1.4.0/annotation-experimental-1.4.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.annotation:annotation-jvm@1.6.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.6.0/annotation-jvm-1.6.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.annotation:annotation@1.6.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation/1.6.0/annotation-1.6.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.appcompat:appcompat-resources@1.7.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/appcompat/appcompat-resources/1.7.0/appcompat-resources-1.7.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.appcompat:appcompat@1.7.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/appcompat/appcompat/1.7.0/appcompat-1.7.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.arch.core:core-common@2.2.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-common/2.2.0/core-common-2.2.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.arch.core:core-runtime@2.2.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-runtime/2.2.0/core-runtime-2.2.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.biometric:biometric@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/biometric/biometric/1.1.0/biometric-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.cardview:cardview@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/cardview/cardview/1.0.0/cardview-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.collection:collection-ktx@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/collection/collection-ktx/1.1.0/collection-ktx-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.collection:collection@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/collection/collection/1.1.0/collection-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.concurrent:concurrent-futures@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures/1.1.0/concurrent-futures-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.constraintlayout:constraintlayout-core@1.0.4": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/constraintlayout/constraintlayout-core/1.0.4/constraintlayout-core-1.0.4.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.constraintlayout:constraintlayout@2.1.4": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/constraintlayout/constraintlayout/2.1.4/constraintlayout-2.1.4.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.coordinatorlayout:coordinatorlayout@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/coordinatorlayout/coordinatorlayout/1.1.0/coordinatorlayout-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.core:core-ktx@1.13.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/core/core-ktx/1.13.1/core-ktx-1.13.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.core:core-splashscreen@1.0.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/core/core-splashscreen/1.0.1/core-splashscreen-1.0.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.core:core@1.13.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/core/core/1.13.1/core-1.13.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.cursoradapter:cursoradapter@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/cursoradapter/cursoradapter/1.0.0/cursoradapter-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.customview:customview-poolingcontainer@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/customview/customview-poolingcontainer/1.0.0/customview-poolingcontainer-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.customview:customview@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/customview/customview/1.1.0/customview-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.databinding:databinding-adapters@8.5.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-adapters/8.5.1/databinding-adapters-8.5.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.databinding:databinding-common@8.5.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-common/8.5.1/databinding-common-8.5.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.databinding:databinding-ktx@8.5.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-ktx/8.5.1/databinding-ktx-8.5.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.databinding:databinding-runtime@8.5.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-runtime/8.5.1/databinding-runtime-8.5.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.databinding:viewbinding@8.5.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/databinding/viewbinding/8.5.1/viewbinding-8.5.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.documentfile:documentfile@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/documentfile/documentfile/1.0.0/documentfile-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.drawerlayout:drawerlayout@1.1.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/drawerlayout/drawerlayout/1.1.1/drawerlayout-1.1.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.dynamicanimation:dynamicanimation@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/dynamicanimation/dynamicanimation/1.0.0/dynamicanimation-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.emoji2:emoji2-views-helper@1.3.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/emoji2/emoji2-views-helper/1.3.0/emoji2-views-helper-1.3.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.emoji2:emoji2@1.3.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/emoji2/emoji2/1.3.0/emoji2-1.3.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.fragment:fragment-ktx@1.8.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/fragment/fragment-ktx/1.8.0/fragment-ktx-1.8.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.fragment:fragment@1.8.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/fragment/fragment/1.8.0/fragment-1.8.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.interpolator:interpolator@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/interpolator/interpolator/1.0.0/interpolator-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.legacy:legacy-support-core-utils@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/legacy/legacy-support-core-utils/1.0.0/legacy-support-core-utils-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-common@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-common/2.6.2/lifecycle-common-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-livedata-core-ktx@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-livedata-core-ktx/2.6.2/lifecycle-livedata-core-ktx-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-livedata-core@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-livedata-core/2.6.2/lifecycle-livedata-core-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-livedata@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-livedata/2.6.2/lifecycle-livedata-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-process@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-process/2.6.2/lifecycle-process-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-runtime-ktx@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-runtime-ktx/2.6.2/lifecycle-runtime-ktx-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-runtime@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-runtime/2.6.2/lifecycle-runtime-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-service@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-service/2.6.2/lifecycle-service-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-viewmodel-ktx@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-viewmodel-ktx/2.6.2/lifecycle-viewmodel-ktx-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-viewmodel-savedstate@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-viewmodel-savedstate/2.6.2/lifecycle-viewmodel-savedstate-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.lifecycle:lifecycle-viewmodel@2.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-viewmodel/2.6.2/lifecycle-viewmodel-2.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.loader:loader@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/loader/loader/1.0.0/loader-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.localbroadcastmanager:localbroadcastmanager@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/localbroadcastmanager/localbroadcastmanager/1.0.0/localbroadcastmanager-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-common-ktx@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-common-ktx/2.7.7/navigation-common-ktx-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-common@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-common/2.7.7/navigation-common-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-fragment-ktx@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-fragment-ktx/2.7.7/navigation-fragment-ktx-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-fragment@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-fragment/2.7.7/navigation-fragment-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-runtime-ktx@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-runtime-ktx/2.7.7/navigation-runtime-ktx-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-runtime@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-runtime/2.7.7/navigation-runtime-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-safe-args-gradle-plugin@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-safe-args-gradle-plugin/2.7.7/navigation-safe-args-gradle-plugin-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-ui-ktx@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-ui-ktx/2.7.7/navigation-ui-ktx-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.navigation:navigation-ui@2.7.7": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-ui/2.7.7/navigation-ui-2.7.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.print:print@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/print/print/1.0.0/print-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.profileinstaller:profileinstaller@1.3.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/profileinstaller/profileinstaller/1.3.1/profileinstaller-1.3.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.recyclerview:recyclerview@1.3.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/recyclerview/recyclerview/1.3.2/recyclerview-1.3.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.resourceinspection:resourceinspection-annotation@1.0.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/resourceinspection/resourceinspection-annotation/1.0.1/resourceinspection-annotation-1.0.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.room:room-common@2.6.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/room/room-common/2.6.1/room-common-2.6.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.room:room-compiler@2.6.1": {
+      "declared_names": [
+        "BSD licence",
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://antlr.org/license.html",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler/2.6.1/room-compiler-2.6.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.room:room-ktx@2.6.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/room/room-ktx/2.6.1/room-ktx-2.6.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.room:room-runtime@2.6.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime/2.6.1/room-runtime-2.6.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.savedstate:savedstate-ktx@1.2.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/savedstate/savedstate-ktx/1.2.1/savedstate-ktx-1.2.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.savedstate:savedstate@1.2.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/savedstate/savedstate/1.2.1/savedstate-1.2.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.slidingpanelayout:slidingpanelayout@1.2.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/slidingpanelayout/slidingpanelayout/1.2.0/slidingpanelayout-1.2.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.sqlite:sqlite-framework@2.4.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework/2.4.0/sqlite-framework-2.4.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.sqlite:sqlite@2.4.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite/2.4.0/sqlite-2.4.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.startup:startup-runtime@1.1.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/startup/startup-runtime/1.1.1/startup-runtime-1.1.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.swiperefreshlayout:swiperefreshlayout@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/swiperefreshlayout/swiperefreshlayout/1.1.0/swiperefreshlayout-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.tracing:tracing@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/tracing/tracing/1.0.0/tracing-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.transition:transition@1.5.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/transition/transition/1.5.0/transition-1.5.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.vectordrawable:vectordrawable-animated@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/vectordrawable/vectordrawable-animated/1.1.0/vectordrawable-animated-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.vectordrawable:vectordrawable@1.1.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/vectordrawable/vectordrawable/1.1.0/vectordrawable-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.versionedparcelable:versionedparcelable@1.1.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/versionedparcelable/versionedparcelable/1.1.1/versionedparcelable-1.1.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.viewpager2:viewpager2@1.1.0-beta02": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/viewpager2/viewpager2/1.1.0-beta02/viewpager2-1.1.0-beta02.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.viewpager:viewpager@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/viewpager/viewpager/1.0.0/viewpager-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:androidx.window:window@1.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/androidx/window/window/1.0.0/window-1.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.android.tools.build:gradle@8.5.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.5.1/gradle-8.5.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.atlassian.commonmark:commonmark@0.13.0": {
+      "declared_names": [],
+      "declared_urls": [],
+      "evidence": "https://github.com/commonmark/commonmark-java/blob/commonmark-parent-0.13.0/LICENSE.txt",
+      "license": "BSD-2-Clause",
+      "source": "reviewed-policy"
+    },
+    "gradle:com.github.topjohnwu.libsu:core@5.2.2": {
+      "declared_names": [],
+      "declared_urls": [],
+      "evidence": "https://github.com/topjohnwu/libsu/blob/v5.2.2/LICENSE",
+      "license": "Apache-2.0",
+      "source": "reviewed-policy"
+    },
+    "gradle:com.github.topjohnwu.libsu:nio@5.2.2": {
+      "declared_names": [],
+      "declared_urls": [],
+      "evidence": "https://github.com/topjohnwu/libsu/blob/v5.2.2/LICENSE",
+      "license": "Apache-2.0",
+      "source": "reviewed-policy"
+    },
+    "gradle:com.github.topjohnwu.libsu:service@5.2.2": {
+      "declared_names": [],
+      "declared_urls": [],
+      "evidence": "https://github.com/topjohnwu/libsu/blob/v5.2.2/LICENSE",
+      "license": "Apache-2.0",
+      "source": "reviewed-policy"
+    },
+    "gradle:com.github.topjohnwu:indeterminate-checkbox@1.0.7": {
+      "declared_names": [
+        "Apache License 2.0"
+      ],
+      "declared_urls": [
+        "https://api.github.com/licenses/apache-2.0"
+      ],
+      "evidence": "https://jitpack.io/com/github/topjohnwu/indeterminate-checkbox/1.0.7/indeterminate-checkbox-1.0.7.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.github.topjohnwu:jtar@1.1.0": {
+      "declared_names": [
+        "Apache License 2.0"
+      ],
+      "declared_urls": [
+        "https://api.github.com/licenses/apache-2.0"
+      ],
+      "evidence": "https://jitpack.io/com/github/topjohnwu/jtar/1.1.0/jtar-1.1.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.github.topjohnwu:lz4-java@1.7.1": {
+      "declared_names": [
+        "Apache License 2.0"
+      ],
+      "declared_urls": [
+        "https://api.github.com/licenses/apache-2.0"
+      ],
+      "evidence": "https://jitpack.io/com/github/topjohnwu/lz4-java/1.7.1/lz4-java-1.7.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.google.android.material:material@1.11.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://dl.google.com/dl/android/maven2/com/google/android/material/material/1.11.0/material-1.11.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.google.errorprone:error_prone_annotations@2.15.0": {
+      "declared_names": [
+        "Apache 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.15.0/error_prone_annotations-2.15.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.google.guava:listenablefuture@1.0": {
+      "declared_names": [],
+      "declared_urls": [],
+      "evidence": "https://github.com/google/guava/blob/v27.0/COPYING",
+      "license": "Apache-2.0",
+      "source": "reviewed-policy"
+    },
+    "gradle:com.jakewharton.timber:timber@5.0.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/jakewharton/timber/timber/5.0.1/timber-5.0.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.moshi:moshi-kotlin-codegen@1.15.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/moshi/moshi-kotlin-codegen/1.15.0/moshi-kotlin-codegen-1.15.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.moshi:moshi@1.15.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/moshi/moshi/1.15.0/moshi-1.15.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.okhttp3:logging-interceptor@4.12.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/okhttp3/logging-interceptor/4.12.0/logging-interceptor-4.12.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.okhttp3:okhttp-dnsoverhttps@4.12.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/okhttp3/okhttp-dnsoverhttps/4.12.0/okhttp-dnsoverhttps-4.12.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.okhttp3:okhttp@4.12.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.okio:okio-jvm@3.6.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.okio:okio@3.6.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/okio/okio/3.6.0/okio-3.6.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.retrofit2:converter-moshi@2.9.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/retrofit2/converter-moshi/2.9.0/converter-moshi-2.9.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.retrofit2:converter-scalars@2.9.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/retrofit2/converter-scalars/2.9.0/converter-scalars-2.9.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:com.squareup.retrofit2:retrofit@2.9.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/com/squareup/retrofit2/retrofit/2.9.0/retrofit-2.9.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:dev.rikka.rikkax.insets:insets@1.3.0": {
+      "declared_names": [
+        "MIT License"
+      ],
+      "declared_urls": [
+        "https://github.com/RikkaApps/RikkaX/blob/master/LICENSE"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/dev/rikka/rikkax/insets/insets/1.3.0/insets-1.3.0.pom",
+      "license": "MIT",
+      "source": "maven-pom"
+    },
+    "gradle:dev.rikka.rikkax.layoutinflater:layoutinflater@1.3.0": {
+      "declared_names": [
+        "MIT License"
+      ],
+      "declared_urls": [
+        "https://github.com/RikkaApps/RikkaX/blob/master/LICENSE"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/dev/rikka/rikkax/layoutinflater/layoutinflater/1.3.0/layoutinflater-1.3.0.pom",
+      "license": "MIT",
+      "source": "maven-pom"
+    },
+    "gradle:dev.rikka.rikkax.recyclerview:recyclerview-ktx@1.3.2": {
+      "declared_names": [
+        "MIT License"
+      ],
+      "declared_urls": [
+        "https://github.com/RikkaApps/RikkaX/blob/master/LICENSE"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/dev/rikka/rikkax/recyclerview/recyclerview-ktx/1.3.2/recyclerview-ktx-1.3.2.pom",
+      "license": "MIT",
+      "source": "maven-pom"
+    },
+    "gradle:io.noties.markwon:core@4.6.2": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/io/noties/markwon/core/4.6.2/core-4.6.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:junit:junit@4.13.2": {
+      "declared_names": [
+        "Eclipse Public License 1.0"
+      ],
+      "declared_urls": [
+        "http://www.eclipse.org/legal/epl-v10.html"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.pom",
+      "license": "EPL-1.0",
+      "source": "maven-pom"
+    },
+    "gradle:me.zhanghai.android.fastscroll:library@1.2.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/me/zhanghai/android/fastscroll/library/1.2.0/library-1.2.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.bouncycastle:bcpkix-jdk18on@1.77": {
+      "declared_names": [
+        "Bouncy Castle Licence"
+      ],
+      "declared_urls": [
+        "https://www.bouncycastle.org/licence.html"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/bouncycastle/bcpkix-jdk18on/1.77/bcpkix-jdk18on-1.77.pom",
+      "license": "MIT",
+      "source": "maven-pom"
+    },
+    "gradle:org.bouncycastle:bcprov-jdk18on@1.77": {
+      "declared_names": [
+        "Bouncy Castle Licence"
+      ],
+      "declared_urls": [
+        "https://www.bouncycastle.org/licence.html"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.pom",
+      "license": "MIT",
+      "source": "maven-pom"
+    },
+    "gradle:org.bouncycastle:bcutil-jdk18on@1.77": {
+      "declared_names": [
+        "Bouncy Castle Licence"
+      ],
+      "declared_urls": [
+        "https://www.bouncycastle.org/licence.html"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/bouncycastle/bcutil-jdk18on/1.77/bcutil-jdk18on-1.77.pom",
+      "license": "MIT",
+      "source": "maven-pom"
+    },
+    "gradle:org.eclipse.jgit:org.eclipse.jgit@6.7.0.202309050840-r": {
+      "declared_names": [],
+      "declared_urls": [],
+      "evidence": "https://github.com/eclipse-jgit/jgit/blob/v6.7.0.202309050840-r/LICENSE",
+      "license": "BSD-3-Clause",
+      "source": "reviewed-policy"
+    },
+    "gradle:org.jetbrains.kotlin:kotlin-android-extensions-runtime@1.9.23": {
+      "declared_names": [
+        "The Apache License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-android-extensions-runtime/1.9.23/kotlin-android-extensions-runtime-1.9.23.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlin:kotlin-bom@1.8.22": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-bom/1.8.22/kotlin-bom-1.8.22.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlin:kotlin-parcelize-runtime@1.9.23": {
+      "declared_names": [
+        "The Apache License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-parcelize-runtime/1.9.23/kotlin-parcelize-runtime-1.9.23.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlin:kotlin-stdlib-common@1.9.23": {
+      "declared_names": [
+        "The Apache License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.23/kotlin-stdlib-common-1.9.23.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlin:kotlin-stdlib@1.9.23": {
+      "declared_names": [
+        "The Apache License, Version 2.0"
+      ],
+      "declared_urls": [
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.23/kotlin-stdlib-1.9.23.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-android@1.7.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.7.1/kotlinx-coroutines-android-1.7.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-bom@1.7.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.7.1/kotlinx-coroutines-bom-1.7.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm@1.7.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.7.1/kotlinx-coroutines-core-jvm-1.7.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-core@1.7.1": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.7.1/kotlinx-coroutines-core-1.7.1.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.jetbrains:annotations@23.0.0": {
+      "declared_names": [
+        "The Apache Software License, Version 2.0"
+      ],
+      "declared_urls": [
+        "https://www.apache.org/licenses/LICENSE-2.0.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    },
+    "gradle:org.lsposed.lsparanoid:gradle-plugin@0.5.2": {
+      "declared_names": [
+        "Apache License 2.0"
+      ],
+      "declared_urls": [
+        "https://github.com/LSPosed/LSParanoid/blob/master/LICENSE.txt"
+      ],
+      "evidence": "https://repo.maven.apache.org/maven2/org/lsposed/lsparanoid/gradle-plugin/0.5.2/gradle-plugin-0.5.2.pom",
+      "license": "Apache-2.0",
+      "source": "maven-pom"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "baseline_ref": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+  "stable_ref": "v30.7",
+  "master_ref": "upstream/master",
+  "default_decisions": {
+    "same_as_stable": "aligned_with_stable",
+    "different_from_stable": "inherit_with_pr6_baseline",
+    "fork_only": "fork_specific_review",
+    "stable_only": "inherit_with_pr6_baseline",
+    "master_only_or_changed": "observe_master"
+  },
+  "overrides": {
+    "cargo:cxx": {
+      "decision": "security_update_after_pr6_baseline",
+      "reason": "RUSTSEC-2026-0202 is fixed in 1.0.195. The current topjohnwu cxx fork carries a six-file patch on 1.0.189 and its configured remote does not yet publish a compatible fixed pin. Do not create an unreachable gitlink: forward-port the patch only after pristine PR6 builds, then require all-ABI link, boot sign/verify, parser corpus, and AVD gates."
+    },
+    "cargo:rand": {
+      "decision": "retire_with_current_core",
+      "reason": "RUSTSEC-2026-0097 is fixed in 0.8.6, but rand is transitive through the old RSA stack and is absent from v30.7. Its triggering logger/thread_rng combination is not enabled here. Avoid modernizing the old core twice."
+    },
+    "cargo:rsa": {
+      "decision": "open_risk_no_false_ignore",
+      "reason": "RUSTSEC-2023-0071 has no patched release. Kitsune uses private-key signing only in the local magiskboot process, not as a network signing oracle. Keep the advisory visible and rerun boot sign/verify whenever the crypto stack changes."
+    },
+    "cargo:ansi_term": {
+      "decision": "inherit_with_pr6_baseline",
+      "reason": "Build-time protobuf tooling dependency on the old core; absent after the stable baseline tooling migration."
+    },
+    "cargo:atty": {
+      "decision": "inherit_with_pr6_baseline",
+      "reason": "Build-time protobuf tooling dependency on the old core. The reported unaligned read is Windows-only; PR6 removes this chain."
+    }
+  },
+  "license_hints": {
+    "action:actions/checkout": "MIT",
+    "action:actions/setup-java": "MIT",
+    "action:actions/setup-python": "MIT",
+    "action:actions/cache": "MIT",
+    "action:actions/upload-artifact": "MIT",
+    "action:actions/download-artifact": "MIT",
+    "action:hendrikmuhs/ccache-action": "MIT",
+    "action:softprops/action-gh-release": "MIT",
+    "cargo:cxx": "MIT OR Apache-2.0",
+    "submodule:native/src/external/_xDL": "MIT",
+    "submodule:native/src/external/busybox": "GPL-2.0-only",
+    "submodule:native/src/external/bzip2": "bzip2-1.0.6",
+    "submodule:native/src/external/cxx-rs": "MIT OR Apache-2.0",
+    "submodule:native/src/external/libcxx": "Apache-2.0 WITH LLVM-exception",
+    "submodule:native/src/external/lz4": "BSD-2-Clause",
+    "submodule:native/src/external/parallel-hashmap": "Apache-2.0",
+    "submodule:native/src/external/pcre": "BSD-3-Clause",
+    "submodule:native/src/external/selinux": "LGPL-2.1-or-later",
+    "submodule:native/src/external/system_properties": "Apache-2.0",
+    "submodule:native/src/external/xz": "0BSD",
+    "submodule:native/src/external/zlib": "Zlib",
+    "submodule:native/src/external/zopfli": "Apache-2.0",
+    "submodule:tools/termux-elf-cleaner": "GPL-3.0-or-later",
+    "gradle:junit:junit": "EPL-1.0",
+    "gradle:com.jakewharton.timber:timber": "Apache-2.0",
+    "gradle:com.squareup.okhttp3:okhttp": "Apache-2.0",
+    "gradle:com.squareup.moshi:moshi": "Apache-2.0",
+    "gradle:com.squareup.retrofit2:retrofit": "Apache-2.0",
+    "gradle:com.atlassian.commonmark:commonmark": "BSD-2-Clause",
+    "gradle:com.github.topjohnwu.libsu:core": "Apache-2.0",
+    "gradle:com.github.topjohnwu.libsu:nio": "Apache-2.0",
+    "gradle:com.github.topjohnwu.libsu:service": "Apache-2.0",
+    "gradle:com.google.guava:listenablefuture": "Apache-2.0",
+    "gradle:org.eclipse.jgit:org.eclipse.jgit": "BSD-3-Clause"
+  },
+  "license_evidence": {
+    "gradle:com.atlassian.commonmark:commonmark": "https://github.com/commonmark/commonmark-java/blob/commonmark-parent-0.13.0/LICENSE.txt",
+    "gradle:com.github.topjohnwu.libsu:core": "https://github.com/topjohnwu/libsu/blob/v5.2.2/LICENSE",
+    "gradle:com.github.topjohnwu.libsu:nio": "https://github.com/topjohnwu/libsu/blob/v5.2.2/LICENSE",
+    "gradle:com.github.topjohnwu.libsu:service": "https://github.com/topjohnwu/libsu/blob/v5.2.2/LICENSE",
+    "gradle:com.google.guava:listenablefuture": "https://github.com/google/guava/blob/v27.0/COPYING",
+    "gradle:org.eclipse.jgit:org.eclipse.jgit": "https://github.com/eclipse-jgit/jgit/blob/v6.7.0.202309050840-r/LICENSE"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "audit_command": "cargo audit --file native/src/Cargo.lock --json",
+  "audit_ignore_used": false,
+  "database": {
+    "advisory_count": 1167,
+    "commit": "7a086e691bff2c299fe16dda543daa3b5e7f4397"
+  },
+  "finding_count": 6,
+  "findings": [
+    {
+      "disposition": {
+        "disposition": "inherit_with_pr6_baseline",
+        "gates": [
+          "cargo-audit-pr6",
+          "protobuf-generation",
+          "all-abi-build"
+        ],
+        "kind": "unmaintained",
+        "owner": "build-tooling",
+        "package": "ansi_term",
+        "reason": "Old quick-protobuf generator dependency; it is not linked into Android runtime binaries and is absent from the selected v30.7 baseline."
+      },
+      "id": "RUSTSEC-2021-0139",
+      "kind": "unmaintained",
+      "package": "ansi_term",
+      "title": "ansi_term is Unmaintained",
+      "version": "0.12.1"
+    },
+    {
+      "disposition": {
+        "disposition": "inherit_with_pr6_baseline",
+        "gates": [
+          "windows-build-if-retained",
+          "cargo-audit-pr6",
+          "all-abi-build"
+        ],
+        "kind": "unsound",
+        "owner": "build-tooling",
+        "package": "atty",
+        "reason": "The unaligned-read condition is Windows-only and this package is in old build-time protobuf tooling. PR6 removes the chain."
+      },
+      "id": "RUSTSEC-2021-0145",
+      "kind": "unsound",
+      "package": "atty",
+      "title": "Potential unaligned read",
+      "version": "0.2.14"
+    },
+    {
+      "disposition": {
+        "disposition": "open_unfixed_visible_risk",
+        "fixed": null,
+        "gates": [
+          "boot-sign-verify",
+          "local-only-signing-review",
+          "no-network-oracle",
+          "crypto-update-review"
+        ],
+        "kind": "vulnerability",
+        "owner": "native-boot",
+        "package": "rsa",
+        "reason": "No patched rsa release exists. The private-key operation is local magiskboot boot-image signing, not a remotely reachable signing oracle. Do not suppress the advisory; preserve it in every report and reassess if signing becomes remotely observable."
+      },
+      "id": "RUSTSEC-2023-0071",
+      "kind": "vulnerability",
+      "package": "rsa",
+      "title": "Marvin Attack: potential key recovery through timing sidechannels",
+      "version": "0.9.8"
+    },
+    {
+      "disposition": {
+        "disposition": "inherit_with_pr6_baseline",
+        "gates": [
+          "cargo-audit-pr6",
+          "protobuf-generation",
+          "all-abi-build"
+        ],
+        "kind": "unmaintained",
+        "owner": "build-tooling",
+        "package": "atty",
+        "reason": "Old build-time protobuf tooling; inherit the maintained stable generator rather than updating this core twice."
+      },
+      "id": "RUSTSEC-2024-0375",
+      "kind": "unmaintained",
+      "package": "atty",
+      "title": "`atty` is unmaintained",
+      "version": "0.2.14"
+    },
+    {
+      "disposition": {
+        "disposition": "retire_with_current_core",
+        "fixed": ">=0.8.6,<0.9.0",
+        "gates": [
+          "boot-sign-verify",
+          "malformed-boot-corpus",
+          "all-abi-link",
+          "avd-boot"
+        ],
+        "kind": "unsound",
+        "owner": "native-boot",
+        "package": "rand",
+        "reason": "The affected rand is transitive through old RSA signing. The required log plus thread_rng custom-logger condition is not enabled, and v30.7 removes rand from this graph."
+      },
+      "id": "RUSTSEC-2026-0097",
+      "kind": "unsound",
+      "package": "rand",
+      "title": "Rand is unsound with a custom logger using `rand::rng()`",
+      "version": "0.8.5"
+    },
+    {
+      "disposition": {
+        "disposition": "fix_after_pr6_baseline_before_port",
+        "fixed": ">=1.0.195",
+        "gates": [
+          "cxx-patch-range-diff",
+          "all-abi-link",
+          "boot-sign-verify",
+          "malformed-parser-corpus",
+          "api23-29-modern-avd"
+        ],
+        "kind": "unsound",
+        "owner": "native-platform",
+        "package": "cxx",
+        "reason": "No production source uses let_cxx_string and panic=abort narrows current reachability, but v30.7 still pins affected cxx 1.0.189. The configured topjohnwu fork contains a six-file patch not present in dtolnay 1.0.189; forward-port it to 1.0.195+ only after the pristine baseline gate."
+      },
+      "id": "RUSTSEC-2026-0202",
+      "kind": "unsound",
+      "package": "cxx",
+      "title": "`let_cxx_string!` uses uninitialized value due to exception safety violations",
+      "version": "1.0.105"
+    }
+  ],
+  "lockfile_dependency_count": 112,
+  "reachability": {
+    "cxx_let_cxx_string_product_uses": [],
+    "panic_profile": "abort",
+    "rand_thread_rng_product_uses": [],
+    "rsa_private_signing_location": "native/src/boot/sign.rs"
+  },
+  "schema_version": 1,
+  "validation": {
+    "all_observed_findings_have_dispositions": true,
+    "unknown_advisories": []
+  }
+}
