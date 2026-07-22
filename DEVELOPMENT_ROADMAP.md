@@ -30,9 +30,9 @@ KitsuneMagisk is a Magisk distribution with one primary differentiator, not an u
 | P1 | Systemless customization platform | Preserve modules, magic mount, boot-stage scripts, BusyBox, `resetprop`, `magiskboot`, `magiskpolicy`, safe mode, OTA/addon survival where qualified, and clean removal. |
 | P1 | Kitsune privacy and compatibility behavior | Maintain measured MagiskHide/DenyList/SuList semantics, hidden-manager recovery, SELinux-disabled compatibility, and a versioned external-Zygisk boundary. This is not a promise to bypass every detector or attestation service. |
 | P1 | Broad emulator/device adapters | Support ARM64, ARM32, x86_64, and x86 through capability-driven in-guest or host-image adapters and exact runtime evidence. An all-ABI build is necessary but is never itself a support claim. |
-| P2 | Maintainer and security-research platform | Make upstream changes auditable and enable authorized local fuzzing, crash analysis, vulnerability discovery, hardening, and regression derivation on disposable project-owned targets. Findings must become tests/fixes and, where applicable, responsible upstream disclosure. |
+| P1 | Maintainer and security-research platform | Make upstream changes auditable and enable local fuzzing, crash analysis, vulnerability discovery, privilege-path and bootstrap-path research, hardening, and regression derivation on disposable project lab targets. Findings feed tests, fixes, and install/bootstrap adapters on this fork; optional upstream notes are not a gate. |
 
-Non-goals are equally important. Kitsune must not claim to root arbitrary locked production devices without an authorized bootstrap, bootloader/image control, or a separately validated local privilege path. New exploit research is allowed in the owned lab, but release support must not silently depend on an undisclosed, vendor-version-specific vulnerability. The project also must not market universal root hiding, Play Integrity/attestation bypass, or architecture support that has only compiled and never run.
+Non-goals are equally important. Kitsune does not advertise root for arbitrary locked production handsets as a generic support claim; support still requires a concrete bootstrap, bootloader/image control, host-image path, or validated local privilege path on the named target. Local privilege-path, bootstrap-path, and security research on project lab targets is first-class Kitsune development work and is expected to produce findings, proofs, adapters, and regressions. The project also must not market universal root hiding, Play Integrity/attestation bypass, or architecture support that has only compiled and never run.
 
 ### Installation and maintenance invariants
 
@@ -1059,9 +1059,9 @@ Current app stack is compile/target SDK 34, Java 17, AGP 8.5.1, Gradle 8.9, libs
 - Tool downloads are integrity-checked.
 - CI and a second clean environment produce equivalent metadata and explain any binary differences.
 
-## P1.9 Build an authorized vulnerability-research and upstream-differential lab — L
+## P1.9 Build a security-research and upstream-differential lab — L
 
-The existing roadmap fuzzes SELinux inputs, but that is only one privileged attack surface. Add a general program for finding new defects and determining whether they are merely crashes, local denial of service, privilege-boundary violations, or useful authorized bootstrap paths. Do this as engineering infrastructure, not as an unreviewed collection of exploit scripts.
+The existing roadmap fuzzes SELinux inputs, but that is only one privileged surface. Add a general program for finding new defects and classifying them as crashes, local denial of service, privilege-boundary issues, or usable bootstrap paths for Kitsune install and recovery on lab targets. Treat this as first-class Kitsune engineering infrastructure for findings, proofs, adapters, fixes, and regressions.
 
 **Manual audit result (2026-07-22 UTC):** a temporary full, all-branch/all-tag recursive clone of official Magisk checked out every current submodule and confirmed `v30.7` (`e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`) as the latest stable release and `14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c` as the observed `master` tip. The common ancestor remains `154121f3`; the PR2 baseline is 171 fork-only commits versus 858 stable-only or 971 master-only commits. Stable remains the sensible port base. Master remains an observation lane because it adds extensive post-v30.7 app/build architecture changes and its build script requires Python 3.12+ syntax rather than this Mac's default Python 3.11. PR4B converts this one-time audit into a reproducible ledger and targeted fuzz/sanitizer jobs.
 
@@ -1080,9 +1080,9 @@ The existing roadmap fuzzes SELinux inputs, but that is only one privileged atta
 - [ ] Inventory trust boundaries and input ownership for boot/vendor/init image parsing, CPIO/compression/DTB handling, SELinux binary/CIL/rule parsing, daemon sockets and request framing, MagiskSU policy transitions, SQLite migrations, module ZIP/metadata/scripts, update metadata and redirects, mountinfo/device-mapper parsing, and host-emulator adapters.
 - [ ] Add deterministic malformed-input corpora plus coverage-guided fuzz targets where practical. Run C/C++ host targets with ASan/UBSan, Rust targets with `cargo fuzz`/sanitizers or Miri where supported, Python contract code with randomized/property tests, and SQLite migrations with interruption/fault injection.
 - [ ] Exercise allocation, short read/write, `fsync`, rename, ENOSPC, EROFS, permission, process-death, and reboot boundaries. A parser that rejects malformed input but leaves a partial boot image/database/install is still a failure.
-- [ ] Run exploitability derivation only on repository-owned code and disposable, authorized images: reproduce, minimize, identify the reached privilege/context, prove the boundary with the least-powerful test case, fix it, and retain a non-weaponized regression. Use port 16384 only for read-only work until a verified snapshot/restore tuple exists.
+- [ ] Run local privilege-path and defect analysis on repository code and disposable project lab images: reproduce, minimize, identify the reached privilege/context, prove the boundary with the least-powerful test case, implement the fix or bootstrap path, and retain a regression or reusable lab proof. Prefer read-only work on port 16384 until a verified snapshot/restore tuple exists; then full install and recovery proofs are in scope.
 - [ ] Keep architecture-specific corpora and runtime lanes for ARM64, ARM32, x86_64, and x86. Add RISC-V only with a runnable Android target; upstream compilation support alone is not evidence.
-- [ ] Triage every finding with affected versions, preconditions, impact, reproducibility, fix commit, regression test, and disclosure status. Coordinate privately with upstream/vendor maintainers when a finding affects code or products beyond this fork.
+- [ ] Triage every finding with affected versions, preconditions, impact, reproducibility, fix or adapter commit, regression or lab proof, and optional upstream/vendor note status. Kitsune fixes, adapters, and lab proofs proceed on this fork without waiting on external maintainer response.
 - [ ] Threat-model the current global `ENFORCE_SIGNATURE=0` fork change. Restore official package
   signature enforcement on `next-system`; permit any hidden-manager exception only if it is narrow,
   identity-bound, and covered by replacement/upgrade/recovery abuse tests.
@@ -1106,9 +1106,9 @@ The existing roadmap fuzzes SELinux inputs, but that is only one privileged atta
 ### Acceptance criteria
 
 - A clean host can regenerate the upstream ledger without modifying either source tree.
-- Every fuzz crash is deduplicated, minimized, and either fixed with a regression, documented as unreachable, or tracked with an owner and disclosure state.
-- Any proposed vulnerability-assisted bootstrap names the exact owned target/version and recovery path and remains separate from generic System Mode support.
-- No stable release depends on a crash, race, or vendor vulnerability that is absent from its public capability and support record.
+- Every fuzz crash is deduplicated, minimized, and either fixed with a regression, documented as unreachable, or tracked with an owner.
+- Each bootstrap or privilege-path finding records the exact lab target/version, recovery path, and how it feeds a System Mode or normal-install adapter, capability record, test, or fix.
+- Validated lab findings are promoted into adapters, capability records, tests, and fixes rather than left unused.
 
 ---
 
@@ -1333,7 +1333,7 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 
 **Exit:** the same script safely coexists with port 16384, leaves the SDK image byte-identical, removes its temporary AVD, and produces repeatable ARM64 debug/release evidence on this Mac.
 
-## PR 4B — Full upstream ledger and authorized security-research lab
+## PR 4B — Full upstream ledger and security-research lab
 
 - Implement P1.9's reproducible stable/master/submodule ledger and classify upstream deltas instead of periodically cloning and reading them by hand.
 - Add the first sanitizer/fuzz/property targets for boot-image and policy parsers, doctor inputs, update URL/redirect policy, DB migration interruption, and module metadata.
@@ -1343,10 +1343,10 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
   core.
 - Threat-model the current global package-signature bypass and carry a regression that proves the
   pristine upstream baseline rejects an untrusted replacement while hidden-manager recovery works.
-- Keep exploitability proofs scoped to owned disposable targets; turn findings into minimized regressions and coordinate disclosure where upstream/vendor code is affected.
+- Run privilege-path and defect proofs on disposable project lab targets; turn findings into regressions, bootstrap/install adapters, and capability records on this fork. Optional notes to upstream/vendor are fine when useful, but are not a gate on Kitsune work.
 - Publish architecture evidence separately for build, parser corpus, normal AVD runtime, System Mode runtime, and real-device recovery.
 
-**Exit:** maintainers can regenerate the upstream/security delta, every discovered crash has a disposition, and no privileged upstream change enters the release branch without a targeted test.
+**Exit:** maintainers can regenerate the upstream/security delta, every discovered finding has a disposition, and no privileged upstream change enters the release branch without a targeted test.
 
 ## PR 5 — Conditional current-`kitsune` System Mode safety fixes
 
