@@ -24,6 +24,11 @@ android {
                 arguments(
                     "B_MAGISK=1", "B_INIT=1", "B_BOOT=1", "B_TEST=1", "B_POLICY=1", "B_PRELOAD=1", "B_PROP=1"
                 )
+                // The pinned ONDK wrapper forces GNU make -O. That mode emits
+                // false fcntl errors when Gradle captures output on macOS.
+                if (System.getProperty("os.name").startsWith("Mac")) {
+                    arguments("--output-sync=none")
+                }
             }
         }
     }

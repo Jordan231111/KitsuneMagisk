@@ -241,6 +241,12 @@ def clean_elf():
 def run_ndk_build(flags):
     os.chdir("native")
     flags = "NDK_PROJECT_PATH=. NDK_APPLICATION_MK=src/Application.mk " + flags
+    # The pinned ONDK wrapper enables GNU make output synchronization with -O.
+    # On macOS that mode emits a spurious fcntl(2) error for every build job
+    # when stdout is captured. A trailing option takes precedence over the
+    # wrapper's -O without modifying the shared SDK installation.
+    if os_name == "darwin":
+        flags += " --output-sync=none"
     proc = system(f"{ndk_build} {flags} -j{cpu_count}")
     if proc.returncode != 0:
         error("Build binary failed!")

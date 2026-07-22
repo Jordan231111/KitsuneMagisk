@@ -11,6 +11,22 @@ This project is not affiliated with or supported by
 [topjohnwu/Magisk](https://github.com/topjohnwu/Magisk). Do not ask the official Magisk project to
 support Kitsune-specific behavior.
 
+## What Kitsune is for
+
+System Mode is the primary differentiator, but Kitsune remains a complete Magisk-derived root and
+systemless-customization platform. It should preserve normal authorized boot/`init_boot`/
+`vendor_boot` installation, superuser policy, modules and boot scripts, BusyBox, `resetprop`,
+`magiskboot`, `magiskpolicy`, manager recovery, and safe uninstall. Its secondary fork features are
+measured MagiskHide/DenyList/SuList behavior, hidden-manager recovery, SELinux-disabled compatibility,
+and a versioned external-Zygisk boundary.
+
+The project also maintains capability diagnostics, exact emulator/device qualification, upstream
+change tracking, and an authorized disposable lab for fuzzing, vulnerability discovery, and
+hardening. It does not promise to root arbitrary locked devices without a bootstrap or controlled
+image, bypass every detector/attestation service, or support an architecture merely because its
+binaries compile. See the roadmap's product-purpose hierarchy and evidence gates for the complete
+contract.
+
 ## Current status
 
 Development has resumed, but the existing `kitsune` branch is a reference implementation—not a
@@ -25,19 +41,21 @@ qualified claim of support for every emulator.
 - The current `31.0-kitsune` label is a compatibility/Android upgrade number inherited from earlier
   maintainers. It does not mean this tree contains a newer Magisk core than official Magisk.
 
-See [the current support statement](docs/status.md) for the exact limitations and
+See [the purpose and faithfulness audit](docs/faithfulness-audit.md) for the history-backed product
+report, [the current support statement](docs/status.md) for the exact limitations, and
 [the development roadmap](DEVELOPMENT_ROADMAP.md) for the audited implementation plan.
 
 ## Important current limitations
 
 - Treat every existing APK as experimental. Automatic stable publication from every `kitsune`
   commit is disabled by the current CI design.
-- The configured in-app update and stub download endpoints belong to prior maintainers and currently
-  fail. Install test builds manually from this repository's Actions artifacts or explicitly labeled
-  canary releases.
-- Commit `25fa2159` correctly converged normal hide selections on the standard `denylist` table for
-  external-provider interoperability, but it did not migrate existing `hidelist` rows. Fresh or
-  reselected setups can work while upgrades still require a database migration.
+- Built-in app and stub updates now fail closed with an explicit message; the dead prior-maintainer
+  endpoints are no longer contacted. Install test builds manually from this repository's Actions
+  artifacts or explicitly labeled canary releases until PR10 adds a project-owned update service.
+- Published artifacts through `25fa2159` converged normal hide selections on `denylist` without an
+  upgrade migration. Current source adds transactional database migration v13, preserves a verified
+  version-12 backup and the legacy table, and tests divergent/SuList fixtures; published older APKs
+  remain subject to the original caveat.
 - Debug native builds automatically grant ADB shell root during the current test flow. Debug APKs
   are development artifacts and must not be described as ordinary stable releases.
 - ReZygisk, NeoZygisk, DenyList, and SuList compatibility is provider- and version-specific. No
@@ -50,7 +68,8 @@ See [the current support statement](docs/status.md) for the exact limitations an
 
 - `kitsune` remains the known-working comparison branch. It keeps its name and receives only tests
   or fixes needed by another build that will actually be released.
-- `next-system` will start from official Magisk v30.7 and forward-port System Mode first.
+- `next-system` will start from the latest audited official stable (currently Magisk v30.7 after a
+  branch-cut recheck) and forward-port System Mode first.
 - `next-system` becomes the new `kitsune` only after it meets or beats the current branch on the same
   emulator/device parity matrix. The old implementation is then retained as a tag, not maintained as
   a second product.
@@ -86,6 +105,7 @@ configuration reference.
 ## Documentation
 
 - [Current support and known limitations](docs/status.md)
+- [Purpose, history, install-route, and faithfulness audit](docs/faithfulness-audit.md)
 - [Development roadmap and commit audit](DEVELOPMENT_ROADMAP.md)
 - [Building and development](docs/build.md)
 - [Installation background](docs/install.md)
