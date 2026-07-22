@@ -8,7 +8,7 @@
 >
 > Product charter: KitsuneMagisk exists primarily to provide persistent Magisk through **Direct-System/System Mode** on environments where normal boot-image installation is unavailable or impractical—especially commercial Android emulators—and secondarily to provide Kitsune-specific hiding and module behavior.
 
-> Implementation progress updated: 2026-07-22 UTC. PR1 merged as [#22](https://github.com/Jordan231111/KitsuneMagisk/pull/22) (`b6c098d44`); PR2 merged as [#23](https://github.com/Jordan231111/KitsuneMagisk/pull/23) (`cf149fcf7`). PR3, PR4, and the PR4A lab hardening are implemented and locally verified. PR3's reusable characterization exit is met; full cross-vendor install/cold-boot/upgrade/uninstall qualification remains intentionally assigned to PR15.
+> Implementation progress updated: 2026-07-22 UTC. The repository's default/mainline branch is `kitsune` (`origin/HEAD` points to `origin/kitsune`); there is intentionally no separate branch named `main`. PR1 merged as [#22](https://github.com/Jordan231111/KitsuneMagisk/pull/22) (`b6c098d44`); PR2 merged as [#23](https://github.com/Jordan231111/KitsuneMagisk/pull/23) (`cf149fcf7`). PR3 (`e3fa3e829`), PR4 (`8e4e952b6`), and PR4A plus the faithfulness audit (`52aaf1658`) are implemented, locally verified, and integrated directly into the local `kitsune` mainline; no remote push or publication was performed. PR3's reusable characterization exit is met; full cross-vendor install/cold-boot/upgrade/uninstall qualification remains intentionally assigned to PR15.
 
 > The explicit history-backed purpose, install-route, and divergence report is
 > [`docs/faithfulness-audit.md`](docs/faithfulness-audit.md). It covers the complete reachable graph,
