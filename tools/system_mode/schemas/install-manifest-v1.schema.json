@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jordan231111/KitsuneMagisk/schemas/system-mode/install-manifest-v1.schema.json",
+  "title": "Kitsune System Mode install manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "install_id", "state", "product", "target", "strategies", "payload", "originals", "backup", "journal"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "install_id": {"type": "string", "format": "uuid"},
+    "state": {"enum": ["UNINSTALLED", "PREFLIGHTED", "STAGED", "COMMITTED", "BOOT_VERIFIED", "ROLLBACK_REQUIRED", "ROLLING_BACK", "FAILED"]},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "source_commit", "upstream_base"],
+      "properties": {
+        "name": {"const": "KitsuneMagisk"},
+        "version": {"type": "string"},
+        "source_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "upstream_base": {"type": "string"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter_id", "fingerprint_sha256", "api", "abis"],
+      "properties": {
+        "adapter_id": {"type": "string"},
+        "fingerprint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "api": {"type": "integer", "minimum": 23},
+        "abis": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "strategies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["init", "selinux", "runtime_tmpfs"],
+      "properties": {
+        "init": {"type": "string"},
+        "selinux": {"type": "string"},
+        "runtime_tmpfs": {"type": "string"}
+      }
+    },
+    "payload": {"type": "array", "items": {"$ref": "#/$defs/fileRecord"}},
+    "originals": {"type": "array", "items": {"$ref": "#/$defs/originalRecord"}},
+    "backup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external", "location", "sha256", "restore_command"],
+      "properties": {
+        "external": {"const": true},
+        "location": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "restore_command": {"type": "string", "minLength": 1}
+      }
+    },
+    "journal": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "boundary", "operation", "target", "before_sha256", "after_sha256", "committed"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "boundary": {"type": "string"},
+          "operation": {"enum": ["create", "replace", "remove", "metadata"]},
+          "target": {"type": "string", "pattern": "^/"},
+          "before_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "after_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "committed": {"type": "boolean"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fileRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size", "mode", "uid", "gid", "selinux_context"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": "integer", "minimum": 0},
+        "mode": {"type": "string", "pattern": "^0[0-7]{3}$"},
+        "uid": {"type": "integer", "minimum": 0},
+        "gid": {"type": "integer", "minimum": 0},
+        "selinux_context": {"type": ["string", "null"]}
+      }
+    },
+    "originalRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size", "mode", "uid", "gid", "selinux_context", "existed", "backup_path"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": "integer", "minimum": 0},
+        "mode": {"type": ["string", "null"], "pattern": "^0[0-7]{3}$"},
+        "uid": {"type": ["integer", "null"], "minimum": 0},
+        "gid": {"type": ["integer", "null"], "minimum": 0},
+        "selinux_context": {"type": ["string", "null"]},
+        "existed": {"type": "boolean"},
+        "backup_path": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

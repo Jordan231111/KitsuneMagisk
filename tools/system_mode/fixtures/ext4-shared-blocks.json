@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "ext4-shared-blocks-requires-image-workflow",
+  "description": "Synthetic shared-block ext4 negative case; this is not a published qualification result.",
+  "input": {
+    "bootstrap": {"root_available": true},
+    "layout": {"system_fs_type": "ext4", "system_source": "/dev/block/dm-0", "system_writable_view": true, "system_writable_backing": true, "overlayfs": false, "dynamic_partitions": true, "device_mapper": {"probe": "observed", "layers": [{"source": "/dev/block/dm-0", "resolved_source": "/dev/block/dm-0", "name": "system", "uuid": null, "slaves": ["sda"], "target_probe": "observed", "target_types": ["linear"]}]}, "dm_verity": false, "avb_state": "unlocked", "ext4_features": ["shared_blocks"], "ext4_features_probe": "observed", "shared_blocks": true},
+    "init": {"import_proof": "proven"},
+    "selinux": {"enabled": true, "state": "enforcing", "strategy": "split"},
+    "staging": {"required_bytes": 33554432, "sufficient": true},
+    "recovery": {"verified": true},
+    "persistence": {"proven": true},
+    "existing_install": {"system_mode": false, "manifest_present": false}
+  },
+  "expected": {"verdict": "blocked", "primary_reason": "EXT4_SHARED_BLOCKS", "reason_codes": ["EXT4_SHARED_BLOCKS"]}
+}

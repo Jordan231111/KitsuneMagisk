@@ -1,0 +1,1 @@
+"""System Mode contract tests."""

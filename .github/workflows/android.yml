@@ -61,6 +61,9 @@ jobs:
             python3 -c 'import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text(), filename=sys.argv[1])' "$file"
           done < <(git ls-files -z '*.py')
 
+      - name: Run host contract and migration tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
   build:
     name: Build and JVM tests
     runs-on: ubuntu-latest

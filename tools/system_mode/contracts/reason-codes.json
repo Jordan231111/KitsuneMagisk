@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "codes": [
+    {
+      "code": "SUPPORTED",
+      "blocking": false,
+      "category": "result",
+      "description": "All required capabilities and external recovery evidence are present."
+    },
+    {
+      "code": "DEVICE_UNAVAILABLE",
+      "blocking": true,
+      "category": "transport",
+      "description": "The requested ADB target is not reachable."
+    },
+    {
+      "code": "PROBE_INCOMPLETE",
+      "blocking": true,
+      "category": "transport",
+      "description": "Required read-only probe data could not be collected or parsed."
+    },
+    {
+      "code": "NO_BOOTSTRAP_ROOT",
+      "blocking": true,
+      "category": "bootstrap",
+      "description": "Neither root ADB nor a usable in-guest su transport is available."
+    },
+    {
+      "code": "READ_ONLY_FS",
+      "blocking": true,
+      "category": "filesystem",
+      "description": "The effective system mount is read-only."
+    },
+    {
+      "code": "READ_ONLY_BACKING_FS",
+      "blocking": true,
+      "category": "filesystem",
+      "description": "The visible system path is writable but its effective backing superblock is read-only."
+    },
+    {
+      "code": "EXT4_SHARED_BLOCKS",
+      "blocking": true,
+      "category": "filesystem",
+      "description": "The ext4 system image uses shared blocks and requires an explicit safe unsharing or image-rebuild path."
+    },
+    {
+      "code": "EXT4_FEATURES_UNPROVEN",
+      "blocking": true,
+      "category": "evidence",
+      "description": "The probe could not inspect ext4 feature flags, so shared-block status is unknown."
+    },
+    {
+      "code": "DEVICE_MAPPER_UNPROVEN",
+      "blocking": true,
+      "category": "evidence",
+      "description": "A device-mapper source was found, but its targets could not be completely inspected for verity."
+    },
+    {
+      "code": "EROFS",
+      "blocking": true,
+      "category": "filesystem",
+      "description": "The system backing filesystem is EROFS and cannot be mutated in place."
+    },
+    {
+      "code": "SQUASHFS",
+      "blocking": true,
+      "category": "filesystem",
+      "description": "The system backing filesystem is squashfs and cannot be mutated in place."
+    },
+    {
+      "code": "VERITY_ACTIVE",
+      "blocking": true,
+      "category": "verified_boot",
+      "description": "Verified Boot or dm-verity is actively enforcing the system image."
+    },
+    {
+      "code": "INSUFFICIENT_STAGING_SPACE",
+      "blocking": true,
+      "category": "storage",
+      "description": "The safe staging location has less than 32 MiB available."
+    },
+    {
+      "code": "SEPOLICY_UNSUPPORTED",
+      "blocking": true,
+      "category": "selinux",
+      "description": "SELinux is enabled but no supported readable policy source was found."
+    },
+    {
+      "code": "SELINUX_STATE_UNKNOWN",
+      "blocking": true,
+      "category": "evidence",
+      "description": "The probe could not determine whether SELinux is enforcing, permissive, or disabled."
+    },
+    {
+      "code": "INIT_PATH_UNAVAILABLE",
+      "blocking": true,
+      "category": "init",
+      "description": "No writable candidate init directory is available for the persistent launcher."
+    },
+    {
+      "code": "INIT_IMPORT_UNPROVEN",
+      "blocking": true,
+      "category": "init",
+      "description": "No disposable-snapshot test has proven that the selected init directory is imported."
+    },
+    {
+      "code": "NO_RECOVERY_PATH",
+      "blocking": true,
+      "category": "recovery",
+      "description": "No verified external snapshot, backup digest, and restore command were supplied."
+    },
+    {
+      "code": "PERSISTENT_WRITABILITY_UNPROVEN",
+      "blocking": true,
+      "category": "persistence",
+      "description": "A writable mount was observed, but survival across a cold boot has not been proven."
+    },
+    {
+      "code": "SELINUX_NOT_ENFORCING",
+      "blocking": false,
+      "category": "selinux",
+      "description": "SELinux is disabled or permissive; this must be explicit in qualification results."
+    },
+    {
+      "code": "AVB_STATE_UNKNOWN",
+      "blocking": false,
+      "category": "verified_boot",
+      "description": "The guest did not expose enough properties to determine AVB state."
+    },
+    {
+      "code": "OVERLAY_WRITABLE_ONLY",
+      "blocking": true,
+      "category": "filesystem",
+      "description": "Writes appear to target an overlay rather than a proven persistent backing image."
+    },
+    {
+      "code": "LEGACY_INSTALL_NO_MANIFEST",
+      "blocking": false,
+      "category": "ownership",
+      "description": "An existing System Mode installation was detected without a versioned ownership manifest."
+    },
+    {
+      "code": "SYSTEM_MODE_ALREADY_INSTALLED",
+      "blocking": false,
+      "category": "state",
+      "description": "A current or legacy System Mode configuration is already present."
+    }
+  ]
+}

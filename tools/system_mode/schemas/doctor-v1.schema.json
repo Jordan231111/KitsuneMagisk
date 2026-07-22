@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jordan231111/KitsuneMagisk/schemas/system-mode/doctor-v1.schema.json",
+  "title": "Kitsune System Mode doctor report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "probe_version",
+    "generated_at",
+    "source",
+    "device",
+    "bootstrap",
+    "mounts",
+    "layout",
+    "init",
+    "selinux",
+    "staging",
+    "recovery",
+    "persistence",
+    "existing_install",
+    "assessment"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "probe_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "read_only", "serial_sha256", "repository_commit", "repository_dirty", "probe_sha256"],
+      "properties": {
+        "kind": {"enum": ["adb", "fixture"]},
+        "read_only": {"const": true},
+        "serial_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "repository_commit": {"type": "string", "pattern": "^[a-f0-9]{7,40}$"},
+        "repository_dirty": {"type": "boolean"},
+        "probe_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vendor", "vendor_evidence", "manufacturer", "brand", "model", "product", "device", "build_id", "build_incremental", "emulator_product", "emulator_product_property", "emulator_version", "emulator_version_property", "android_release", "api", "abis", "page_size", "fingerprint_sha256", "kernel", "boot_id_sha256"],
+      "properties": {
+        "vendor": {"type": "string"},
+        "vendor_evidence": {"type": "array", "items": {"type": "string"}},
+        "manufacturer": {"type": "string"},
+        "brand": {"type": "string"},
+        "model": {"type": "string"},
+        "product": {"type": "string"},
+        "device": {"type": "string"},
+        "build_id": {"type": "string"},
+        "build_incremental": {"type": "string"},
+        "emulator_product": {"type": ["string", "null"]},
+        "emulator_product_property": {"type": ["string", "null"]},
+        "emulator_version": {"type": ["string", "null"]},
+        "emulator_version_property": {"type": ["string", "null"]},
+        "android_release": {"type": "string"},
+        "api": {"type": "integer", "minimum": 1},
+        "abis": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "page_size": {"type": "integer", "minimum": 1},
+        "fingerprint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "kernel": {"type": "string"},
+        "boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adb_uid", "root_available", "transport", "root_uid", "root_context", "magisk_version", "magisk_version_code"],
+      "properties": {
+        "adb_uid": {"type": "integer", "minimum": 0},
+        "root_available": {"type": "boolean"},
+        "transport": {"enum": ["root_adb", "magisk_su", "vendor_su", "none", "unknown"]},
+        "root_uid": {"type": ["integer", "null"], "minimum": 0},
+        "root_context": {"type": ["string", "null"]},
+        "magisk_version": {"type": ["string", "null"]},
+        "magisk_version_code": {"type": ["integer", "null"]}
+      }
+    },
+    "mounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "resolved_path", "exists", "mount_point", "root", "source", "fs_type", "mount_options", "super_options", "major_minor", "writable_view", "writable_backing"],
+        "properties": {
+          "target": {"type": "string"},
+          "resolved_path": {"type": "string"},
+          "exists": {"type": "boolean"},
+          "mount_point": {"type": ["string", "null"]},
+          "root": {"type": ["string", "null"]},
+          "source": {"type": ["string", "null"]},
+          "fs_type": {"type": ["string", "null"]},
+          "mount_options": {"type": "array", "items": {"type": "string"}},
+          "super_options": {"type": "array", "items": {"type": "string"}},
+          "major_minor": {"type": ["string", "null"]},
+          "writable_view": {"type": "boolean"},
+          "writable_backing": {"type": "boolean"}
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system_target", "system_fs_type", "system_source", "system_writable_view", "system_writable_backing", "overlayfs", "dynamic_partitions", "device_mapper", "dm_verity", "avb_state", "slot_suffix", "ext4_features", "ext4_features_probe", "ext4_features_method", "ext4_ro_compat_flags", "shared_blocks"],
+      "properties": {
+        "system_target": {"type": "string"},
+        "system_fs_type": {"type": ["string", "null"]},
+        "system_source": {"type": ["string", "null"]},
+        "system_writable_view": {"type": "boolean"},
+        "system_writable_backing": {"type": "boolean"},
+        "overlayfs": {"type": "boolean"},
+        "dynamic_partitions": {"type": "boolean"},
+        "device_mapper": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["probe", "layers"],
+          "properties": {
+            "probe": {"enum": ["not_applicable", "observed", "partial", "unavailable"]},
+            "layers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["source", "resolved_source", "name", "uuid", "slaves", "target_probe", "target_types"],
+                "properties": {
+                  "source": {"type": "string"},
+                  "resolved_source": {"type": "string"},
+                  "name": {"type": ["string", "null"]},
+                  "uuid": {"type": ["string", "null"]},
+                  "slaves": {"type": "array", "items": {"type": "string"}},
+                  "target_probe": {"enum": ["observed", "unavailable"]},
+                  "target_types": {"type": "array", "items": {"type": "string"}}
+                }
+              }
+            }
+          }
+        },
+        "dm_verity": {"type": "boolean"},
+        "avb_state": {"enum": ["enforcing", "unlocked", "disabled", "unknown"]},
+        "slot_suffix": {"type": "string"},
+        "ext4_features": {"type": "array", "items": {"type": "string"}},
+        "ext4_features_probe": {"enum": ["observed", "unavailable"]},
+        "ext4_features_method": {"enum": ["tune2fs", "superblock", "tune2fs+superblock", "synthetic", null]},
+        "ext4_ro_compat_flags": {"type": ["integer", "null"], "minimum": 0},
+        "shared_blocks": {"type": ["boolean", "null"]}
+      }
+    },
+    "init": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_directories", "selected_directory", "import_proof"],
+      "properties": {
+        "candidate_directories": {"type": "array", "items": {"$ref": "#/$defs/pathRecord"}},
+        "selected_directory": {"type": ["string", "null"]},
+        "import_proof": {"enum": ["proven", "observed_existing_install", "unproven"]}
+      }
+    },
+    "selinux": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "state", "policy_candidates", "strategy"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "state": {"enum": ["enforcing", "permissive", "disabled", "unknown"]},
+        "policy_candidates": {"type": "array", "items": {"$ref": "#/$defs/policyRecord"}},
+        "strategy": {"enum": ["monolithic", "precompiled", "split", "disabled", "unknown"]}
+      }
+    },
+    "staging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "available_bytes", "required_bytes", "sufficient"],
+      "properties": {
+        "path": {"type": "string"},
+        "available_bytes": {"type": "integer", "minimum": 0},
+        "required_bytes": {"const": 33554432},
+        "sufficient": {"type": "boolean"}
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "backup_digest", "restore_command", "verified"],
+      "properties": {
+        "snapshot_id": {"type": ["string", "null"]},
+        "backup_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "restore_command": {"type": ["string", "null"]},
+        "verified": {"type": "boolean"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"verified": {"const": true}}},
+          "then": {
+            "properties": {
+              "snapshot_id": {"type": "string", "minLength": 1},
+              "backup_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+              "restore_command": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backing_write_probe", "cold_boots", "host_restarts", "proven"],
+      "properties": {
+        "backing_write_probe": {"enum": ["not_run", "passed", "failed"]},
+        "cold_boots": {"type": "integer", "minimum": 0},
+        "host_restarts": {"type": "integer", "minimum": 0},
+        "proven": {"type": "boolean"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"proven": {"const": true}}},
+          "then": {
+            "properties": {
+              "backing_write_probe": {"const": "passed"},
+              "cold_boots": {"minimum": 3}
+            }
+          }
+        }
+      ]
+    },
+    "existing_install": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detected", "system_mode", "config_path", "manifest_path", "manifest_present"],
+      "properties": {
+        "detected": {"type": "boolean"},
+        "system_mode": {"type": "boolean"},
+        "config_path": {"type": ["string", "null"]},
+        "manifest_path": {"type": ["string", "null"]},
+        "manifest_present": {"type": "boolean"}
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "primary_reason", "reason_codes", "warnings"],
+      "properties": {
+        "verdict": {"enum": ["supported", "blocked", "needs_evidence", "error"]},
+        "primary_reason": {"type": "string"},
+        "reason_codes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "pathRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "resolved_path", "exists", "kind", "readable", "permission_writable"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "resolved_path": {"type": "string", "pattern": "^/"},
+        "exists": {"type": "boolean"},
+        "kind": {"enum": ["file", "directory", "missing"]},
+        "readable": {"type": "boolean"},
+        "permission_writable": {"type": "boolean"}
+      }
+    },
+    "policyRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "resolved_path", "exists", "kind", "readable", "permission_writable", "sha256", "size"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "resolved_path": {"type": "string", "pattern": "^/"},
+        "exists": {"type": "boolean"},
+        "kind": {"enum": ["file", "directory", "missing"]},
+        "readable": {"type": "boolean"},
+        "permission_writable": {"type": "boolean"},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": ["integer", "null"], "minimum": 0}
+      }
+    }
+  }
+}

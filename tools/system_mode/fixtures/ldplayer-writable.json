@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "ldplayer-writable-tier-a",
+  "description": "Synthetic Tier A LDPlayer contract case; this is not a published qualification result.",
+  "input": {
+    "bootstrap": {"root_available": true},
+    "layout": {"system_fs_type": "ext4", "system_source": "/dev/block/sda1", "system_writable_view": true, "system_writable_backing": true, "overlayfs": false, "dynamic_partitions": false, "dm_verity": false, "avb_state": "disabled", "ext4_features": [], "ext4_features_probe": "observed", "shared_blocks": false},
+    "init": {"import_proof": "proven"},
+    "selinux": {"enabled": true, "state": "enforcing", "strategy": "precompiled"},
+    "staging": {"required_bytes": 33554432, "sufficient": true},
+    "recovery": {"verified": true},
+    "persistence": {"proven": true},
+    "existing_install": {"system_mode": false, "manifest_present": false}
+  },
+  "expected": {"verdict": "supported", "primary_reason": "SUPPORTED", "reason_codes": ["SUPPORTED"]}
+}

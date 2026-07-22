@@ -16,3 +16,7 @@ native/out
 /.idea
 /build
 /captures
+
+# Python host tooling and tests
+__pycache__/
+*.py[cod]

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-07-22T04:44:20Z",
+  "lanes": [
+    {
+      "family": "MuMu",
+      "status": "observed",
+      "record": "records/2026-07-22-mumu12-port16384-current-kitsune.json",
+      "reason": "ADB port 16384 exposed MuMu 12 engine 1.4.46 with a pre-existing legacy System Mode installation; the instance was not a clean snapshot."
+    },
+    {
+      "family": "LDPlayer",
+      "status": "not_run",
+      "record": null,
+      "reason": "No clean LDPlayer snapshot or ADB endpoint was available in this workspace."
+    },
+    {
+      "family": "Nox",
+      "status": "not_run",
+      "record": null,
+      "reason": "No clean Nox snapshot or ADB endpoint was available in this workspace."
+    },
+    {
+      "family": "BlueStacks",
+      "status": "not_run",
+      "record": null,
+      "reason": "No stopped-image adapter fixture or clean BlueStacks instance was available in this workspace."
+    },
+    {
+      "family": "immutable-negative",
+      "status": "observed",
+      "record": "records/2026-07-22-android-studio-api35-arm64-16k-negative.json",
+      "reason": "A fresh API 35 Google Play ARM64 AVD with 16 KiB pages exposed EROFS, enforcing AVB/dm-verity, and no bootstrap root; the doctor failed closed without mutation."
+    },
+    {
+      "family": "immutable-negative-api36",
+      "status": "observed",
+      "record": "records/2026-07-22-android-studio-api36-arm64-negative.json",
+      "reason": "A fresh Android 16/API 36 Google Play ARM64 AVD exposed EROFS, enforcing AVB/dm-verity, and no bootstrap root; the doctor failed closed without mutation."
+    }
+  ]
+}

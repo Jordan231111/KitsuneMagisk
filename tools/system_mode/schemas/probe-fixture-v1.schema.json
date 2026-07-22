@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jordan231111/KitsuneMagisk/schemas/system-mode/probe-fixture-v1.schema.json",
+  "title": "Kitsune System Mode classifier fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "description", "input", "expected"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+    "description": {"type": "string"},
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bootstrap", "layout", "init", "selinux", "staging", "recovery", "persistence", "existing_install"],
+      "properties": {
+        "bootstrap": {"type": "object"},
+        "layout": {"type": "object"},
+        "init": {"type": "object"},
+        "selinux": {"type": "object"},
+        "staging": {"type": "object"},
+        "recovery": {"type": "object"},
+        "persistence": {"type": "object"},
+        "existing_install": {"type": "object"}
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "primary_reason", "reason_codes"],
+      "properties": {
+        "verdict": {"enum": ["supported", "blocked", "needs_evidence", "error"]},
+        "primary_reason": {"type": "string"},
+        "reason_codes": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
