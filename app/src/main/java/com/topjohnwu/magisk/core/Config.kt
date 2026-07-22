@@ -141,7 +141,7 @@ object Config : PreferenceConfig, DBConfig {
     var themeOrdinal by preference(Key.THEME_ORDINAL, Theme.Piplup.ordinal)
     var suReAuth by preference(Key.SU_REAUTH, false)
     var suTapjack by preference(Key.SU_TAPJACK, true)
-    private var checkUpdatePrefs by preference(Key.CHECK_UPDATES, true)
+    private var checkUpdatePrefs by preference(Key.CHECK_UPDATES, false)
     var checkUpdate
         get() = checkUpdatePrefs
         set(value) {
@@ -194,8 +194,9 @@ object Config : PreferenceConfig, DBConfig {
 
         prefs.edit {
             // Settings migration
-            if (prefs.getBoolean(SU_FINGERPRINT, false))
-            remove(SU_FINGERPRINT)
+            if (prefs.getBoolean(SU_FINGERPRINT, false)) {
+                remove(SU_FINGERPRINT)
+            }
             prefs.getString(Key.UPDATE_CHANNEL, null).also {
                 if (it == null ||
                     it.toInt() > Value.DEBUG_CHANNEL ||

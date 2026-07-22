@@ -13,6 +13,9 @@ import com.topjohnwu.magisk.core.base.BaseJobService
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.download.DownloadEngine
 import com.topjohnwu.magisk.core.download.Subject
+import com.topjohnwu.magisk.core.repository.UpdateChannelPolicy
+import com.topjohnwu.magisk.core.repository.UpdateCheckResult
+import com.topjohnwu.magisk.core.repository.UpdateEndpointResolution
 import com.topjohnwu.magisk.view.Notifications
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -75,10 +78,17 @@ class JobService : BaseJobService() {
 
     private fun checkUpdate(params: JobParameters): Boolean {
         GlobalScope.launch(Dispatchers.IO) {
-            ServiceLocator.networkService.fetchUpdate()?.let {
-                Info.remote = it
-                if (Info.env.isActive && BuildConfig.VERSION_CODE < it.magisk.versionCode)
-                    Notifications.updateAvailable()
+            try {
+                when (val result = ServiceLocator.networkService.fetchUpdate()) {
+                    is UpdateCheckResult.Success -> {
+                        Info.remote = result.info
+                        if (Info.env.isActive && BuildConfig.VERSION_CODE < result.info.magisk.versionCode)
+                            Notifications.updateAvailable()
+                    }
+                    is UpdateCheckResult.Unavailable,
+                    UpdateCheckResult.NotChecked -> Unit
+                }
+            } finally {
                 jobFinished(params, false)
             }
         }
@@ -88,7 +98,11 @@ class JobService : BaseJobService() {
     companion object {
         fun schedule(context: Context) {
             val scheduler = context.getSystemService<JobScheduler>() ?: return
-            if (Config.checkUpdate) {
+            val endpointAvailable = UpdateChannelPolicy.resolve(
+                Config.updateChannel,
+                Config.customChannelUrl
+            ) is UpdateEndpointResolution.Remote
+            if (Config.checkUpdate && endpointAvailable) {
                 val cmp = JobService::class.java.cmp(context.packageName)
                 val info = JobInfo.Builder(Const.ID.CHECK_UPDATE_JOB_ID, cmp)
                     .setPeriodic(TimeUnit.HOURS.toMillis(12))

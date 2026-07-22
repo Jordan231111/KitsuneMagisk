@@ -21,6 +21,8 @@ import com.topjohnwu.magisk.core.download.Subject.App
 import com.topjohnwu.magisk.core.ktx.await
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.repository.NetworkService
+import com.topjohnwu.magisk.core.repository.UpdateCheckResult
+import com.topjohnwu.magisk.core.repository.UpdateUnavailableReason
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.dialog.EnvFixDialog
@@ -102,7 +104,7 @@ class HomeViewModel(
                     if (isDebug) " (D)" else "").asText()
         } ?: run {
             appState = State.INVALID
-            managerRemoteVersion = R.string.not_available.asText()
+            managerRemoteVersion = updateUnavailableMessage.asText()
         }
         ensureEnv()
     }
@@ -116,7 +118,12 @@ class HomeViewModel(
 
     fun onLinkPressed(link: String) = object : ViewEvent(), ContextExecutor {
         override fun invoke(context: Context) {
-            val intent = Intent(Intent.ACTION_VIEW, link.toUri())
+            // Use the browser selector so this cannot resolve to the private
+            // ACTION_VIEW endpoint used for privileged SU request callbacks.
+            val intent = Intent.makeMainSelectorActivity(
+                Intent.ACTION_MAIN,
+                Intent.CATEGORY_APP_BROWSER
+            ).setData(link.toUri())
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             try {
                 context.startActivity(intent)
@@ -130,7 +137,7 @@ class HomeViewModel(
 
     fun onManagerPressed() = when (appState) {
         State.LOADING -> SnackbarEvent(R.string.loading).publish()
-        State.INVALID -> SnackbarEvent(R.string.no_connection).publish()
+        State.INVALID -> SnackbarEvent(updateUnavailableMessage).publish()
         else -> withExternalRW {
             withInstallPermission {
                 ManagerInstallDialog().show()
@@ -163,4 +170,18 @@ class HomeViewModel(
             /* Entry point to trigger test events within the app */
         }
     }.publish()
+
+    private val updateUnavailableMessage: Int
+        get() = when (val result = Info.updateCheckResult) {
+            is UpdateCheckResult.Unavailable -> when (result.reason) {
+                UpdateUnavailableReason.PROJECT_SERVICE_NOT_CONFIGURED ->
+                    R.string.update_service_not_configured
+                UpdateUnavailableReason.OFFLINE -> R.string.no_connection
+                UpdateUnavailableReason.EMPTY_CUSTOM_URL,
+                UpdateUnavailableReason.INVALID_CUSTOM_URL -> R.string.invalid_update_channel
+                UpdateUnavailableReason.REQUEST_FAILED -> R.string.update_check_failed
+            }
+            UpdateCheckResult.NotChecked,
+            is UpdateCheckResult.Success -> R.string.not_available
+        }
 }

@@ -41,14 +41,14 @@ object Const {
 
     object Url {
         const val PATREON_URL = "https://www.patreon.com/topjohnwu"
-        const val SOURCE_CODE_URL = "https://github.com/topjohnwu/Magisk"
+        const val SOURCE_CODE_URL = "https://github.com/Jordan231111/KitsuneMagisk"
 
-        val CHANGELOG_URL = if (APP_IS_CANARY) Info.remote.magisk.note
-        else "https://topjohnwu.github.io/Magisk/releases/${BuildConfig.VERSION_CODE}.md"
+        val CHANGELOG_URL =
+            "https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/kitsune/docs/status.md"
 
         const val GITHUB_RAW_URL = "https://raw.githubusercontent.com/"
         const val GITHUB_API_URL = "https://api.github.com/"
-        const val GITHUB_PAGE_URL = "https://1q23lyc45.github.io/"
+        const val GITHUB_PAGE_URL = "https://github.com/Jordan231111/KitsuneMagisk/"
         const val JS_DELIVR_URL = "https://cdn.jsdelivr.net/gh/"
     }
 

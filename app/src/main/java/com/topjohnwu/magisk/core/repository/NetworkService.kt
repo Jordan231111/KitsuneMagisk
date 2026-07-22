@@ -1,15 +1,10 @@
 package com.topjohnwu.magisk.core.repository
 
 import com.topjohnwu.magisk.core.Config
-import com.topjohnwu.magisk.core.Config.Value.BETA_CHANNEL
-import com.topjohnwu.magisk.core.Config.Value.CANARY_CHANNEL
-import com.topjohnwu.magisk.core.Config.Value.CUSTOM_CHANNEL
-import com.topjohnwu.magisk.core.Config.Value.DEBUG_CHANNEL
-import com.topjohnwu.magisk.core.Config.Value.DEFAULT_CHANNEL
-import com.topjohnwu.magisk.core.Config.Value.STABLE_CHANNEL
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.data.GithubPageServices
 import com.topjohnwu.magisk.core.data.RawServices
+import kotlinx.coroutines.CancellationException
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
@@ -18,39 +13,26 @@ class NetworkService(
     private val pages: GithubPageServices,
     private val raw: RawServices
 ) {
-    suspend fun fetchUpdate() = safe {
-        var info = when (Config.updateChannel) {
-            DEFAULT_CHANNEL, STABLE_CHANNEL -> fetchStableUpdate()
-            BETA_CHANNEL -> fetchBetaUpdate()
-            CANARY_CHANNEL -> fetchCanaryUpdate()
-            DEBUG_CHANNEL -> fetchDebugUpdate()
-            CUSTOM_CHANNEL -> fetchCustomUpdate(Config.customChannelUrl)
-            else -> throw IllegalArgumentException()
+    suspend fun fetchUpdate(): UpdateCheckResult {
+        val endpoint = UpdateChannelPolicy.resolve(
+            Config.updateChannel,
+            Config.customChannelUrl
+        )
+        if (endpoint is UpdateEndpointResolution.Unavailable) {
+            return UpdateCheckResult.Unavailable(endpoint.reason)
         }
-        if (info.magisk.versionCode < Info.env.versionCode &&
-            Config.updateChannel == DEFAULT_CHANNEL) {
-            Config.updateChannel = BETA_CHANNEL
-            info = fetchBetaUpdate()
+        if (Info.isConnected.value != true) {
+            return UpdateCheckResult.Unavailable(UpdateUnavailableReason.OFFLINE)
         }
-        info
-    }
 
-    // UpdateInfo
-    private suspend fun fetchStableUpdate() = pages.fetchUpdateJSON("stable.json")
-    private suspend fun fetchBetaUpdate() = pages.fetchUpdateJSON("beta.json")
-    private suspend fun fetchCanaryUpdate() = pages.fetchUpdateJSON("canary.json")
-    private suspend fun fetchDebugUpdate() = pages.fetchUpdateJSON("debug.json")
-    private suspend fun fetchCustomUpdate(url: String) = pages.fetchUpdateJSON(url)
-
-    private inline fun <T> safe(factory: () -> T): T? {
+        endpoint as UpdateEndpointResolution.Remote
         return try {
-            if (Info.isConnected.value == true)
-                factory()
-            else
-                null
+            UpdateCheckResult.Success(pages.fetchUpdateJSON(endpoint.url))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Timber.e(e)
-            null
+            Timber.w(e, "Update metadata request failed")
+            UpdateCheckResult.Unavailable(UpdateUnavailableReason.REQUEST_FAILED)
         }
     }
 

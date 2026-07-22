@@ -7,6 +7,7 @@ import com.topjohnwu.magisk.core.di.AppContext
 import com.topjohnwu.magisk.core.ktx.getProperty
 import com.topjohnwu.magisk.core.model.UpdateInfo
 import com.topjohnwu.magisk.core.repository.NetworkService
+import com.topjohnwu.magisk.core.repository.UpdateCheckResult
 import com.topjohnwu.superuser.ShellUtils.fastCmd
 
 val isRunningAsStub get() = Info.stub != null
@@ -17,9 +18,27 @@ object Info {
 
     val EMPTY_REMOTE = UpdateInfo()
     var remote = EMPTY_REMOTE
+    var updateCheckResult: UpdateCheckResult = UpdateCheckResult.NotChecked
+        private set
+
+    fun resetRemote() {
+        remote = EMPTY_REMOTE
+        updateCheckResult = UpdateCheckResult.NotChecked
+    }
+
     suspend fun getRemote(svc: NetworkService): UpdateInfo? {
         return if (remote === EMPTY_REMOTE) {
-            svc.fetchUpdate()?.apply { remote = this }
+            when (val result = svc.fetchUpdate()) {
+                is UpdateCheckResult.Success -> result.info.apply {
+                    remote = this
+                    updateCheckResult = result
+                }
+                is UpdateCheckResult.Unavailable -> {
+                    updateCheckResult = result
+                    null
+                }
+                UpdateCheckResult.NotChecked -> null
+            }
         } else remote
     }
 

@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.surequest
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
@@ -58,6 +59,9 @@ open class SuRequestActivity : UIActivity<ActivityRequestBinding>() {
         return theme
     }
 
+    // Closing first would race the asynchronous DENY response. The request
+    // handler publishes DieEvent after the response has been delivered.
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         viewModel.denyPressed()
     }

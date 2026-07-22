@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "hidelist-only",
+  "user_version": 12,
+  "settings": {"sulist": 0},
+  "hidelist": [
+    ["com.example.bank", "com.example.bank"],
+    ["com.example.game", "com.example.game:guard"]
+  ],
+  "denylist": [],
+  "sulist": [],
+  "expected": {
+    "denylist": [
+      ["com.example.bank", "com.example.bank"],
+      ["com.example.game", "com.example.game:guard"]
+    ],
+    "hidelist_preserved": true,
+    "sulist": [],
+    "audit": {"source_hidelist_rows": 2, "source_denylist_rows": 0, "source_sulist_rows": 0, "overlap_rows": 0, "migrated_rows": 2, "malformed_hidelist_rows": 0, "sulist_enabled": 0}
+  }
+}

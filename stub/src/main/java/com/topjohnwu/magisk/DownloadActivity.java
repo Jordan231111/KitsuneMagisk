@@ -5,15 +5,19 @@ import static android.R.string.ok;
 import static android.R.string.yes;
 import static com.topjohnwu.magisk.R.string.dling;
 import static com.topjohnwu.magisk.R.string.no_internet_msg;
+import static com.topjohnwu.magisk.R.string.open_project;
+import static com.topjohnwu.magisk.R.string.update_service_unavailable;
 import static com.topjohnwu.magisk.R.string.upgrade_msg;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.loader.ResourcesLoader;
 import android.content.res.loader.ResourcesProvider;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,8 +30,6 @@ import android.view.ContextThemeWrapper;
 import com.topjohnwu.magisk.net.Networking;
 import com.topjohnwu.magisk.net.Request;
 import com.topjohnwu.magisk.utils.APKInstall;
-
-import org.json.JSONException;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -48,8 +50,6 @@ import javax.crypto.spec.SecretKeySpec;
 public class DownloadActivity extends Activity {
 
     private static final String APP_NAME = "Kitsune Mask";
-    private static final String JSON_URL = "https://1q23lyc45.github.io/canary.json";
-
     private String apkLink = BuildConfig.APK_URL;
     private Context themed;
     private ProgressDialog dialog;
@@ -80,12 +80,10 @@ public class DownloadActivity extends Activity {
 
         ProviderInstaller.install(this);
 
-        if (Networking.checkNetworkStatus(this)) {
-            if (BuildConfig.APK_URL == null) {
-                fetchCanary();
-            } else {
-                showDialog();
-            }
+        if (!BuildConfig.UPDATE_SERVICE_CONFIGURED || BuildConfig.APK_URL == null) {
+            showUpdateUnavailable();
+        } else if (Networking.checkNetworkStatus(this)) {
+            showDialog();
         } else {
             new AlertDialog.Builder(themed)
                     .setCancelable(false)
@@ -121,17 +119,25 @@ public class DownloadActivity extends Activity {
                 .show();
     }
 
-    private void fetchCanary() {
-        dialog = ProgressDialog.show(themed, "", "", true);
-        request(JSON_URL).getAsJSONObject(json -> {
-            dialog.dismiss();
-            try {
-                apkLink = json.getJSONObject("magisk").getString("link");
-                showDialog();
-            } catch (JSONException e) {
-                error(e);
-            }
-        });
+    private void showUpdateUnavailable() {
+        new AlertDialog.Builder(themed)
+                .setCancelable(false)
+                .setTitle(APP_NAME)
+                .setMessage(getString(update_service_unavailable))
+                .setPositiveButton(open_project, (d, w) -> {
+                    try {
+                        Intent browser = Intent.makeMainSelectorActivity(
+                                Intent.ACTION_MAIN, Intent.CATEGORY_APP_BROWSER);
+                        browser.setData(Uri.parse(BuildConfig.PROJECT_URL));
+                        startActivity(browser);
+                    } catch (ActivityNotFoundException e) {
+                        Log.w(getClass().getSimpleName(), "No browser can open the project page", e);
+                    } finally {
+                        finish();
+                    }
+                })
+                .setNegativeButton(ok, (d, w) -> finish())
+                .show();
     }
 
     private void dlAPK() {

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "sulist-mode-remains-independent",
+  "user_version": 12,
+  "settings": {"sulist": 1, "magiskhide": 1},
+  "hidelist": [
+    ["com.example.hide", "com.example.hide"]
+  ],
+  "denylist": [],
+  "sulist": [
+    ["com.example.allowed", "com.example.allowed"],
+    ["com.android.systemui", "com.android.systemui"]
+  ],
+  "expected": {
+    "denylist": [
+      ["com.example.hide", "com.example.hide"]
+    ],
+    "hidelist_preserved": true,
+    "sulist": [
+      ["com.android.systemui", "com.android.systemui"],
+      ["com.example.allowed", "com.example.allowed"]
+    ],
+    "audit": {"source_hidelist_rows": 1, "source_denylist_rows": 0, "source_sulist_rows": 2, "overlap_rows": 0, "migrated_rows": 1, "malformed_hidelist_rows": 0, "sulist_enabled": 1}
+  }
+}

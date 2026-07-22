@@ -4,4 +4,6 @@
     <string name="no_internet_msg">Please connect to the Internet! Upgrading to full Magisk is required.</string>
     <string name="dling">Downloading</string>
     <string name="relaunch_app">Please manually re-launch the app</string>
+    <string name="update_service_unavailable">Automatic manager download is disabled because this experimental build has no project-owned, digest-validated update service. Open the project page and install only a manually verified artifact.</string>
+    <string name="open_project">Open project</string>
 </resources>

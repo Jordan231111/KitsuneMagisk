@@ -1,17 +1,23 @@
 #include <unistd.h>
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <sys/stat.h>
+#include <cerrno>
+#include <cstring>
 
 #include <consts.hpp>
 #include <base.hpp>
 #include <db.hpp>
 #include <core.hpp>
 
-#define DB_VERSION 12
+#include "db_migrations.hpp"
+
+#define DB_VERSION 13
 
 using namespace std;
 
 struct sqlite3;
+struct sqlite3_backup;
 
 static sqlite3 *mDB = nullptr;
 
@@ -21,6 +27,7 @@ static sqlite3 *mDB = nullptr;
 // SQLite APIs
 
 #define SQLITE_OPEN_READWRITE        0x00000002  /* Ok for sqlite3_open_v2() */
+#define SQLITE_OPEN_READONLY         0x00000001  /* Ok for sqlite3_open_v2() */
 #define SQLITE_OPEN_CREATE           0x00000004  /* Ok for sqlite3_open_v2() */
 #define SQLITE_OPEN_FULLMUTEX        0x00010000  /* Ok for sqlite3_open_v2() */
 
@@ -38,6 +45,14 @@ static int (*sqlite3_exec)(
         int (*callback)(void*, int, char**, char**),
         void *v,
         char **errmsg);
+static sqlite3_backup *(*sqlite3_backup_init)(
+        sqlite3 *pDest,
+        const char *zDestName,
+        sqlite3 *pSource,
+        const char *zSourceName);
+static int (*sqlite3_backup_step)(sqlite3_backup *p, int nPage);
+static int (*sqlite3_backup_finish)(sqlite3_backup *p);
+static int (*sqlite3_get_autocommit)(sqlite3 *db);
 
 // Internal Android linker APIs
 
@@ -95,6 +110,10 @@ static bool dload_sqlite() {
     DLOAD(sqlite, sqlite3_close);
     DLOAD(sqlite, sqlite3_exec);
     DLOAD(sqlite, sqlite3_free);
+    DLOAD(sqlite, sqlite3_backup_init);
+    DLOAD(sqlite, sqlite3_backup_step);
+    DLOAD(sqlite, sqlite3_backup_finish);
+    DLOAD(sqlite, sqlite3_get_autocommit);
 
     dl_init = 1;
     return true;
@@ -136,7 +155,201 @@ static int ver_cb(void *ver, int, char **data, char **) {
     return 0;
 }
 
+static int integrity_cb(void *valid, int count, char **data, char **) {
+    *((bool *) valid) = count == 1 && data[0] && strcmp(data[0], "ok") == 0;
+    return 0;
+}
+
 #define err_ret(e) if (e) return e;
+
+static bool safe_backup_metadata(const struct stat &st, nlink_t links = 1) {
+    return S_ISREG(st.st_mode) && st.st_uid == 0 && st.st_nlink == links
+            && (st.st_mode & 0777) == 0600;
+}
+
+static char *sync_v12_backup(const char *path) {
+    int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if (fd < 0)
+        return strdup(strerror(errno));
+    struct stat st{};
+    if (fstat(fd, &st) != 0) {
+        char *error = strdup(strerror(errno));
+        close(fd);
+        return error;
+    }
+    if (!safe_backup_metadata(st)) {
+        close(fd);
+        return strdup("Unsafe v12 database backup metadata");
+    }
+    if (fsync(fd) != 0) {
+        char *error = strdup(strerror(errno));
+        close(fd);
+        return error;
+    }
+    close(fd);
+
+    int dir_fd = open(SECURE_DIR, O_RDONLY | O_CLOEXEC | O_DIRECTORY | O_NOFOLLOW);
+    if (dir_fd < 0)
+        return strdup(strerror(errno));
+    if (fsync(dir_fd) != 0) {
+        char *error = strdup(strerror(errno));
+        close(dir_fd);
+        return error;
+    }
+    close(dir_fd);
+    return nullptr;
+}
+
+static char *verify_v12_backup(const char *path) {
+    char *sync_error = sync_v12_backup(path);
+    if (sync_error)
+        return sync_error;
+
+    sqlite3 *backup = nullptr;
+    int ret = sqlite3_open_v2(path, &backup,
+            SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX, nullptr);
+    if (ret) {
+        char *error = strdup(backup ? sqlite3_errmsg(backup) : "Cannot open v12 database backup");
+        if (backup)
+            sqlite3_close(backup);
+        return error;
+    }
+
+    int version = 0;
+    bool valid = false;
+    char *err = nullptr;
+    sqlite3_exec(backup, "PRAGMA user_version", ver_cb, &version, &err);
+    if (!err)
+        sqlite3_exec(backup, "PRAGMA quick_check", integrity_cb, &valid, &err);
+    if (err) {
+        char *error = strdup(err);
+        sqlite3_free(err);
+        sqlite3_close(backup);
+        return error;
+    }
+    sqlite3_close(backup);
+    if (version != 12 || !valid)
+        return strdup("Invalid v12 database backup");
+    return nullptr;
+}
+
+static char *backup_v12_database(sqlite3 *source) {
+    constexpr char backup_path[] = MAGISKDB ".v12.bak";
+    constexpr char backup_tmp[] = MAGISKDB ".v12.bak.tmp";
+    constexpr int SQLITE_DONE = 101;
+
+    // Never overwrite the first pre-v13 backup. It remains available even if a
+    // user starts an older daemon that cannot understand user_version 13.
+    struct stat backup_st{};
+    if (lstat(backup_path, &backup_st) == 0) {
+        // Recover the only multi-link state this function creates: power loss
+        // after the no-replace link and before removal of the temporary name.
+        struct stat temp_st{};
+        if (lstat(backup_tmp, &temp_st) == 0
+                && backup_st.st_dev == temp_st.st_dev
+                && backup_st.st_ino == temp_st.st_ino) {
+            if (!safe_backup_metadata(backup_st, 2)
+                    || !safe_backup_metadata(temp_st, 2))
+                return strdup("Unsafe interrupted v12 database backup metadata");
+            if (unlink(backup_tmp) != 0)
+                return strdup(strerror(errno));
+        }
+        return verify_v12_backup(backup_path);
+    }
+    if (errno != ENOENT)
+        return strdup(strerror(errno));
+
+    struct stat temp_st{};
+    if (lstat(backup_tmp, &temp_st) == 0) {
+        if (!safe_backup_metadata(temp_st))
+            return strdup("Unsafe stale v12 database backup metadata");
+        if (unlink(backup_tmp) != 0)
+            return strdup(strerror(errno));
+    } else if (errno != ENOENT) {
+        return strdup(strerror(errno));
+    }
+    int temp_fd = open(backup_tmp,
+            O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC | O_NOFOLLOW, 0600);
+    if (temp_fd < 0)
+        return strdup(strerror(errno));
+    close(temp_fd);
+    sqlite3 *destination = nullptr;
+    int ret = sqlite3_open_v2(backup_tmp, &destination,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
+    if (ret) {
+        char *error = strdup(destination ? sqlite3_errmsg(destination) : "Cannot create v12 database backup");
+        if (destination)
+            sqlite3_close(destination);
+        unlink(backup_tmp);
+        return error;
+    }
+
+    sqlite3_backup *backup = sqlite3_backup_init(destination, "main", source, "main");
+    if (!backup) {
+        char *error = strdup(sqlite3_errmsg(destination));
+        sqlite3_close(destination);
+        unlink(backup_tmp);
+        return error;
+    }
+
+    int step = sqlite3_backup_step(backup, -1);
+    int finish = sqlite3_backup_finish(backup);
+    if (step != SQLITE_DONE || finish != 0) {
+        char *error = strdup(sqlite3_errmsg(destination));
+        sqlite3_close(destination);
+        unlink(backup_tmp);
+        return error;
+    }
+    sqlite3_close(destination);
+
+    if (chmod(backup_tmp, 0600) != 0) {
+        char *error = strdup(strerror(errno));
+        unlink(backup_tmp);
+        return error;
+    }
+    char *sync_error = sync_v12_backup(backup_tmp);
+    if (sync_error) {
+        unlink(backup_tmp);
+        return sync_error;
+    }
+    // link(2) is an atomic no-replace publication within /data/adb. Unlike
+    // rename(2), it cannot clobber a backup created between preflight and here.
+    if (link(backup_tmp, backup_path) != 0) {
+        int saved_errno = errno;
+        unlink(backup_tmp);
+        if (saved_errno == EEXIST)
+            return verify_v12_backup(backup_path);
+        return strdup(strerror(saved_errno));
+    }
+    if (unlink(backup_tmp) != 0) {
+        // Both names intentionally remain linked to the same complete file.
+        // The recovery branch above safely finishes this state on the next run.
+        return strdup(strerror(errno));
+    }
+    return verify_v12_backup(backup_path);
+}
+
+static bool migration_v13_committed(sqlite3 *db) {
+    // A cancellation can be observed after COMMIT has become durable. Only
+    // accept that state when no transaction remains and both durable markers
+    // from the v13 transaction are visible.
+    if (!sqlite3_get_autocommit(db))
+        return false;
+    int version = 0;
+    int audit_rows = 0;
+    char *error = nullptr;
+    sqlite3_exec(db, "PRAGMA user_version", ver_cb, &version, &error);
+    if (!error) {
+        sqlite3_exec(db,
+                "SELECT COUNT(*) FROM hide_migration_v13 "
+                "WHERE id=1 AND strategy='union-preserve-legacy'",
+                ver_cb, &audit_rows, &error);
+    }
+    const bool complete = error == nullptr && version == 13 && audit_rows == 1;
+    if (error)
+        sqlite3_free(error);
+    return complete;
+}
 
 static char *open_and_init_db(sqlite3 *&db) {
     if (!dload_sqlite())
@@ -144,8 +357,14 @@ static char *open_and_init_db(sqlite3 *&db) {
 
     int ret = sqlite3_open_v2(MAGISKDB, &db,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
-    if (ret)
-        return strdup(sqlite3_errmsg(db));
+    if (ret) {
+        char *error = strdup(sqlite3_errmsg(db));
+        if (db) {
+            sqlite3_close(db);
+            db = nullptr;
+        }
+        return error;
+    }
     int ver = 0;
     bool upgrade = false;
     char *err = nullptr;
@@ -154,6 +373,7 @@ static char *open_and_init_db(sqlite3 *&db) {
     if (ver > DB_VERSION) {
         // Don't support downgrading database
         sqlite3_close(db);
+        db = nullptr;
         return strdup("Downgrading database is not supported");
     }
 
@@ -193,6 +413,8 @@ static char *open_and_init_db(sqlite3 *&db) {
     // 10: remove table `logs`
     // 11: remove table `hidelist` and create table `denylist` (same data structure)
     // 12: rebuild table `policies` to drop column `package_name`
+    // 13: union valid legacy `hidelist` rows into canonical `denylist`, preserve
+    //     `hidelist` and `sulist`, and record migration counts/conflict strategy
 
     if (/* 0, 1, 2, 3, 4, 5, 6 */ ver <= 6) {
         create_policy();
@@ -266,6 +488,39 @@ static char *open_and_init_db(sqlite3 *&db) {
         ver = 12;
         upgrade = true;
     }
+    if (ver == 12) {
+        if (upgrade) {
+            // Older schemas reach the complete v12 layout through the steps
+            // above, but historically user_version was advanced only at the
+            // end. Materialize that durable checkpoint so the online backup is
+            // both restorable and truthfully identifiable as version 12.
+            sqlite3_exec(db, "PRAGMA user_version=12", nullptr, nullptr, &err);
+            err_ret(err);
+        }
+        // Preserve a complete pre-migration database before changing either the
+        // canonical rows or user_version. Failure to create it blocks migration.
+        err = backup_v12_database(db);
+        err_ret(err);
+        ret = sqlite3_exec(db, HIDE_TABLE_MIGRATION_V13, nullptr, nullptr, &err);
+        if (ret) {
+            if (!err)
+                err = strdup(sqlite3_errmsg(db));
+            // sqlite3_exec stops at the first failing statement. Always close the
+            // explicit transaction. A late cancellation can be reported after
+            // COMMIT; distinguish that complete state from a real rollback.
+            char *rollback_err = nullptr;
+            sqlite3_exec(db, "ROLLBACK", nullptr, nullptr, &rollback_err);
+            if (rollback_err)
+                sqlite3_free(rollback_err);
+            if (migration_v13_committed(db)) {
+                sqlite3_free(err);
+                err = nullptr;
+            } else {
+                return err;
+            }
+        }
+        ver = 13;
+    }
 
     if (upgrade) {
         // Set version
@@ -279,20 +534,27 @@ static char *open_and_init_db(sqlite3 *&db) {
                 "(package_name TEXT, process TEXT, PRIMARY KEY(package_name, process));"
                      "CREATE TABLE IF NOT EXISTS sulist "
                 "(package_name TEXT, process TEXT, PRIMARY KEY(package_name, process));", nullptr, nullptr, &err);
+    err_ret(err);
     return nullptr;
 }
 
-char *db_exec(const char *sql) {
-    char *err = nullptr;
-    if (mDB == nullptr) {
-        err = open_and_init_db(mDB);
-        db_err_cmd(err,
-            // Open fails, remove and reconstruct
-            unlink(MAGISKDB);
-            err = open_and_init_db(mDB);
-            err_ret(err);
-        );
+static char *ensure_db_open() {
+    if (mDB)
+        return nullptr;
+
+    char *err = open_and_init_db(mDB);
+    if (err && mDB) {
+        // Initialization and migrations fail closed. Never interpret a schema,
+        // migration, or future-version error as permission to delete user data.
+        sqlite3_close(mDB);
+        mDB = nullptr;
     }
+    return err;
+}
+
+char *db_exec(const char *sql) {
+    char *err = ensure_db_open();
+    err_ret(err);
     if (mDB) {
         sqlite3_exec(mDB, sql, nullptr, nullptr, &err);
         return err;
@@ -309,16 +571,8 @@ static int sqlite_db_row_callback(void *cb, int col_num, char **data, char **col
 }
 
 char *db_exec(const char *sql, const db_row_cb &fn) {
-    char *err = nullptr;
-    if (mDB == nullptr) {
-        err = open_and_init_db(mDB);
-        db_err_cmd(err,
-            // Open fails, remove and reconstruct
-            unlink(MAGISKDB);
-            err = open_and_init_db(mDB);
-            err_ret(err);
-        );
-    }
+    char *err = ensure_db_open();
+    err_ret(err);
     if (mDB) {
         sqlite3_exec(mDB, sql, sqlite_db_row_callback, (void *) &fn, &err);
         return err;

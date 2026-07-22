@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "empty-version-12-database",
+  "user_version": 12,
+  "settings": {},
+  "hidelist": [],
+  "denylist": [],
+  "sulist": [],
+  "expected": {
+    "denylist": [],
+    "hidelist_preserved": true,
+    "sulist": [],
+    "audit": {"source_hidelist_rows": 0, "source_denylist_rows": 0, "source_sulist_rows": 0, "overlap_rows": 0, "migrated_rows": 0, "malformed_hidelist_rows": 0, "sulist_enabled": 0}
+  }
+}

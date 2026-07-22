@@ -119,4 +119,6 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.profileinstaller:profileinstaller:1.3.1")
     implementation("com.google.android.material:material:1.11.0")
+
+    testImplementation("junit:junit:4.13.2")
 }

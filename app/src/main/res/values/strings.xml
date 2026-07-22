@@ -28,6 +28,8 @@
     <string name="home_installed_version">Installed</string>
     <string name="home_latest_version">Latest</string>
     <string name="invalid_update_channel">Invalid Update Channel</string>
+    <string name="update_service_not_configured">Project update service is not configured in this experimental build. Install only a manually verified Actions artifact or canary.</string>
+    <string name="update_check_failed">The configured update channel could not be verified.</string>
     <string name="uninstall_magisk_title">Uninstall Magisk</string>
     <string name="uninstall_magisk_msg">All modules will be disabled/removed!\nRoot will be removed!\nAny internal storage unencrypted through the use of Magisk will be re-encrypted!</string>
 
@@ -136,6 +138,7 @@
     <string name="system_default">(System Default)</string>
     <string name="settings_check_update_title">Check Updates</string>
     <string name="settings_check_update_summary">Periodically check for updates in the background</string>
+    <string name="settings_check_update_unavailable_summary">Built-in updates are disabled until Kitsune has a project-owned, digest-validated update service. A valid custom HTTPS channel remains available.</string>
     <string name="settings_update_channel_title">Update Channel</string>
     <string name="settings_update_stable">Stable</string>
     <string name="settings_update_beta">Beta</string>

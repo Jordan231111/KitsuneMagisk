@@ -68,7 +68,7 @@ class NetworkObserver(context: Context): DefaultLifecycleObserver {
     }
 
     private fun postValue(b: Boolean) {
-        Info.remote = Info.EMPTY_REMOTE
+        Info.resetRemote()
         Info.isConnected.postValue(b)
     }
 

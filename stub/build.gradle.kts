@@ -12,16 +12,19 @@ lsparanoid {
 android {
     namespace = "com.topjohnwu.magisk"
 
-    val canary = !Config.version.contains(".")
-
-    val url = if (canary) null
-    else "https://huskydg.github.io/download/magisk/${Config.version}.apk"
-
     defaultConfig {
         applicationId = "io.github.huskydg.magisk"
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "APK_URL", url?.let { "\"$it\"" } ?: "null" )
+        // PR4 containment: inherited prior-maintainer endpoints are dead. PR10
+        // will replace these fields with project-owned, digest-validated metadata.
+        buildConfigField("boolean", "UPDATE_SERVICE_CONFIGURED", "false")
+        buildConfigField("String", "APK_URL", "null")
+        buildConfigField(
+            "String",
+            "PROJECT_URL",
+            "\"https://github.com/Jordan231111/KitsuneMagisk\""
+        )
     }
 
     buildTypes {

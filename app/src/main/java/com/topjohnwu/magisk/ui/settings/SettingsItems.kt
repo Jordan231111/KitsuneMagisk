@@ -12,9 +12,13 @@ import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
+import com.topjohnwu.magisk.core.JobService
+import com.topjohnwu.magisk.core.di.AppContext
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.tasks.HideAPK
+import com.topjohnwu.magisk.core.repository.UpdateChannelPolicy
+import com.topjohnwu.magisk.core.repository.UpdateEndpointResolution
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils
 import com.topjohnwu.magisk.core.utils.availableLocales
 import com.topjohnwu.magisk.core.utils.currentLocale
@@ -159,7 +163,9 @@ object UpdateChannel : BaseSettingsItem.Selector() {
         get() = Config.updateChannel
         set(value) {
             Config.updateChannel = value
-            Info.remote = Info.EMPTY_REMOTE
+            Info.resetRemote()
+            JobService.schedule(AppContext)
+            UpdateChecker.refresh()
         }
 
     override val title = R.string.settings_update_channel_title.asText()
@@ -181,7 +187,9 @@ object UpdateChannelUrl : BaseSettingsItem.Input() {
         get() = Config.customChannelUrl
         set(value) {
             Config.customChannelUrl = value
-            Info.remote = Info.EMPTY_REMOTE
+            Info.resetRemote()
+            JobService.schedule(AppContext)
+            UpdateChecker.refresh()
             notifyPropertyChanged(BR.description)
         }
 
@@ -198,8 +206,18 @@ object UpdateChannelUrl : BaseSettingsItem.Input() {
 
 object UpdateChecker : BaseSettingsItem.Toggle() {
     override val title = R.string.settings_check_update_title.asText()
-    override val description = R.string.settings_check_update_summary.asText()
+    override val description
+        get() = if (isEnabled) R.string.settings_check_update_summary.asText()
+        else R.string.settings_check_update_unavailable_summary.asText()
     override var value by Config::checkUpdate
+
+    override fun refresh() {
+        isEnabled = UpdateChannelPolicy.resolve(
+            Config.updateChannel,
+            Config.customChannelUrl
+        ) is UpdateEndpointResolution.Remote
+        notifyPropertyChanged(BR.description)
+    }
 }
 
 object DoHToggle : BaseSettingsItem.Toggle() {

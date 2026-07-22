@@ -23,6 +23,8 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.model.module.LocalModule
+import com.topjohnwu.magisk.core.repository.UpdateChannelPolicy
+import com.topjohnwu.magisk.core.repository.UpdateEndpointResolution
 import com.topjohnwu.magisk.databinding.ActivityMainMd2Binding
 import com.topjohnwu.magisk.ui.home.HomeFragmentDirections
 import com.topjohnwu.magisk.view.MagiskDialog
@@ -60,7 +62,11 @@ class MainActivity : SplashActivity<ActivityMainMd2Binding>() {
         askForHomeShortcut()
 
         // Ask permission to post notifications for background update check
-        if (Config.checkUpdate) {
+        val updateEndpointAvailable = UpdateChannelPolicy.resolve(
+            Config.updateChannel,
+            Config.customChannelUrl
+        ) is UpdateEndpointResolution.Remote
+        if (Config.checkUpdate && updateEndpointAvailable) {
             withPermission(Manifest.permission.POST_NOTIFICATIONS) {
                 Config.checkUpdate = it
             }
