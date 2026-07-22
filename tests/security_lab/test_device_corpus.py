@@ -21,6 +21,9 @@ from tools.security_lab.device_corpus import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 class DeviceCorpusTest(unittest.TestCase):
     def test_adb_output_replaces_non_utf8_device_bytes(self) -> None:
         adb = Adb("adb", "serial", 10)
@@ -104,6 +107,18 @@ class DeviceCorpusTest(unittest.TestCase):
         ):
             with self.subTest(path=unsafe), self.assertRaises(ValueError):
                 _safe_remote_root(unsafe)
+
+    def test_disposable_avd_uses_one_owned_explicit_home(self) -> None:
+        source = (ROOT / "scripts" / "security_avd_test.sh").read_text(
+            encoding="utf-8"
+        )
+        export = 'export ANDROID_AVD_HOME="$avd_home"'
+        create = '-p "$avd_home/$name.avd"'
+        self.assertIn(export, source)
+        self.assertIn(create, source)
+        self.assertIn('.kitsune-security-owned', source)
+        self.assertNotIn('"$sdk" --channel=3 tools ', source)
+        self.assertLess(source.index(export), source.index(create))
 
 
 if __name__ == "__main__":

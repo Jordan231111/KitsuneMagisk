@@ -17,6 +17,7 @@ iterations="${KITSUNE_SECURITY_CORPUS_ITERATIONS:-32}"
 memory="${KITSUNE_SECURITY_AVD_MEMORY_MB:-4096}"
 created=false
 emu_pid=
+avd_home=
 
 case "$api:$port:$timeout:$iterations:$memory" in
   *[!0-9:]*|:*|*::*)
@@ -72,6 +73,16 @@ stop_emulator() {
   fi
 }
 
+remove_avd_home() {
+  [ -n "$avd_home" ] || return 0
+  if [ ! -f "$avd_home/.kitsune-security-owned" ]; then
+    echo "refusing to remove unowned AVD home $avd_home" >&2
+    return 1
+  fi
+  rm -rf -- "$avd_home"
+  avd_home=
+}
+
 cleanup() {
   local status=$?
   stop_emulator
@@ -79,19 +90,25 @@ cleanup() {
     "$avd" delete avd -n "$name" >/dev/null 2>&1 || true
     created=false
   fi
+  if ! remove_avd_home; then
+    [ "$status" -ne 0 ] || status=1
+  fi
   trap - EXIT INT TERM
   exit "$status"
 }
 trap cleanup EXIT INT TERM
 
+avd_home=$(mktemp -d "${TMPDIR:-/tmp}/kitsune-security-avd.XXXXXX")
+touch "$avd_home/.kitsune-security-owned"
+export ANDROID_AVD_HOME="$avd_home"
+
+yes | "$sdk" --licenses >/dev/null
+"$sdk" --channel=3 platform-tools emulator "$pkg"
 if "$emu" -list-avds | grep -Fqx -- "$name"; then
   echo "refusing to replace existing AVD $name" >&2
   exit 1
 fi
-
-yes | "$sdk" --licenses >/dev/null
-"$sdk" --channel=3 tools platform-tools emulator "$pkg"
-echo no | "$avd" create avd -n "$name" -k "$pkg"
+echo no | "$avd" create avd -n "$name" -k "$pkg" -p "$avd_home/$name.avd"
 created=true
 
 "$emu" "@$name" \
@@ -121,4 +138,5 @@ python3 -m tools.security_lab.device_corpus \
 stop_emulator
 "$avd" delete avd -n "$name"
 created=false
+remove_avd_home
 trap - EXIT INT TERM
