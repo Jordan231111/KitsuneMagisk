@@ -52,6 +52,10 @@ line.
 - A fresh disposable API 35 ARM64 AVD completed the ordinary Magisk patch/setup/reboot/root flow in
   both debug and release. Port 16384 was used only for a read-only MuMu characterization because a
   clean snapshot/restore tuple was not available.
+- Full-object `git fsck` reports one inherited historical `.gitmodules` blob (`5bea0fbd...`) with the
+  malformed URL `https://github.com:topjohnwu/resetprop.git`, introduced by `1d0c36a0` and corrected
+  by `cfa0d8b7`. Current-graph connectivity and all checked-out submodules are sound. Rewriting
+  thousands of published commits merely to erase that archival warning is not justified.
 
 This level of review finds fork-intent contradictions and risky subsystem changes while avoiding the
 false assurance of treating commit-message reading as runtime qualification.
