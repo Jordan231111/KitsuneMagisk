@@ -4,6 +4,8 @@ import copy
 import json
 from pathlib import Path
 import random
+import subprocess
+import tempfile
 import unittest
 
 from tools.security_lab.inventory import (
@@ -206,9 +208,95 @@ class SubmoduleAuditTest(unittest.TestCase):
 
 class SignatureContractTest(unittest.TestCase):
     def test_current_bypass_and_pristine_stable_enforcement_are_explicit(self) -> None:
-        repo = GitRepository(ROOT)
-        current = analyze_ref(repo, "f943ecddd11d0e648877ffb1f917c16767b8f7cc")
-        stable = analyze_ref(repo, "v30.7")
+        with tempfile.TemporaryDirectory(prefix="kitsune-signature-contract-") as directory:
+            root = Path(directory)
+            package_dir = root / "native" / "src" / "core"
+            package_dir.mkdir(parents=True)
+            subprocess.run(["git", "-C", str(root), "init", "--quiet"], check=True)
+
+            (package_dir / "package.cpp").write_text(
+                """\
+#define ENFORCE_SIGNATURE 0
+APK signature mismatch
+uninstall_pkg(JAVA_PACKAGE_NAME)
+dyn APK signature mismatch
+clear_pkg(mgr_pkg->data(), u)
+cert != *mgr_cert
+app_id != mgr_app_id
+install_stub()
+preserve_stub_apk
+""",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(root),
+                    "-c",
+                    "user.name=Security Lab",
+                    "-c",
+                    "user.email=security-lab@example.invalid",
+                    "commit",
+                    "--quiet",
+                    "-m",
+                    "bypass fixture",
+                ],
+                check=True,
+            )
+            current_ref = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"],
+                check=True,
+                stdout=subprocess.PIPE,
+                text=True,
+            ).stdout.strip()
+
+            (package_dir / "package.cpp").unlink()
+            (package_dir / "Cargo.toml").write_text(
+                'default = ["check-signature"]\n', encoding="utf-8"
+            )
+            (package_dir / "package.rs").write_text(
+                """\
+#[cfg(all(feature = "check-signature", not(debug_assertions)))]
+#[cfg(all(feature = "check-signature", not(debug_assertions)))]
+pkg: APK signature mismatch
+uninstall_pkg(cstr!(APP_PACKAGE_NAME))
+Status::CertMismatch
+pkg: dyn APK signature mismatch
+pkg == self.repackaged_pkg
+cert != self.repackaged_cert
+repackaged_app_id
+fn install_stub
+preserve_stub_apk
+self.install_stub()
+""",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(root),
+                    "-c",
+                    "user.name=Security Lab",
+                    "-c",
+                    "user.email=security-lab@example.invalid",
+                    "commit",
+                    "--quiet",
+                    "-m",
+                    "enforcement fixture",
+                ],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(root), "tag", "stable-fixture"], check=True
+            )
+
+            repo = GitRepository(root)
+            current = analyze_ref(repo, current_ref)
+            stable = analyze_ref(repo, "stable-fixture")
         self.assertTrue(current["global_bypass_detected"])
         self.assertFalse(current["release_signature_enforced"])
         self.assertTrue(stable["release_signature_enforced"])
