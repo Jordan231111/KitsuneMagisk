@@ -6,13 +6,14 @@ import shlex
 import subprocess
 import struct
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from tools.security_lab.device_corpus import (
     Adb,
     CorpusFailure,
     _command_result,
     _binary_paths,
+    _device_page_size,
     _safe_remote_root,
     make_dtb_tail_boot_image,
     make_minimal_boot_image,
@@ -55,6 +56,30 @@ class DeviceCorpusTest(unittest.TestCase):
                 case_id="roundtrip",
                 require_success=True,
             )
+
+    def test_page_size_falls_back_to_proc_smaps_without_getconf(self) -> None:
+        adb = Mock()
+        adb.run.side_effect = [
+            subprocess.CompletedProcess(
+                [], 0, "/system/bin/sh: getconf: not found\n", ""
+            ),
+            subprocess.CompletedProcess(
+                [],
+                0,
+                "00400000-00401000 r--p 00000000 00:00 0\n"
+                "KernelPageSize:        4 kB\n"
+                "MMUPageSize:           4 kB\n",
+                "",
+            ),
+        ]
+        self.assertEqual(4096, _device_page_size(adb))
+        self.assertEqual(
+            [
+                call("shell", "getconf", "PAGESIZE"),
+                call("shell", "cat", "/proc/self/smaps"),
+            ],
+            adb.run.call_args_list,
+        )
 
     def test_minimal_boot_image_has_consistent_v0_layout(self) -> None:
         image = make_minimal_boot_image()

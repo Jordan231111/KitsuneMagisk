@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import random
+import re
 import shlex
 import shutil
 import struct
@@ -245,6 +246,34 @@ def _policy_source(adb: Adb) -> str | None:
     return None
 
 
+def _device_page_size(adb: Adb) -> int:
+    def valid(value: int) -> bool:
+        return 0 < value <= 1024 * 1024 and value & (value - 1) == 0
+
+    getconf = adb.run("shell", "getconf", "PAGESIZE")
+    try:
+        value = int(getconf.stdout.strip())
+    except ValueError:
+        value = 0
+    if getconf.returncode == 0 and valid(value):
+        return value
+
+    # Android 6's shell has no getconf applet. The kernel still reports the
+    # actual mapping granule in smaps, so use that rather than assuming 4 KiB.
+    smaps = adb.run("shell", "cat", "/proc/self/smaps")
+    if smaps.returncode == 0:
+        match = re.search(
+            r"^(?:Kernel|MMU)PageSize:\s*([0-9]+)\s*kB\s*$",
+            smaps.stdout,
+            flags=re.MULTILINE,
+        )
+        if match:
+            value = int(match.group(1)) * 1024
+            if valid(value):
+                return value
+    raise CorpusFailure("device page size is unavailable or invalid")
+
+
 def run_device_corpus(
     adb: Adb,
     binaries: dict[str, Path],
@@ -255,7 +284,7 @@ def run_device_corpus(
     remote_root = _safe_remote_root(remote_root)
     adb.require("wait-for-device")
     abi = adb.require("shell", "getprop", "ro.product.cpu.abi").strip()
-    page_size = adb.require("shell", "getconf", "PAGESIZE").strip()
+    page_size = _device_page_size(adb)
     fingerprint = adb.require("shell", "getprop", "ro.build.fingerprint").strip()
     policy_source = _policy_source(adb)
     results: list[dict[str, Any]] = []
@@ -378,7 +407,7 @@ def run_device_corpus(
         "target": {
             "serial": adb.serial,
             "abi": abi,
-            "page_size": int(page_size),
+            "page_size": page_size,
             "fingerprint_sha256": _sha256(fingerprint.encode()),
         },
         "configuration": {
