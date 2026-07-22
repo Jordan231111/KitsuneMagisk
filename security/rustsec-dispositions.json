@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "audit_ignore_allowed": false,
+  "advisories": {
+    "RUSTSEC-2021-0139": {
+      "package": "ansi_term",
+      "kind": "unmaintained",
+      "disposition": "inherit_with_pr6_baseline",
+      "owner": "build-tooling",
+      "reason": "Old quick-protobuf generator dependency; it is not linked into Android runtime binaries and is absent from the selected v30.7 baseline.",
+      "gates": ["cargo-audit-pr6", "protobuf-generation", "all-abi-build"]
+    },
+    "RUSTSEC-2021-0145": {
+      "package": "atty",
+      "kind": "unsound",
+      "disposition": "inherit_with_pr6_baseline",
+      "owner": "build-tooling",
+      "reason": "The unaligned-read condition is Windows-only and this package is in old build-time protobuf tooling. PR6 removes the chain.",
+      "gates": ["windows-build-if-retained", "cargo-audit-pr6", "all-abi-build"]
+    },
+    "RUSTSEC-2024-0375": {
+      "package": "atty",
+      "kind": "unmaintained",
+      "disposition": "inherit_with_pr6_baseline",
+      "owner": "build-tooling",
+      "reason": "Old build-time protobuf tooling; inherit the maintained stable generator rather than updating this core twice.",
+      "gates": ["cargo-audit-pr6", "protobuf-generation", "all-abi-build"]
+    },
+    "RUSTSEC-2026-0097": {
+      "package": "rand",
+      "kind": "unsound",
+      "disposition": "retire_with_current_core",
+      "owner": "native-boot",
+      "reason": "The affected rand is transitive through old RSA signing. The required log plus thread_rng custom-logger condition is not enabled, and v30.7 removes rand from this graph.",
+      "fixed": ">=0.8.6,<0.9.0",
+      "gates": ["boot-sign-verify", "malformed-boot-corpus", "all-abi-link", "avd-boot"]
+    },
+    "RUSTSEC-2026-0202": {
+      "package": "cxx",
+      "kind": "unsound",
+      "disposition": "fix_after_pr6_baseline_before_port",
+      "owner": "native-platform",
+      "reason": "No production source uses let_cxx_string and panic=abort narrows current reachability, but v30.7 still pins affected cxx 1.0.189. The configured topjohnwu fork contains a six-file patch not present in dtolnay 1.0.189; forward-port it to 1.0.195+ only after the pristine baseline gate.",
+      "fixed": ">=1.0.195",
+      "gates": ["cxx-patch-range-diff", "all-abi-link", "boot-sign-verify", "malformed-parser-corpus", "api23-29-modern-avd"]
+    },
+    "RUSTSEC-2023-0071": {
+      "package": "rsa",
+      "kind": "vulnerability",
+      "disposition": "open_unfixed_visible_risk",
+      "owner": "native-boot",
+      "reason": "No patched rsa release exists. The private-key operation is local magiskboot boot-image signing, not a remotely reachable signing oracle. Do not suppress the advisory; preserve it in every report and reassess if signing becomes remotely observable.",
+      "fixed": null,
+      "gates": ["boot-sign-verify", "local-only-signing-review", "no-network-oracle", "crypto-update-review"]
+    }
+  }
+}

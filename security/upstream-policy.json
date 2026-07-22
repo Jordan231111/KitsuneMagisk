@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "official_repository": "https://github.com/topjohnwu/Magisk.git",
+  "release_api": "https://api.github.com/repos/topjohnwu/Magisk/releases/latest",
+  "stable_tag": "v30.7",
+  "fork_baseline_commit": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+  "previous_stable_tag": "v30.6",
+  "previous_stable_commit": "ccb264f33aa245aba26a9b2508a54c40041eb46e",
+  "stable_commit": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
+  "master_commit": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
+  "audited_common_ancestor": "154121f3dd92e67a3d8e3f518684932c0f9783e6",
+  "dispositions": {
+    "stable": {
+      "decision": "inherit_with_pr6_baseline",
+      "rationale": "Official stable changes are inherited as one coherent baseline and must pass the listed gates before fork behavior is ported."
+    },
+    "master": {
+      "decision": "observe_for_targeted_backport",
+      "rationale": "Post-stable master is an observation lane; a change is backported only after a target-backed regression proves it is needed."
+    },
+    "fork": {
+      "decision": "characterize_then_port_or_retire",
+      "rationale": "Fork-only privileged behavior needs a product purpose, a regression, and an explicit keep/port/retire decision."
+    }
+  },
+  "path_rules": [
+    {
+      "id": "boot-image",
+      "patterns": ["native/src/boot/**", "scripts/boot_patch.sh", "scripts/avd_patch.sh", "scripts/uninstaller.sh"],
+      "owner": "native-boot",
+      "sensitive": true,
+      "gates": ["malformed-boot-corpus", "boot-patch-unpatch", "boot-sign-verify", "all-abi-link", "avd-boot"]
+    },
+    {
+      "id": "init-bootstrap",
+      "patterns": ["native/src/init/**", "scripts/avd_magisk.sh", "scripts/flash_script.sh", "app/src/main/res/raw/manager.sh"],
+      "owner": "native-init",
+      "sensitive": true,
+      "gates": ["all-abi-link", "api23-29-modern-avd", "system-mode-lifecycle"]
+    },
+    {
+      "id": "selinux-policy",
+      "patterns": ["native/src/sepolicy/**", "native/src/external/selinux", "native/src/external/Android.mk"],
+      "owner": "native-sepolicy",
+      "sensitive": true,
+      "gates": ["malformed-policy-corpus", "policy-load-save-reload", "all-abi-link", "enforcing-avd-boot"]
+    },
+    {
+      "id": "daemon-protocol-su",
+      "patterns": ["native/src/core/socket.*", "native/src/core/daemon.*", "native/src/core/su/**", "native/src/core/package.*", "native/src/core/db.*"],
+      "owner": "native-core",
+      "sensitive": true,
+      "gates": ["daemon-framing", "root-policy", "signature-replacement", "db-fault-injection", "multiuser"]
+    },
+    {
+      "id": "module-runtime",
+      "patterns": ["native/src/core/module.*", "scripts/module_installer.sh", "scripts/util_functions.sh", "scripts/module_installer.sh", "app/**/module/**"],
+      "owner": "modules",
+      "sensitive": true,
+      "gates": ["module-metadata-property", "module-lifecycle", "safe-mode-recovery"]
+    },
+    {
+      "id": "manager-network-update",
+      "patterns": ["app/**/Networking.kt", "app/**/NetworkService.kt", "app/**/Update*.kt", "stub/**/net/**", "stub/**/DownloadActivity.java"],
+      "owner": "app-update",
+      "sensitive": true,
+      "gates": ["update-url-property", "redirect-downgrade", "metadata-tamper", "stub-download"]
+    },
+    {
+      "id": "build-download-release",
+      "patterns": ["build.py", "buildSrc/**", ".github/**", "gradle/wrapper/**", "config.prop.sample"],
+      "owner": "build-release",
+      "sensitive": true,
+      "gates": ["source-static", "dependency-inventory", "artifact-identity", "all-abi-build"]
+    },
+    {
+      "id": "system-mode-host",
+      "patterns": ["tools/system_mode/**", "compatibility/**", "scripts/avd_test.sh"],
+      "owner": "system-mode-lab",
+      "sensitive": true,
+      "gates": ["doctor-property", "immutable-negative", "serial-isolation", "restore-proof"]
+    },
+    {
+      "id": "documentation",
+      "patterns": ["docs/**", "README.MD", "DEVELOPMENT_ROADMAP.md"],
+      "owner": "maintainers",
+      "sensitive": false,
+      "gates": ["links-and-claims-review"]
+    }
+  ]
+}

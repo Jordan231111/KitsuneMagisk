@@ -385,6 +385,19 @@ def build_binary(args):
     else:
         args.target = default_targets
 
+    sanitizer = getattr(args, "sanitize", None)
+    sanitizer_stamp = op.join("native", "obj", ".kitsune-sanitizer-build")
+    # ndk-build does not include arbitrary APP_CFLAGS changes in every object
+    # dependency. Never reuse ordinary objects for a sanitizer build, and
+    # never let a later shipping build reuse instrumented objects.
+    if sanitizer or op.exists(sanitizer_stamp):
+        for path in (op.join("native", "libs"), op.join("native", "obj")):
+            if op.exists(path):
+                rm_rf(path)
+    if sanitizer:
+        mkdir_p(op.dirname(sanitizer_stamp))
+        write_if_diff(sanitizer_stamp, sanitizer + "\n")
+
     header("* Building binaries: " + " ".join(args.target))
 
     os.chdir(op.join("native", "src"))
@@ -416,6 +429,9 @@ def build_binary(args):
     if "magiskboot" in args.target:
         flag += " B_BOOT=1"
 
+    if sanitizer:
+        flag += f" KITSUNE_SANITIZE={sanitizer}"
+
     if flag:
         run_ndk_build(flag)
 
@@ -430,7 +446,7 @@ def build_binary(args):
         dump_bin_header(args)
         run_ndk_build(flag)
 
-    if clean:
+    if clean and not sanitizer:
         clean_elf()
 
     # BusyBox is built with different libc
@@ -687,6 +703,11 @@ binary_parser.add_argument(
     nargs="*",
     help=f"{', '.join(support_targets)}, \
     or empty for defaults ({', '.join(default_targets)})",
+)
+binary_parser.add_argument(
+    "--sanitize",
+    choices=("undefined",),
+    help="instrument C/C++ parser surfaces for the device security corpus",
 )
 binary_parser.set_defaults(func=build_binary)
 

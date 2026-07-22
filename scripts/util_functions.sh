@@ -79,9 +79,22 @@ is_mounted() {
 abort() {
   ui_print "$1"
   $BOOTMODE || recovery_cleanup
-  [ ! -z $MODPATH ] && rm -rf $MODPATH
-  rm -rf $TMPDIR
+  [ -n "$MODPATH" ] && rm -rf -- "$MODPATH"
+  rm -rf -- "$TMPDIR"
   exit 1
+}
+
+# module.prop IDs become directory names under /data/adb. Validate the
+# documented contract before any rm/mkdir operation can consume the value.
+validate_module_id() {
+  case "$1" in
+    [a-zA-Z][a-zA-Z0-9._-]*) ;;
+    *) return 1 ;;
+  esac
+  case "$1" in
+    *[!a-zA-Z0-9._-]*) return 1 ;;
+  esac
+  return 0
 }
 
 set_nvbase() {
@@ -651,11 +664,15 @@ install_module() {
   MODID=$(grep_prop id $TMPDIR/module.prop)
   MODNAME=$(grep_prop name $TMPDIR/module.prop)
   MODAUTH=$(grep_prop author $TMPDIR/module.prop)
+  if ! validate_module_id "$MODID"; then
+    MODPATH=
+    abort "! Invalid module ID: expected ^[a-zA-Z][a-zA-Z0-9._-]+$"
+  fi
   MODPATH=$MODULEROOT/$MODID
 
   # Create mod paths
-  rm -rf $MODPATH
-  mkdir -p $MODPATH
+  rm -rf -- "$MODPATH"
+  mkdir -p -- "$MODPATH"
 
   if is_legacy_script; then
     unzip -oj "$ZIPFILE" module.prop install.sh uninstall.sh 'common/*' -d $TMPDIR >&2

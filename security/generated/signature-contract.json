@@ -1,0 +1,61 @@
+{
+  "evidence_level": "source-contract",
+  "runtime_scenarios_required_in_pr6": [
+    "trusted-original-manager-accepted",
+    "untrusted-original-replacement-rejected",
+    "trusted-hidden-manager-accepted",
+    "hidden-dyn-certificate-change-rejected",
+    "trusted-stub-recovery-restores-control"
+  ],
+  "schema_version": 1,
+  "snapshots": {
+    "current": {
+      "commit": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+      "global_bypass_detected": true,
+      "hidden_dyn_replacement_rejected": false,
+      "hidden_identity_bound": true,
+      "implementation": "cpp-compile-constant",
+      "normal_replacement_rejected": false,
+      "ref": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+      "release_signature_enforced": false,
+      "source_evidence": {
+        "ENFORCE_SIGNATURE": "0"
+      },
+      "trusted_stub_recovery_present": true
+    },
+    "master": {
+      "commit": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
+      "global_bypass_detected": false,
+      "hidden_dyn_replacement_rejected": true,
+      "hidden_identity_bound": true,
+      "implementation": "rust-default-feature",
+      "normal_replacement_rejected": true,
+      "ref": "upstream/master",
+      "release_signature_enforced": true,
+      "source_evidence": {
+        "check_signature_default": true,
+        "release_only_rejection_cfg_count": 2
+      },
+      "trusted_stub_recovery_present": true
+    },
+    "stable": {
+      "commit": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
+      "global_bypass_detected": false,
+      "hidden_dyn_replacement_rejected": true,
+      "hidden_identity_bound": true,
+      "implementation": "rust-default-feature",
+      "normal_replacement_rejected": true,
+      "ref": "v30.7",
+      "release_signature_enforced": true,
+      "source_evidence": {
+        "check_signature_default": true,
+        "release_only_rejection_cfg_count": 2
+      },
+      "trusted_stub_recovery_present": true
+    }
+  },
+  "validation": {
+    "errors": [],
+    "passed": true
+  }
+}

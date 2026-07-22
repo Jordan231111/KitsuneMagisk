@@ -1063,43 +1063,45 @@ Current app stack is compile/target SDK 34, Java 17, AGP 8.5.1, Gradle 8.9, libs
 
 The existing roadmap fuzzes SELinux inputs, but that is only one privileged surface. Add a general program for finding new defects and classifying them as crashes, local denial of service, privilege-boundary issues, or usable bootstrap paths for Kitsune install and recovery on lab targets. Treat this as first-class Kitsune engineering infrastructure for findings, proofs, adapters, fixes, and regressions.
 
-**Manual audit result (2026-07-22 UTC):** a temporary full, all-branch/all-tag recursive clone of official Magisk checked out every current submodule and confirmed `v30.7` (`e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`) as the latest stable release and `14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c` as the observed `master` tip. The common ancestor remains `154121f3`; the PR2 baseline is 171 fork-only commits versus 858 stable-only or 971 master-only commits. Stable remains the sensible port base. Master remains an observation lane because it adds extensive post-v30.7 app/build architecture changes and its build script requires Python 3.12+ syntax rather than this Mac's default Python 3.11. PR4B converts this one-time audit into a reproducible ledger and targeted fuzz/sanitizer jobs.
+**Manual audit result (2026-07-22 UTC):** a temporary full, all-branch/all-tag recursive clone of official Magisk checked out every current submodule and confirmed `v30.7` (`e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`) as the latest stable release and `14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c` as the observed `master` tip. The common ancestor remains `154121f3`. The original PR2 audit baseline had 171 fork-only commits; the frozen PR4B baseline `f943ecdd` has 178 fork-only commits versus 858 stable-only or 971 master-only commits. Stable remains the sensible port base. Master remains an observation lane because it adds extensive post-v30.7 app/build architecture changes and its build script requires Python 3.12+ syntax rather than this Mac's default Python 3.11. PR4B converts this one-time audit into a reproducible ledger and targeted fuzz/sanitizer jobs.
+
+**PR4B implementation status (2026-07-22 UTC):** implemented and locally qualified. The deterministic ledger resolves the official latest release, inventories all 178 frozen-fork deltas and every security-sensitive stable/master delta, records toolchain and submodule snapshots, and fails when an upstream ref or release changes without review. The historical audit traversed 373 gitlinks and found exactly six policy-reviewed unavailable legacy pins; any new loss or stale exception fails the scheduled gate. Machine-readable dependency, SPDX 2.3, license, RustSec, signature-threat, trust-boundary, finding, and architecture records are reproducible. Three findings are dispositioned, including strict pre-mutation module IDs and mapped-length boot-parser hardening. Clean release, debug, and minimal-UBSan builds passed for all four ABIs. Final ARM64 sanitizer runs completed 977 cases with zero crashes on both MuMu port 16384 and a disposable API 35 AVD; shipping debug and release artifacts each passed the full normal patched-ramdisk setup/reboot/root flow and 137 parser cases on a separate disposable AVD. MuMu was parser-only because no verified snapshot/restore tuple exists; System Mode mutation and physical recovery remain explicitly unqualified.
 
 ### Full upstream intelligence
 
-- [ ] Maintain read-only remotes for official stable tags and `master`; use a full recursive clone for scheduled audits so deleted/renamed files, submodule history, and patch ancestry remain visible. Do not vendor the temporary clone into this repository.
-- [ ] Generate a machine-readable upstream ledger containing the stable/master commits, common ancestor, left/right commit counts, changed-path ownership, submodule pins, toolchain/API/ABI changes, and a semantic disposition for every security- or compatibility-sensitive upstream change.
-- [ ] Diff release-to-release and stable-to-master changes in `native/src/{boot,init,core,sepolicy}`, installer scripts, manager/stub networking, database code, and build/download tooling. Review security fixes even when no CVE or “security” label was assigned.
-- [ ] Use `git range-diff`, focused tests, and small backports. Never infer that a clean textual cherry-pick is behaviorally safe, and never auto-merge privileged parser/init/policy changes.
-- [ ] Record current upstream realities explicitly: v30.7 is the stable port base; current master is an observation lane, has extensive post-v30.7 app/build work, and requires a newer Python parser than this Mac's default Python 3.11.
-- [ ] Re-resolve “latest stable” at every baseline branch cut and release candidate. A recorded commit
+- [x] Maintain read-only remotes for official stable tags and `master`; use a full recursive clone for scheduled audits so deleted/renamed files, submodule history, and patch ancestry remain visible. Do not vendor the temporary clone into this repository.
+- [x] Generate a machine-readable upstream ledger containing the stable/master commits, common ancestor, left/right commit counts, changed-path ownership, submodule pins, toolchain/API/ABI changes, and a semantic disposition for every security- or compatibility-sensitive upstream change.
+- [x] Diff release-to-release and stable-to-master changes in `native/src/{boot,init,core,sepolicy}`, installer scripts, manager/stub networking, database code, and build/download tooling. Review security fixes even when no CVE or “security” label was assigned.
+- [x] Use `git range-diff`, focused tests, and small backports. Never infer that a clean textual cherry-pick is behaviorally safe, and never auto-merge privileged parser/init/policy changes.
+- [x] Record current upstream realities explicitly: v30.7 is the stable port base; current master is an observation lane, has extensive post-v30.7 app/build work, and requires a newer Python parser than this Mac's default Python 3.11.
+- [x] Re-resolve “latest stable” at every baseline branch cut and release candidate. A recorded commit
   is immutable evidence for one audit, not permission to ignore a newer official stable.
 
 ### Local discovery and derivation lanes
 
-- [ ] Inventory trust boundaries and input ownership for boot/vendor/init image parsing, CPIO/compression/DTB handling, SELinux binary/CIL/rule parsing, daemon sockets and request framing, MagiskSU policy transitions, SQLite migrations, module ZIP/metadata/scripts, update metadata and redirects, mountinfo/device-mapper parsing, and host-emulator adapters.
+- [x] Inventory trust boundaries and input ownership for boot/vendor/init image parsing, CPIO/compression/DTB handling, SELinux binary/CIL/rule parsing, daemon sockets and request framing, MagiskSU policy transitions, SQLite migrations, module ZIP/metadata/scripts, update metadata and redirects, mountinfo/device-mapper parsing, and host-emulator adapters.
 - [ ] Add deterministic malformed-input corpora plus coverage-guided fuzz targets where practical. Run C/C++ host targets with ASan/UBSan, Rust targets with `cargo fuzz`/sanitizers or Miri where supported, Python contract code with randomized/property tests, and SQLite migrations with interruption/fault injection.
 - [ ] Exercise allocation, short read/write, `fsync`, rename, ENOSPC, EROFS, permission, process-death, and reboot boundaries. A parser that rejects malformed input but leaves a partial boot image/database/install is still a failure.
-- [ ] Run local privilege-path and defect analysis on repository code and disposable project lab images: reproduce, minimize, identify the reached privilege/context, prove the boundary with the least-powerful test case, implement the fix or bootstrap path, and retain a regression or reusable lab proof. Prefer read-only work on port 16384 until a verified snapshot/restore tuple exists; then full install and recovery proofs are in scope.
+- [x] Run local privilege-path and defect analysis on repository code and disposable project lab images: reproduce, minimize, identify the reached privilege/context, prove the boundary with the least-powerful test case, implement the fix or bootstrap path, and retain a regression or reusable lab proof. Prefer read-only work on port 16384 until a verified snapshot/restore tuple exists; then full install and recovery proofs are in scope.
 - [ ] Keep architecture-specific corpora and runtime lanes for ARM64, ARM32, x86_64, and x86. Add RISC-V only with a runnable Android target; upstream compilation support alone is not evidence.
-- [ ] Triage every finding with affected versions, preconditions, impact, reproducibility, fix or adapter commit, regression or lab proof, and optional upstream/vendor note status. Kitsune fixes, adapters, and lab proofs proceed on this fork without waiting on external maintainer response.
+- [x] Triage every finding with affected versions, preconditions, impact, reproducibility, fix or adapter commit, regression or lab proof, and optional upstream/vendor note status. Kitsune fixes, adapters, and lab proofs proceed on this fork without waiting on external maintainer response.
 - [ ] Threat-model the current global `ENFORCE_SIGNATURE=0` fork change. Restore official package
   signature enforcement on `next-system`; permit any hidden-manager exception only if it is narrow,
   identity-bound, and covered by replacement/upgrade/recovery abuse tests.
 
 ### Dependency and toolchain inventory
 
-- [ ] Generate a machine-readable inventory/SBOM for Gradle plugins and libraries, Cargo crates,
+- [x] Generate a machine-readable inventory/SBOM for Gradle plugins and libraries, Cargo crates,
   vendored native code, submodule gitlinks, GitHub Actions, JDK/Python/Rust, SDK/build-tools, NDK/ONDK,
   licenses, advisories, and deliberate version holds.
-- [ ] Compare the inventory to the chosen official stable and current official `master`; classify each
+- [x] Compare the inventory to the chosen official stable and current official `master`; classify each
   delta as inherit with the baseline, security backport, compatible update, major migration, or
   evidence-backed hold.
 - [ ] Update security fixes and low-risk compatible dependencies in focused PRs. Gate native/Rust
   changes with four-ABI build/link, malformed-input corpora, boot-image patch/unpatch/sign/verify,
   and at least API 23/29/modern boots; add System Mode and physical recovery tests when the changed
   component reaches those paths.
-- [ ] Never treat a raised compile/target SDK or a dependency-only green build as proof of newer
+- [x] Never treat a raised compile/target SDK or a dependency-only green build as proof of newer
   Android support. Record `init_boot`, `vendor_boot`, GKI, SAR/2SI, policy format, 16 KiB page, AVB,
   module, root-policy, and recovery evidence separately.
 
@@ -1334,6 +1336,14 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 **Exit:** the same script safely coexists with port 16384, leaves the SDK image byte-identical, removes its temporary AVD, and produces repeatable ARM64 debug/release evidence on this Mac.
 
 ## PR 4B — Full upstream ledger and security-research lab
+
+**Implementation status (2026-07-22 UTC): complete on the frozen `f943ecdd` baseline.** The
+reproducible outputs, three finding dispositions, all-ABI build gates, MuMu/disposable-AVD parser
+records, and normal debug/release AVD lifecycle evidence are described in
+[`docs/security-lab.md`](docs/security-lab.md). Coverage-guided ASan/Rust fuzzing, the remaining
+failure-boundary matrix, ARM32/x86 runtime corpora, System Mode mutation, and physical-device
+recovery deliberately remain open rather than being inferred from UBSan/property tests or emulator
+builds.
 
 - Implement P1.9's reproducible stable/master/submodule ledger and classify upstream deltas instead of periodically cloning and reading them by hand.
 - Add the first sanitizer/fuzz/property targets for boot-image and policy parsers, doctor inputs, update URL/redirect policy, DB migration interruption, and module metadata.

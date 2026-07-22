@@ -8,6 +8,7 @@ avd_name="${KITSUNE_AVD_NAME:-kitsune-test-$emulator_port-$$}"
 image_type_override="${KITSUNE_AVD_IMAGE_TYPE:-}"
 boot_timeout="${KITSUNE_AVD_BOOT_TIMEOUT:-600}"
 show_kernel="${KITSUNE_AVD_SHOW_KERNEL:-1}"
+corpus_iterations="${KITSUNE_SECURITY_CORPUS_ITERATIONS:-2}"
 emu_pid=
 emu_args=()
 avd_created=false
@@ -53,6 +54,16 @@ case "$show_kernel" in
     exit 2
     ;;
 esac
+case "$corpus_iterations" in
+  ''|*[!0-9]*)
+    echo "KITSUNE_SECURITY_CORPUS_ITERATIONS must be an integer from 0 through 256" >&2
+    exit 2
+    ;;
+esac
+if [ "$corpus_iterations" -gt 256 ]; then
+  echo "KITSUNE_SECURITY_CORPUS_ITERATIONS must be an integer from 0 through 256" >&2
+  exit 2
+fi
 if [ "$#" -gt 1 ]; then
   echo "Usage: $0 [ANDROID_API_LEVEL]" >&2
   exit 2
@@ -292,7 +303,19 @@ test_emu() {
     return 1
   fi
   printf '%s\n' "$root_result" >&2
-  grep -q 'uid=0' <<< "$root_result"
+  if ! grep -q 'uid=0' <<< "$root_result"; then
+    return 1
+  fi
+
+  # Run the actual Android boot/policy parsers against deterministic malformed
+  # inputs. The runner owns and removes one narrow /data/local/tmp sandbox.
+  if ! python3 -m tools.security_lab.device_corpus \
+      --serial "emulator-$emulator_port" \
+      --apk "out/app-${variant}.apk" \
+      --iterations "$corpus_iterations" \
+      --output "out/security-corpus-api${api}-${variant}.json"; then
+    return 1
+  fi
 
 }
 
@@ -301,7 +324,7 @@ run_test() {
   local api=$1
   local avd_list
 
-  set_api_env $api
+  set_api_env "$api"
 
   # Setup emulator
   if ! "$sdk" --channel=3 "$pkg"; then
@@ -342,7 +365,7 @@ run_test() {
     return 1
   fi
   stop_emu
-  if ! test_emu debug $api; then
+  if ! test_emu debug "$api"; then
     print_error "Debug build test failed for $pkg"
     return 1
   fi
@@ -354,7 +377,7 @@ run_test() {
     return 1
   fi
   stop_emu
-  if ! test_emu release $api; then
+  if ! test_emu release "$api"; then
     print_error "Release build test failed for $pkg"
     return 1
   fi
@@ -390,13 +413,13 @@ yes | "$sdk" --licenses > /dev/null
 "$sdk" --channel=3 tools platform-tools emulator
 
 if [ -n "$1" ]; then
-  if ! run_test $1; then
+  if ! run_test "$1"; then
     print_error "Test failed for API $1"
     exit 1
   fi
 else
   for api in $api_list; do
-    if ! run_test $api; then
+    if ! run_test "$api"; then
       print_error "Test failed for API $api"
       exit 1
     fi

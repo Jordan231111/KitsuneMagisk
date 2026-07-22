@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "expected_unavailable": [
+    {
+      "path": "app",
+      "commit": "2df351d378c0d3f674db43a3b86b59fc23ab5f6a",
+      "rationale": "Historical MagiskManager gitlink no longer advertised by the surviving remote; retained as immutable audit evidence."
+    },
+    {
+      "path": "jni/resetprop",
+      "commit": "3a6db7dbafdfb46fd09705ba1ab5477cacb87155",
+      "rationale": "The historical standalone resetprop repository was deleted; current source no longer consumes this gitlink."
+    },
+    {
+      "path": "jni/resetprop",
+      "commit": "5bafa01da8ea6c82742f96673a89dd6ca668372d",
+      "rationale": "The historical standalone resetprop repository was deleted; current source no longer consumes this gitlink."
+    },
+    {
+      "path": "jni/resetprop",
+      "commit": "6b77de934dd13f77f3e1f8345d77a520d2e9b491",
+      "rationale": "The historical standalone resetprop repository was deleted; current source no longer consumes this gitlink."
+    },
+    {
+      "path": "jni/resetprop",
+      "commit": "96949566fb99b2b74b9bb80398ea45ee90ceb592",
+      "rationale": "The historical standalone resetprop repository was deleted; current source no longer consumes this gitlink."
+    },
+    {
+      "path": "native/jni/external/mincrypt",
+      "commit": "d443357d300f263179e04ef0893e6b8f040c9451",
+      "rationale": "Historical mincrypt object is no longer advertised by its remote; current source no longer consumes this gitlink."
+    }
+  ]
+}

@@ -50,14 +50,17 @@ private class DnsResolver(client: OkHttpClient) : Dns {
     }
 }
 
+internal fun OkHttpClient.Builder.enforceUpdateTransportPolicy(): OkHttpClient.Builder =
+    // Retain ordinary HTTPS-to-HTTPS redirects while refusing any scheme
+    // transition, including an HTTPS metadata URL redirecting to cleartext.
+    followSslRedirects(false)
+
 
 fun createOkHttpClient(context: Context): OkHttpClient {
     val appCache = Cache(File(context.cacheDir, "okhttp"), 10 * 1024 * 1024)
     val builder = OkHttpClient.Builder()
         .cache(appCache)
-        // Custom update metadata is accepted only from HTTPS. Keep ordinary
-        // same-scheme redirects, but never follow an HTTPS-to-HTTP downgrade.
-        .followSslRedirects(false)
+        .enforceUpdateTransportPolicy()
 
     if (BuildConfig.DEBUG) {
         builder.addInterceptor(HttpLoggingInterceptor().apply {

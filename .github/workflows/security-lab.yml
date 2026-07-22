@@ -1,0 +1,161 @@
+name: Kitsune security and upstream lab
+
+on:
+  pull_request:
+    paths:
+      - ".github/actions/**"
+      - ".github/workflows/**"
+      - ".gitmodules"
+      - "**/*.gradle.kts"
+      - "**/Cargo.toml"
+      - "app/src/main/java/com/topjohnwu/magisk/core/di/Networking.kt"
+      - "app/src/main/java/com/topjohnwu/magisk/core/repository/UpdateCheckResult.kt"
+      - "app/src/test/java/com/topjohnwu/magisk/core/repository/UpdateChannelPolicyTest.kt"
+      - "app/gradle/libs.versions.toml"
+      - "build.py"
+      - "buildSrc/**"
+      - "config.prop.sample"
+      - "gradle/**"
+      - "native/src/Application.mk"
+      - "native/src/Cargo.lock"
+      - "native/src/boot/**"
+      - "native/src/external/**"
+      - "native/src/sepolicy/**"
+      - "scripts/avd_test.sh"
+      - "scripts/security_avd_test.sh"
+      - "scripts/util_functions.sh"
+      - "security/**"
+      - "tests/security_lab/**"
+      - "tools/security_lab/**"
+      - "tools/termux-elf-cleaner"
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kitsune-security-lab-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ledger:
+    name: Upstream, SBOM, and RustSec ledger
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out complete fork history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Fetch exact official observation refs without recursive side effects
+        run: |
+          git remote add upstream https://github.com/topjohnwu/Magisk.git
+          git fetch --force --no-recurse-submodules upstream \
+            refs/tags/v30.6:refs/tags/v30.6 \
+            refs/tags/v30.7:refs/tags/v30.7 \
+            refs/heads/master:refs/remotes/upstream/master
+
+      - name: Set up build environment
+        uses: ./.github/actions/setup
+
+      - name: Install pinned cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.1
+
+      - name: Resolve official latest stable
+        run: >-
+          curl --fail --silent --show-error --location
+          --header 'Accept: application/vnd.github+json'
+          --output "$RUNNER_TEMP/latest-release.json"
+          https://api.github.com/repos/topjohnwu/Magisk/releases/latest
+
+      - name: Verify reproducible upstream ledger
+        run: >-
+          python3 -m tools.security_lab.upstream_ledger
+          --release-json "$RUNNER_TEMP/latest-release.json"
+          --check
+
+      - name: Audit every historical submodule pin
+        run: >-
+          python3 -m tools.security_lab.submodules
+          --historical
+          --probe-remote
+          --enforce-policy
+          --output "$RUNNER_TEMP/submodule-availability.json"
+
+      - name: Resolve Gradle runtime graph
+        run: >-
+          ./gradlew :app:dependencies
+          --configuration debugRuntimeClasspath
+          -PconfigPath="$PWD/config.prop"
+          > "$RUNNER_TEMP/gradle-runtime.txt"
+
+      - name: Verify dependency license evidence
+        run: >-
+          python3 -m tools.security_lab.licenses
+          --gradle-report "$RUNNER_TEMP/gradle-runtime.txt"
+          --check
+
+      - name: Verify dependency inventory and SPDX
+        run: >-
+          python3 -m tools.security_lab.inventory
+          --gradle-report "$RUNNER_TEMP/gradle-runtime.txt"
+          --check
+
+      - name: Verify reviewed RustSec dispositions
+        run: python3 -m tools.security_lab.rustsec --check
+
+      - name: Verify package-signature and hidden-manager recovery contract
+        run: python3 -m tools.security_lab.signature_contract --check
+
+      - name: Run host security/property/fault tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Upload upstream and submodule evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-security-ledger-${{ github.sha }}
+          path: ${{ runner.temp }}/submodule-availability.json
+          if-no-files-found: error
+          retention-days: 30
+
+  sanitized-device-corpus:
+    name: UBSan Android parser corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up build environment
+        uses: ./.github/actions/setup
+
+      - name: Build all-ABI UBSan parser binaries
+        run: ./build.py -v binary --sanitize undefined magiskboot magiskpolicy
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run corpus on a disposable API 35 AVD
+        env:
+          KITSUNE_SECURITY_AVD_IMAGE_TYPE: aosp_atd
+          KITSUNE_SECURITY_CORPUS_ITERATIONS: 32
+        run: scripts/security_avd_test.sh 35
+
+      - name: Upload architecture-specific corpus evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-corpus-${{ github.sha }}
+          path: out/security-corpus-*.json
+          if-no-files-found: error
+          retention-days: 30

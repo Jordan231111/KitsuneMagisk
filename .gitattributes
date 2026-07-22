@@ -12,9 +12,10 @@
 
 # Denote all files that are truly binary and should not be modified.
 tools/** binary
-# System Mode host tooling is reviewable source, schemas, and fixtures rather
-# than the prebuilt binaries historically stored elsewhere under tools/.
+# Host lab tooling is reviewable source, schemas, and fixtures rather than the
+# prebuilt binaries historically stored elsewhere under tools/.
 tools/system_mode/** -binary text eol=lf diff merge
+tools/security_lab/** -binary text eol=lf diff merge
 *.jar binary
 *.exe binary
 *.apk binary

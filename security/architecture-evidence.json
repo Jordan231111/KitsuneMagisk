@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "rule": "Build, parser, normal AVD, System Mode, and physical recovery evidence are independent and never imply one another.",
+  "lanes": [
+    {
+      "kind": "build",
+      "architectures": ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"],
+      "status": "four-abi-local-qualified-and-required-on-every-code-pr",
+      "evidence": [".github/workflows/android.yml", ".github/workflows/security-lab.yml"],
+      "note": "PR4B passed clean release, debug, and UBSan builds for all four listed ABIs; compilation remains independent from runtime proof."
+    },
+    {
+      "kind": "parser-corpus-runtime",
+      "architectures": ["arm64-v8a", "x86_64"],
+      "status": "arm64-local-qualified-x86_64-scheduled-gate",
+      "evidence": [
+        "tools/security_lab/device_corpus.py",
+        "scripts/security_avd_test.sh",
+        "security/findings/KITSUNE-2026-002-boot-image-bounds.md"
+      ],
+      "runtime_records": [
+        {
+          "target": "MuMuPlayer at 127.0.0.1:16384",
+          "abi": "arm64-v8a",
+          "page_size": 4096,
+          "fingerprint_sha256": "d3eec945343c1dc4b4bf2ea4a6caee01299b405bc66648b846a28ff9e8e3e778",
+          "case_count": 977,
+          "crash_count": 0,
+          "boot_sign_verify": "passed",
+          "policy_roundtrip": "passed",
+          "mutation_scope": "temporary parser sandbox only"
+        },
+        {
+          "target": "disposable API 35 Google APIs AVD",
+          "abi": "arm64-v8a",
+          "page_size": 4096,
+          "fingerprint_sha256": "50983ce8d3c867e878a322a2b3e4f7985ccfc1a1a4de564bed318f30f1e16fe9",
+          "case_count": 977,
+          "crash_count": 0,
+          "boot_sign_verify": "passed",
+          "policy_roundtrip": "passed",
+          "cleanup": "AVD deleted"
+        }
+      ],
+      "note": "The scheduled workflow supplies the x86_64 runtime gate. ARM32 and x86 compilation is not runtime evidence."
+    },
+    {
+      "kind": "normal-avd-runtime",
+      "architectures": ["arm64-v8a", "x86_64"],
+      "status": "api35-arm64-debug-and-release-qualified",
+      "evidence": ["scripts/avd_test.sh", "docs/system-mode/avd-lab-2026-07-22.md"],
+      "runtime_records": [
+        {
+          "target": "disposable API 35 Google APIs AVD",
+          "abi": "arm64-v8a",
+          "page_size": 4096,
+          "variants": ["debug", "release"],
+          "checks": [
+            "patched-ramdisk boot",
+            "manager install and setup",
+            "reboot",
+            "provider test",
+            "root context",
+            "137-case parser corpus per variant"
+          ],
+          "stock_ramdisk_sha256": "46ff502d0e0a1d8f844d29c084a8b797107513d26199825f0d827836a87e84d7",
+          "cleanup": "stock SDK image byte-restored and AVD deleted"
+        }
+      ],
+      "note": "Patched-ramdisk AVD success does not qualify persistent System Mode. Existing CI keeps separate API 23, 29, and modern x86_64 lanes."
+    },
+    {
+      "kind": "system-mode-runtime",
+      "architectures": ["x86_64-with-ARM-translation-unconfirmed"],
+      "status": "characterization-only",
+      "evidence": ["compatibility/records/2026-07-22-mumu12-port16384-current-kitsune.json"],
+      "note": "No write/install claim exists without an exercised snapshot/restore tuple."
+    },
+    {
+      "kind": "physical-device-recovery",
+      "architectures": [],
+      "status": "not-yet-run",
+      "evidence": [],
+      "note": "No emulator, parser, or all-ABI build result substitutes for this lane."
+    }
+  ]
+}

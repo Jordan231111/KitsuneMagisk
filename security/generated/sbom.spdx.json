@@ -1,0 +1,5144 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-07-22T00:00:00Z",
+    "creators": [
+      "Tool: tools.security_lab.inventory-v1"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "documentDescribes": [
+    "SPDXRef-Package-action-actions-cache-1",
+    "SPDXRef-Package-action-actions-checkout-2",
+    "SPDXRef-Package-action-actions-download-artifact-3",
+    "SPDXRef-Package-action-actions-setup-java-4",
+    "SPDXRef-Package-action-actions-setup-python-5",
+    "SPDXRef-Package-action-actions-upload-artifact-6",
+    "SPDXRef-Package-action-hendrikmuhs-ccache-action-7",
+    "SPDXRef-Package-action-softprops-action-gh-release-8",
+    "SPDXRef-Package-cargo-aho-corasick-9",
+    "SPDXRef-Package-cargo-ansi-term-10",
+    "SPDXRef-Package-cargo-argh-11",
+    "SPDXRef-Package-cargo-argh-derive-12",
+    "SPDXRef-Package-cargo-argh-shared-13",
+    "SPDXRef-Package-cargo-atty-14",
+    "SPDXRef-Package-cargo-autocfg-15",
+    "SPDXRef-Package-cargo-base16ct-16",
+    "SPDXRef-Package-cargo-base64ct-17",
+    "SPDXRef-Package-cargo-bitflags-18",
+    "SPDXRef-Package-cargo-block-buffer-19",
+    "SPDXRef-Package-cargo-bytemuck-20",
+    "SPDXRef-Package-cargo-bytemuck-derive-21",
+    "SPDXRef-Package-cargo-byteorder-22",
+    "SPDXRef-Package-cargo-cc-23",
+    "SPDXRef-Package-cargo-cfg-if-24",
+    "SPDXRef-Package-cargo-clap-25",
+    "SPDXRef-Package-cargo-codespan-reporting-26",
+    "SPDXRef-Package-cargo-const-oid-27",
+    "SPDXRef-Package-cargo-cpufeatures-28",
+    "SPDXRef-Package-cargo-crypto-bigint-29",
+    "SPDXRef-Package-cargo-crypto-common-30",
+    "SPDXRef-Package-cargo-cxx-31",
+    "SPDXRef-Package-cargo-der-32",
+    "SPDXRef-Package-cargo-der-derive-33",
+    "SPDXRef-Package-cargo-digest-34",
+    "SPDXRef-Package-cargo-ecdsa-35",
+    "SPDXRef-Package-cargo-elliptic-curve-36",
+    "SPDXRef-Package-cargo-env-logger-37",
+    "SPDXRef-Package-cargo-fdt-38",
+    "SPDXRef-Package-cargo-ff-39",
+    "SPDXRef-Package-cargo-flagset-40",
+    "SPDXRef-Package-cargo-generic-array-41",
+    "SPDXRef-Package-cargo-getrandom-42",
+    "SPDXRef-Package-cargo-group-43",
+    "SPDXRef-Package-cargo-hermit-abi-44",
+    "SPDXRef-Package-cargo-hkdf-45",
+    "SPDXRef-Package-cargo-hmac-46",
+    "SPDXRef-Package-cargo-humantime-47",
+    "SPDXRef-Package-cargo-lazy-static-48",
+    "SPDXRef-Package-cargo-libc-49",
+    "SPDXRef-Package-cargo-libm-50",
+    "SPDXRef-Package-cargo-log-51",
+    "SPDXRef-Package-cargo-memchr-52",
+    "SPDXRef-Package-cargo-minimal-lexical-53",
+    "SPDXRef-Package-cargo-nom-54",
+    "SPDXRef-Package-cargo-num-bigint-dig-55",
+    "SPDXRef-Package-cargo-num-derive-56",
+    "SPDXRef-Package-cargo-num-integer-57",
+    "SPDXRef-Package-cargo-num-iter-58",
+    "SPDXRef-Package-cargo-num-traits-59",
+    "SPDXRef-Package-cargo-p256-60",
+    "SPDXRef-Package-cargo-p384-61",
+    "SPDXRef-Package-cargo-p521-62",
+    "SPDXRef-Package-cargo-pb-rs-63",
+    "SPDXRef-Package-cargo-pem-rfc7468-64",
+    "SPDXRef-Package-cargo-pkcs1-65",
+    "SPDXRef-Package-cargo-pkcs8-66",
+    "SPDXRef-Package-cargo-ppv-lite86-67",
+    "SPDXRef-Package-cargo-primeorder-68",
+    "SPDXRef-Package-cargo-proc-macro2-69",
+    "SPDXRef-Package-cargo-quick-error-70",
+    "SPDXRef-Package-cargo-quick-protobuf-71",
+    "SPDXRef-Package-cargo-quote-72",
+    "SPDXRef-Package-cargo-rand-73",
+    "SPDXRef-Package-cargo-rand-chacha-74",
+    "SPDXRef-Package-cargo-rand-core-75",
+    "SPDXRef-Package-cargo-regex-76",
+    "SPDXRef-Package-cargo-regex-automata-77",
+    "SPDXRef-Package-cargo-regex-syntax-78",
+    "SPDXRef-Package-cargo-rfc6979-79",
+    "SPDXRef-Package-cargo-rsa-80",
+    "SPDXRef-Package-cargo-sec1-81",
+    "SPDXRef-Package-cargo-serde-82",
+    "SPDXRef-Package-cargo-serde-derive-83",
+    "SPDXRef-Package-cargo-sha1-84",
+    "SPDXRef-Package-cargo-sha2-85",
+    "SPDXRef-Package-cargo-signature-86",
+    "SPDXRef-Package-cargo-size-87",
+    "SPDXRef-Package-cargo-smallvec-88",
+    "SPDXRef-Package-cargo-spin-89",
+    "SPDXRef-Package-cargo-spki-90",
+    "SPDXRef-Package-cargo-strsim-91",
+    "SPDXRef-Package-cargo-subtle-92",
+    "SPDXRef-Package-cargo-syn-93",
+    "SPDXRef-Package-cargo-termcolor-94",
+    "SPDXRef-Package-cargo-textwrap-95",
+    "SPDXRef-Package-cargo-thiserror-96",
+    "SPDXRef-Package-cargo-thiserror-impl-97",
+    "SPDXRef-Package-cargo-tls-codec-98",
+    "SPDXRef-Package-cargo-tls-codec-derive-99",
+    "SPDXRef-Package-cargo-typenum-100",
+    "SPDXRef-Package-cargo-unicode-ident-101",
+    "SPDXRef-Package-cargo-unicode-width-102",
+    "SPDXRef-Package-cargo-vec-map-103",
+    "SPDXRef-Package-cargo-version-check-104",
+    "SPDXRef-Package-cargo-wasi-105",
+    "SPDXRef-Package-cargo-winapi-106",
+    "SPDXRef-Package-cargo-winapi-i686-pc-windows-gnu-107",
+    "SPDXRef-Package-cargo-winapi-util-108",
+    "SPDXRef-Package-cargo-winapi-x86-64-pc-windows-gnu-109",
+    "SPDXRef-Package-cargo-x509-cert-110",
+    "SPDXRef-Package-cargo-zeroize-111",
+    "SPDXRef-Package-cargo-zeroize-derive-112",
+    "SPDXRef-Package-gradle-androidx.activity-activity-113",
+    "SPDXRef-Package-gradle-androidx.activity-activity-ktx-114",
+    "SPDXRef-Package-gradle-androidx.annotation-annotation-115",
+    "SPDXRef-Package-gradle-androidx.annotation-annotation-experimental-116",
+    "SPDXRef-Package-gradle-androidx.annotation-annotation-jvm-117",
+    "SPDXRef-Package-gradle-androidx.appcompat-appcompat-118",
+    "SPDXRef-Package-gradle-androidx.appcompat-appcompat-resources-119",
+    "SPDXRef-Package-gradle-androidx.arch.core-core-common-120",
+    "SPDXRef-Package-gradle-androidx.arch.core-core-runtime-121",
+    "SPDXRef-Package-gradle-androidx.biometric-biometric-122",
+    "SPDXRef-Package-gradle-androidx.cardview-cardview-123",
+    "SPDXRef-Package-gradle-androidx.collection-collection-124",
+    "SPDXRef-Package-gradle-androidx.collection-collection-ktx-125",
+    "SPDXRef-Package-gradle-androidx.concurrent-concurrent-futures-126",
+    "SPDXRef-Package-gradle-androidx.constraintlayout-constraintlayout-127",
+    "SPDXRef-Package-gradle-androidx.constraintlayout-constraintlayout-core-128",
+    "SPDXRef-Package-gradle-androidx.coordinatorlayout-coordinatorlayout-129",
+    "SPDXRef-Package-gradle-androidx.core-core-130",
+    "SPDXRef-Package-gradle-androidx.core-core-ktx-131",
+    "SPDXRef-Package-gradle-androidx.core-core-splashscreen-132",
+    "SPDXRef-Package-gradle-androidx.cursoradapter-cursoradapter-133",
+    "SPDXRef-Package-gradle-androidx.customview-customview-134",
+    "SPDXRef-Package-gradle-androidx.customview-customview-poolingcontainer-135",
+    "SPDXRef-Package-gradle-androidx.databinding-databinding-adapters-136",
+    "SPDXRef-Package-gradle-androidx.databinding-databinding-common-137",
+    "SPDXRef-Package-gradle-androidx.databinding-databinding-ktx-138",
+    "SPDXRef-Package-gradle-androidx.databinding-databinding-runtime-139",
+    "SPDXRef-Package-gradle-androidx.databinding-viewbinding-140",
+    "SPDXRef-Package-gradle-androidx.documentfile-documentfile-141",
+    "SPDXRef-Package-gradle-androidx.drawerlayout-drawerlayout-142",
+    "SPDXRef-Package-gradle-androidx.dynamicanimation-dynamicanimation-143",
+    "SPDXRef-Package-gradle-androidx.emoji2-emoji2-144",
+    "SPDXRef-Package-gradle-androidx.emoji2-emoji2-views-helper-145",
+    "SPDXRef-Package-gradle-androidx.fragment-fragment-146",
+    "SPDXRef-Package-gradle-androidx.fragment-fragment-ktx-147",
+    "SPDXRef-Package-gradle-androidx.interpolator-interpolator-148",
+    "SPDXRef-Package-gradle-androidx.legacy-legacy-support-core-utils-149",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-common-150",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-livedata-151",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-livedata-core-152",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-livedata-core-ktx-153",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-process-154",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-runtime-155",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-runtime-ktx-156",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-service-157",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-viewmodel-158",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-viewmodel-ktx-159",
+    "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-viewmodel-savedstate-160",
+    "SPDXRef-Package-gradle-androidx.loader-loader-161",
+    "SPDXRef-Package-gradle-androidx.localbroadcastmanager-localbroadcastmanager-162",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-common-163",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-common-ktx-164",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-fragment-165",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-fragment-ktx-166",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-runtime-167",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-runtime-ktx-168",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-safe-args-gradle-plugin-169",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-ui-170",
+    "SPDXRef-Package-gradle-androidx.navigation-navigation-ui-ktx-171",
+    "SPDXRef-Package-gradle-androidx.print-print-172",
+    "SPDXRef-Package-gradle-androidx.profileinstaller-profileinstaller-173",
+    "SPDXRef-Package-gradle-androidx.recyclerview-recyclerview-174",
+    "SPDXRef-Package-gradle-androidx.resourceinspection-resourceinspection-annotation-175",
+    "SPDXRef-Package-gradle-androidx.room-room-common-176",
+    "SPDXRef-Package-gradle-androidx.room-room-compiler-177",
+    "SPDXRef-Package-gradle-androidx.room-room-ktx-178",
+    "SPDXRef-Package-gradle-androidx.room-room-runtime-179",
+    "SPDXRef-Package-gradle-androidx.savedstate-savedstate-180",
+    "SPDXRef-Package-gradle-androidx.savedstate-savedstate-ktx-181",
+    "SPDXRef-Package-gradle-androidx.slidingpanelayout-slidingpanelayout-182",
+    "SPDXRef-Package-gradle-androidx.sqlite-sqlite-183",
+    "SPDXRef-Package-gradle-androidx.sqlite-sqlite-framework-184",
+    "SPDXRef-Package-gradle-androidx.startup-startup-runtime-185",
+    "SPDXRef-Package-gradle-androidx.swiperefreshlayout-swiperefreshlayout-186",
+    "SPDXRef-Package-gradle-androidx.tracing-tracing-187",
+    "SPDXRef-Package-gradle-androidx.transition-transition-188",
+    "SPDXRef-Package-gradle-androidx.vectordrawable-vectordrawable-189",
+    "SPDXRef-Package-gradle-androidx.vectordrawable-vectordrawable-animated-190",
+    "SPDXRef-Package-gradle-androidx.versionedparcelable-versionedparcelable-191",
+    "SPDXRef-Package-gradle-androidx.viewpager2-viewpager2-192",
+    "SPDXRef-Package-gradle-androidx.viewpager-viewpager-193",
+    "SPDXRef-Package-gradle-androidx.window-window-194",
+    "SPDXRef-Package-gradle-com.android.tools.build-gradle-195",
+    "SPDXRef-Package-gradle-com.atlassian.commonmark-commonmark-196",
+    "SPDXRef-Package-gradle-com.github.topjohnwu.libsu-core-197",
+    "SPDXRef-Package-gradle-com.github.topjohnwu.libsu-nio-198",
+    "SPDXRef-Package-gradle-com.github.topjohnwu.libsu-service-199",
+    "SPDXRef-Package-gradle-com.github.topjohnwu-indeterminate-checkbox-200",
+    "SPDXRef-Package-gradle-com.github.topjohnwu-jtar-201",
+    "SPDXRef-Package-gradle-com.github.topjohnwu-lz4-java-202",
+    "SPDXRef-Package-gradle-com.google.android.material-material-203",
+    "SPDXRef-Package-gradle-com.google.errorprone-error-prone-annotations-204",
+    "SPDXRef-Package-gradle-com.google.guava-listenablefuture-205",
+    "SPDXRef-Package-gradle-com.jakewharton.timber-timber-206",
+    "SPDXRef-Package-gradle-com.squareup.moshi-moshi-207",
+    "SPDXRef-Package-gradle-com.squareup.moshi-moshi-kotlin-codegen-208",
+    "SPDXRef-Package-gradle-com.squareup.okhttp3-logging-interceptor-209",
+    "SPDXRef-Package-gradle-com.squareup.okhttp3-okhttp-210",
+    "SPDXRef-Package-gradle-com.squareup.okhttp3-okhttp-dnsoverhttps-211",
+    "SPDXRef-Package-gradle-com.squareup.okio-okio-212",
+    "SPDXRef-Package-gradle-com.squareup.okio-okio-jvm-213",
+    "SPDXRef-Package-gradle-com.squareup.retrofit2-converter-moshi-214",
+    "SPDXRef-Package-gradle-com.squareup.retrofit2-converter-scalars-215",
+    "SPDXRef-Package-gradle-com.squareup.retrofit2-retrofit-216",
+    "SPDXRef-Package-gradle-dev.rikka.rikkax.insets-insets-217",
+    "SPDXRef-Package-gradle-dev.rikka.rikkax.layoutinflater-layoutinflater-218",
+    "SPDXRef-Package-gradle-dev.rikka.rikkax.recyclerview-recyclerview-ktx-219",
+    "SPDXRef-Package-gradle-io.noties.markwon-core-220",
+    "SPDXRef-Package-gradle-junit-junit-221",
+    "SPDXRef-Package-gradle-me.zhanghai.android.fastscroll-library-222",
+    "SPDXRef-Package-gradle-org.bouncycastle-bcpkix-jdk18on-223",
+    "SPDXRef-Package-gradle-org.bouncycastle-bcprov-jdk18on-224",
+    "SPDXRef-Package-gradle-org.bouncycastle-bcutil-jdk18on-225",
+    "SPDXRef-Package-gradle-org.eclipse.jgit-org.eclipse.jgit-226",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-android-extensions-runtime-227",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-bom-228",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-parcelize-runtime-229",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-stdlib-230",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-stdlib-common-231",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-android-232",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-bom-233",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-core-234",
+    "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-core-jvm-235",
+    "SPDXRef-Package-gradle-org.jetbrains-annotations-236",
+    "SPDXRef-Package-gradle-org.lsposed.lsparanoid-gradle-plugin-237",
+    "SPDXRef-Package-submodule-native-src-external--xDL-238",
+    "SPDXRef-Package-submodule-native-src-external-busybox-239",
+    "SPDXRef-Package-submodule-native-src-external-bzip2-240",
+    "SPDXRef-Package-submodule-native-src-external-cxx-rs-241",
+    "SPDXRef-Package-submodule-native-src-external-libcxx-242",
+    "SPDXRef-Package-submodule-native-src-external-lz4-243",
+    "SPDXRef-Package-submodule-native-src-external-parallel-hashmap-244",
+    "SPDXRef-Package-submodule-native-src-external-pcre-245",
+    "SPDXRef-Package-submodule-native-src-external-selinux-246",
+    "SPDXRef-Package-submodule-native-src-external-system-properties-247",
+    "SPDXRef-Package-submodule-native-src-external-xz-248",
+    "SPDXRef-Package-submodule-native-src-external-zlib-249",
+    "SPDXRef-Package-submodule-native-src-external-zopfli-250",
+    "SPDXRef-Package-submodule-tools-termux-elf-cleaner-251"
+  ],
+  "documentNamespace": "https://github.com/Jordan231111/KitsuneMagisk/sbom/7186fbeb65f3bb81ffce6d8be534a114357bcee2f5003919ed5b96a4285036f9",
+  "name": "KitsuneMagisk-f943ecddd11d",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-action-actions-cache-1",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:actions/cache",
+      "versionInfo": "v4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-actions-checkout-2",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:actions/checkout",
+      "versionInfo": "v4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-actions-download-artifact-3",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:actions/download-artifact",
+      "versionInfo": "v4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-actions-setup-java-4",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:actions/setup-java",
+      "versionInfo": "v4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-actions-setup-python-5",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:actions/setup-python",
+      "versionInfo": "v5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-actions-upload-artifact-6",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:actions/upload-artifact",
+      "versionInfo": "v4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-hendrikmuhs-ccache-action-7",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:hendrikmuhs/ccache-action",
+      "versionInfo": "v1.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-action-softprops-action-gh-release-8",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "action:softprops/action-gh-release",
+      "versionInfo": "v2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-aho-corasick-9",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b2969dcb958b36655471fc61f7e416fa76033bdd4bfed0678d8fee1e2d07a1f0"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/aho-corasick@1.1.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Unlicense OR MIT",
+      "licenseDeclared": "Unlicense OR MIT",
+      "name": "cargo:aho-corasick",
+      "versionInfo": "1.1.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-ansi-term-10",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/ansi_term@0.12.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:ansi_term",
+      "versionInfo": "0.12.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-argh-11",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "git+https://github.com/google/argh.git?rev=1c632b046d084e7bde86b82dfc969b30b4647c8c#1c632b046d084e7bde86b82dfc969b30b4647c8c",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/argh@0.1.12",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "cargo:argh",
+      "versionInfo": "0.1.12"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-argh-derive-12",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "git+https://github.com/google/argh.git?rev=1c632b046d084e7bde86b82dfc969b30b4647c8c#1c632b046d084e7bde86b82dfc969b30b4647c8c",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/argh_derive@0.1.12",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "cargo:argh_derive",
+      "versionInfo": "0.1.12"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-argh-shared-13",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "git+https://github.com/google/argh.git?rev=1c632b046d084e7bde86b82dfc969b30b4647c8c#1c632b046d084e7bde86b82dfc969b30b4647c8c",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/argh_shared@0.1.12",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "cargo:argh_shared",
+      "versionInfo": "0.1.12"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-atty-14",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/atty@0.2.14",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:atty",
+      "versionInfo": "0.2.14"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-autocfg-15",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/autocfg@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:autocfg",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-base16ct-16",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/base16ct@0.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:base16ct",
+      "versionInfo": "0.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-base64ct-17",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/base64ct@1.6.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:base64ct",
+      "versionInfo": "1.6.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-bitflags-18",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/bitflags@1.3.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:bitflags",
+      "versionInfo": "1.3.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-block-buffer-19",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/block-buffer@0.10.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:block-buffer",
+      "versionInfo": "0.10.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-bytemuck-20",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "3995eaeebcdf32f91f980d360f78732ddc061097ab4e39991ae7a6ace9194677"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/bytemuck@1.23.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Zlib OR Apache-2.0 OR MIT",
+      "licenseDeclared": "Zlib OR Apache-2.0 OR MIT",
+      "name": "cargo:bytemuck",
+      "versionInfo": "1.23.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-bytemuck-derive-21",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "4f154e572231cb6ba2bd1176980827e3d5dc04cc183a75dea38109fbdd672d29"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/bytemuck_derive@1.10.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Zlib OR Apache-2.0 OR MIT",
+      "licenseDeclared": "Zlib OR Apache-2.0 OR MIT",
+      "name": "cargo:bytemuck_derive",
+      "versionInfo": "1.10.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-byteorder-22",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/byteorder@1.5.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Unlicense OR MIT",
+      "licenseDeclared": "Unlicense OR MIT",
+      "name": "cargo:byteorder",
+      "versionInfo": "1.5.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-cc-23",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/cc@1.0.83",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:cc",
+      "versionInfo": "1.0.83"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-cfg-if-24",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/cfg-if@1.0.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:cfg-if",
+      "versionInfo": "1.0.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-clap-25",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a0610544180c38b88101fecf2dd634b174a62eef6946f84dfc6a7127512b381c"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/clap@2.34.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:clap",
+      "versionInfo": "2.34.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-codespan-reporting-26",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "3538270d33cc669650c4b093848450d380def10c331d38c768e34cac80576e6e"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/codespan-reporting@0.11.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "cargo:codespan-reporting",
+      "versionInfo": "0.11.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-const-oid-27",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/const-oid@0.9.6",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:const-oid",
+      "versionInfo": "0.9.6"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-cpufeatures-28",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "53fe5e26ff1b7aef8bca9c6080520cfb8d9333c7568e1829cef191a9723e5504"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/cpufeatures@0.2.12",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:cpufeatures",
+      "versionInfo": "0.2.12"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-crypto-bigint-29",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0dc92fb57ca44df6db8059111ab3af99a63d5d0f8375d9972e319a379c6bab76"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/crypto-bigint@0.5.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:crypto-bigint",
+      "versionInfo": "0.5.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-crypto-common-30",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/crypto-common@0.1.6",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:crypto-common",
+      "versionInfo": "0.1.6"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-cxx-31",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/cxx@1.0.105",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:cxx",
+      "versionInfo": "1.0.105"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-der-32",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e7c1832837b905bbfb5101e07cc24c8deddf52f93225eee6ead5f4d63d53ddcb"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/der@0.7.10",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:der",
+      "versionInfo": "0.7.10"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-der-derive-33",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5fe87ce4529967e0ba1dcf8450bab64d97dfd5010a6256187ffe2e43e6f0e049"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/der_derive@0.7.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:der_derive",
+      "versionInfo": "0.7.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-digest-34",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/digest@0.10.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:digest",
+      "versionInfo": "0.10.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-ecdsa-35",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/ecdsa@0.16.9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:ecdsa",
+      "versionInfo": "0.16.9"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-elliptic-curve-36",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b5e6043086bf7973472e0c7dff2142ea0b680d30e18d9cc40f267efbf222bd47"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/elliptic-curve@0.13.8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:elliptic-curve",
+      "versionInfo": "0.13.8"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-env-logger-37",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/env_logger@0.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:env_logger",
+      "versionInfo": "0.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-fdt-38",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "784a4df722dc6267a04af36895398f59d21d07dce47232adf31ec0ff2fa45e67"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/fdt@0.1.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MPL-2.0",
+      "licenseDeclared": "MPL-2.0",
+      "name": "cargo:fdt",
+      "versionInfo": "0.1.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-ff-39",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ded41244b729663b1e574f1b4fb731469f69f79c17667b5d776b16cda0479449"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/ff@0.13.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:ff",
+      "versionInfo": "0.13.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-flagset-40",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d52a7e408202050813e6f1d9addadcaafef3dca7530c7ddfb005d4081cce6779"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/flagset@0.4.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "cargo:flagset",
+      "versionInfo": "0.4.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-generic-array-41",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/generic-array@0.14.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:generic-array",
+      "versionInfo": "0.14.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-getrandom-42",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "190092ea657667030ac6a35e305e62fc4dd69fd98ac98631e5d3a2b1575a12b5"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/getrandom@0.2.12",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:getrandom",
+      "versionInfo": "0.2.12"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-group-43",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/group@0.13.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:group",
+      "versionInfo": "0.13.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-hermit-abi-44",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/hermit-abi@0.1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:hermit-abi",
+      "versionInfo": "0.1.19"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-hkdf-45",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7b5f8eb2ad728638ea2c7d47a21db23b7b58a72ed6a38256b8a1849f15fbbdf7"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/hkdf@0.12.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:hkdf",
+      "versionInfo": "0.12.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-hmac-46",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/hmac@0.12.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:hmac",
+      "versionInfo": "0.12.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-humantime-47",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/humantime@1.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:humantime",
+      "versionInfo": "1.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-lazy-static-48",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/lazy_static@1.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:lazy_static",
+      "versionInfo": "1.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-libc-49",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/libc@0.2.175",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:libc",
+      "versionInfo": "0.2.175"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-libm-50",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/libm@0.2.8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:libm",
+      "versionInfo": "0.2.8"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-log-51",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/log@0.4.20",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:log",
+      "versionInfo": "0.4.20"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-memchr-52",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "523dc4f511e55ab87b694dc30d0f820d60906ef06413f93d4d7a1385599cc149"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/memchr@2.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Unlicense OR MIT",
+      "licenseDeclared": "Unlicense OR MIT",
+      "name": "cargo:memchr",
+      "versionInfo": "2.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-minimal-lexical-53",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/minimal-lexical@0.2.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:minimal-lexical",
+      "versionInfo": "0.2.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-nom-54",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/nom@7.1.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:nom",
+      "versionInfo": "7.1.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-num-bigint-dig-55",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "dc84195820f291c7697304f3cbdadd1cb7199c0efc917ff5eafd71225c136151"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/num-bigint-dig@0.8.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:num-bigint-dig",
+      "versionInfo": "0.8.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-num-derive-56",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/num-derive@0.4.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:num-derive",
+      "versionInfo": "0.4.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-num-integer-57",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/num-integer@0.1.45",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:num-integer",
+      "versionInfo": "0.1.45"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-num-iter-58",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/num-iter@0.1.43",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:num-iter",
+      "versionInfo": "0.1.43"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-num-traits-59",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/num-traits@0.2.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:num-traits",
+      "versionInfo": "0.2.19"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-p256-60",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c9863ad85fa8f4460f9c48cb909d38a0d689dba1f6f6988a5e3e0d31071bcd4b"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/p256@0.13.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:p256",
+      "versionInfo": "0.13.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-p384-61",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fe42f1670a52a47d448f14b6a5c61dd78fce51856e68edaa38f7ae3a46b8d6b6"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/p384@0.13.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:p384",
+      "versionInfo": "0.13.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-p521-62",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0fc9e2161f1f215afdfce23677034ae137bbd45016a880c2eb3ba8eb95f085b2"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/p521@0.13.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:p521",
+      "versionInfo": "0.13.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-pb-rs-63",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "git+https://github.com/tafia/quick-protobuf.git?rev=2f37d5a65504de7d716b5b28fd82219501a901a9#2f37d5a65504de7d716b5b28fd82219501a901a9",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/pb-rs@0.10.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:pb-rs",
+      "versionInfo": "0.10.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-pem-rfc7468-64",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "88b39c9bfcfc231068454382784bb460aae594343fb030d46e9f50a645418412"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/pem-rfc7468@0.7.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:pem-rfc7468",
+      "versionInfo": "0.7.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-pkcs1-65",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c8ffb9f10fa047879315e6625af03c164b16962a5368d724ed16323b68ace47f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/pkcs1@0.7.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:pkcs1",
+      "versionInfo": "0.7.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-pkcs8-66",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/pkcs8@0.10.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:pkcs8",
+      "versionInfo": "0.10.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-ppv-lite86-67",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/ppv-lite86@0.2.17",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:ppv-lite86",
+      "versionInfo": "0.2.17"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-primeorder-68",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "353e1ca18966c16d9deb1c69278edbc5f194139612772bd9537af60ac231e1e6"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/primeorder@0.13.6",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:primeorder",
+      "versionInfo": "0.13.6"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-proc-macro2-69",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e2422ad645d89c99f8f3e6b88a9fdeca7fabeac836b1002371c4367c8f984aae"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/proc-macro2@1.0.78",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:proc-macro2",
+      "versionInfo": "1.0.78"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-quick-error-70",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/quick-error@1.2.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:quick-error",
+      "versionInfo": "1.2.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-quick-protobuf-71",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "git+https://github.com/tafia/quick-protobuf.git?rev=2f37d5a65504de7d716b5b28fd82219501a901a9#2f37d5a65504de7d716b5b28fd82219501a901a9",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/quick-protobuf@0.8.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:quick-protobuf",
+      "versionInfo": "0.8.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-quote-72",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "291ec9ab5efd934aaf503a6466c5d5251535d108ee747472c3977cc5acc868ef"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/quote@1.0.35",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:quote",
+      "versionInfo": "1.0.35"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-rand-73",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/rand@0.8.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:rand",
+      "versionInfo": "0.8.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-rand-chacha-74",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/rand_chacha@0.3.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:rand_chacha",
+      "versionInfo": "0.3.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-rand-core-75",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/rand_core@0.6.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:rand_core",
+      "versionInfo": "0.6.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-regex-76",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b62dbe01f0b06f9d8dc7d49e05a0785f153b00b2c227856282f671e0318c9b15"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/regex@1.10.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:regex",
+      "versionInfo": "1.10.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-regex-automata-77",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5bb987efffd3c6d0d8f5f89510bb458559eab11e4f869acb20bf845e016259cd"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/regex-automata@0.4.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:regex-automata",
+      "versionInfo": "0.4.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-regex-syntax-78",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/regex-syntax@0.8.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:regex-syntax",
+      "versionInfo": "0.8.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-rfc6979-79",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f8dd2a808d456c4a54e300a23e9f5a67e122c3024119acbfd73e3bf664491cb2"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/rfc6979@0.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:rfc6979",
+      "versionInfo": "0.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-rsa-80",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "78928ac1ed176a5ca1d17e578a1825f3d81ca54cf41053a592584b020cfd691b"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/rsa@0.9.8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:rsa",
+      "versionInfo": "0.9.8"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-sec1-81",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d3e97a565f76233a6003f9f5c54be1d9c5bdfa3eccfb189469f11ec4901c47dc"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/sec1@0.7.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:sec1",
+      "versionInfo": "0.7.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-serde-82",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "870026e60fa08c69f064aa766c10f10b1d62db9ccd4d0abb206472bee0ce3b32"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/serde@1.0.196",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:serde",
+      "versionInfo": "1.0.196"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-serde-derive-83",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "33c85360c95e7d137454dc81d9a4ed2b8efd8fbe19cee57357b32b9771fccb67"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/serde_derive@1.0.196",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:serde_derive",
+      "versionInfo": "1.0.196"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-sha1-84",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/sha1@0.10.6",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:sha1",
+      "versionInfo": "0.10.6"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-sha2-85",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/sha2@0.10.9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:sha2",
+      "versionInfo": "0.10.9"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-signature-86",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/signature@2.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:signature",
+      "versionInfo": "2.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-size-87",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9fed904c7fb2856d868b92464fc8fa597fce366edea1a9cbfaa8cb5fe080bd6d"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/size@0.4.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:size",
+      "versionInfo": "0.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-smallvec-88",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e6ecd384b10a64542d77071bd64bd7b231f4ed5940fba55e98c3de13824cf3d7"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/smallvec@1.13.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:smallvec",
+      "versionInfo": "1.13.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-spin-89",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/spin@0.5.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:spin",
+      "versionInfo": "0.5.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-spki-90",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/spki@0.7.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:spki",
+      "versionInfo": "0.7.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-strsim-91",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/strsim@0.8.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:strsim",
+      "versionInfo": "0.8.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-subtle-92",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/subtle@2.5.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "cargo:subtle",
+      "versionInfo": "2.5.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-syn-93",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0f3531638e407dfc0814761abb7c00a5b54992b849452a0646b7f65c9f770f3f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/syn@2.0.48",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:syn",
+      "versionInfo": "2.0.48"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-termcolor-94",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/termcolor@1.4.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Unlicense OR MIT",
+      "licenseDeclared": "Unlicense OR MIT",
+      "name": "cargo:termcolor",
+      "versionInfo": "1.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-textwrap-95",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/textwrap@0.11.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "cargo:textwrap",
+      "versionInfo": "0.11.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-thiserror-96",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5d11abd9594d9b38965ef50805c5e469ca9cc6f197f883f717e0269a3057b3d5"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/thiserror@1.0.65",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:thiserror",
+      "versionInfo": "1.0.65"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-thiserror-impl-97",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ae71770322cbd277e69d762a16c444af02aa0575ac0d174f0b9562d3b37f8602"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/thiserror-impl@1.0.65",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:thiserror-impl",
+      "versionInfo": "1.0.65"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-tls-codec-98",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b5e78c9c330f8c85b2bae7c8368f2739157db9991235123aa1b15ef9502bfb6a"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/tls_codec@0.4.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:tls_codec",
+      "versionInfo": "0.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-tls-codec-derive-99",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8d9ef545650e79f30233c0003bcc2504d7efac6dad25fca40744de773fe2049c"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/tls_codec_derive@0.4.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:tls_codec_derive",
+      "versionInfo": "0.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-typenum-100",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/typenum@1.17.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "cargo:typenum",
+      "versionInfo": "1.17.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-unicode-ident-101",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/unicode-ident@1.0.12",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "(MIT OR Apache-2.0) AND Unicode-DFS-2016",
+      "licenseDeclared": "(MIT OR Apache-2.0) AND Unicode-DFS-2016",
+      "name": "cargo:unicode-ident",
+      "versionInfo": "1.0.12"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-unicode-width-102",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e51733f11c9c4f72aa0c160008246859e340b00807569a0da0e7a1079b27ba85"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/unicode-width@0.1.11",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:unicode-width",
+      "versionInfo": "0.1.11"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-vec-map-103",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/vec_map@0.8.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:vec_map",
+      "versionInfo": "0.8.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-version-check-104",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/version_check@0.9.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:version_check",
+      "versionInfo": "0.9.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-wasi-105",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/wasi@0.11.0%2Bwasi-snapshot-preview1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "name": "cargo:wasi",
+      "versionInfo": "0.11.0+wasi-snapshot-preview1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-winapi-106",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/winapi@0.3.9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:winapi",
+      "versionInfo": "0.3.9"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-winapi-i686-pc-windows-gnu-107",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/winapi-i686-pc-windows-gnu@0.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:winapi-i686-pc-windows-gnu",
+      "versionInfo": "0.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-winapi-util-108",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f29e6f9198ba0d26b4c9f07dbe6f9ed633e1f3d5b8b414090084349e46a52596"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/winapi-util@0.1.6",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Unlicense/MIT",
+      "licenseDeclared": "Unlicense/MIT",
+      "name": "cargo:winapi-util",
+      "versionInfo": "0.1.6"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-winapi-x86-64-pc-windows-gnu-109",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/winapi-x86_64-pc-windows-gnu@0.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT/Apache-2.0",
+      "licenseDeclared": "MIT/Apache-2.0",
+      "name": "cargo:winapi-x86_64-pc-windows-gnu",
+      "versionInfo": "0.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-x509-cert-110",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1301e935010a701ae5f8655edc0ad17c44bad3ac5ce8c39185f75453b720ae94"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/x509-cert@0.2.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:x509-cert",
+      "versionInfo": "0.2.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-zeroize-111",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/zeroize@1.7.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:zeroize",
+      "versionInfo": "1.7.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cargo-zeroize-derive-112",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ce36e65b0d2999d2aafac989fb249189a141aee1f53c612c1f37d72631959f69"
+        }
+      ],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "registry+https://github.com/rust-lang/crates.io-index",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/zeroize_derive@1.4.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 OR MIT",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "cargo:zeroize_derive",
+      "versionInfo": "1.4.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.activity-activity-113",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.activity/activity@1.8.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.activity:activity",
+      "versionInfo": "1.8.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.activity-activity-ktx-114",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.activity/activity-ktx@1.8.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.activity:activity-ktx",
+      "versionInfo": "1.8.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.annotation-annotation-115",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.annotation/annotation@1.6.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.annotation:annotation",
+      "versionInfo": "1.6.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.annotation-annotation-experimental-116",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.annotation/annotation-experimental@1.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.annotation:annotation-experimental",
+      "versionInfo": "1.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.annotation-annotation-jvm-117",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.annotation/annotation-jvm@1.6.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.annotation:annotation-jvm",
+      "versionInfo": "1.6.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.appcompat-appcompat-118",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.appcompat/appcompat@1.7.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.appcompat:appcompat",
+      "versionInfo": "1.7.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.appcompat-appcompat-resources-119",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.appcompat/appcompat-resources@1.7.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.appcompat:appcompat-resources",
+      "versionInfo": "1.7.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.arch.core-core-common-120",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.arch.core/core-common@2.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.arch.core:core-common",
+      "versionInfo": "2.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.arch.core-core-runtime-121",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.arch.core/core-runtime@2.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.arch.core:core-runtime",
+      "versionInfo": "2.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.biometric-biometric-122",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.biometric/biometric@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.biometric:biometric",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.cardview-cardview-123",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.cardview/cardview@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.cardview:cardview",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.collection-collection-124",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.collection/collection@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.collection:collection",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.collection-collection-ktx-125",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.collection/collection-ktx@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.collection:collection-ktx",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.concurrent-concurrent-futures-126",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.concurrent/concurrent-futures@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.concurrent:concurrent-futures",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.constraintlayout-constraintlayout-127",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.constraintlayout/constraintlayout@2.1.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.constraintlayout:constraintlayout",
+      "versionInfo": "2.1.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.constraintlayout-constraintlayout-core-128",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.constraintlayout/constraintlayout-core@1.0.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.constraintlayout:constraintlayout-core",
+      "versionInfo": "1.0.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.coordinatorlayout-coordinatorlayout-129",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.coordinatorlayout/coordinatorlayout@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.coordinatorlayout:coordinatorlayout",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.core-core-130",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.core/core@1.13.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.core:core",
+      "versionInfo": "1.13.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.core-core-ktx-131",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.core/core-ktx@1.13.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.core:core-ktx",
+      "versionInfo": "1.13.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.core-core-splashscreen-132",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.core/core-splashscreen@1.0.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.core:core-splashscreen",
+      "versionInfo": "1.0.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.cursoradapter-cursoradapter-133",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.cursoradapter/cursoradapter@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.cursoradapter:cursoradapter",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.customview-customview-134",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.customview/customview@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.customview:customview",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.customview-customview-poolingcontainer-135",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.customview/customview-poolingcontainer@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.customview:customview-poolingcontainer",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.databinding-databinding-adapters-136",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/databinding-adapters@8.5.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.databinding:databinding-adapters",
+      "versionInfo": "8.5.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.databinding-databinding-common-137",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/databinding-common@8.5.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.databinding:databinding-common",
+      "versionInfo": "8.5.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.databinding-databinding-ktx-138",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/databinding-ktx@8.5.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.databinding:databinding-ktx",
+      "versionInfo": "8.5.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.databinding-databinding-runtime-139",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/databinding-runtime@8.5.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.databinding:databinding-runtime",
+      "versionInfo": "8.5.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.databinding-viewbinding-140",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/viewbinding@8.5.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.databinding:viewbinding",
+      "versionInfo": "8.5.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.documentfile-documentfile-141",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.documentfile/documentfile@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.documentfile:documentfile",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.drawerlayout-drawerlayout-142",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.drawerlayout/drawerlayout@1.1.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.drawerlayout:drawerlayout",
+      "versionInfo": "1.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.dynamicanimation-dynamicanimation-143",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.dynamicanimation/dynamicanimation@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.dynamicanimation:dynamicanimation",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.emoji2-emoji2-144",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.emoji2/emoji2@1.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.emoji2:emoji2",
+      "versionInfo": "1.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.emoji2-emoji2-views-helper-145",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.emoji2/emoji2-views-helper@1.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.emoji2:emoji2-views-helper",
+      "versionInfo": "1.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.fragment-fragment-146",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.fragment/fragment@1.8.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.fragment:fragment",
+      "versionInfo": "1.8.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.fragment-fragment-ktx-147",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.fragment/fragment-ktx@1.8.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.fragment:fragment-ktx",
+      "versionInfo": "1.8.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.interpolator-interpolator-148",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.interpolator/interpolator@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.interpolator:interpolator",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.legacy-legacy-support-core-utils-149",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.legacy/legacy-support-core-utils@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.legacy:legacy-support-core-utils",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-common-150",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-common@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-common",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-livedata-151",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-livedata@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-livedata",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-livedata-core-152",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-livedata-core@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-livedata-core",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-livedata-core-ktx-153",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-livedata-core-ktx@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-livedata-core-ktx",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-process-154",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-process@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-process",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-runtime-155",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-runtime@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-runtime",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-runtime-ktx-156",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-runtime-ktx@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-runtime-ktx",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-service-157",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-service@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-service",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-viewmodel-158",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-viewmodel@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-viewmodel",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-viewmodel-ktx-159",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-viewmodel-ktx@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-viewmodel-ktx",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.lifecycle-lifecycle-viewmodel-savedstate-160",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-viewmodel-savedstate@2.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.lifecycle:lifecycle-viewmodel-savedstate",
+      "versionInfo": "2.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.loader-loader-161",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.loader/loader@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.loader:loader",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.localbroadcastmanager-localbroadcastmanager-162",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.localbroadcastmanager/localbroadcastmanager@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.localbroadcastmanager:localbroadcastmanager",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-common-163",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-common@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-common",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-common-ktx-164",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-common-ktx@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-common-ktx",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-fragment-165",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-fragment@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-fragment",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-fragment-ktx-166",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-fragment-ktx@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-fragment-ktx",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-runtime-167",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-runtime@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-runtime",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-runtime-ktx-168",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-runtime-ktx@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-runtime-ktx",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-safe-args-gradle-plugin-169",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-safe-args-gradle-plugin@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-safe-args-gradle-plugin",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-ui-170",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-ui@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-ui",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.navigation-navigation-ui-ktx-171",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.navigation/navigation-ui-ktx@2.7.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.navigation:navigation-ui-ktx",
+      "versionInfo": "2.7.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.print-print-172",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.print/print@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.print:print",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.profileinstaller-profileinstaller-173",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.profileinstaller/profileinstaller@1.3.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.profileinstaller:profileinstaller",
+      "versionInfo": "1.3.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.recyclerview-recyclerview-174",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.recyclerview/recyclerview@1.3.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.recyclerview:recyclerview",
+      "versionInfo": "1.3.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.resourceinspection-resourceinspection-annotation-175",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.resourceinspection/resourceinspection-annotation@1.0.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.resourceinspection:resourceinspection-annotation",
+      "versionInfo": "1.0.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.room-room-common-176",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.room/room-common@2.6.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.room:room-common",
+      "versionInfo": "2.6.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.room-room-compiler-177",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.room/room-compiler@2.6.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.room:room-compiler",
+      "versionInfo": "2.6.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.room-room-ktx-178",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.room/room-ktx@2.6.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.room:room-ktx",
+      "versionInfo": "2.6.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.room-room-runtime-179",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.room/room-runtime@2.6.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.room:room-runtime",
+      "versionInfo": "2.6.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.savedstate-savedstate-180",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.savedstate/savedstate@1.2.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.savedstate:savedstate",
+      "versionInfo": "1.2.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.savedstate-savedstate-ktx-181",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.savedstate/savedstate-ktx@1.2.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.savedstate:savedstate-ktx",
+      "versionInfo": "1.2.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.slidingpanelayout-slidingpanelayout-182",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.slidingpanelayout/slidingpanelayout@1.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.slidingpanelayout:slidingpanelayout",
+      "versionInfo": "1.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.sqlite-sqlite-183",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.sqlite/sqlite@2.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.sqlite:sqlite",
+      "versionInfo": "2.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.sqlite-sqlite-framework-184",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.sqlite/sqlite-framework@2.4.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.sqlite:sqlite-framework",
+      "versionInfo": "2.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.startup-startup-runtime-185",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.startup/startup-runtime@1.1.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.startup:startup-runtime",
+      "versionInfo": "1.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.swiperefreshlayout-swiperefreshlayout-186",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.swiperefreshlayout/swiperefreshlayout@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.swiperefreshlayout:swiperefreshlayout",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.tracing-tracing-187",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.tracing/tracing@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.tracing:tracing",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.transition-transition-188",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.transition/transition@1.5.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.transition:transition",
+      "versionInfo": "1.5.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.vectordrawable-vectordrawable-189",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.vectordrawable/vectordrawable@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.vectordrawable:vectordrawable",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.vectordrawable-vectordrawable-animated-190",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.vectordrawable/vectordrawable-animated@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.vectordrawable:vectordrawable-animated",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.versionedparcelable-versionedparcelable-191",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.versionedparcelable/versionedparcelable@1.1.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.versionedparcelable:versionedparcelable",
+      "versionInfo": "1.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.viewpager2-viewpager2-192",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.viewpager2/viewpager2@1.1.0-beta02",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.viewpager2:viewpager2",
+      "versionInfo": "1.1.0-beta02"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.viewpager-viewpager-193",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.viewpager/viewpager@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.viewpager:viewpager",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-androidx.window-window-194",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.window/window@1.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:androidx.window:window",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.android.tools.build-gradle-195",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.android.tools.build/gradle@8.5.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.android.tools.build:gradle",
+      "versionInfo": "8.5.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.atlassian.commonmark-commonmark-196",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.atlassian.commonmark/commonmark@0.13.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "name": "gradle:com.atlassian.commonmark:commonmark",
+      "versionInfo": "0.13.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.github.topjohnwu.libsu-core-197",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.github.topjohnwu.libsu/core@5.2.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.github.topjohnwu.libsu:core",
+      "versionInfo": "5.2.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.github.topjohnwu.libsu-nio-198",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.github.topjohnwu.libsu/nio@5.2.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.github.topjohnwu.libsu:nio",
+      "versionInfo": "5.2.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.github.topjohnwu.libsu-service-199",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.github.topjohnwu.libsu/service@5.2.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.github.topjohnwu.libsu:service",
+      "versionInfo": "5.2.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.github.topjohnwu-indeterminate-checkbox-200",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.github.topjohnwu/indeterminate-checkbox@1.0.7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.github.topjohnwu:indeterminate-checkbox",
+      "versionInfo": "1.0.7"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.github.topjohnwu-jtar-201",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.github.topjohnwu/jtar@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.github.topjohnwu:jtar",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.github.topjohnwu-lz4-java-202",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.github.topjohnwu/lz4-java@1.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.github.topjohnwu:lz4-java",
+      "versionInfo": "1.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.google.android.material-material-203",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.google.android.material/material@1.11.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.google.android.material:material",
+      "versionInfo": "1.11.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.google.errorprone-error-prone-annotations-204",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.google.errorprone/error_prone_annotations@2.15.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.google.errorprone:error_prone_annotations",
+      "versionInfo": "2.15.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.google.guava-listenablefuture-205",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.google.guava/listenablefuture@1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.google.guava:listenablefuture",
+      "versionInfo": "1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.jakewharton.timber-timber-206",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.jakewharton.timber/timber@5.0.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.jakewharton.timber:timber",
+      "versionInfo": "5.0.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.moshi-moshi-207",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.moshi/moshi@1.15.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.moshi:moshi",
+      "versionInfo": "1.15.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.moshi-moshi-kotlin-codegen-208",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.moshi/moshi-kotlin-codegen@1.15.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.moshi:moshi-kotlin-codegen",
+      "versionInfo": "1.15.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.okhttp3-logging-interceptor-209",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.okhttp3/logging-interceptor@4.12.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.okhttp3:logging-interceptor",
+      "versionInfo": "4.12.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.okhttp3-okhttp-210",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.okhttp3/okhttp@4.12.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.okhttp3:okhttp",
+      "versionInfo": "4.12.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.okhttp3-okhttp-dnsoverhttps-211",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.okhttp3/okhttp-dnsoverhttps@4.12.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.okhttp3:okhttp-dnsoverhttps",
+      "versionInfo": "4.12.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.okio-okio-212",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.okio/okio@3.6.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.okio:okio",
+      "versionInfo": "3.6.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.okio-okio-jvm-213",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.okio/okio-jvm@3.6.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.okio:okio-jvm",
+      "versionInfo": "3.6.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.retrofit2-converter-moshi-214",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.retrofit2/converter-moshi@2.9.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.retrofit2:converter-moshi",
+      "versionInfo": "2.9.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.retrofit2-converter-scalars-215",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.retrofit2/converter-scalars@2.9.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.retrofit2:converter-scalars",
+      "versionInfo": "2.9.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-com.squareup.retrofit2-retrofit-216",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.squareup.retrofit2/retrofit@2.9.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:com.squareup.retrofit2:retrofit",
+      "versionInfo": "2.9.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-dev.rikka.rikkax.insets-insets-217",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/dev.rikka.rikkax.insets/insets@1.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "gradle:dev.rikka.rikkax.insets:insets",
+      "versionInfo": "1.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-dev.rikka.rikkax.layoutinflater-layoutinflater-218",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/dev.rikka.rikkax.layoutinflater/layoutinflater@1.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "gradle:dev.rikka.rikkax.layoutinflater:layoutinflater",
+      "versionInfo": "1.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-dev.rikka.rikkax.recyclerview-recyclerview-ktx-219",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/dev.rikka.rikkax.recyclerview/recyclerview-ktx@1.3.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "gradle:dev.rikka.rikkax.recyclerview:recyclerview-ktx",
+      "versionInfo": "1.3.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-io.noties.markwon-core-220",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.noties.markwon/core@4.6.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:io.noties.markwon:core",
+      "versionInfo": "4.6.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-junit-junit-221",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/junit/junit@4.13.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "EPL-1.0",
+      "licenseDeclared": "EPL-1.0",
+      "name": "gradle:junit:junit",
+      "versionInfo": "4.13.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-me.zhanghai.android.fastscroll-library-222",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/me.zhanghai.android.fastscroll/library@1.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:me.zhanghai.android.fastscroll:library",
+      "versionInfo": "1.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.bouncycastle-bcpkix-jdk18on-223",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.bouncycastle/bcpkix-jdk18on@1.77",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "gradle:org.bouncycastle:bcpkix-jdk18on",
+      "versionInfo": "1.77"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.bouncycastle-bcprov-jdk18on-224",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.bouncycastle/bcprov-jdk18on@1.77",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "gradle:org.bouncycastle:bcprov-jdk18on",
+      "versionInfo": "1.77"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.bouncycastle-bcutil-jdk18on-225",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.bouncycastle/bcutil-jdk18on@1.77",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "gradle:org.bouncycastle:bcutil-jdk18on",
+      "versionInfo": "1.77"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.eclipse.jgit-org.eclipse.jgit-226",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.eclipse.jgit/org.eclipse.jgit@6.7.0.202309050840-r",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "gradle:org.eclipse.jgit:org.eclipse.jgit",
+      "versionInfo": "6.7.0.202309050840-r"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-android-extensions-runtime-227",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlin/kotlin-android-extensions-runtime@1.9.23",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlin:kotlin-android-extensions-runtime",
+      "versionInfo": "1.9.23"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-bom-228",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlin/kotlin-bom@1.8.22",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlin:kotlin-bom",
+      "versionInfo": "1.8.22"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-parcelize-runtime-229",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlin/kotlin-parcelize-runtime@1.9.23",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlin:kotlin-parcelize-runtime",
+      "versionInfo": "1.9.23"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-stdlib-230",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlin/kotlin-stdlib@1.9.23",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlin:kotlin-stdlib",
+      "versionInfo": "1.9.23"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlin-kotlin-stdlib-common-231",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlin/kotlin-stdlib-common@1.9.23",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlin:kotlin-stdlib-common",
+      "versionInfo": "1.9.23"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-android-232",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlinx/kotlinx-coroutines-android@1.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-android",
+      "versionInfo": "1.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-bom-233",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlinx/kotlinx-coroutines-bom@1.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-bom",
+      "versionInfo": "1.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-core-234",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlinx/kotlinx-coroutines-core@1.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-core",
+      "versionInfo": "1.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains.kotlinx-kotlinx-coroutines-core-jvm-235",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm@1.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
+      "versionInfo": "1.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.jetbrains-annotations-236",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains/annotations@23.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.jetbrains:annotations",
+      "versionInfo": "23.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gradle-org.lsposed.lsparanoid-gradle-plugin-237",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.lsposed.lsparanoid/gradle-plugin@0.5.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "gradle:org.lsposed.lsparanoid:gradle-plugin",
+      "versionInfo": "0.5.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external--xDL-238",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/hexhacking/xDL.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "name": "submodule:native/src/external/_xDL",
+      "versionInfo": "e295323a34fbad51f3954604f30f9c5517b43b40"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-busybox-239",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/topjohnwu/ndk-busybox.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "GPL-2.0-only",
+      "licenseDeclared": "GPL-2.0-only",
+      "name": "submodule:native/src/external/busybox",
+      "versionInfo": "b0f643d5353c2c0156358d87043e25a77bae3047"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-bzip2-240",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/nemequ/bzip2.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "bzip2-1.0.6",
+      "licenseDeclared": "bzip2-1.0.6",
+      "name": "submodule:native/src/external/bzip2",
+      "versionInfo": "67d818584d505503c2bdbd15aec43e6219642762"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-cxx-rs-241",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/topjohnwu/cxx.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT OR Apache-2.0",
+      "licenseDeclared": "MIT OR Apache-2.0",
+      "name": "submodule:native/src/external/cxx-rs",
+      "versionInfo": "ce439b25bf7ac4201859c4433560d896523aad44"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-libcxx-242",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/topjohnwu/libcxx.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0 WITH LLVM-exception",
+      "licenseDeclared": "Apache-2.0 WITH LLVM-exception",
+      "name": "submodule:native/src/external/libcxx",
+      "versionInfo": "12c8f4e93f196a700137e983dcceeac43cf807f2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-lz4-243",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/lz4/lz4.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "name": "submodule:native/src/external/lz4",
+      "versionInfo": "d44371841a2f1728a3f36839fd4b7e872d0927d3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-parallel-hashmap-244",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/greg7mdp/parallel-hashmap.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "submodule:native/src/external/parallel-hashmap",
+      "versionInfo": "401552da80b0971f818e648621260720ad40934e"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-pcre-245",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://android.googlesource.com/platform/external/pcre",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "submodule:native/src/external/pcre",
+      "versionInfo": "8e12681a1a252fd581830b2f65d1e154a2030bb9"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-selinux-246",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/LSPosed/selinux.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "LGPL-2.1-or-later",
+      "licenseDeclared": "LGPL-2.1-or-later",
+      "name": "submodule:native/src/external/selinux",
+      "versionInfo": "8c6acc0d7792cda5f203dfd8e94c633e9dbfdeae"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-system-properties-247",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/topjohnwu/system_properties.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "submodule:native/src/external/system_properties",
+      "versionInfo": "14b35941f4437a06685daee4464acea58a87ad57"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-xz-248",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/xz-mirror/xz.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "0BSD",
+      "licenseDeclared": "0BSD",
+      "name": "submodule:native/src/external/xz",
+      "versionInfo": "2327a461e1afce862c22269b80d3517801103c1b"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-zlib-249",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://android.googlesource.com/platform/external/zlib",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Zlib",
+      "licenseDeclared": "Zlib",
+      "name": "submodule:native/src/external/zlib",
+      "versionInfo": "3a0aa2b3df38ad6298f91c4d8afef708bb4f088e"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-native-src-external-zopfli-250",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/google/zopfli.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "name": "submodule:native/src/external/zopfli",
+      "versionInfo": "831773bc28e318b91a3255fa12c9fcde1606058b"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-submodule-tools-termux-elf-cleaner-251",
+      "checksums": [],
+      "copyrightText": "NOASSERTION",
+      "downloadLocation": "https://github.com/termux/termux-elf-cleaner.git",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "licenseConcluded": "GPL-3.0-or-later",
+      "licenseDeclared": "GPL-3.0-or-later",
+      "name": "submodule:tools/termux-elf-cleaner",
+      "versionInfo": "55b68119abfca84c9bff009d6505c24862610ca1"
+    }
+  ],
+  "spdxVersion": "SPDX-2.3"
+}

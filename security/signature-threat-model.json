@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "asset": "Magisk daemon to manager/stub identity binding",
+  "current_fork_baseline": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+  "official_stable_baseline": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
+  "trust_boundaries": [
+    {
+      "input": "installed original manager APK",
+      "attacker_control": "package replacement is possible only after bypassing Android package-signature rules, changing install state, or modifying /data with elevated access",
+      "required_behavior": "release daemon compares the extracted certificate to the certificate preserved from its embedded trusted stub and rejects mismatch"
+    },
+    {
+      "input": "hidden/repackaged manager APK and dyn/current.apk",
+      "attacker_control": "package and dynamic APK paths are writable only through app/root compromise or a defective recovery flow",
+      "required_behavior": "bind the stored package, app ID, and certificate; reject changes and recover through the trusted stub"
+    },
+    {
+      "input": "debug build",
+      "attacker_control": "developer-controlled lab artifact",
+      "required_behavior": "debug-only relaxation must never be compiled into a release artifact or presented as stable"
+    }
+  ],
+  "abuse_cases": [
+    "replace the normal manager with an untrusted certificate and request root policy UI authority",
+    "replace hidden-manager dyn/current.apk while retaining the expected package directory",
+    "change hidden package UID/certificate after the daemon caches it",
+    "ship a release with signature checks disabled through an unconditional compile-time constant"
+  ],
+  "decisions": {
+    "current_kitsune": "global ENFORCE_SIGNATURE=0 is an acknowledged release blocker and must not be copied",
+    "next_system": "preserve official stable default check-signature feature and release-only rejection paths",
+    "hidden_manager": "permit no package-name-only exception; recovery remains certificate- and identity-bound",
+    "runtime_gate": "PR6 must execute trusted install, untrusted replacement, hidden-manager replacement, and trusted-stub recovery on a disposable AVD"
+  }
+}
