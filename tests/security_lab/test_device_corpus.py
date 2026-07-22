@@ -117,6 +117,7 @@ class DeviceCorpusTest(unittest.TestCase):
         self.assertIn(export, source)
         self.assertIn(create, source)
         self.assertIn('.kitsune-security-owned', source)
+        self.assertIn('--adb "$adb"', source)
         self.assertNotIn('"$sdk" --channel=3 tools ', source)
         self.assertLess(source.index(export), source.index(create))
 

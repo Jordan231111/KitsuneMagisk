@@ -47,7 +47,8 @@ esac
 
 pkg="system-images;android-$api;$image_type;$arch"
 serial="emulator-$port"
-adb_cmd=("$ANDROID_SDK_ROOT/platform-tools/adb" -s "$serial")
+adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+adb_cmd=("$adb" -s "$serial")
 
 stop_emulator() {
   if [ -n "$emu_pid" ]; then
@@ -130,6 +131,7 @@ done
 [ "${booted:-}" = 1 ] || exit 1
 
 python3 -m tools.security_lab.device_corpus \
+  --adb "$adb" \
   --serial "$serial" \
   --binary-dir native/out \
   --iterations "$iterations" \
