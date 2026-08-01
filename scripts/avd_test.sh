@@ -333,6 +333,10 @@ test_emu() {
     print_error "Concurrent su smoke timed out or failed"
     return 1
   fi
+  # Legacy adb shell uses a PTY and may retain CRLF on Android 6. Normalize
+  # before matching complete worker lines; the command's exit status above is
+  # still authoritative for failures inside any worker.
+  parallel_result=${parallel_result//$'\r'/}
   printf '%s\n' "$parallel_result" >&2
   if [ "$(grep -c -- '-ok$' <<< "$parallel_result")" -ne 4 ]; then
     print_error "Concurrent su smoke did not complete every worker"

@@ -146,6 +146,14 @@ class DeviceCorpusTest(unittest.TestCase):
         self.assertNotIn('"$sdk" --channel=3 tools ', source)
         self.assertLess(source.index(export), source.index(create))
 
+    def test_normal_avd_concurrent_su_normalizes_legacy_adb_crlf(self) -> None:
+        source = (ROOT / "scripts" / "avd_test.sh").read_text(encoding="utf-8")
+        normalize = "parallel_result=${parallel_result//$'\\r'/}"
+        count = "grep -c -- '-ok$'"
+        self.assertIn(normalize, source)
+        self.assertIn(count, source)
+        self.assertLess(source.index(normalize), source.index(count))
+
 
 if __name__ == "__main__":
     unittest.main()
