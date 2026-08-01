@@ -55,7 +55,8 @@ The following flags record evidence created by an external lab workflow; they do
 invent the evidence:
 
 - `--init-import-proven`: a harmless marker RC was parsed on a disposable snapshot;
-- `--snapshot-id`, `--backup-digest`, `--restore-command`, and `--recovery-verified`: one complete,
+- `--snapshot-id`, `--backup-location`, `--backup-digest`, `--restore-command`, and
+  `--recovery-verified`: one complete,
   exercised recovery tuple;
 - `--backing-write-probe passed --cold-boots N`: a removed controlled marker survived at least
   three cold boots;

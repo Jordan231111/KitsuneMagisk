@@ -83,6 +83,7 @@ class QualificationEvidence:
 
     init_import_proven: bool = False
     snapshot_id: str | None = None
+    backup_location: str | None = None
     backup_digest: str | None = None
     restore_command: str | None = None
     recovery_verified: bool = False
@@ -103,6 +104,7 @@ class QualificationEvidence:
         return bool(
             self.recovery_verified
             and self.snapshot_id
+            and self.backup_location
             and self.backup_digest
             and self.restore_command
         )
@@ -159,6 +161,11 @@ class AdbClient:
         result = self._command("wait-for-device", timeout=30)
         if result.returncode != 0:
             raise ProbeError(result.stderr or "ADB target did not become ready")
+
+    def push(self, source: str, destination: str) -> None:
+        result = self._command("push", source, destination, timeout=30)
+        if result.returncode != 0:
+            raise ProbeError(result.stderr or f"could not push {source} to {destination}")
 
     def shell(self, command: str, *, root: bool = False, timeout: int | None = None) -> CommandResult:
         if root:
@@ -873,6 +880,7 @@ def collect_report(
         },
         "recovery": {
             "snapshot_id": evidence.snapshot_id,
+            "backup_location": evidence.backup_location,
             "backup_digest": evidence.backup_digest.lower() if evidence.backup_digest else None,
             "restore_command": evidence.restore_command,
             "verified": evidence.recovery_is_proven,
@@ -1092,7 +1100,7 @@ def validate_report(report: Mapping[str, Any]) -> None:
     recovery = report["recovery"]
     if recovery.get("verified") and not all(
         recovery.get(field)
-        for field in ("snapshot_id", "backup_digest", "restore_command")
+        for field in ("snapshot_id", "backup_location", "backup_digest", "restore_command")
     ):
         raise ValueError("verified recovery requires a complete recovery tuple")
     persistence = report["persistence"]
@@ -1166,10 +1174,12 @@ def fixture_report(values: Mapping[str, Any]) -> dict[str, Any]:
     recovery = dict(fixture_values.get("recovery", {}))
     if recovery.get("verified"):
         recovery.setdefault("snapshot_id", "synthetic-snapshot")
+        recovery.setdefault("backup_location", "synthetic-backup")
         recovery.setdefault("backup_digest", "0" * 64)
         recovery.setdefault("restore_command", "synthetic-restore")
     else:
         recovery.setdefault("snapshot_id", None)
+        recovery.setdefault("backup_location", None)
         recovery.setdefault("backup_digest", None)
         recovery.setdefault("restore_command", None)
     fixture_values["recovery"] = recovery

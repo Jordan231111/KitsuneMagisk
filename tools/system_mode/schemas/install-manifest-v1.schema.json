@@ -12,12 +12,13 @@
     "product": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "version", "source_commit", "upstream_base"],
+      "required": ["name", "version", "source_commit", "upstream_base", "artifact_sha256"],
       "properties": {
         "name": {"const": "KitsuneMagisk"},
         "version": {"type": "string"},
         "source_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
-        "upstream_base": {"type": "string"}
+        "upstream_base": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       }
     },
     "target": {

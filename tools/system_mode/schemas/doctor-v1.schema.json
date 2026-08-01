@@ -183,9 +183,10 @@
     "recovery": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["snapshot_id", "backup_digest", "restore_command", "verified"],
+      "required": ["snapshot_id", "backup_location", "backup_digest", "restore_command", "verified"],
       "properties": {
         "snapshot_id": {"type": ["string", "null"]},
+        "backup_location": {"type": ["string", "null"]},
         "backup_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
         "restore_command": {"type": ["string", "null"]},
         "verified": {"type": "boolean"}
@@ -196,6 +197,7 @@
           "then": {
             "properties": {
               "snapshot_id": {"type": "string", "minLength": 1},
+              "backup_location": {"type": "string", "minLength": 1},
               "backup_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
               "restore_command": {"type": "string", "minLength": 1}
             }

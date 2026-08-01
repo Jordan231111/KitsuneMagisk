@@ -47,6 +47,7 @@ class DoctorFixtureTest(unittest.TestCase):
     def test_evidence_requires_complete_recovery_tuple(self) -> None:
         evidence = QualificationEvidence(
             snapshot_id="snapshot-1",
+            backup_location="external-backup-1",
             backup_digest="a" * 64,
             recovery_verified=True,
         )
@@ -57,6 +58,7 @@ class DoctorFixtureTest(unittest.TestCase):
         )
         report["recovery"] = {
             "snapshot_id": "snapshot-1",
+            "backup_location": "external-backup-1",
             "backup_digest": None,
             "restore_command": "restore snapshot-1",
             "verified": True,

@@ -141,7 +141,14 @@ abstract class MagiskInstallImpl protected constructor(
             }
 
             // Extract scripts
-            for (script in listOf("util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk")) {
+            for (script in listOf(
+                "util_functions.sh",
+                "boot_patch.sh",
+                "addon.d.sh",
+                "system_mode_transaction.sh",
+                "system_mode_verify.sh",
+                "stub.apk",
+            )) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)
             }
@@ -557,9 +564,12 @@ abstract class MagiskInstallImpl protected constructor(
                 . "${'$'}1/system_mode_manager.sh" || exit 1
                 rm -f "${'$'}1/system_mode_manager.sh" || exit 1
                 . "${'$'}1/util_functions.sh" || exit 1
+                [ "${'$'}KITSUNE_SOURCE_COMMIT" = "${'$'}3" ] || exit 1
+                [ "${'$'}KITSUNE_UPSTREAM_BASE" = "${'$'}4" ] || exit 1
                 app_init
                 xdirect_install_system "${'$'}1" "${'$'}2"
-            ' system-mode "$installDir" "$AppApkPath"
+            ' system-mode "$installDir" "$AppApkPath" \
+                "${BuildConfig.SOURCE_COMMIT}" "${BuildConfig.UPSTREAM_BASE}"
             _system_mode_rc=${'$'}?
             rm -f "$manager"
             (exit "${'$'}_system_mode_rc")
@@ -572,7 +582,8 @@ abstract class MagiskInstallImpl protected constructor(
 
     protected suspend fun fixEnv() = extractFiles() && "fix_env $installDir".sh().isSuccess
 
-    protected fun uninstall() = "run_uninstaller $AppApkPath".sh().isSuccess
+    protected fun uninstall() =
+        "run_uninstaller \"$AppApkPath\" \"${context.packageName}\"".sh().isSuccess
 
     protected fun cleanupInstallDir() {
         if (::installDir.isInitialized) {
@@ -664,15 +675,7 @@ abstract class MagiskInstaller(
     ) : MagiskInstallImpl(console, logs) {
         override suspend fun operations() = uninstall()
 
-        override suspend fun exec(): Boolean {
-            val success = super.exec()
-            if (success) {
-                UiThreadHandler.handler.postDelayed(3000) {
-                    Shell.cmd("pm uninstall ${context.packageName}").exec()
-                }
-            }
-            return success
-        }
+        override suspend fun exec() = super.exec()
     }
 
     class FixEnv(private val callback: () -> Unit) : MagiskInstallImpl() {
