@@ -14,10 +14,10 @@
 
     <instrumentation
         android:name="com.topjohnwu.magisk.test.AppTestRunner"
-        android:targetPackage="com.topjohnwu.magisk" />
+        android:targetPackage="${magiskAppId}" />
 
     <instrumentation
         android:name="com.topjohnwu.magisk.test.TestRunner"
-        android:targetPackage="com.topjohnwu.magisk.test" />
+        android:targetPackage="${magiskTestAppId}" />
 
 </manifest>

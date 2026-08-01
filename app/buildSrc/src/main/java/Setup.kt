@@ -242,12 +242,12 @@ fun Project.setupAppCommon() {
         }
 
         buildTypes {
-            val config = signingConfigs.findByName("config") ?: signingConfigs["debug"]
             debug {
-                signingConfig = config
+                signingConfig = signingConfigs["debug"]
             }
             release {
-                signingConfig = config
+                signingConfig =
+                    signingConfigs.findByName("config") ?: signingConfigs["debug"]
             }
         }
 
@@ -297,7 +297,7 @@ fun Project.setupMainApk() {
         namespace = "com.topjohnwu.magisk"
 
         defaultConfig {
-            applicationId = "com.topjohnwu.magisk"
+            applicationId = APP_ID
             vectorDrawables.useSupportLibrary = true
             versionName = Config.version
             versionCode = Config.versionCode

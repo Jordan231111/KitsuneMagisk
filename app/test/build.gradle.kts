@@ -6,9 +6,12 @@ android {
     namespace = "com.topjohnwu.magisk.test"
 
     defaultConfig {
-        applicationId = "com.topjohnwu.magisk.test"
+        applicationId = "$APP_ID.test"
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "APP_PACKAGE_NAME", "\"$APP_ID\"")
+        manifestPlaceholders["magiskAppId"] = APP_ID
+        manifestPlaceholders["magiskTestAppId"] = "$APP_ID.test"
         proguardFile("proguard-rules.pro")
     }
 
@@ -16,6 +19,10 @@ android {
         release {
             isMinifyEnabled = true
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 

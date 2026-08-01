@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "resolved_at": "2026-08-01",
+  "upstream": {
+    "repository": "https://github.com/topjohnwu/Magisk",
+    "release": "v30.7",
+    "commit": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac"
+  },
+  "identity": {
+    "product": "KitsuneMagisk",
+    "display_name": "KitsuneMagisk Next",
+    "application_id": "io.github.huskydg.magisk.next",
+    "version_code": 30700,
+    "version_pattern": "30.7-kitsune-next.<8-character-source-commit>",
+    "channel": "next-system-experimental",
+    "source_url": "https://github.com/Jordan231111/KitsuneMagisk"
+  },
+  "android": {
+    "min_sdk": 23,
+    "target_sdk": 36,
+    "compile_sdk": "36.1",
+    "build_tools": "36.1.0",
+    "default_abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ]
+  },
+  "toolchain": {
+    "python_minimum": "3.9",
+    "jdk": "21",
+    "gradle": "9.3.0",
+    "android_gradle_plugin": "9.0.1",
+    "kotlin": "2.3.0",
+    "ondk": "r29.5",
+    "ndk_revision": "29.0.14206865",
+    "rust_observed": "rustc 1.93.0-nightly (254b59607 2026-01-19)"
+  },
+  "submodules": {
+    "native/src/external/crt0": "9dfa67b4d543f1b6bf2e936f560fbe77ca2a226a",
+    "native/src/external/cxx-rs": "b09b91554b392523f633b9e3cbe0b43273528c71",
+    "native/src/external/libcxx": "d5117df3ba7704aab06c3a30b97c7529c931662b",
+    "native/src/external/lsplt": "cef80a97a73184b4def9b3e1148884365fc173fd",
+    "native/src/external/lz4": "d44371841a2f1728a3f36839fd4b7e872d0927d3",
+    "native/src/external/selinux": "be1b39a657fee7faacfae548b75cb53302043a01",
+    "native/src/external/system_properties": "b7c2088565fbe13d22fe074960332e89615bb4aa"
+  },
+  "pristine_artifacts": {
+    "app_release_sha256": "4a3f1aec243b2693c4e73f9f7abd088253ce184b719272de06b16ac337b16d69",
+    "app_debug_sha256": "1aac0d4138fd93b901c60c04b93db10d826e8ad5f2ce2b0f3642d8119d48b986",
+    "test_sha256": "fd16c8ad66e6d232155c3131a5df46095ad86bf571fb981ca0ee406c32daebd3",
+    "fallback_signer_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+  },
+  "security_audit": {
+    "cargo_audit_version": "0.22.1",
+    "advisory_database_commit": "8c1eed913b9c51b5bf817bd4fe724cb049f0406c",
+    "advisory_database_count": 1178,
+    "dependency_count": 155,
+    "findings": [
+      {
+        "id": "RUSTSEC-2023-0071",
+        "package": "rsa",
+        "kind": "vulnerability",
+        "fixed": null,
+        "disposition": "Reachable only in local boot-image signing; do not process attacker-controlled signing inputs."
+      },
+      {
+        "id": "RUSTSEC-2026-0190",
+        "package": "anyhow",
+        "version": "1.0.102",
+        "kind": "unsound",
+        "fixed": ">=1.0.103",
+        "disposition": "PR7 promotion blocker; update only after the pristine PR6 baseline is recorded and rerun all native/AVD gates."
+      },
+      {
+        "id": "RUSTSEC-2026-0202",
+        "package": "cxx",
+        "version": "1.0.189",
+        "kind": "unsound",
+        "fixed": ">=1.0.195",
+        "disposition": "PR7 promotion blocker; the official v30.7 cxx-rs gitlink remains unchanged in PR6."
+      },
+      {
+        "package": "crypto-common",
+        "version": "0.2.0",
+        "kind": "yanked",
+        "disposition": "PR7 dependency refresh blocker."
+      },
+      {
+        "package": "digest",
+        "version": "0.11.0",
+        "kind": "yanked",
+        "disposition": "PR7 dependency refresh blocker."
+      }
+    ]
+  },
+  "forbidden_release_signers": [
+    "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+  ],
+  "forbidden_paths": [
+    "app/src/main/res/raw/manager.sh",
+    "scripts/system_mode_transaction.sh",
+    "scripts/system_mode_verify.sh",
+    "tools/system_mode/authorization.py",
+    "tools/system_mode/doctor.py"
+  ],
+  "source_delta": [
+    ".github/workflows/build.yml",
+    "README.MD",
+    "app/buildSrc/src/main/java/Plugin.kt",
+    "app/buildSrc/src/main/java/Setup.kt",
+    "app/core/build.gradle.kts",
+    "app/core/src/main/java/com/topjohnwu/magisk/core/Config.kt",
+    "app/core/src/main/java/com/topjohnwu/magisk/core/Const.kt",
+    "app/core/src/main/res/values/resources.xml",
+    "app/shared/src/main/AndroidManifest.xml",
+    "app/stub/build.gradle.kts",
+    "app/stub/src/main/java/com/topjohnwu/magisk/DownloadActivity.java",
+    "app/test/build.gradle.kts",
+    "app/test/src/main/AndroidManifest.xml",
+    "app/test/src/main/java/com/topjohnwu/magisk/test/AppMigrationTest.kt",
+    "build.py",
+    "docs/next-system-baseline.json",
+    "docs/next-system-baseline.md",
+    "native/src/include/consts.hpp",
+    "native/src/include/consts.rs",
+    "scripts/avd.sh",
+    "scripts/test_common.sh",
+    "tools/next_system_baseline.py"
+  ]
+}

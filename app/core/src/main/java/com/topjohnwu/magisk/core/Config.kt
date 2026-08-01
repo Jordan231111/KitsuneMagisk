@@ -108,7 +108,9 @@ object Config : PreferenceConfig, DBConfig {
     var darkTheme by preference(Key.DARK_THEME, -1)
     var themeOrdinal by preference(Key.THEME_ORDINAL, 0)
 
-    private var checkUpdatePrefs by preference(Key.CHECK_UPDATES, true)
+    // PR6 has no project-owned release endpoint. Keep upstream channels available
+    // for explicit development use, but never opt an experimental install in.
+    private var checkUpdatePrefs by preference(Key.CHECK_UPDATES, false)
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
     var updateChannel by preference(Key.RELEASE_CHANNEL, Value.DEFAULT_CHANNEL)

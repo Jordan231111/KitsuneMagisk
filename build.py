@@ -56,8 +56,8 @@ if is_windows:
         # We can't do ANSI color codes in terminal on Windows without colorama
         no_color = True
 
-if not sys.version_info >= (3, 8):
-    error("Requires Python 3.8+")
+if not sys.version_info >= (3, 9):
+    error("Requires Python 3.9+")
 
 cpu_count = multiprocessing.cpu_count()
 
@@ -239,7 +239,7 @@ def build_cpp_src(targets: set[str]):
 def run_cargo(cmds: list[str]):
     ensure_paths()
     env = os.environ.copy()
-    env["PATH"] = f"{rust_sysroot / "bin"}{os.pathsep}{env["PATH"]}"
+    env["PATH"] = f"{rust_sysroot / 'bin'}{os.pathsep}{env['PATH']}"
     env["CARGO_BUILD_RUSTFLAGS"] = f"-Z threads={min(8, cpu_count)}"
     # Cargo calls executables in $RUSTROOT/lib/rustlib/$TRIPLE/bin, we need
     # to make sure the runtime linker also search $RUSTROOT/lib for libraries.
@@ -457,8 +457,12 @@ def build_test():
     try:
         header("* Building the test app")
         source = build_apk(":test")
-        target = source.parent / "test.apk"
-        mv(source, target)
+        variant = "release" if old_release else "debug"
+        target = source.parent / f"test-{variant}.apk"
+        if source != target:
+            mv(source, target)
+        # Keep the historical name for callers that build only one variant.
+        cp(target, target.parent / "test.apk")
         header(f"Output: {target}")
     finally:
         args.release = old_release
@@ -770,7 +774,7 @@ def load_config():
     commit_hash = cmd_out(["git", "rev-parse", "--short=8", "HEAD"])
 
     # Default values
-    config["version"] = commit_hash
+    config["version"] = f"30.7-kitsune-next.{commit_hash}"
     config["versionCode"] = 1000000
     config["outdir"] = "out"
 

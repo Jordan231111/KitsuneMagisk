@@ -1,5 +1,5 @@
 
-import org.eclipse.jgit.internal.storage.file.FileRepository
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
@@ -11,6 +11,12 @@ import java.util.Random
 // CI builds are always reproducible
 val RAND_SEED = if (System.getenv("CI") != null) 42 else 0
 lateinit var RANDOM: Random
+
+const val APP_ID = "io.github.huskydg.magisk.next"
+const val PRODUCT_CHANNEL = "next-system-experimental"
+const val PRODUCT_NAME = "KitsuneMagisk Next"
+const val UPSTREAM_BASE = "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac"
+const val VERSION_PREFIX = "30.7-kitsune-next"
 
 private val props = Properties()
 private var commitHash = ""
@@ -25,7 +31,7 @@ object Config {
 
     fun contains(key: String) = get(key) != null
 
-    val version: String get() = get("version") ?: commitHash
+    val version: String get() = get("version") ?: "$VERSION_PREFIX.$commitHash"
     val versionCode: Int get() = get("magisk.versionCode")!!.toInt()
     val stubVersion: String get() = get("magisk.stubVersion")!!
     val abiList: Set<String> get() {
@@ -66,8 +72,15 @@ class MagiskPlugin : Plugin<Project> {
         // Commandline override
         findProperty("abiList")?.let { props.put("abiList", it) }
 
-        val repo = FileRepository(rootFile(".git"))
-        val refId = repo.refDatabase.exactRef("HEAD").objectId
-        commitHash = repo.newObjectReader().abbreviate(refId, 8).name()
+        FileRepositoryBuilder()
+            .findGitDir(rootFile("."))
+            .build()
+            .use { repo ->
+                val refId = repo.resolve("HEAD")
+                    ?: error("Cannot resolve the Git HEAD used for build identity")
+                commitHash = repo.newObjectReader().use {
+                    it.abbreviate(refId, 8).name()
+                }
+            }
     }
 }

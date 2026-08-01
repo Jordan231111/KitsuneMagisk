@@ -11,7 +11,7 @@ pub const APPLET_NAMES: &[&str] = &["su", "resetprop"];
 pub use flags::*;
 pub const MAGISK_FULL_VER: &str = concatcp!(MAGISK_VERSION, "(", MAGISK_VER_CODE, ")");
 
-pub const APP_PACKAGE_NAME: &str = "com.topjohnwu.magisk";
+pub const APP_PACKAGE_NAME: &str = "io.github.huskydg.magisk.next";
 
 pub const LOGFILE: &str = "/cache/magisk.log";
 

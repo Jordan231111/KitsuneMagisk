@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 
 set -e
-shopt -s extglob
 . scripts/test_common.sh
 
 emu_args_base="-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -read-only -no-snapshot -cores $core_count"
-log_args="-show-kernel -logcat '' -logcat-output logcat.log"
+log_args="-show-kernel -logcat ''"
 emu_args=
 emu_pid=
+wait_pid=
+owned_avd=
+
+avd_name="${MAGISK_AVD_NAME:-magisk-test}"
+emu_port="${MAGISK_AVD_PORT:-5682}"
+test_dir="${MAGISK_TEST_DIR:-.}"
+debug_image="$test_dir/magisk_debug.img"
+release_image="$test_dir/magisk_release.img"
+kernel_log="${AVD_KERNEL_LOG:-$test_dir/kernel.log}"
+logcat_log="${AVD_LOGCAT_LOG:-$test_dir/logcat.log}"
 
 atd_min_api=30
 atd_max_api=36
@@ -15,66 +24,115 @@ huge_ram_min_api=26
 
 case $(uname -m) in
   'arm64'|'aarch64')
-    if [ -n "$FORCE_32_BIT" ]; then
+    if [ -n "${FORCE_32_BIT:-}" ]; then
       echo "! ARM32 is not supported"
       exit 1
     fi
     arch=arm64-v8a
     ;;
   *)
-    if [ -n "$FORCE_32_BIT" ]; then
+    if [ -n "${FORCE_32_BIT:-}" ]; then
       arch=x86
     else
       arch=x86_64
     fi
-
     ;;
 esac
 
+stop_emulator() {
+  if [ -z "$emu_pid" ]; then
+    return
+  fi
+  if kill -0 "$emu_pid" >/dev/null 2>&1; then
+    kill -INT "$emu_pid" >/dev/null 2>&1 || true
+    local count=0
+    while kill -0 "$emu_pid" >/dev/null 2>&1 && [ "$count" -lt 30 ]; do
+      sleep 1
+      count=$((count + 1))
+    done
+    if kill -0 "$emu_pid" >/dev/null 2>&1; then
+      kill -TERM "$emu_pid" >/dev/null 2>&1 || true
+    fi
+  fi
+  wait "$emu_pid" 2>/dev/null || true
+  emu_pid=
+}
+
 cleanup() {
-  rm -f magisk_*.img
-  "$avd" delete avd -n test
+  stop_emulator
+  rm -f "$debug_image" "$release_image"
+  if [ -n "$owned_avd" ]; then
+    "$avd" delete avd -n "$avd_name" >/dev/null 2>&1 || true
+    owned_avd=
+  fi
 }
 
 test_error() {
+  local status=$?
   trap - EXIT
+  set +e
   print_error "! An error occurred"
-  pkill -INT -P $$
-  wait
+  if [ -n "$wait_pid" ]; then
+    kill "$wait_pid" >/dev/null 2>&1 || true
+    wait "$wait_pid" 2>/dev/null || true
+    wait_pid=
+  fi
   cleanup
-  exit 1
+  if [ "$status" -eq 0 ]; then
+    status=1
+  fi
+  exit "$status"
 }
 
 wait_for_boot() {
-  set -e
   adb wait-for-device
   while true; do
-    local result="$(adb exec-out getprop sys.boot_completed)"
-    if [ $? -ne 0 ]; then
-      exit 1
-    elif [ "$result" = "1" ]; then
-      break
+    local result
+    result=$(adb exec-out getprop sys.boot_completed | tr -d '\r') || return 1
+    if [ "$result" = "1" ]; then
+      return 0
     fi
     sleep 2
   done
 }
 
+# Bash 3.2 has no `wait -n` or `wait -p`; poll only the two child PIDs we own.
 wait_emu() {
-  local which_pid
+  wait_for_boot &
+  wait_pid=$!
+  local started now status
+  started=$(date +%s)
 
-  timeout $boot_timeout bash -c wait_for_boot &
-  local wait_pid=$!
+  while kill -0 "$wait_pid" >/dev/null 2>&1; do
+    if ! kill -0 "$emu_pid" >/dev/null 2>&1; then
+      kill "$wait_pid" >/dev/null 2>&1 || true
+      wait "$wait_pid" 2>/dev/null || true
+      wait_pid=
+      return 1
+    fi
+    now=$(date +%s)
+    if [ $((now - started)) -ge "$boot_timeout" ]; then
+      kill "$wait_pid" >/dev/null 2>&1 || true
+      wait "$wait_pid" 2>/dev/null || true
+      wait_pid=
+      return 124
+    fi
+    sleep 1
+  done
 
-  # Handle the case when emulator dies earlier than timeout
-  wait -p which_pid -n $emu_pid $wait_pid
-  [ $which_pid -eq $wait_pid ]
+  set +e
+  wait "$wait_pid"
+  status=$?
+  set -e
+  wait_pid=
+  return "$status"
 }
 
 dump_vars() {
-  local val
-  for name in $@ emu_args; do
+  local val name
+  for name in "$@" emu_args; do
     eval val=\$$name
-    echo $name=\"$val\"\;
+    echo "$name=\"$val\";"
   done
 }
 
@@ -84,10 +142,8 @@ resolve_vars() {
   local ver=$2
   local type=$3
 
-  # Determine API level
   local api
   case $ver in
-    +([0-9\.])) api=$ver ;;
     TiramisuPrivacySandbox) api=33 ;;
     UpsideDownCakePrivacySandbox) api=34 ;;
     VanillaIceCream) api=35 ;;
@@ -95,170 +151,170 @@ resolve_vars() {
     CinnamonBun) api=37 ;;
     *CANARY) api=10000 ;;
     *)
-      print_error "! Unknown system image version '$ver'"
-      exit 1
+      if [[ $ver =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+        api=$ver
+      else
+        print_error "! Unknown system image version '$ver'"
+        exit 1
+      fi
       ;;
   esac
 
-  # Determine default image type
-  if [ -z $type ]; then
-    if [ $(bc <<< "$api >= $atd_min_api && $api <= $atd_max_api") = 1 ]; then
-      # Use the lightweight ATD images if possible
+  local api_major=${api%%.*}
+  if [ -z "$type" ]; then
+    if [ "$api_major" -ge "$atd_min_api" ] && [ "$api_major" -le "$atd_max_api" ]; then
       type='aosp_atd'
-    elif [ $(bc <<< "$api > $atd_max_api") = 1 ]; then
-      # Preview/beta release, no AOSP version available
+    elif [ "$api_major" -gt "$atd_max_api" ]; then
       type='google_apis'
     else
       type='default'
     fi
   fi
 
-  # Old Linux kernels will not boot with memory larger than 3GB
   local memory
-  if [ $(bc <<< "$api < $huge_ram_min_api") = 1 ]; then
+  if [ "$api_major" -lt "$huge_ram_min_api" ]; then
     memory=3072
   else
     memory=8192
   fi
-
   emu_args="$emu_args_base -memory $memory"
 
-  # System image variable and paths
   local avd_pkg="system-images;android-$ver;$type;$arch"
   local sys_img_dir="$ANDROID_HOME/system-images/android-$ver/$type/$arch"
   local ramdisk="$sys_img_dir/ramdisk.img"
 
-  # Dump variables to output
   dump_vars $arg_list
 }
 
 dl_emu() {
   local avd_pkg=$1
-  yes | "$sdk" --licenses > /dev/null 2>&1
-  "$sdk" --channel=3 platform-tools emulator $avd_pkg
+  yes | "$sdk" --licenses >/dev/null 2>&1
+  "$sdk" --channel=3 platform-tools emulator "$avd_pkg"
 }
 
 setup_emu() {
   local avd_pkg=$1
   local ver=$2
-  dl_emu $avd_pkg
-  echo no | "$avd" create avd -f -n test -k $avd_pkg
+  dl_emu "$avd_pkg"
+  mkdir -p "$ANDROID_AVD_HOME" "$test_dir"
+  if [ -e "$ANDROID_AVD_HOME/$avd_name.ini" ] || [ -d "$ANDROID_AVD_HOME/$avd_name.avd" ]; then
+    print_error "! Refusing to replace existing AVD '$avd_name'"
+    return 1
+  fi
+  owned_avd=1
+  echo no | "$avd" create avd -f -n "$avd_name" -k "$avd_pkg"
 
-  # avdmanager is outdated, it might not set the proper target
-  local ini=$ANDROID_AVD_HOME/test.ini
-  sed "s:^target\s*=.*:target=android-$ver:g" $ini > $ini.new
-  mv $ini.new $ini
+  # avdmanager is outdated, it might not set the proper target.
+  local ini="$ANDROID_AVD_HOME/$avd_name.ini"
+  sed "s:^[[:space:]]*target[[:space:]]*=.*:target=android-$ver:g" "$ini" > "$ini.new"
+  mv "$ini.new" "$ini"
+}
+
+launch_emulator() {
+  local image_args=$1
+  if [ -n "${AVD_TEST_LOG:-}" ]; then
+    rm -f "$kernel_log" "$logcat_log"
+    "$emu" "@$avd_name" $emu_args $log_args -logcat-output "$logcat_log" \
+      $image_args >"$kernel_log" 2>&1 &
+  else
+    "$emu" "@$avd_name" $emu_args $image_args >/dev/null 2>&1 &
+  fi
+  emu_pid=$!
+  wait_emu
 }
 
 test_emu() {
   local variant=$1
-
-  local magisk_args="-ramdisk magisk_${variant}.img -feature -SystemAsRoot"
-
-  if [ -n "$AVD_TEST_LOG" ]; then
-    rm -f logcat.log
-    "$emu" @test $emu_args $log_args $magisk_args > kernel.log 2>&1 &
+  local image
+  if [ "$variant" = debug ]; then
+    image=$debug_image
   else
-    "$emu" @test $emu_args $magisk_args > /dev/null 2>&1 &
+    image=$release_image
   fi
 
-  emu_pid=$!
-  wait_emu
-
-  run_setup $variant
+  # Each signer/variant gets clean userdata; reboot coverage happens inside the lane.
+  launch_emulator "-wipe-data -ramdisk $image -feature -SystemAsRoot"
+  run_setup "$variant"
 
   adb reboot
   wait_emu
-
   run_tests
-
-  kill -INT $emu_pid
-  wait $emu_pid
+  stop_emulator
 }
 
 test_main() {
   local ver avd_pkg ramdisk
-  eval $(resolve_vars "ver avd_pkg ramdisk" $1 $2)
+  eval "$(resolve_vars 'ver avd_pkg ramdisk' "$1" "${2:-}")"
 
-  # Specify an explicit port so that tests can run with other emulators running at the same time
-  local emu_port=5682
   emu_args="$emu_args -port $emu_port"
   export ANDROID_SERIAL="emulator-$emu_port"
+  setup_emu "$avd_pkg" "$ver"
+  adb start-server >/dev/null
 
-  setup_emu "$avd_pkg" $ver
-
-  # Restart ADB daemon just in case
-  adb kill-server
-  adb start-server
-
-  # Launch stock emulator
   print_title "* Launching $avd_pkg"
-  "$emu" @test $emu_args >/dev/null 2>&1 &
-  emu_pid=$!
-  wait_emu
+  launch_emulator ""
 
-  # Patch images
-  if [ -z "$AVD_TEST_SKIP_DEBUG" ]; then
-    ./build.py -v avd_patch "$ramdisk" magisk_debug.img
+  local build=(./build.py)
+  if [ -n "${MAGISK_BUILD_CONFIG:-}" ]; then
+    build+=( -c "$MAGISK_BUILD_CONFIG" )
   fi
-  if [ -z "$AVD_TEST_SKIP_RELEASE" ]; then
-    ./build.py -vr avd_patch "$ramdisk" magisk_release.img
+  if [ -z "${AVD_TEST_SKIP_DEBUG:-}" ]; then
+    "${build[@]}" -v avd_patch "$ramdisk" "$debug_image"
   fi
+  if [ -z "${AVD_TEST_SKIP_RELEASE:-}" ]; then
+    "${build[@]}" -vr avd_patch "$ramdisk" "$release_image"
+  fi
+  stop_emulator
 
-  kill -INT $emu_pid
-  wait $emu_pid
-
-  if [ -z "$AVD_TEST_SKIP_DEBUG" ]; then
+  if [ -z "${AVD_TEST_SKIP_DEBUG:-}" ]; then
     print_title "* Testing $avd_pkg (debug)"
     test_emu debug
   fi
-
-  if [ -z "$AVD_TEST_SKIP_RELEASE" ]; then
+  if [ -z "${AVD_TEST_SKIP_RELEASE:-}" ]; then
     print_title "* Testing $avd_pkg (release)"
     test_emu release
   fi
-
   cleanup
 }
 
 run_main() {
   local ver avd_pkg
-  eval $(resolve_vars "ver avd_pkg" $1 $2)
-  setup_emu "$avd_pkg" $ver
+  eval "$(resolve_vars 'ver avd_pkg' "$1" "${2:-}")"
+  emu_args="$emu_args -port $emu_port"
+  export ANDROID_SERIAL="emulator-$emu_port"
+  setup_emu "$avd_pkg" "$ver"
   print_title "* Launching $avd_pkg"
-  "$emu" @test $emu_args 2>/dev/null
+  "$emu" "@$avd_name" $emu_args
   cleanup
 }
 
 dl_main() {
   local avd_pkg
-  eval $(resolve_vars "avd_pkg" $1 $2)
+  eval "$(resolve_vars 'avd_pkg' "$1" "${2:-}")"
   print_title "* Downloading $avd_pkg"
   dl_emu "$avd_pkg"
 }
 
-case "$1" in
-  test )
+case "${1:-}" in
+  test)
     shift
     trap test_error EXIT
-    export -f wait_for_boot
     set -x
     test_main "$@"
     ;;
-  run )
+  run)
     shift
     trap cleanup EXIT
     run_main "$@"
     ;;
-  dl )
+  dl)
     shift
     dl_main "$@"
     ;;
-  * )
-    print_error "Unknown argument '$1'"
+  *)
+    print_error "Unknown argument '${1:-}'"
     exit 1
     ;;
 esac
 
-# Exit normally, don't run through cleanup again
 trap - EXIT

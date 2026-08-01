@@ -1,58 +1,52 @@
 ![](docs/images/logo.png)
 
-[![Downloads](https://img.shields.io/badge/dynamic/json?color=green&label=Downloads&query=totalString&url=https%3A%2F%2Fraw.githubusercontent.com%2Ftopjohnwu%2Fmagisk-files%2Fcount%2Fcount.json&cacheSeconds=1800)](https://raw.githubusercontent.com/topjohnwu/magisk-files/count/count.json)
+# KitsuneMagisk Next
 
-#### This is not an officially supported Google product
+This branch is the experimental, maintainable-base rebuild of KitsuneMagisk. It is based directly
+on the audited Magisk v30.7 release and currently contains upstream Magisk behavior plus only the
+identity, build, and test-laboratory changes required for the PR6 baseline.
 
-## Introduction
+It installs as `io.github.huskydg.magisk.next`, reports a
+`30.7-kitsune-next.<source>` version, and uses the `next-system-experimental` channel identity. It
+does not replace official Magisk or the existing Kitsune manager. Automatic update checks default
+to off because this branch does not yet have a project-owned update endpoint.
 
-Magisk is a suite of open source software for customizing Android, supporting devices higher than Android 6.0.<br>
-Some highlight features:
+## Important status
 
-- **MagiskSU**: Provide root access for applications
-- **Magisk Modules**: Modify read-only partitions by installing modules
-- **MagiskBoot**: The most complete tool for unpacking and repacking Android boot images
-- **Zygisk**: Run code in every Android applications' processes
+- This is an unofficial engineering baseline, not a production release or a daily-phone build.
+- Direct-System/System Mode—the primary purpose of KitsuneMagisk—has deliberately not been ported
+  yet. Its tested vertical slice is the next roadmap unit after this clean base passes.
+- MagiskHide/SuList, early-mount, and external-Zygisk integration are also not present yet.
+- Normal upstream Select-and-Patch, Direct Install, inactive-slot, recovery, emulator live setup,
+  MagiskSU, modules, and built-in Zygisk remain in scope and must stay green.
 
-## Downloads
+The exact upstream commit, submodule pins, toolchain, advisories, reviewed source delta, and local
+qualification evidence are recorded in
+[`docs/next-system-baseline.md`](docs/next-system-baseline.md). The machine-readable contract is
+[`docs/next-system-baseline.json`](docs/next-system-baseline.json).
 
-[Github](https://github.com/topjohnwu/Magisk/releases) is the only source where you can get official Magisk information and downloads.
+## Building
 
-## Useful Links
+Follow the upstream [Magisk build documentation](https://topjohnwu.github.io/Magisk/build.html),
+then run:
 
-- [Installation Instruction](https://topjohnwu.github.io/Magisk/install.html)
-- [Building and Development](https://topjohnwu.github.io/Magisk/build.html)
-- [Magisk Documentation](https://topjohnwu.github.io/Magisk/)
-- [Zygisk module sample](https://github.com/topjohnwu/zygisk-module-sample)
+```sh
+./build.py -v all
+./build.py -vr -c /path/to/external-signing-config.prop all
+python3 tools/next_system_baseline.py --source --artifacts out
+```
 
-## Bug Reports
+A release test build must use an external, disposable or production-controlled signing key. The
+repository contains no Kitsune release key and the PR6 gate rejects the public Android debug key as
+a release identity.
 
-**Only bug reports from Debug builds will be accepted.**
+## Upstream project
 
-For installation issues, upload both boot image and install logs.<br>
-For Magisk issues, upload boot logcat or dmesg.<br>
-For Magisk app crashes, record and upload the logcat when the crash occurs.
-
-## Translation Contributions
-
-Default string resources for the Magisk app and its stub APK are located here:
-
-- `app/core/src/main/res/values/strings.xml`
-- `app/stub/src/main/res/values/strings.xml`
-
-Translate each and place them in the respective locations (`[module]/src/main/res/values-[lang]/strings.xml`).
+Magisk and its original documentation are maintained by
+[topjohnwu](https://github.com/topjohnwu/Magisk). KitsuneMagisk is an independent fork and must not
+send fork-specific bug reports to the upstream project.
 
 ## License
 
-    Magisk, including all git submodules are free software:
-    you can redistribute it and/or modify it under the terms of the
-    GNU General Public License as published by the Free Software Foundation,
-    either version 3 of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Magisk, including all git submodules, is free software distributed under the GNU General Public
+License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).

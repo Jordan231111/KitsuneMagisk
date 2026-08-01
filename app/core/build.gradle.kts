@@ -15,9 +15,12 @@ android {
     namespace = "com.topjohnwu.magisk.core"
 
     defaultConfig {
-        buildConfigField("String", "APP_PACKAGE_NAME", "\"com.topjohnwu.magisk\"")
+        buildConfigField("String", "APP_PACKAGE_NAME", "\"$APP_ID\"")
         buildConfigField("int", "APP_VERSION_CODE", "${Config.versionCode}")
         buildConfigField("String", "APP_VERSION_NAME", "\"${Config.version}\"")
+        buildConfigField("String", "PRODUCT_CHANNEL", "\"$PRODUCT_CHANNEL\"")
+        buildConfigField("String", "PRODUCT_NAME", "\"$PRODUCT_NAME\"")
+        buildConfigField("String", "UPSTREAM_BASE", "\"$UPSTREAM_BASE\"")
         buildConfigField("int", "STUB_VERSION", Config.stubVersion)
         consumerProguardFile("proguard-rules.pro")
     }

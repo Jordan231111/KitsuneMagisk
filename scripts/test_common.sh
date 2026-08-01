@@ -1,21 +1,31 @@
-if [ -z $ANDROID_HOME ]; then
-  export ANDROID_HOME=$ANDROID_SDK_ROOT
+if [ -z "${ANDROID_HOME:-}" ]; then
+  export ANDROID_HOME="${ANDROID_SDK_ROOT:-}"
 fi
 
 # Make sure paths are consistent
-export ANDROID_USER_HOME="$HOME/.android"
-export ANDROID_EMULATOR_HOME="$ANDROID_USER_HOME"
-export ANDROID_AVD_HOME="$ANDROID_EMULATOR_HOME/avd"
+export ANDROID_USER_HOME="${ANDROID_USER_HOME:-$HOME/.android}"
+export ANDROID_EMULATOR_HOME="${ANDROID_EMULATOR_HOME:-$ANDROID_USER_HOME}"
+export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$ANDROID_EMULATOR_HOME/avd}"
 export PATH="$PATH:$ANDROID_HOME/platform-tools"
+
+MAGISK_OUT_DIR="${MAGISK_OUT_DIR:-out}"
+MAGISK_APP_PACKAGE="${MAGISK_APP_PACKAGE:-io.github.huskydg.magisk.next}"
+MAGISK_TEST_PACKAGE="${MAGISK_TEST_PACKAGE:-$MAGISK_APP_PACKAGE.test}"
 
 emu="$ANDROID_HOME/emulator/emulator"
 sdk="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
 avd="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 
-boot_timeout=100
+boot_timeout="${AVD_BOOT_TIMEOUT:-180}"
 
-core_count=$(nproc)
-if [ $core_count -gt 8 ]; then
+if command -v nproc >/dev/null 2>&1; then
+  core_count=$(nproc)
+elif command -v sysctl >/dev/null 2>&1; then
+  core_count=$(sysctl -n hw.logicalcpu 2>/dev/null || echo 1)
+else
+  core_count=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+fi
+if [ "$core_count" -gt 8 ]; then
   core_count=8
 fi
 
@@ -31,7 +41,8 @@ print_error() {
 # $2 = component
 am_instrument() {
   set +x
-  local out=$(adb shell am instrument -w --user 0 -e class "$1" "$2")
+  local out
+  out=$(adb shell am instrument -w --user 0 -e class "$1" "$2" | tr -d '\r')
   echo "$out"
   if grep -q 'OK (' <<< "$out"; then
     set -x
@@ -50,25 +61,25 @@ wait_for_pm() {
 
 run_setup() {
   local variant=$1
-  adb shell 'PATH=$PATH:/debug_ramdisk magisk -v'
+  adb shell 'PATH=$PATH:/debug_ramdisk magisk -v' | tr -d '\r'
 
   # Install the Magisk app
-  adb install -r -g out/app-${variant}.apk
+  adb install -r -g "$MAGISK_OUT_DIR/app-${variant}.apk"
 
   # Install the test app
-  adb install -r -g out/test.apk
+  adb install -r -g "$MAGISK_OUT_DIR/test-${variant}.apk"
 
-  local app='com.topjohnwu.magisk.test/com.topjohnwu.magisk.test.AppTestRunner'
+  local app="$MAGISK_TEST_PACKAGE/com.topjohnwu.magisk.test.AppTestRunner"
 
   # Run setup through the test app
   am_instrument '.Environment#setupEnvironment' $app
 }
 
 run_tests() {
-  local pkg='com.topjohnwu.magisk.test'
-  local self="$pkg/$pkg.TestRunner"
-  local app="$pkg/$pkg.AppTestRunner"
-  local stub="repackaged.$pkg/$pkg.AppTestRunner"
+  local pkg="$MAGISK_TEST_PACKAGE"
+  local self="$pkg/com.topjohnwu.magisk.test.TestRunner"
+  local app="$pkg/com.topjohnwu.magisk.test.AppTestRunner"
+  local stub="repackaged.$pkg/com.topjohnwu.magisk.test.AppTestRunner"
 
   # Run app tests
   am_instrument '.MagiskAppTest,.AdditionalTest' $app
@@ -84,4 +95,40 @@ run_tests() {
 
   # Make sure it still works
   am_instrument '.MagiskAppTest' $app
+
+  run_root_stress
+}
+
+run_root_stress() {
+  local iterations="${AVD_STRESS_ITERATIONS:-0}"
+  local parallel="${AVD_STRESS_PARALLEL:-6}"
+  case "$iterations:$parallel" in
+    *[!0-9:]*|:*|*:0)
+      print_error "Invalid AVD stress configuration: $iterations iterations, $parallel parallel"
+      return 1
+      ;;
+  esac
+  if [ "$iterations" -eq 0 ]; then
+    return
+  fi
+
+  print_title "* Stressing MagiskSU ($iterations x $parallel concurrent requests)"
+  local iteration out root_count version
+  iteration=0
+  while [ "$iteration" -lt "$iterations" ]; do
+    out=$(adb shell "i=0; while [ \$i -lt $parallel ]; do (su -c id) & i=\$((i + 1)); done; wait" | tr -d '\r')
+    # PTYs on some real-device shells can interleave multiple results on one line.
+    root_count=$(printf '%s' "$out" | awk '{ total += gsub(/uid=0/, "") } END { print total + 0 }')
+    if [ "$root_count" -ne "$parallel" ]; then
+      echo "$out"
+      print_error "Concurrent MagiskSU stress failed at iteration $iteration"
+      return 1
+    fi
+    version=$(adb shell 'PATH=$PATH:/debug_ramdisk magisk -V' | tr -d '\r' | tail -n 1)
+    if [ "$version" != "30700" ]; then
+      print_error "Magisk daemon version changed during stress: $version"
+      return 1
+    fi
+    iteration=$((iteration + 1))
+  done
 }

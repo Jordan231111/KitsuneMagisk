@@ -2,14 +2,17 @@ name: Magisk Build
 
 on:
   push:
-    branches: [master]
+    branches: [master, next-system]
     paths:
       - "app/**"
       - "native/**"
+      - "scripts/**"
+      - "tools/next_system_baseline.py"
+      - "docs/next-system-baseline.*"
       - "build.py"
       - ".github/workflows/build.yml"
   pull_request:
-    branches: [master]
+    branches: [master, next-system]
   workflow_dispatch:
 
 jobs:
@@ -22,6 +25,7 @@ jobs:
       - name: Check out
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           submodules: "recursive"
 
       - name: Setup environment
@@ -29,11 +33,37 @@ jobs:
         with:
           is-asset-build: true
 
+      - name: Verify next-system source baseline
+        run: python tools/next_system_baseline.py --source
+
+      - name: Create disposable release signer
+        shell: bash
+        run: |
+          keytool -genkeypair -noprompt \
+            -keystore "$RUNNER_TEMP/next-system-release.jks" \
+            -storepass next-system-local \
+            -keypass next-system-local \
+            -alias next-system \
+            -keyalg RSA -keysize 3072 -validity 2 \
+            -dname "CN=KitsuneMagisk Next CI,OU=Disposable,O=KitsuneMagisk"
+          {
+            echo "keyStore=$RUNNER_TEMP/next-system-release.jks"
+            echo "keyStorePass=next-system-local"
+            echo "keyAlias=next-system"
+            echo "keyPass=next-system-local"
+          } > "$RUNNER_TEMP/next-system-release.prop"
+          echo "NEXT_SYSTEM_CONFIG=$RUNNER_TEMP/next-system-release.prop" >> "$GITHUB_ENV"
+
       - name: Build release
-        run: ./build.py -vr all
+        run: ./build.py -vr -c "$NEXT_SYSTEM_CONFIG" all
 
       - name: Build debug
         run: ./build.py -v all
+
+      - name: Verify next-system artifacts
+        run: >-
+          python tools/next_system_baseline.py --source --artifacts out
+          --report out/next-system-baseline-report.json
 
       - name: Stop gradle daemon
         run: ./app/gradlew --stop

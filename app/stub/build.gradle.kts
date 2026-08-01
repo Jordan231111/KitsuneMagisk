@@ -18,7 +18,7 @@ android {
     val canaryUrl = base + "canary-${Config.versionCode}/"
 
     defaultConfig {
-        applicationId = "com.topjohnwu.magisk"
+        applicationId = APP_ID
         versionCode = 1
         versionName = "1.0"
         buildConfigField("String", "APK_URL", "\"$url\"")
