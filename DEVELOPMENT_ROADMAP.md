@@ -1,21 +1,129 @@
 # KitsuneMagisk development roadmap
 
-> Audit date: 2026-07-22 UTC
+> Roadmap last reconciled: 2026-08-01 UTC
 >
-> Audited implementation baseline: `kitsune` after PR2 at `cf149fcf734539f6077cd6b349d9ffc2496c56ca`
+> Historical audit baseline: `kitsune` after PR2 at `cf149fcf734539f6077cd6b349d9ffc2496c56ca`
 >
-> Upstream compared: `topjohnwu/Magisk` stable `v30.7` and `master` at `14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c`
+> Pre-PR #26 mainline baseline: `kitsune` at `bcdf65f0af1882e46cd435379bee4535e4aab87f`
+>
+> Hardening range recorded here: [GitHub PR #26](https://github.com/Jordan231111/KitsuneMagisk/pull/26), branch `codex/production-hardening`, final code commit `530f2a3f8` before this roadmap-only reconciliation
+>
+> Upstream rechecked: official stable `v30.7` at `e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`; observed `master` at `fd0cb66b6b41af41564e692f39db57f21cf378ad`
 >
 > Product charter: KitsuneMagisk exists primarily to provide persistent Magisk through **Direct-System/System Mode** on environments where normal boot-image installation is unavailable or impractical—especially commercial Android emulators—and secondarily to provide Kitsune-specific hiding and module behavior.
 
-> Implementation progress updated: 2026-07-22 UTC. The repository's default/mainline branch is `kitsune` (`origin/HEAD` points to `origin/kitsune`); there is intentionally no separate branch named `main`. PR1 merged as [#22](https://github.com/Jordan231111/KitsuneMagisk/pull/22) (`b6c098d44`); PR2 merged as [#23](https://github.com/Jordan231111/KitsuneMagisk/pull/23) (`cf149fcf7`). PR3 (`e3fa3e829`), PR4 (`8e4e952b6`), and PR4A plus the faithfulness audit (`52aaf1658`) are implemented, locally verified, and integrated directly into the local `kitsune` mainline; no remote push or publication was performed. PR3's reusable characterization exit is met; full cross-vendor install/cold-boot/upgrade/uninstall qualification remains intentionally assigned to PR15.
+> Implementation progress reconciled for the PR #26 range on 2026-08-01 UTC. The repository's default/mainline branch is `kitsune` (`origin/HEAD` points to `origin/kitsune`); there is intentionally no separate branch named `main`. Roadmap PR1 merged as [GitHub #22](https://github.com/Jordan231111/KitsuneMagisk/pull/22); PR2 merged as [GitHub #23](https://github.com/Jordan231111/KitsuneMagisk/pull/23). PR3 (`e3fa3e829`), PR4 (`8e4e952b6`), and PR4A (`52aaf1658` plus follow-ups) are in the remote `kitsune` history. PR4B merged as [GitHub #24](https://github.com/Jordan231111/KitsuneMagisk/pull/24), bringing those prerequisite commits with it. PR3's reusable characterization exit is met, but full writable-target lifecycle qualification remains open. GitHub PR #26 is the review/merge unit represented by this roadmap commit: it completes current-line release/data containment and implements the target-independent safety portion of roadmap PR5 while keeping release System Mode unreachable. It does **not** prove persistent System Mode support or finish a power-loss-safe install/uninstall transaction. If this roadmap commit is already reachable from `kitsune`, treat PR5 as merged and begin PR5A; otherwise PR #26 still requires its exact-head merge gate.
 
 > The explicit history-backed purpose, install-route, and divergence report is
 > [`docs/faithfulness-audit.md`](docs/faithfulness-audit.md). It covers the complete reachable graph,
-> catalogs all 171 fork-only commits, deeply reviews the security/boot/product changes, and records
-> what must be preserved, restored, tested, or retired.
+> catalogued all 171 fork-only commits at its historical PR2 baseline, deeply reviews the
+> security/boot/product changes, and records what must be preserved, restored, tested, or retired.
+> PR4B's generated ledger is authoritative for later commit counts.
 
 This is a prioritized, implementation-oriented TODO for resuming active development. It is intentionally more conservative than a normal app roadmap because this project installs privileged native code during boot, grants root, and modifies mount namespaces and SELinux policy. A mistake in install, boot, or rollback logic can make an emulator or device unbootable.
+
+## Current execution checkpoint — start here
+
+This section is the authoritative answer to “where am I now?” The detailed P0/P1/P2 specifications
+below remain the source of acceptance criteria; their historical audit statements are not a second
+execution order.
+
+| Order | Work unit | State on 2026-08-01 | Required next decision or exit |
+|---:|---|---|---|
+| 1 | Roadmap PR1 / GitHub #22 — product charter and release freeze | **Merged** | Preserve the product charter and experimental-release boundary. |
+| 2 | Roadmap PR2 / GitHub #23 — CI product gate | **Merged** | Keep pull-request build/test publication gates green. |
+| 3 | Roadmap PR3 — System Mode contract and read-only characterization | **Integrated into `kitsune`** | Reuse its schemas/driver for all current/next comparisons. |
+| 4 | Roadmap PR4 and PR4A — data/update containment and portable AVD lab | **Integrated into `kitsune`; corrected further by PR #26** | Do not revert the rollback-compatible database design or safe SDK/AVD restoration. |
+| 5 | Roadmap PR4B / GitHub #24 — upstream/security laboratory | **Merged** | Regenerate the ledger when upstream refs or release candidates change. |
+| 6 | Roadmap PR5 / GitHub #26 — production hardening and experimental System Mode containment | **Implemented in this two-commit range; exact-head gate/merge state is external** | If this commit is not yet on `kitsune`, merge only after the exact two-commit head is green. If it is reachable from `kitsune`, this item is complete. |
+| 7 | Roadmap PR5A — one writable-target baseline-versus-hardened lifecycle | **Next engineering PR** | Qualify one exact snapshot-capable target through install, three cold boots, upgrade, reinstall, module/root smoke, uninstall, and restore. |
+| 8 | Roadmap PR5B — conditional current-line durable transaction | **Not started; conditional** | Implement only the gaps required to ship the old core. Otherwise carry the failing tests and contract into PR7. |
+| 9 | Roadmap PR6 onward — stable-base forward-port, parity, product features, and release | **Not started** | Begin only after PR5A provides a trustworthy comparison target and the PR5B branch decision is explicit. |
+
+The next engineering task once PR #26 is present on `kitsune` is therefore **PR5A, not PR6 and not more speculative installer
+code**. PR5A is evidence-first: use one existing, recoverable emulator instance or image at a time,
+restore the same baseline between artifacts, and separate emulator-host boot failures from Android or
+Magisk failures. BlueStacks Air `Tiramisu64` at `127.0.0.1:5555` is useful negative and ordinary-root
+evidence, but its read-only system mount does not satisfy the writable System Mode exit.
+
+### Current hardening evidence and limits
+
+- Across the explicitly identified PR #26 candidate heads, the retained code passed the 99-test
+  local host suite, JVM tests, zero-error Android lint, clean debug/release builds, all four native
+  ABIs, signer/identity/16 KiB artifact checks, API 23/29/35 hosted AVD jobs, the product gate, the
+  UBSan parser corpus, and the upstream/SBOM/RustSec gate. Exact local ARM64 Android 14, 15, and 16
+  devices then completed both
+  debug and release patch/boot/manager-setup/reboot/self-test/root/concurrent-`su` flows, six
+  137-case parser-corpus runs, byte restoration, and disposable-device deletion.
+- The same BlueStacks instance was cleanly reinjected with the released comparison backend and the
+  hardened debug/release artifacts; ordinary root/backend alignment passed and the original payload
+  was restored. Legacy Android 6 ADB-PTY CRLF is normalized at both readiness and concurrent-`su`
+  result boundaries, with focused regressions for each parser.
+- Exact two-commit hosted reruns caught two harness-only edge cases before merge. [Run
+  30696816242](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30696816242) showed that
+  Android 6 retained a carriage return in otherwise-correct PackageManager and Magisk readiness
+  output; the parser now normalizes that legacy PTY boundary. The corrected [run
+  30697832776](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30697832776) then passed
+  source, release/debug build, JVM/lint, artifact, API 23/29/35, and aggregate product gates.
+  Its paired [security run
+  30697832807](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30697832807) later saw the
+  global RustSec database commit advance with the same count of 1,177 advisories and the same six
+  Kitsune findings. The live gate still fails on changed findings, dependencies, reachability, or missing
+  dispositions, and each relevant advisory record is fingerprinted so a changed affected range or
+  newly published fix remains semantic. Unrelated database metadata is no longer a product-code change.
+- An exact API 35 module lane proved that the default version must retain a lowercase `kitsune`
+  marker: NeoZygisk v2.3 otherwise assumes official Magisk's manager package. The build now emits
+  `<short-commit>-kitsune` consistently from Python and Gradle and the artifact contract enforces it.
+  NeoZygisk v2.3, Vector v2.0/API 100, and CorePatch 4.9 then loaded through `system_server`, with
+  Vector Manager reporting the expected Kitsune identity. This is module startup/hook evidence, not
+  a universal module-support claim.
+- Internal MagiskHide removed Magisk/module mounts from a selected app's live mount namespace.
+  Canonical `denylist` selection was also observed by NeoZygisk, but its clean namespace left the
+  fork's custom `/system/bin` Magisk overlay visible. Full external-provider hide parity therefore
+  remains open for PR12; the current PR does not paper over that boundary with a second conflicting
+  enforcement path.
+- A full Google APIs API 35 release lane completed hidden-manager installation with a randomized
+  package and certificate, preserved the exact release manager bytes/certificate in `dyn/current.apk`,
+  relaunched through the hidden package, and retained root. Replacing `dyn/current.apk` with the
+  debug-signed APK caused the release daemon to log the signature mismatch and delete the untrusted
+  replacement once cached authorization expired. This proves the tested recovery boundary, not
+  arbitrary upgrade-key rotation or every multiuser path.
+- The same UI flow exposed inherited platform variance: stripped ATD images omit the unknown-app
+  Settings activity, while the full Google APIs Settings app can grant the app-op but return a
+  canceled result. The final code catches the missing activity and queries
+  `canRequestPackageInstalls()` on return. ATD now denies without a crash; the full image opens the
+  hide-name dialog immediately after a grant without requiring a second tap.
+- Expensive stress loops and destructive experiments remain local and disposable. Retained CI work
+  is bounded; database reconciliation is one-time; updater hashing occurs only for downloaded
+  artifacts; release System Mode is disabled. No recurring hot-path stress loop was added.
+- Three Gradle tasks that were permanently `NO-SOURCE` in the shared/native/stub modules were removed
+  from the hosted command. The real app JVM tests and app/shared/stub lint lanes remain; this removes
+  empty task scheduling, not test coverage.
+- PR #26 improves staging and in-process rollback, but there is still no versioned persistent
+  ownership manifest or deterministic recovery after process death/power loss across system files,
+  `/data/adb/magisk`, addon survival, upgrade, and uninstall. Do not call that transaction complete.
+- The old released certificate came from a publicly exposed historical test keystore. PR #26 removes
+  that keystore and restores release identity checks, but the first production identity and its
+  explicit upgrade/reinstall transition remain future release work.
+
+### Documentation placement and contradiction policy
+
+The roadmap is intentionally the long document. Other user-facing surfaces should remain short and
+high-yield:
+
+| Surface | Purpose | Length/content rule | Source of truth when statements conflict |
+|---|---|---|---|
+| `DEVELOPMENT_ROADMAP.md` | Goals, history, architecture choices, complete backlog, PR ordering, acceptance tests, and release gates | As detailed as necessary; retain resolved history when it explains a current constraint, but label historical versus current state | **Primary planning source** |
+| `docs/status.md` | Current release level, proven evidence, blockers, and next few actions | Concise evidence table and ordered blockers; link here for detail instead of copying rationale | Roadmap checkpoint and exact test records |
+| Root `README.MD` | Project identity, principal features, current warning, build entry point, and documentation links | Short landing page; no full audit, compatibility matrix, or internal transaction design | `docs/status.md` for current claims; roadmap for plans |
+| App/stub screens and strings | A decision the user must make now, a failure reason, recovery action, or short safety warning | One title plus a short actionable paragraph/list; never embed the roadmap, raw evidence tables, or maintainer debate | Runtime capability result and stable reason code |
+| `docs/release-notes.md` / release body | What changed in one candidate, installation warning, upgrade rule, known limits, source/checksum/certificate links | Compact and release-specific; link to evidence | Exact candidate artifact record |
+| Audit/lab/contract documents | Reproducible technical evidence needed by maintainers | May be detailed when the detail is required to reproduce or review a claim; do not duplicate the execution backlog | Generated records, schemas, source, and this roadmap |
+
+When implementation changes invalidate a claim, update the roadmap checkpoint and the smallest
+user-facing status sentence in the same PR. Do not solve inconsistency by copying the full roadmap
+into every document. Historical sections must name their audited commit/date so an old finding is not
+mistaken for the current tree.
 
 ## Product identity: every purpose, in priority order
 
@@ -58,7 +166,10 @@ The repository history is explicit:
 - Commit [`78ff3756`](https://github.com/Jordan231111/KitsuneMagisk/commit/78ff375665d911773fce3bbaae4860a75b249989) changed `magisk.versionCode` from `27002` to `29999`. Its message says: “Pretend to be Magisk 29.9 to bypass validation for some modules.”
 - Commit [`8e854f37`](https://github.com/Jordan231111/KitsuneMagisk/commit/8e854f378ebabe427f02d65615ddee57af5b53d0) changed it again from `29999` to `31000` and added `version=31.0-kitsune`. Its message says the number was changed “to enhance compatibility.”
 - [`gradle.properties`](gradle.properties) currently supplies `magisk.versionCode=31000`.
-- [`config.prop`](config.prop) currently supplies the user-visible `version=31.0-kitsune`.
+- The previously tracked `config.prop` supplied the user-visible `version=31.0-kitsune` and embedded
+  the public historical test-key credentials. PR #26 deletes both tracked files. Configuration-free
+  builds now use the source commit identity; release builds require an explicit external config and
+  keystore.
 - [`build.py`](build.py) uses the same `versionCode` in the Android APK and the native `MAGISK_VER_CODE`, so one inflated value currently serves two unrelated purposes: Android upgrade ordering and Magisk/module compatibility signaling.
 - The official stable release is [Magisk v30.7](https://github.com/topjohnwu/Magisk/releases/tag/v30.7), with `versionCode=30700`.
 
@@ -72,16 +183,18 @@ The shipped `v31.0-25fa2159` APK was inspected during this audit. Its actual met
 | Minimum SDK | 23 |
 | Target/compile SDK | 34 / 34 |
 
-There is also a release metadata bug: [`.github/workflows/android.yml`](.github/workflows/android.yml) claims the short commit hash is “the exact version string the APK reports,” but `config.prop` overrides the build script’s hash default. The APK reports `31.0-kitsune`, not `25fa2159`.
+The released artifact also had a metadata bug: [`.github/workflows/android.yml`](.github/workflows/android.yml) claimed the short commit hash was “the exact version string the APK reports,” but the tracked `config.prop` overrode the build script’s hash default. That APK reports `31.0-kitsune`, not `25fa2159`. PR #26 removes the tracked override and adds an artifact identity contract, but the final separation of product version, Android upgrade code, compatibility epoch, protocol, channel, and upstream base remains roadmap PR9.
 
 ### The correct mental model
 
 - `31000` is a fork compatibility/upgrade number chosen by prior maintainers.
 - It is not an upstream version lineage claim backed by upstream source.
 - Kitsune’s latest common ancestor with current Magisk is the February 2, 2024 canary commit `154121f3`.
-- Relative to the audited PR2 baseline, stable `v30.7` has **858 upstream-only commits** and Kitsune has **171 fork-only commits**.
-- Relative to current upstream `master`, the counts are **971 upstream-only commits** and **171 fork-only commits**.
-- The audited snapshots differ across **763 files versus v30.7** and **837 files versus current master**. A blind merge or rebase is therefore a high-risk strategy.
+- Relative to the historical PR2 audit baseline, stable `v30.7` had **858 upstream-only commits** and Kitsune had **171 fork-only commits**.
+- At PR #26 final code commit `530f2a3f8`, the repository has **185 fork-only commits** versus the
+  common ancestor; this roadmap-only reconciliation makes the pending two-commit head **186**, while
+  stable has **858 upstream-only commits** and observed `master` has **995 upstream-only commits**.
+- The historical audited snapshots differed across **763 files versus v30.7** and **837 files versus the then-current master**. The exact current ledger is generated by PR4B tooling. Either way, a blind merge or rebase remains a high-risk strategy.
 
 ## Executive recommendation
 
@@ -246,34 +359,63 @@ Add a read-mostly preflight command with human and `--json` output. The manager 
 
 ### Current System Mode correctness and safety audit
 
-These findings do not mean the feature should be removed. They define the first high-yield work needed to make the project’s core purpose dependable.
+These findings do not mean the feature should be removed. They define the first high-yield work
+needed to make the project’s core purpose dependable. Status labels were reconciled after PR #26;
+“fixed” means the named defect has a regression, not that System Mode as a whole is qualified.
 
 #### Release-blocking issues
 
-1. **No System Mode CI or maintained compatibility matrix.** The current API 23/29/35 AVD jobs test ramdisk/boot-style setup, not `direct_install_system`. The main product path has no automated assertion.
-2. **The recovery path still requires a boot image before selecting System Mode.** `scripts/flash_script.sh` calls `find_boot_image` and aborts when none is found before reaching the `SYSTEMINSTALL` branch. This contradicts the use case where no usable boot-image path exists.
-3. **Recovery activation depends on filename magic.** A ZIP/APK path containing `systemmagisk` silently changes installation mode. Replace this with an explicit visible option and confirmation.
-4. **The live SELinux “probe” changes policy.** `magiskpolicy --live "permissive su"` is a state-changing security relaxation, not a harmless capability check. It remains active until reboot and does not prove that the complete persistent policy will load next boot.
-5. **Static SELinux selection patches only the first matching file.** Modern split/precompiled policy selection can depend on platform/vendor inputs and matching hashes. A successful write to one candidate does not prove init will load it.
-6. **Installation is not transactional.** The script creates/remounts paths, removes an earlier installation, writes payloads, patches policy, and edits init in sequence. A later failure can leave a mixed state. Backups live beside the modified files on the same image.
-7. **Uninstall ownership is too broad.** Wildcards such as `*magisk*` under init directories can delete files not created by this exact installation. There is no versioned install manifest listing owned paths and original-file digests.
-8. **The native context switch contains unsafe I/O.** `magisk --auto-selinux` writes `sizeof(string literal)`—including the terminating NUL—to `/proc/self/attr/current`, then prints a fixed buffer without using the read length or guaranteeing NUL termination. Replace it with the platform SELinux API or strict length-checked writes/reads and tests.
-9. **`/sbin` is hard-coded as the runtime target.** The Nox Android 12 fix proves this is already a compatibility fault line. Current official emulator setup selects `/sbin` for legacy layouts and `/debug_ramdisk` when `/sbin` is absent.
-10. **Android 6/API 23–24 persistence is unproven.** Init-RC generation is inside `if [ "$API" -gt 24 ]`; no equivalent persistent launch path is evident in that branch. Treat those APIs as unqualified until a cold-boot test proves otherwise.
-11. **System Mode detection is heuristic.** Uninstall can infer System Mode from a missing boot-image SHA1. Persist an explicit mode/schema/install ID and refuse destructive cleanup when ownership cannot be proven.
-12. **The UI checks root and an unpatched boot image, not actual System Mode capability.** It can offer an operation on immutable system layouts and cannot clearly express conversion, host-patch, unsupported, or already-installed states.
+1. **Open — no writable System Mode CI or maintained compatibility matrix.** Host tests now cover
+   schemas, gating, parsing, preflight, and rollback helpers; API 23/29/35 AVD jobs still test
+   ramdisk/boot-style setup, not a persistent `direct_install_system` lifecycle.
+2. **Fixed in PR #26 — an explicitly selected recovery System Mode path required a boot image.**
+   `scripts/flash_script.sh` now runs `find_boot_image` only for the normal boot-image route; a
+   selected System Mode route reaches its debug-payload gate without requiring `BOOTIMAGE`.
+3. **Open — recovery activation still accepts filename magic.** A ZIP/APK path containing
+   `systemmagisk` silently changes installation mode. Replace it with an explicit visible option and
+   confirmation.
+4. **Fixed in PR #26 — the live SELinux probe changed policy.** The installer now parses/saves the
+   live policy without applying `permissive su`. Persistent next-boot policy selection remains open.
+5. **Open — static SELinux selection patches only the first matching file.** Modern
+   split/precompiled policy selection can depend on platform/vendor inputs and matching hashes. A
+   successful write to one candidate does not prove init will load it.
+6. **Partially mitigated, still open — installation is not durably transactional.** PR #26 stages
+   selected runtime/addon/init/policy sidecars and can reverse an in-process failure, but backups are
+   still on modified filesystems and no persistent journal recovers the full transaction after
+   process death or power loss.
+7. **Open — uninstall ownership is too broad.** Wildcards such as `*magisk*` under init directories
+   can delete files not created by this exact installation. No runtime versioned install manifest
+   lists owned paths and original digests.
+8. **Fixed in PR #26 — native context-switch I/O was unsafe.** `--auto-selinux` now uses checked
+   `setcon`, a fresh bounded descriptor read, the actual read length, and deterministic close. PR7
+   should still prefer maintained upstream bootstrap primitives where possible.
+9. **Open — `/sbin` remains an important hard-coded runtime assumption.** The Nox Android 12 fix
+   proves this is a compatibility fault line; current official live setup selects `/sbin` or
+   `/debug_ramdisk` by layout.
+10. **Contained, not proven — Android 6/API 23–24 System Mode persistence is unproven.** PR #26
+    rejects these APIs for System Mode while retaining ordinary Magisk support. Re-enable only after
+    a dedicated persistent launch path cold-boots successfully.
+11. **Open — System Mode ownership/detection remains heuristic.** Persist an explicit
+    mode/schema/install ID and refuse destructive cleanup when ownership cannot be proven.
+12. **Partially mitigated, still open — the UI lacked capability truth.** PR #26 makes the action
+    debug-only, adds a destructive warning, and the tested read-only target rejects before persistent
+    mutation. Full doctor result/adapter/recovery integration and already-installed/conversion states
+    remain PR13 work.
 
 #### Required characterization and conditional current-branch fixes
 
 - [x] Add characterization tests around the current behavior before changing it.
 - [ ] Extract System Mode shell logic from the oversized manager resource into a separately linted/tested script with a versioned interface.
-- [ ] Implement `doctor` and require a verified backup/snapshot plus explicit confirmation.
+- [x] Implement the read-only doctor, schemas, reason codes, ADB driver, debug-only warning, and
+  explicit confirmation.
+- [ ] Require and verify an external backup/snapshot and restore command before the first persistent mutation.
 - [ ] Replace filename magic and SHA1 inference with an explicit `SYSTEM_MODE_SCHEMA` and install manifest.
 - [ ] Stage all new files, calculate digests, validate policy/init output, and commit with a journal. On failure, roll back in reverse order and verify the original digests.
 - [ ] Write backups outside the mutated image when possible; never claim recovery until a restore has been exercised.
-- [ ] Replace the permissive live-policy probe and adopt current `magiskpolicy` load/save semantics.
+- [x] Replace the permissive live-policy probe with a non-mutating parse/save check on the current line.
 - [ ] Replace wildcard uninstall with manifest-owned exact paths and hash-aware restoration.
-- [ ] Fix and unit-test the `--auto-selinux` buffer/length behavior or remove the custom option in favor of a safer bootstrap.
+- [x] Fix and unit-test the `--auto-selinux` context and bounded I/O behavior on the current line;
+  prefer removing the custom option during the upstream-based port if maintained primitives suffice.
 - [ ] Make runtime tmpfs selection layout-aware using the maintained upstream live-setup logic.
 - [ ] Separate System Mode from dynamic `/system/bin` SU visibility so persistence can be tested without Hide/SuList complexity.
 - [ ] Add shell static analysis and failure-injection tests after every mutation boundary.
@@ -315,31 +457,35 @@ Start with current official code, but reuse current Kitsune behavior and fixture
 |---|---|---|
 | Upstream base | Common ancestor is `154121f3` from 2024-02-02 | The apparent `31.0` label hides a two-year architectural gap |
 | Official stable | v30.7, released 2026-02-23 | Official code has Android 16 QPR2, current sepolicy, SU, boot, and Zygisk fixes absent here |
-| Official master | `14ea5cfb`, 2026-04-22; 113 commits after v30.7 | Useful fixes exist, but master also contains a large app/UI/build rewrite |
-| Latest Kitsune CI and local AVD evidence | [Run 26848644198](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/26848644198) passed build plus API 23, 29, and 35 AVD jobs. The final [PR4A lab record](docs/system-mode/avd-lab-2026-07-22.md) captures local API 35 ARM64 debug/release patched-ramdisk boots, exact APK and restored-image hashes, while API 35 16 KiB/API 36 stock probes provide negative evidence. | Normal Magisk boot integration is evidenced on both CI x86_64 and Apple-Silicon ARM64; it still does not substitute for commercial-emulator System Mode qualification. |
+| Official master | `fd0cb66b`, observed 2026-08-01; 137 commits after v30.7 | Useful fixes exist, but master also contains a large app/UI/build rewrite. Keep it as an observation/backport lane rather than the first forward-port base. |
+| Latest Kitsune CI and local AVD evidence | [PR #26 run 30697832776](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30697832776) passed source, build/JVM, API 23/29/35, and aggregate product gates at pre-final two-commit head `fc10d9242`, including the Android 6 readiness fix. Its paired security run exposed only volatile global RustSec metadata and led to the final semantic-comparison fix. Pre-final artifact head `1cac2135e` passed local official ARM64 API 34/35/36 debug and release patched-ramdisk boots, manager setup/reboot/self-test/root, 32 concurrent `su` calls per artifact, 137-case parser/policy/signing corpus per artifact, byte restoration, and AVD deletion. Final code commit `530f2a3f8` adds no app/native change beyond that product-tested content; it passed the 99-test local host suite and a fresh semantic RustSec check. The earlier [PR4A lab record](docs/system-mode/avd-lab-2026-07-22.md) retains immutable API 35 16 KiB/API 36 negative evidence. | Ordinary Magisk integration is evidenced on hosted x86_64, local ARM64 Android 14–16, and the exact BlueStacks comparison target. The exact two-commit hosted run after the semantic RustSec fix is the mandatory merge record; none of these normal-install lanes substitutes for writable System Mode qualification. |
 | Local build | The pinned ONDK is installed; canonical debug/minified-release builds and Gradle debug native links pass for ARM64, ARM32, x86_64, and x86 on this Mac. Final testing found that Gradle's `NDK_DEBUG=1` omitted section GC and pulled dead ARMv7 unwind code; `Application.mk` now makes the canonical and Gradle link contracts explicit and the formerly failing ARMv7 path passes. | Preserve the exact toolchain/bootstrap checks so another maintainer can reproduce the result. |
-| Local submodules | All current Kitsune submodules are initialized at their recorded gitlinks. A separate full recursive official-Magisk clone also checked out every current upstream submodule. | Recursive checkout remains a documented prerequisite; PR4B should automate reachability and pin drift. |
-| Tests | The AVD runner installs, reboots, asks the app for root, and checks `su -c id`; PR3/PR4 add versioned host contracts, migration fixtures, rollback, randomized classifier/migration checks, and modern immutable negative lanes. | Hide/SuList/provider/module/early-mount and actual Direct-System install/upgrade coverage remain release blockers. |
+| Local submodules | All current Kitsune submodules are initialized at their recorded gitlinks. A separate full recursive official-Magisk clone also checked out every current upstream submodule. | Recursive checkout remains a documented prerequisite; PR4B now automates reachability and pin drift. |
+| Tests | PR #26's squashed local candidate passed 99 host tests, JVM tests, zero-error lint, shell/source checks, clean all-ABI debug/release builds, artifact identity/signing checks, same-instance BlueStacks backend comparisons, official Android 14–16 ARM64 lifecycles, and API 35 provider/module/HideList/hidden-manager characterization. Three always-`NO-SOURCE` Gradle test tasks were removed while the real app JVM tests and all app/shared/stub lint lanes remain. | The local module lane closes basic startup/hook questions but exposes an external-provider mount-cleanup gap. SuList, early-mount, broad module compatibility, and actual writable Direct-System install/upgrade/uninstall remain release blockers. Heavy stress stays local; retained CI regressions are bounded and high-yield. |
 | Primary product feature | System Mode originated in `05289fb5` and now spans manager UI, shell/recovery installation, native tmpfs setup, policy, init, persistence, and uninstall | It must be treated as the branch-selection and release-qualification gate, not an optional later experiment |
-| System Mode test coverage | No current CI job invokes `direct_install_system`; the new doctor characterizes exact capabilities and refuses unsupported layouts, while `dfb66f0a` still records a NoxPlayer Android 12 `/sbin` regression fixed only through field knowledge. | Use the shared contract for the transactional installer and commercial-emulator lifecycle matrix; characterization is not install qualification. |
+| System Mode test coverage | Host tests exercise installer parsing, debug/release gating, preflight, private mount namespace behavior, and rollback functions; live BlueStacks testing proved the debug warning and read-only rejection without changing selected init/policy hashes. No CI or qualified writable target completes a persistent `direct_install_system` lifecycle. | Use PR5A to qualify one writable target, then implement only evidence-backed transaction gaps. Characterization and negative refusal are not install qualification. |
 | Official reusable emulator logic | Magisk v30.7 `scripts/live_setup.sh` supports API 23–36 and handles legacy `/sbin` versus modern `/debug_ramdisk` runtime setup | The v30.7 port can replace several old custom primitives; it is a bounded vertical slice, not a from-scratch Magisk rewrite |
 | PR checks | PR2 added pull-request checks, static/host/JVM tests, debug/release builds, API 23/29/35 AVD jobs, and an aggregate product gate. | Stable qualification is still broader, but ordinary code changes no longer lack a build/boot gate. |
 | Update service | The inherited `1q23lyc45.github.io` channels are dead; PR4 now resolves every built-in channel to an explicit unavailable result without a request. Custom metadata requires HTTPS and cannot redirect to cleartext. | A project-owned, digest-validated service remains PR10; containment is complete for the current line. |
 | Stub update | The inherited stub URL is dead; PR4 removes fallback metadata fetching and shows a project-service-unavailable path instead. | The stub fails honestly until PR10 supplies a project-owned artifact contract. |
 | Release semantics | PR1/PR2 removed publication from ordinary pushes; the only publication path is an explicitly dispatched prerelease canary after the product gate. | Stable publication remains disabled until PR16. |
-| Debug distribution | Debug APK is attached beside stable APK; debug native code grants ADB shell root automatically | The release description materially understates debug-build risk |
-| Dependency audit | A fresh 2026-07-22 `cargo audit` found one medium vulnerability and five warnings: `rsa` 0.9.8 has the unfixed Marvin timing advisory; the reachable Kitsune use is local boot-image private-key signing, not a network signing oracle. Informational findings include vendored `cxx` 1.0.105's `let_cxx_string!` exception-safety defect (the macro has no production call site here), `rand` 0.8.5's custom-logger/thread-RNG edge case, and unmaintained build-time CLI dependencies. | Keep these as explicit pre-stable dispositions. Update `rand` and vendored `cxx` only in an isolated dependency PR with all-ABI/sign/verify/boot tests; track the no-fix RSA advisory without pretending it is patched. |
+| Debug distribution | Earlier releases attached debug APKs beside stable-shaped APKs; debug native code grants ADB shell root automatically. Current workflows retain debug artifacts for CI and do not attach them to a normal release. | Keep debug artifacts explicitly developmental and never represent their root behavior as production policy. |
+| Dependency audit | A fresh 2026-08-01 `cargo audit` against official advisory-database commit `84dd8268` found one medium vulnerability and five warnings: `rsa` 0.9.8 has the unfixed Marvin timing advisory; the reachable Kitsune use is local boot-image private-key signing, not a network signing oracle. Informational findings include vendored `cxx` 1.0.105's `let_cxx_string!` exception-safety defect (the macro has no production call site here), `rand` 0.8.5's custom-logger/thread-RNG edge case, and unmaintained build-time CLI dependencies. | Keep these as explicit pre-stable dispositions. Update `rand` and vendored `cxx` only in an isolated dependency PR with all-ABI/sign/verify/boot tests; track the no-fix RSA advisory without pretending it is patched. |
 | Dependency automation | Dependabot watches Cargo only and has opened many untested major-version PRs | Gradle/actions are ignored, while Cargo updates create noise without validation |
-| Documentation | PR1 replaced the sunset notice with an active README/status and this purpose-ordered roadmap. | Keep claims generated from exact compatibility evidence as the matrix grows. |
+| Documentation | The root README is deliberately short, `docs/status.md` is the concise current support statement, and this roadmap retains the full historical rationale, specifications, PR sequence, and release gates. | Put detailed planning here; keep app/user-facing text limited to actionable warnings, current support, build instructions, and links. |
 | SELinux dependency | `95a048f0` changed only the remote URL; the gitlink stayed on `8c6acc0d` from 2023 | Checkout was repaired, but no SELinux code was updated |
 | Current official SELinux | Official Magisk stable/master use `topjohnwu/selinux` at `be1b39a6`, based on Android 16 QPR2-era AOSP plus Magisk compatibility patches | A maintained, directly compatible replacement exists; there is no need to invent the patch stack from scratch |
-| Hide database change | `25fa2159` selected standard `denylist` without migration; PR4 now adds database v13, a verified immutable v12 backup, exact-SQL fixtures, conservative union, retained legacy/SuList rows, and an audit record. | Runtime provider semantics still need PR12 qualification, but the current-line data-loss/reactivation gap is contained transactionally. |
-| External Zygisk contract | ReZygisk v1.0.0 removed its Kitsune/SuList adapter before `25fa2159`; current NeoZygisk recognizes the manager but queries only `denylist` | DenyList mode can interoperate, but current SuList interoperability is not established |
+| Hide database change | `25fa2159` selected standard `denylist` without migration. PR4 first implemented a schema-13 experiment; PR #26 corrects it to a rollback-compatible one-time reconciliation that keeps `user_version=12`, creates and verifies the first existing-database v12 backup, conservatively unions valid legacy rows, retains legacy/SuList data, and records a completion marker. Fresh databases skip the backup/import path. Runtime testing confirmed a valid marker prevents later legacy-row resurrection while canonical add/remove behavior remains live. | Current-line data preservation is contained without making older published daemons destructively reject the database or repeating a union on every start. Provider/process semantics still need PR12 qualification. |
+| External Zygisk contract | ReZygisk v1.0.0 removed its Kitsune/SuList adapter before `25fa2159`. Exact API 35 testing showed NeoZygisk v2.3 requires the lowercase `kitsune` version marker, recognizes canonical `denylist` rows, and starts Vector; however, its cached clean namespace did not remove Kitsune's custom `/system/bin` Magisk overlay. | Basic provider/module interoperation is real, but complete external DenyList hiding and any SuList contract are not established. Preserve the identity regression and carry the namespace gap into PR11/PR12. |
 | Full fork-faithfulness audit | The complete 6,855-commit reachable graph was traversed, all 171 fork-only commits were catalogued, high-impact diffs were reviewed, and every install route was traced. | The [faithfulness report](docs/faithfulness-audit.md) confirms PR3/PR4 scope, preserves ordinary install as a first-class invariant, and assigns unresolved divergences to discrete later PRs. |
 
 ## Audit of every commit after “Last Commit”
 
 ### Scope and overall verdict
+
+This section intentionally preserves the audit of the already-published `25fa2159` state. Statements
+such as “there is no migration” describe that historical tree, not PR #26. Current dispositions and
+remaining work are recorded in the execution checkpoint, P0/P1 checklists, and numbered PR sequence.
 
 The exact reviewed range is:
 
@@ -468,7 +614,10 @@ This change is **not purely wrong**. The compatibility observation is real: exte
 
 Concrete correctness problems:
 
-1. `native/src/core/db.cpp` remains at `DB_VERSION 12`; there is no migration.
+1. At audited commit `25fa2159`, `native/src/core/db.cpp` remained at `DB_VERSION 12` and there was
+   no compatibility migration. PR4 added an initial schema-13 design; PR #26 replaces that
+   unpublished design with a one-time rollback-compatible reconciliation while deliberately keeping
+   `user_version=12`.
 2. Existing Kitsune users can have MagiskHide selections in `hidelist`. After the update, the rows remain stored but the daemon/UI reads `denylist`, so those selections become inactive until migrated or reselected.
 3. `denylist` has existed since the old official schema. A user can have stale rows there. The change can unexpectedly reactivate them.
 4. `hidelist` is still created, so two tables remain with no declared source of truth or synchronization rule.
@@ -483,10 +632,14 @@ TODO before releasing the behavior as migration-safe:
 
 - [x] Keep `denylist` as the intended canonical table for normal hide mode, but do not represent the pointer-only commit as a complete upgrade migration.
 - [ ] Define one canonical table and document the semantics for Hide, DenyList, and SuList separately.
-- [x] Bump the database schema version and migrate in one transaction.
+- [x] Add a one-transaction compatibility reconciliation. On the current line, deliberately keep
+  `user_version=12` so older published daemons do not reject and rebuild the database; use a
+  validated internal completion marker instead of pretending a public v13 schema shipped.
 - [x] Back up the old rows or retain a rollback-safe legacy table until the migration has shipped successfully.
 - [x] Define conflict behavior when both `hidelist` and `denylist` contain data. A security-conservative union hides more apps but can break functionality; silently choosing either table is not acceptable.
-- [ ] Add fixtures for: empty DB, `hidelist` only, `denylist` only, overlapping/divergent tables, SuList enabled, malformed rows, and downgrade.
+- [x] Add current-line fixtures for empty DB, `hidelist` only, `denylist` only,
+  overlapping/divergent tables, SuList separation, malformed rows, rollback-compatible v12, and the
+  short-lived unpublished v13 normalization case.
 - [ ] After migration, make all app, CLI, daemon, receiver, and provider-facing operations use the same contract.
 - [x] Do not claim current SuList support for ReZygisk/NeoZygisk. Either add a versioned adapter with the provider project, maintain a reviewed provider patch, or mark the combination unsupported.
 - [ ] Detect provider name/version and expose it in diagnostics; do not infer compatibility merely from the presence of a module.
@@ -547,7 +700,7 @@ The current tree still deliberately skips final `policydb_validate`. That is not
 | `cil_deny.c` | File absent | Required by current CIL sources | Add it to legacy `Android.mk` source list |
 | Existing 122 listed SELinux sources | Present | All still present | Source-path migration is feasible |
 | Full current Magisk sepolicy engine | No | Yes | Prefer v30.7 baseline rather than library-only transplant |
-| Hyphenated rule identifiers | Old C++ statement parser | Fixed on current Magisk master in `14ea5cfb` | Backport only after parser architecture review, or inherit through upstream base |
+| Hyphenated rule identifiers | Old C++ statement parser | Fixed after v30.7 in Magisk commit `14ea5cfb` | Backport only after parser architecture review, or inherit through a later upstream base |
 
 Updating only the submodule modernizes the library/parser core. It does **not** magically port every change in `native/src/sepolicy`, `native/src/init`, policy rules, boot integration, or Rust statement parser. That is another reason the clean v30.7 base is safer than indefinitely modernizing the current tree piecemeal.
 
@@ -559,7 +712,7 @@ This is the preferred solution.
 - [ ] Keep its `.gitmodules`, SELinux gitlink `be1b39a6`, `native/src/external/Android.mk`, `native/src/sepolicy`, and init policy integration together as one tested baseline.
 - [ ] Prove the unmodified base boots before porting Kitsune features.
 - [ ] Port MagiskHide/SuList and early-mount around the current policy API; do not transplant the old SELinux library/build files into the new base.
-- [ ] Consider current-master `14ea5cfb` (hyphenated identifier parsing) as a small explicit backport only if a regression test demonstrates the bug on v30.7.
+- [ ] Consider post-v30.7 commit `14ea5cfb` (hyphenated identifier parsing) as a small explicit backport only if a regression test demonstrates the bug on v30.7.
 - [ ] Track later official Magisk SELinux gitlink changes with an alert PR, never an unattended auto-merge.
 
 ### Path B — optional isolated modern-libsepol PR for current `kitsune`
@@ -664,13 +817,18 @@ Keep only redistributable/sanitized fixtures in the repository; store device-der
 
 # P0 — release blockers
 
-Signing-key changes, secret management, attestations, and other release-infrastructure work are deliberately outside this roadmap. Simple artifact digests remain only where they are part of functional updater validation. Use the existing development build setup while making the product work.
+Production signing is in scope only as a small, auditable release requirement: normal Android debug
+signing for debug builds, ephemeral unpublished CI signing for release-shaped tests, and one
+long-lived external maintainer keystore for distribution. Do not build a custom key service, store
+credentials in Git, or turn signing into day-to-day developer complexity. Attestation-bypass work
+and elaborate release infrastructure remain outside the product gate. Artifact digests, certificate
+identity, and source/build metadata remain required because they prove what was actually tested.
 
 ## P0.1 Take ownership of every update and download endpoint — L
 
-### Current breakage
+### Inherited breakage and current containment
 
-The app and stub still trust infrastructure belonging to prior maintainers:
+The inherited app and stub trusted prior-maintainer infrastructure:
 
 - `https://1q23lyc45.github.io/stable.json`
 - `https://1q23lyc45.github.io/beta.json`
@@ -678,12 +836,17 @@ The app and stub still trust infrastructure belonging to prior maintainers:
 - `https://1q23lyc45.github.io/debug.json`
 - `https://huskydg.github.io/download/magisk/31.0-kitsune.apk`
 
-All returned HTTP 404 during this audit. The live code references them in `Const.kt`, `ServiceLocator.kt`, `stub/build.gradle.kts`, and `DownloadActivity.java`.
+All returned HTTP 404 during the original audit. PR4 removed the built-in requests and made the app
+and stub return an explicit project-service-unavailable result. PR #26 additionally requires an
+HTTPS custom metadata URL, rejects cleartext redirects, requires a SHA-256 digest, verifies the
+downloaded bytes, and atomically publishes the verified APK. No project-owned default service exists
+yet, so containment is complete but update ownership is not.
 
 ### TODO
 
 - [ ] Move all default update metadata and APK URLs under an account/organization controlled by the current project.
-- [ ] Update `SOURCE_CODE_URL`, channel base URLs, stub URLs, changelog URLs, support links, and any manager home-screen links.
+- [x] Point `SOURCE_CODE_URL` at this repository and remove active built-in requests to the dead
+  channel/stub URLs.
 - [ ] Prefer immutable GitHub Release asset URLs for APKs, with a project-owned small metadata endpoint for channel discovery.
 - [ ] Define one versioned update schema containing at minimum:
   - product name and channel;
@@ -694,11 +857,13 @@ All returned HTTP 404 during this audit. The live code references them in `Const
   - minimum supported Android/API and migration notes;
   - release notes URL;
   - schema version.
-- [ ] Verify the APK digest before install or dynamic load.
-- [ ] Make the stub use the same metadata schema as the full app.
-- [ ] Make missing, malformed, downgraded, or mismatched metadata fail closed with an actionable error.
-- [ ] Add tests for HTTP 404, invalid JSON, truncated APK, digest mismatch, rollback metadata, and channel switching.
-- [ ] Stop treating an arbitrary custom-channel response as trusted without a strong warning and digest validation.
+- [x] Verify the APK digest before install or dynamic load for explicitly configured custom metadata.
+- [ ] Make the project-owned stub and full app consume the same final PR10 metadata schema.
+- [x] Make unavailable built-in service, missing digest, malformed metadata, cleartext URL/redirect,
+  truncated APK, and digest mismatch fail closed with an actionable result.
+- [ ] Add the remaining rollback-metadata, authenticated-project-metadata, post-release, and channel-switching tests with PR10.
+- [x] Require an explicit HTTPS custom channel and digest validation; continue to warn that this
+  validates supplied bytes but does not make an arbitrary server project-trusted.
 - [ ] Add an automated post-release probe that downloads metadata and each asset exactly as the installed app/stub would.
 
 ### Acceptance criteria
@@ -754,11 +919,11 @@ Those meanings conflict. Android requires future app updates to use a higher `ve
 
 ### TODO
 
-- [ ] Add a read-only `upstream` remote for `https://github.com/topjohnwu/Magisk.git`.
+- [x] Add a read-only `upstream` remote for `https://github.com/topjohnwu/Magisk.git`.
 - [ ] Keep the branch named `kitsune` and add an annotated tag documenting the known-working audit state. It is the comparison baseline during the port, not a second long-term product line.
-- [ ] Create a portable `system-mode-spec` test/capability contract from the current behavior before refactoring it.
+- [x] Create a portable System Mode test/capability contract from the current behavior before refactoring it. PR3 keeps it under `tools/system_mode`, schemas, fixtures, and host tests rather than requiring a permanent branch.
 - [ ] Create `next-system` from official stable `v30.7` (`e8a58776...`).
-- [ ] Create an automated `upstream-master` tracking ref/branch without merging it into releases automatically.
+- [x] Track official stable and `master` reproducibly through the PR4B ledger without merging either into releases automatically.
 - [ ] Record the base tag and commit in build output and release metadata.
 - [ ] Build a port ledger with one row per fork-only behavior:
   - originating commit(s);
@@ -769,7 +934,7 @@ Those meanings conflict. Android requires future app updates to use a higher `ve
   - tests required;
   - owner/status.
 - [ ] Use `git range-diff`, path-specific diffs, and behavior tests to understand patches; do not assume an old C++ patch can be cherry-picked into a subsystem now implemented in Rust.
-- [ ] On current `kitsune`, accept only tests and fixes needed for a build that will actually ship; do not attempt a rolling merge of the full upstream delta.
+- [x] Keep current-line PR #26 scoped to release/data/runtime hardening and comparison safety; do not attempt a rolling merge of the full upstream delta.
 - [ ] On `next-system`, port Direct-System first and keep the base’s built-in Zygisk until System Mode reaches parity.
 - [ ] Keep the first vNext candidate on upstream stable. Selectively backport only small, understood post-v30.7 fixes such as the current master’s sepolicy hyphenated-identifier parser fix if tests demonstrate relevance.
 - [ ] Apply the parity gate in the final-pass System Mode section. Branch age or diff size alone cannot promote `next-system`.
@@ -832,7 +997,7 @@ Do not repair the old dependency graph package by package. Re-run the audit on t
 ### TODO
 
 - [ ] Re-run `cargo audit` on the clean upstream baseline and after each port.
-- [ ] Add `cargo audit` as required CI with a reviewed, narrowly scoped deny/ignore policy.
+- [x] Add a required RustSec/dependency-ledger CI job with machine-readable, reviewed dispositions; do not add a false ignore for the no-fixed-version RSA advisory.
 - [ ] Do not merge the current major-version Dependabot PR queue blindly; most should be superseded by the upstream-baseline work.
 - [ ] Run compilation, native unit tests, boot-image corpus tests, and AVD smoke tests for every dependency group.
 
@@ -840,15 +1005,15 @@ Do not repair the old dependency graph package by package. Re-run the audit on t
 
 The detailed audit, adapter tiers, and architecture are in “Final-pass strategy: System Mode is the primary product.” The minimum release-blocking slice is:
 
-- [ ] Stop calling the current System Mode stable until install, cold-boot, upgrade, uninstall, and rollback are exercised on named emulator versions.
-- [ ] Add `kitsune system-mode doctor --json` and reject unsupported EROFS/AVB/dm-verity/dynamic-partition layouts before mutation.
-- [ ] Remove the recovery path’s unconditional boot-image requirement for an explicitly selected System Mode operation.
+- [x] Stop calling the current System Mode stable; PR #26 additionally makes the app action and backend release-inaccessible until named writable targets pass.
+- [x] Add `kitsune system-mode doctor --json`, reason-coded capability records, and pre-mutation rejection for the tested immutable/read-only layouts.
+- [x] Remove the recovery path’s unconditional boot-image requirement for an explicitly selected System Mode operation.
 - [ ] Remove filename-substring activation and require an explicit mode plus destructive-operation confirmation.
-- [ ] Replace the state-changing `permissive su` policy probe.
-- [ ] Fix or remove the unsafe `--auto-selinux` context-switch I/O.
-- [ ] Introduce an external backup, install manifest, staged commit, failure journal, exact-path uninstall, and verified rollback.
+- [x] Replace the state-changing `permissive su` policy probe with a non-mutating parse/save capability check.
+- [x] Fix the unsafe `--auto-selinux` procattr I/O with checked context transitions, a fresh bounded read, and explicit descriptor handling. Whether to retain this legacy mechanism on `next-system` remains a design decision.
+- [ ] Introduce an external backup, persistent install manifest, staged commit, failure journal, exact-path uninstall, and verified recovery after process death/power loss. PR #26's in-process sidecar/runtime/addon rollback is an interim layer, not completion of this item.
 - [ ] Make `/sbin` versus `/debug_ramdisk` selection layout-aware.
-- [ ] Prove or drop the API 23–24 System Mode claim.
+- [x] Exclude API 23–24 from the current System Mode installer unless a dedicated persistent launch path is later cold-boot proven; ordinary Magisk support remains separate.
 - [ ] Establish disposable snapshots and a repeatable LDPlayer/MuMu/Nox lab before the next System Mode canary.
 
 ### Acceptance criteria
@@ -858,6 +1023,44 @@ The detailed audit, adapter tiers, and architecture are in “Final-pass strateg
 - Every injected install failure restores the original snapshot/file digests and cold-boots.
 - Install, update, reinstall, and uninstall are idempotent and manifest-owned.
 - A System Mode canary is never promoted solely because generic AVD `su -c id` passed.
+
+## P0.7 Establish one simple production identity and transition — M
+
+PR #26 removes `TestKey-2024.jks` and the tracked credentials, makes release builds require an
+explicit external four-field signing config, restores release manager/stub certificate enforcement,
+and verifies debug/release signer and native compile identity in the artifact contract. This fixes
+the repository/build-policy defect without pretending that a production key already exists.
+
+The remaining release operation should stay deliberately simple:
+
+- [x] Debug builds use the ordinary automatically generated Android debug key.
+- [x] CI release-shaped builds use an ephemeral unpublished key and are not distribution artifacts.
+- [x] Release builds fail before expensive compilation unless all four external properties are
+  present: `keyStore`, `keyStorePass`, `keyAlias`, and `keyPass`.
+- [x] Reject a release config or keystore located inside the source checkout.
+- [x] Reject the former public test certificate in final artifact checks.
+- [ ] Before the first production candidate, create exactly one long-lived maintainer keystore
+  outside this repository and record only its public certificate digest in release evidence.
+- [ ] Decide the transition for installations signed with the historical public certificate:
+  verified reinstall, one narrowly scoped authenticated migration build, or an explicitly supported
+  package-identity change. Test Android package replacement and daemon/manager trust end to end.
+- [ ] Back up the production keystore securely in at least two access-controlled locations and
+  document recovery/rotation ownership outside the public repository.
+- [ ] Sign the already-tested final artifact or test the exact signed bytes after signing; never
+  rebuild different bytes after approval and publish them under the same identity/checksum.
+
+Do not add a certificate authority, remote signing daemon, per-developer release keys, secrets in
+Gradle properties, or multiple production flavors unless a later concrete requirement proves that
+the single-keystore model is insufficient.
+
+### Acceptance criteria
+
+- Private key bytes and credentials never enter Git history, Actions artifacts, logs, or APK assets.
+- One documented public certificate digest identifies production distribution.
+- Debug, CI release-shaped, historical-test, and production identities cannot be confused by the
+  artifact contract or release notes.
+- The selected historical-certificate transition succeeds on an exact test install or deliberately
+  requires a documented clean reinstall before the first production release.
 
 ---
 
@@ -910,6 +1113,61 @@ Current Kitsune removed built-in Zygisk and tells users to install ReZygisk/NeoZ
 
 The current provider state narrows the safe claims considerably. ReZygisk v1.0.0 removed its Kitsune-specific adapter, SuList support, and Kitsune namespace-timing workaround. NeoZygisk still recognizes the Kitsune manager package, but its Magisk adapter queries only the standard `denylist`. Neither current project establishes a supported SuList contract. Treat each provider/version as a pinned, tested external dependency rather than interpreting a successful module load as compatibility.
 
+### PR #26 local provider/module characterization
+
+One disposable official API 35 ARM64 device was used to turn that source review into measured
+current-line evidence. Third-party ZIPs/APKs stayed outside the repository and the stock SDK ramdisk
+was byte-restored before the AVD was deleted.
+
+- A configuration-free pre-fix build reported only `<short-commit>:MAGISK:D`. NeoZygisk v2.3 then
+  classified the daemon as official Magisk, searched for `com.topjohnwu.magisk`, and failed Manager
+  UID discovery. This was a real regression introduced by removing the tracked version override,
+  not a reason to restore that credential-bearing file.
+- Pre-final artifact head `1cac2135e` emitted `1cac2135-kitsune:MAGISK:D` through both `build.py` and
+  Gradle. A direct configuration-free checkout of final code commit `530f2a3f8` emits
+  `530f2a3f-kitsune`; a later documentation commit or GitHub pull-request merge ref intentionally
+  contributes its own short checkout `HEAD` instead. The build rejects a configured version without
+  the lowercase compatibility marker, and the permanent artifact contract compares app, stub,
+  native, and packaged-script identities rather than assuming a precomputed final artifact hash.
+- With NeoZygisk v2.3, the log reported `Detected Magisk variant: kitsune`; its 64-bit ptrace daemon
+  remained alive. Vector v2.0/API 100 injected `system_server`, its manager reported `Activated` and
+  identified `Kitsune Mask`, and CorePatch 4.9's legacy API module class loaded through LSPosed.
+  CorePatch 4.9 was selected deliberately because current CorePatch N-1.0 requires module API 101
+  while Vector v2.0 implements API 100. A live process or UI badge remains only startup/hook
+  evidence, not proof of every module behavior.
+- Internal MagiskHide was tested separately with a selected launcher process. Its mount namespace
+  fell to 138 entries and exposed no Magisk/module path; after removing the selection and restarting
+  the process, the namespace had 371 entries and exposed the expected `/system/bin/magisk` paths.
+- With internal enforcement disabled as NeoZygisk documents, NeoZygisk recognized the canonical
+  `denylist` row but its selected process still saw `/system/bin/magisk`, `magiskpolicy`, the debug
+  ramdisk, and module paths. Its cached clean namespace removed several `/debug_ramdisk` sources but
+  not Kitsune's dynamic `/system/bin` overlay. Do not enable two independent enforcement engines as
+  a shortcut; specify one owner and fix/test the missing overlay contract in PR11/PR12.
+
+### PR #26 hidden-manager and install-permission characterization
+
+A second disposable API 35 ARM64 lane used the full Google APIs image because ATD intentionally
+omits portions of the interactive Settings surface. The release manager successfully installed a
+hidden proxy with randomized package ID `com.s.cqedtwfxr` and a fresh stub certificate; the daemon's
+`dyn/current.apk` exactly matched the release APK bytes and disposable release certificate, the
+hidden activity relaunched, and `su -c id` continued to return root. The package ID and stub
+certificate are examples from a disposable run, not stable identities.
+
+The same device then replaced `dyn/current.apk` with the debug-signed APK as a destructive negative
+test. After cached authorization expired, the release daemon logged a dynamic-APK signature mismatch
+and removed the replacement. This is evidence that the restored release signature boundary fails
+closed for this recovery path. It does not replace future upgrade-key-rotation, work-profile,
+secondary-user, process-death, or first-production-key tests.
+
+The UI permission boundary also exposed two inherited edge cases present in the current official
+upstream line: ATD has no activity for `ACTION_MANAGE_UNKNOWN_APP_SOURCES`, and a full Google APIs
+Settings implementation can change `REQUEST_INSTALL_PACKAGES` to `allow` while returning a canceled
+activity result. PR #26 now catches the absent activity and queries the authoritative
+`PackageManager.canRequestPackageInstalls()` state when Settings returns. A disposable ATD image
+showed an actionable denial without a fatal exception; a disposable full Google APIs image opened
+the hide-name dialog immediately on return from the grant. Both SDK ramdisks were byte-restored and
+both AVDs were deleted.
+
 ### Options
 
 | Option | Benefits | Costs/risks |
@@ -929,7 +1187,9 @@ Keep upstream built-in Zygisk intact through the System Mode parity gate so the 
 - [ ] Publish a provider matrix containing exact provider commit/version, minimum claimed Magisk protocol, selected database table, DenyList behavior, SuList behavior, Android/API range, and tested Zygisk modules.
 - [ ] Pin the tested external provider source/version in CI and release notes; fail diagnostics clearly when an untested major version is installed.
 - [ ] Coordinate a versioned SuList adapter with the selected provider project if SuList is a product requirement. Do not infer it from that provider's DenyList support.
-- [ ] Add module compatibility tests, not just a “provider starts” check.
+- [ ] Add permanent module compatibility tests, not just a “provider starts” check. The disposable
+  PR #26 lane proves one NeoZygisk/Vector/CorePatch combination and supplies exact failure classes;
+  it is not yet a maintained CI matrix.
 - [ ] Test provider missing, disabled, outdated, crash-looping, and upgrade cases.
 - [ ] Ensure MagiskHide/SuList still behaves predictably with provider on and off.
 
@@ -945,7 +1205,61 @@ After System Mode, this is the clearest feature that distinguishes Kitsune. It s
 - Kotlin settings and list UI
 - external Zygisk-provider integration
 
-The latest commit changes the default table pointer from `hidelist` to `denylist`, but it does not add an explicit migration for existing selections. The UI still says “hidelist” in places, and settings/CLI names mix MagiskHide and DenyList terminology.
+Published commit `25fa2159` changed the default table pointer from `hidelist` to `denylist` without an
+explicit compatibility migration. PR #26 now reconciles existing older test/development databases,
+but it intentionally does not claim that table preservation alone proves MagiskHide, DenyList,
+SuList, namespace, or external-provider behavior. The UI, settings, CLI, and storage terminology
+still need one measured contract during PR12.
+
+### What “database migration” means before the next release
+
+This is an **on-device SQLite compatibility repair**, not a claim that the resumed project has
+already shipped a new schema release. The repository and public Kitsune/Delta lineage predate this
+development cycle, a `v31.0-25fa2159` artifact is already published, and maintainers also have real
+comparison/test databases. Those databases may contain MagiskHide selections in legacy `hidelist`
+while the current code and compatible external normal-hide consumers use `denylist`. Assuming every
+install is fresh would silently deactivate those existing selections. At the same time, a genuinely
+fresh installation must not pay for or pretend to recover data that never existed.
+
+The current-line behavior is therefore deliberately split:
+
+1. **Fresh database:** when no non-SQLite tables exist, create the v12 layout, perform no backup and
+   import no rows, then commit one valid completion/audit marker. This is the expected path for a
+   user who has never installed KitsuneMagisk.
+2. **Existing database:** first complete any historical schema steps through v12, durably publish
+   and verify the first root-owned mode-0600 `magisk.db.v12.bak`, then transactionally copy only
+   non-null/non-empty legacy `hidelist` pairs that are missing from canonical `denylist`. Existing
+   `denylist`, `hidelist`, and `sulist` rows remain; SuList is not converted into blacklist data.
+3. **Conflict rule:** the canonical result is the union of valid `hidelist` and existing `denylist`
+   rows. That avoids silently exposing an app that a prior configuration meant to hide, but it can
+   conservatively retain an old selection; the user can remove that selection through the normal
+   list operation after upgrade.
+4. **One-time boundary:** the small marker is validated when the daemon opens the database. A valid
+   marker skips the backup and union on later daemon starts. It does **not** disable, cache, or
+   replace live list behavior: app, CLI, package-uninstall receiver, and daemon add/remove/list
+   operations continue to use canonical `denylist` every time they are requested.
+5. **Rollback compatibility:** `PRAGMA user_version` remains 12 because an older published daemon
+   destructively rebuilds a database whose public version is newer than it understands. The table
+   name `hide_migration_v13` records the short-lived local PR4 experiment and its audit counts; it is
+   not a public schema-13 claim.
+6. **Failure policy:** an unsafe/invalid backup, malformed completion marker, schema error, full or
+   read-only database, or interrupted transaction fails closed. The migration does not erase the
+   database or report partial reconciliation as complete.
+
+The repeat cost is consequently a few bounded marker queries once per daemon database open, not a
+reconciliation loop on every app launch or hide decision. The retained 5,000-case randomized local
+stress matrix verifies exact SQL, union/idempotence, malformed rows, SuList separation, version 12,
+and integrity; the permanent fixtures keep the representative boundary cases without committing the
+heavy loop.
+
+Runtime validation on the disposable API 35 device covered the distinction that host SQL alone
+cannot prove. A fresh database created exactly one valid marker with zero source/migrated rows. A
+legacy `hidelist` row inserted only after that marker remained legacy-only across reboot and was not
+copied back into canonical `denylist`. This demonstrates why the reconciliation must be one-time:
+repeating it would resurrect a selection the user had intentionally removed. Internal MagiskHide
+then proved that a canonical selection is evaluated on every relevant process launch and actually
+changes the selected process's mount namespace. The marker therefore controls only historical data
+repair; it does not turn live HideList behavior into a one-time action.
 
 ### TODO
 
@@ -956,7 +1270,12 @@ The latest commit changes the default table pointer from `hidelist` to `denylist
   - Which processes inherit package selection?
   - What happens for isolated services, app zygotes, shared UIDs, work profiles, and secondary users?
   - What changes require process kill or reboot?
-- [x] Bump `DB_VERSION` and define a transactional migration from both `hidelist` and `denylist` into the chosen canonical table.
+- [x] For the current line, keep `DB_VERSION`/`user_version` at 12 and define a transactional one-time
+  union into canonical `denylist`, guarded by a validated internal completion marker. This is
+  deliberately rollback-compatible with older published daemons; it is not a public schema-v13
+  claim.
+- [ ] On `next-system`, choose a new public schema version only when its complete app/daemon/provider
+  contract and supported upgrade/downgrade behavior are defined.
 - [x] Preserve existing user selections; never silently drop a hide list after upgrade.
 - [x] Define and test the conflict rule when both legacy tables contain divergent rows; make the migration backup/rollback behavior explicit.
 - [ ] Resolve terminology across DB, native CLI, Kotlin config, UI strings, logs, and docs.
@@ -970,13 +1289,21 @@ The latest commit changes the default table pointer from `hidelist` to `denylist
 
 ### Required tests
 
-- [ ] Fresh DB, legacy `hidelist` DB, current `denylist` DB, and `sulist` DB migration.
+- [x] Host/native-SQL fixtures for fresh DB, legacy `hidelist`, current `denylist`, divergent/overlap,
+  malformed rows, `sulist`, short-lived local v13 normalization, repeat execution, read-only/full
+  failure, and abrupt commit-boundary interruption. Fresh DBs create a marker without a pointless
+  backup or import.
+- [x] Current-line runtime check that a valid marker prevents post-migration legacy-row resurrection
+  while canonical internal MagiskHide still changes a newly launched selected process's mount
+  namespace.
 - [ ] Add/remove/list idempotency and duplicate handling.
 - [ ] Regular app, isolated service, shared UID, app zygote, work profile, secondary user.
 - [ ] Process already running versus launched after list change.
 - [ ] SELinux enforcing, permissive, and unavailable.
 - [ ] Kernel with and without mount namespaces.
-- [ ] ReZygisk/provider enabled, disabled, absent, and mismatched version.
+- [ ] ReZygisk/provider enabled, disabled, absent, and mismatched version. NeoZygisk v2.3 now has one
+  exact positive startup/module lane and one exact negative custom-overlay cleanup result; retain the
+  broader matrix and ReZygisk cases.
 - [ ] Every provider/version claimed in the published compatibility matrix, including a negative test proving SuList is rejected or labeled unsupported where no adapter exists.
 - [ ] Reboot persistence and rollback to previous release.
 - [ ] Proof that non-selected apps retain expected module/root behavior.
@@ -1049,7 +1376,13 @@ Current app stack is compile/target SDK 34, Java 17, AGP 8.5.1, Gradle 8.9, libs
 - [ ] Add `abiList` support from current upstream so development builds can select one ABI while releases still build all supported ABIs.
 - [ ] Make `./build.py doctor` print actionable missing prerequisites without starting a build.
 - [ ] Support Linux CI and macOS developer setup; document Windows only if it is continuously tested.
-- [ ] Add a `config.prop.sample` that is sufficient for a debug build.
+- [ ] Migrate the AVD provisioning wrapper from `sdkmanager` to the new Android CLI only after its
+  package/install/license/metrics behavior is stable and non-interactive in hosted CI. The installed
+  2026 preview tools warn that `sdkmanager` is deprecated, while current public command-line-tools
+  documentation still describes it; do not add a half-supported dual path merely to silence a
+  preview warning.
+- [x] Make a clean debug build require no local config and keep `config.prop.sample` as the concise
+  external release-config reference; private signing values remain outside the checkout.
 - [ ] Generate build metadata deterministically and set `SOURCE_DATE_EPOCH` where practical.
 - [ ] Compare two clean builds and document any unavoidable nondeterminism.
 
@@ -1063,9 +1396,31 @@ Current app stack is compile/target SDK 34, Java 17, AGP 8.5.1, Gradle 8.9, libs
 
 The existing roadmap fuzzes SELinux inputs, but that is only one privileged surface. Add a general program for finding new defects and classifying them as crashes, local denial of service, privilege-boundary issues, or usable bootstrap paths for Kitsune install and recovery on lab targets. Treat this as first-class Kitsune engineering infrastructure for findings, proofs, adapters, fixes, and regressions.
 
-**Manual audit result (2026-07-22 UTC):** a temporary full, all-branch/all-tag recursive clone of official Magisk checked out every current submodule and confirmed `v30.7` (`e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`) as the latest stable release and `14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c` as the observed `master` tip. The common ancestor remains `154121f3`. The original PR2 audit baseline had 171 fork-only commits; the frozen PR4B baseline `f943ecdd` has 178 fork-only commits versus 858 stable-only or 971 master-only commits. Stable remains the sensible port base. Master remains an observation lane because it adds extensive post-v30.7 app/build architecture changes and its build script requires Python 3.12+ syntax rather than this Mac's default Python 3.11. PR4B converts this one-time audit into a reproducible ledger and targeted fuzz/sanitizer jobs.
+**Manual and generated audit result (rechecked 2026-08-01 UTC):** the official release API still
+identifies `v30.7` (`e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`) as the latest stable release.
+The observed official `master` is now `fd0cb66b6b41af41564e692f39db57f21cf378ad`; the common
+ancestor remains `154121f3`. The frozen PR4B baseline `f943ecdd` has 178 fork-only commits versus
+858 stable-only or 995 observed-master-only commits in the regenerated ledger. Final code commit
+`530f2a3f8` has 185 fork-only commits versus the same ancestor; this roadmap-only reconciliation
+adds one documentation commit, producing the pending count of 186. Stable remains the sensible
+port base.
+Master remains an observation lane because it adds extensive post-v30.7 app/build architecture
+changes. PR4B turns the original one-time clone audit into a reproducible ledger and targeted
+fuzz/sanitizer jobs.
 
-**PR4B implementation status (2026-07-22 UTC):** implemented and locally qualified. The deterministic ledger resolves the official latest release, inventories all 178 frozen-fork deltas and every security-sensitive stable/master delta, records toolchain and submodule snapshots, and fails when an upstream ref or release changes without review. The historical audit traversed 373 gitlinks and found exactly six policy-reviewed unavailable legacy pins; any new loss or stale exception fails the scheduled gate. Machine-readable dependency, SPDX 2.3, license, RustSec, signature-threat, trust-boundary, finding, and architecture records are reproducible. Three findings are dispositioned, including strict pre-mutation module IDs and mapped-length boot-parser hardening. Clean release, debug, and minimal-UBSan builds passed for all four ABIs. Final ARM64 sanitizer runs completed 977 cases with zero crashes on both MuMu port 16384 and a disposable API 35 AVD; shipping debug and release artifacts each passed the full normal patched-ramdisk setup/reboot/root flow and 137 parser cases on a separate disposable AVD. MuMu was parser-only because no verified snapshot/restore tuple exists; System Mode mutation and physical recovery remain explicitly unqualified.
+**PR4B implementation status (merged as GitHub #24):** the deterministic ledger resolves the
+official latest release, inventories the frozen-fork deltas and every security-sensitive
+stable/master delta, records toolchain and submodule snapshots, and fails when an upstream ref or
+release changes without review. The historical audit traversed 373 gitlinks and found exactly six
+policy-reviewed unavailable legacy pins; any new loss or stale exception fails the scheduled gate.
+Machine-readable dependency, SPDX 2.3, license, RustSec, signature-threat, trust-boundary, finding,
+and architecture records are reproducible. Three findings are dispositioned, including strict
+pre-mutation module IDs and mapped-length boot-parser hardening. Clean release, debug, and
+minimal-UBSan builds passed for all four ABIs. Final ARM64 sanitizer runs completed 977 cases with
+zero crashes on both MuMu port 16384 and a disposable API 35 AVD; shipping debug and release
+artifacts each passed the full normal patched-ramdisk setup/reboot/root flow and 137 parser cases on
+a separate disposable AVD. MuMu was parser-only because no verified snapshot/restore tuple exists;
+System Mode mutation and physical recovery remain explicitly unqualified.
 
 ### Full upstream intelligence
 
@@ -1085,8 +1440,9 @@ The existing roadmap fuzzes SELinux inputs, but that is only one privileged surf
 - [x] Run local privilege-path and defect analysis on repository code and disposable project lab images: reproduce, minimize, identify the reached privilege/context, prove the boundary with the least-powerful test case, implement the fix or bootstrap path, and retain a regression or reusable lab proof. Prefer read-only work on port 16384 until a verified snapshot/restore tuple exists; then full install and recovery proofs are in scope.
 - [ ] Keep architecture-specific corpora and runtime lanes for ARM64, ARM32, x86_64, and x86. Add RISC-V only with a runnable Android target; upstream compilation support alone is not evidence.
 - [x] Triage every finding with affected versions, preconditions, impact, reproducibility, fix or adapter commit, regression or lab proof, and optional upstream/vendor note status. Kitsune fixes, adapters, and lab proofs proceed on this fork without waiting on external maintainer response.
-- [ ] Threat-model the current global `ENFORCE_SIGNATURE=0` fork change. Restore official package
-  signature enforcement on `next-system`; permit any hidden-manager exception only if it is narrow,
+- [x] Threat-model the global `ENFORCE_SIGNATURE=0` fork change and restore release manager/stub
+  certificate enforcement on the current line with artifact and hidden-manager recovery contracts.
+  Preserve official enforcement on `next-system`; permit any exception only if it is narrow,
   identity-bound, and covered by replacement/upgrade/recovery abuse tests.
 
 ### Dependency and toolchain inventory
@@ -1112,6 +1468,45 @@ The existing roadmap fuzzes SELinux inputs, but that is only one privileged surf
 - Each bootstrap or privilege-path finding records the exact lab target/version, recovery path, and how it feeds a System Mode or normal-install adapter, capability record, test, or fix.
 - Validated lab findings are promoted into adapters, capability records, tests, and fixes rather than left unused.
 
+### External Android root and reverse-engineering observation lanes
+
+This watchlist was rechecked against the projects' own repositories/releases on 2026-08-01. These
+projects are research inputs, not dependencies to merge wholesale and not evidence that their
+kernel/provider techniques work in a Magisk userspace/System Mode architecture.
+
+| Project/checkpoint | Relevant idea to study | Potential Kitsune yield | Boundary/non-goal |
+|---|---|---|---|
+| [KernelSU v3.2.5](https://github.com/tiann/KernelSU/releases/tag/v3.2.5) | Kernel-owned `su`, app profiles, SELinux-state hiding, UAPI version checks, optional `no_new_privs`, module `init.rc` injection, and a built-in boot-image parser | Compare least-privilege root policy, version handshakes, init ownership, path/NULL failure handling, unique download staging, module lifecycle, and recovery | Do not turn Kitsune's first recovery release into a kernel-root rewrite or require a custom kernel for ordinary Magisk paths |
+| [APatch release 11142](https://github.com/bmax121/APatch/releases/tag/11142) and active `main` | Kernel/system patching, APM, and KernelPatch modules (KPM) with explicit high-privilege “SuperKey” threat model | Study capability/key separation, kernel-assisted lab instrumentation, hook ownership, module signing/update, and recovery boundaries | KPM executes kernel code and has a different trust/boot model; never transplant it as a shortcut around System Mode transaction or target qualification |
+| [SukiSU Ultra v4.1.3](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases/tag/v4.1.3) | KernelSU-derived non-GKI/GKI support, KPM integration, and built-in SUSFS management | Compare adapter/version fragmentation, older-kernel support evidence, manager diagnostics, and failure containment | Treat every kernel/version patch set separately; compilation or a manager toggle is not runtime/recovery evidence |
+| [NeoZygisk v2.3](https://github.com/JingMatrix/NeoZygisk/releases/tag/v2.3) plus active `master` | `SCM_RIGHTS` mount-namespace FD transfer, `PTRACE_ATTACH` fallback, legacy ARM32 registers, protocol status bytes, corrected `recv_fds`, and KernelSU ioctl integration | High-yield input for PR11 transport state machines and PR12 namespace/ARM32/failure tests; reproduce FD ownership, short-message, signal-noise, and stream-desynchronization cases | Its current Magisk adapter reads standard `denylist`; that does not establish a Kitsune SuList inversion contract |
+| [ReZygisk v1.0.0](https://github.com/PerformanC/ReZygisk/releases/tag/v1.0.0) plus active `main` | Auditable C implementation and a useful cleanup record: removed ineffective map/name hiding, an unnecessary unshare hook and memory purge; fixed SELinux overpermission plus FD, mount, memory, socket/status, 32-bit, and module-loading defects | Convert those leak/cleanup classes into provider-neutral tests before selecting a provider; compare binary size/startup cost, linker assumptions, module compatibility, and crash recovery | v1.0.0 deliberately removed the Kitsune/SuList adapter; never advertise it as compatible from daemon/process presence alone |
+| [Vector v2.0](https://github.com/JingMatrix/Vector/releases/tag/v2.0) | Android 10 `memfd_create` loading across Bionic linker namespaces, reflection-behavior parity, constructor/static-initializer support, and provider-triggered late injection | Useful module-side probes for PR11: linker namespace failure, early-versus-late injection ordering, reflection equivalence, and module API compatibility | A Vector process/PID proves only that a module started; it does not prove Kitsune Hide/SuList behavior or every LSPosed hook |
+| [CorePatch 4.9](https://github.com/LSPosed/CorePatch/releases/tag/4.9) and [N-1.0](https://github.com/LSPosed/CorePatch/releases/tag/N-1.0) | Small Xposed package-manager signature/version-policy hook probes; 4.9 is the last legacy module-API release while N-1.0 requires API 101 | Select a version compatible with the tested LSPosed implementation, then use one explicit before/after package-policy assertion so the lab verifies a hook effect, not only installation and a live process | PR #26 used 4.9 with Vector API 100; do not misdiagnose the known N-1.0/API-101 mismatch as a Kitsune defect. Never weaken the production manager's own signature enforcement; CorePatch is disposable, not a release dependency |
+| [ZygiskNext v1.4.4](https://github.com/Dr-TSNG/ZygiskNext/releases/tag/v1.4.4), published 2026-08-01 11:43 UTC | Black-box standalone-provider behavior; its release notes add Meta Quest stub-zygote handling, VPhone ARM32 translation, KernelSU emulated-soft-reboot support, detection fixes, and an artifact SHA-256 of `7b30d1d11e8fd18a9a971e8feee25e6e4d7e10d601f905ef4aacd806132df5bb` | Add version-pinned PR11 cases for stub-zygote discovery, translated 32-bit processes, provider/module recovery after emulated soft reboot, and before/after trace observations without inferring undisclosed internals | The repository states that current code is all-rights-reserved: no modification, redistribution, or code picking. It guarantees Zygisk API behavior, not Magisk internal features or Kitsune Hide/SuList. Use only an independently downloaded, hash-verified disposable black-box artifact; never vendor it or make it the unexamined production trust base |
+| [SUSFS for KernelSU](https://gitlab.com/simonpunk/susfs4ksu) | Kernel-level filesystem/mount/proc visibility controls and userspace coordination | Derive detection tests for mount IDs, namespace visibility, proc exposure, boot cost, and failure cleanup that can evaluate Kitsune honestly | Upstream warns that patch sets are kernel-version-specific and experimental; `master` is intentionally frozen at 1.3.8. Do not claim userspace Magisk compatibility or copy kernel patches without exact target/recovery evidence |
+
+Research execution rules:
+
+- [ ] Pin the exact source commit, release, license, ABI/API/kernel requirements, configuration, and
+  artifact hash for each experiment; an active branch name is not a reproducible dependency.
+- [ ] Reproduce one narrowly stated behavior on a disposable owned target, then compare it against
+  official Magisk and Kitsune with the least privileged instrumentation that answers the question.
+- [ ] Measure boot time, zygote/app launch time, memory, mount-namespace correctness, module
+  visibility, crash loops, cleanup, and recovery. “Detector stopped complaining” is not a sufficient
+  engineering result.
+- [ ] Convert useful ideas into a target-backed regression, provider contract, capability diagnostic,
+  emulator adapter, or explicit keep/drop ADR. Avoid permanent research-only switches in release
+  hot paths.
+- [ ] Keep kernel-root/KPM/SUSFS experiments separate from the core System Mode installer and from
+  ordinary boot-image Magisk qualification so failures remain attributable.
+- [ ] Recheck these projects before PR11/PR12; active `main`/`master` tips can differ materially from
+  the latest tagged release, provider/table contracts can be removed between versions, and a new
+  release can land during an audit, as ZygiskNext v1.4.4 did during the 2026-08-01 final review.
+- [ ] Respect licenses and source-availability boundaries. Reimplement a behavior only from a clean,
+  reviewed specification when direct reuse is incompatible; do not hide copied privileged code in
+  binaries or generated blobs.
+
 ---
 
 # Verification strategy required before a release candidate
@@ -1120,15 +1515,25 @@ The existing roadmap fuzzes SELinux inputs, but that is only one privileged surf
 
 ### Fast checks on every PR
 
-- [ ] `git diff --check`
+- [x] `git diff --check` on the changed range.
 - [ ] YAML/action validation (`actionlint`)
-- [ ] Shell parsing plus `shellcheck`
-- [ ] Python formatting/lint/type checks and unit tests for build helpers
-- [ ] Kotlin/Java compile, lint, and unit tests
-- [ ] Rust `fmt`, `clippy`, native unit tests, and `cargo audit`
+- [x] Parse every tracked shell script with `bash -n`.
+- [ ] Add `shellcheck` with reviewed narrow exclusions; parsing alone does not catch quoting/portability defects.
+- [x] Parse every tracked Python source and run the complete host `unittest` suite.
+- [ ] Add Python formatting/lint/type checks where they improve signal without forcing a broad mechanical rewrite.
+- [x] Kotlin/Java compile, all configured JVM unit tests, and zero-error app/shared/stub Android lint.
+- [x] Required machine-readable RustSec audit/disposition verification.
+- [ ] Add Rust `fmt`, `clippy`, and relevant native unit tests to the normal changed-code gate.
 - [ ] C/C++ warnings treated as errors for changed code where feasible
-- [ ] Generated metadata consistency test
-- [ ] APK manifest, version, and endpoint-policy inspection
+- [x] Generated APK/native/source identity, signer separation, release signature enforcement, and
+  16 KiB ELF-load/ZIP-placement artifact contract.
+- [x] APK version identity and built-in/custom endpoint-policy inspection, including fail-closed
+  update fixtures.
+
+PR #26's hosted gate currently includes Source checks, Build and JVM tests, API 23/29/35 AVD jobs,
+an aggregate Product gate, the upstream/SBOM/RustSec ledger, and the UBSan Android parser corpus.
+The unchecked items above are real remaining CI work; a green current gate must not be described as
+every conceivable production check.
 
 ### PR emulator smoke matrix
 
@@ -1142,6 +1547,27 @@ Run debug on all PRs. Run release on at least one representative API so release-
 
 These official AVD lanes validate Magisk’s normal boot/init integration. They do not validate persistent commercial-emulator System Mode and cannot substitute for the matrix below.
 
+The headless instances are not a different “CLI emulator.” `avdmanager` creates an ordinary Android
+Virtual Device and the same Android Emulator binary that Android Studio launches starts it; the
+runner merely supplies `-no-window` and deterministic options instead of opening the device frame.
+Therefore a matching system image, ABI, API, hardware profile, storage, and launch flags exercise the
+same guest kernel/framework/native backend whether a GUI is visible or not. A GUI adds no backend
+coverage for scripted boot, package install, root, database, module, or parser assertions.
+
+That equivalence is configuration-specific, not universal. The fast `aosp_atd` images used for API
+34–35 are official AOSP automated-test images, not a claim to reproduce a Pixel hardware profile,
+Google Play services, a Play Store image, a commercial emulator, or a physical phone. API 36 uses
+the installed official default ARM64 image because ATD availability ends at API 35 in this runner.
+Keep separate lanes when behavior depends on Play services, a Pixel hardware profile, 16 KiB pages,
+vendor ABI translation, proprietary graphics/storage, bootloader/partition flashing, sensors, or
+human UI. For this PR’s backend questions, headless AVDs are the efficient equivalent; for those
+other claims they are deliberately insufficient.
+
+Current API 23/29/35 jobs pass patched-ramdisk boot, manager setup/self-test, root, and a bounded
+concurrent-`su` regression using artifacts from the build job. Module lifecycle, hide/provider
+behavior, uninstall/stock restoration, physical boot partitions, and writable System Mode remain
+separate unchecked assertions.
+
 ### Nightly/full emulator matrix
 
 - [ ] API 23: legacy rootfs without Treble.
@@ -1154,7 +1580,24 @@ These official AVD lanes validate Magisk’s normal boot/init integration. They 
 - [ ] 16 KiB page-size image where available.
 - [ ] At least x86_64 plus an arm64 lane; do not assume compiling four ABIs proves runtime behavior.
 
-One-off local PR4A evidence now covers API 35 ARM64 debug/release normal-Magisk boot integration, a true 16,384-byte API 35 negative image, and a 4,096-byte API 36/Android 16 negative image. The boxes remain open until these lanes are repeatable CI/nightly jobs rather than one maintainer's local run.
+One-off local evidence at pre-final PR #26 artifact head `1cac2135e` covers official ARM64 API 34,
+35, and 36 debug/release normal-Magisk lifecycles. Every one of the six artifact/device combinations
+reported the expected `1cac2135-kitsune` debug/release mode, completed manager setup, reboot,
+self-test, root, 32 bounded concurrent `su` calls, and a 137-case parser/policy/signing corpus with
+zero crash markers; each stock SDK ramdisk was byte-restored and each AVD deleted. PR4A separately
+retains a true 16,384-byte API 35 negative image and an immutable API 36 negative target. The boxes
+remain open because one maintainer's local execution is not a repeatable nightly lane, and these
+official images still do not qualify writable commercial-emulator System Mode.
+
+Final code commit `530f2a3f8` changes only the unknown-app permission boundary, legacy ADB-output
+normalization in the AVD harness, empty CI task scheduling, and RustSec report-comparison semantics
+relative to that artifact head. The app/native subset passed the focused JVM/lint gate, both
+legacy-CRLF parser regressions, a full API 35 ATD debug patch/boot/root/concurrent-`su` lifecycle with
+the missing Settings activity, and the full Google APIs grant-return UI path before the RustSec-only
+final edit. The resulting code commit passed the 99-test local host suite and a fresh official
+RustSec audit; the database changed only its global commit metadata and the same six dependency
+findings remain reviewed. The final hosted matrix is still required because source adjacency is not
+permission to relabel pre-final artifact hashes.
 
 ### Commercial-emulator System Mode matrix
 
@@ -1188,10 +1631,14 @@ Emulators cannot validate the riskiest boot paths. Maintain a small, documented 
 - [ ] Work profile/secondary user device for Hide/SuList.
 - [ ] Recovery procedure tested with stock images and module-disable/safe-mode path.
 
-### Feature assertions missing from current CI
+### Feature assertions missing or only partially covered by current CI
 
-- [ ] System Mode `doctor`, install, three cold boots, upgrade, reinstall, failure rollback, uninstall, vendor-root-off, and host-snapshot restore.
-- [ ] Exact install-manifest ownership and a negative immutable-system refusal before mutation.
+- [x] System Mode doctor schemas/classification, installer safety functions, debug/release gating,
+  and tested immutable/read-only refusal before persistent mutation.
+- [ ] Writable System Mode install, three cold boots, upgrade, reinstall, failure rollback, uninstall,
+  vendor-root-off, and host-snapshot restore.
+- [ ] Runtime use of exact install-manifest ownership across install/recovery/uninstall. A schema and
+  host contract exist, but the current installer is not manifest-driven.
 - [ ] Install, enable, disable, update, remove, and rollback a normal module.
 - [ ] `.replace` and systemless deletion behavior.
 - [ ] `action.sh`, `boot-completed.sh`, and early-mount behavior.
@@ -1199,7 +1646,10 @@ Emulators cannot validate the riskiest boot paths. Maintain a small, documented 
 - [ ] External/built-in Zygisk provider and a representative module.
 - [ ] Root policy prompt, allow, deny, revoke, timeout, shared UID, and multiuser.
 - [ ] Hidden manager creation, upgrade, and recovery.
-- [ ] Update metadata success/failure/tampering/downgrade cases.
+- [x] Built-in unavailable, HTTPS/custom policy, cleartext redirect, missing digest, malformed/truncated
+  download, digest mismatch, and atomic local publication cases.
+- [ ] Project-owned metadata success, authenticated rollback/downgrade resistance, channel switching,
+  signer/package mismatch, and post-release asset download.
 - [ ] Install to `boot`, `init_boot`, and `vendor_boot` as supported.
 - [ ] Patch/unpatch a maintained boot-image corpus with byte/structure assertions.
 - [ ] Uninstall restores a bootable stock state.
@@ -1259,11 +1709,11 @@ Create a dedicated `docs/port-ledger.md`; this table is the initial seed.
 |---|---|---|---|---|
 | P0 | Direct-System/System Mode | `05289fb5`, `dfb66f0a`, manager/scripts/native bootstrap | No persistent equivalent; v30.7 live-setup and policy primitives are reusable | Primary product: characterize current `kitsune`, port first to `next-system`, promote only through emulator parity |
 | P0 | Version compatibility spoof | `78ff3756`, `8e854f37` | Upstream uses normal release/canary codes | Replace with separated version/protocol/capability fields |
-| P0 | Hide-table pointer without migration | `25fa2159`, DB version 12 | Upstream providers expect `denylist`; Kitsune users may have `hidelist`/`sulist` state | Keep `denylist` as the target, but implement a transactional, rollback-tested schema migration |
+| P0 | Hide-table pointer without migration | `25fa2159`, current DB version 12, PR #26 reconciliation | Upstream providers expect `denylist`; older Kitsune/Delta test data may use `hidelist`/`sulist` | Current line: one-time rollback-compatible v12 union and backup. `next-system`: define its own explicit schema/provider contract and tested upgrade path. |
 | P1 | MagiskHide/SuList | `native/src/core/deny`, app settings | Upstream DenyList only | Reimplement after System Mode as the main secondary differentiator |
 | P1 | External Zygisk tables | `25fa2159` | Current ReZygisk removed Kitsune/SuList; current NeoZygisk is denylist-only | Specify a versioned provider contract and publish a tested matrix before supporting |
 | P1 | Built-in Zygisk removal | `2ef8f002` removed the in-tree provider | Official Magisk still maintains built-in Zygisk, including Android 16 QPR2/XR/device fixes | Do not copy the deletion into `next-system`; keep upstream intact through parity and decide through PR11 |
-| P1 | Package signature enforcement | `c12fca79` forces `ENFORCE_SIGNATURE=0` in every build | Official code enforces identity outside debug builds | Restore with the upstream baseline; threat-model and test any narrow hidden-manager exception |
+| P1 | Package signature enforcement | `c12fca79` disabled it globally; PR #26 restores release identity enforcement and tests debug-only relaxation | Official code enforces identity outside debug builds | Preserve PR #26's contract on the current line and inherit official enforcement on `next-system`; keep hidden-manager recovery narrow and tested. |
 | P1 | Custom SELinux userspace | `95a048f0`, gitlink `8c6acc0d` | Official v30.7 pins the forward-ported Magisk stack at `be1b39a6` | Inherit through v30.7; update current `kitsune` only if another release will be made from it |
 | P1 | SELinux-disabled zygote support | `c30ba784` | Partial/no equivalent | Keep narrowly with tests |
 | P1 | Per-module early mount/init RC | `3dcfaf9f`, `9e1e9ad7` | Upstream has modern pre-init/module system | Reimplement as versioned API |
@@ -1315,13 +1765,25 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 
 ## PR 4 — Current data and release containment
 
-**Implementation status (2026-07-22 UTC): implemented and locally verified. Built-in app and stub updates fail closed with explicit reasons; custom metadata is HTTPS-only and the HTTP client refuses TLS-to-cleartext redirects. Database v13 creates and verifies a durable v12 backup, publishes it without replacement, performs an atomic security-conservative union into canonical `denylist`, preserves legacy/SuList data, records an audit row, and fails closed without deleting the database. Six data fixtures, forced schema rollback, and 450 commit-boundary interruption budgets execute the exact native SQL and accept only complete v12 or complete audited v13 state. Debug JVM tests, zero-error full Android lint, all-ABI native builds, and the full minified release app/stub build pass.**
+**Implementation status (2026-07-31 UTC): base implementation `8e4e952b6` is merged into `kitsune`;
+the PR #26 range represented by this roadmap corrects its unpublished schema-13 design.** Built-in app and stub
+updates fail closed with explicit reasons and make no request. Custom metadata is HTTPS-only, the
+client refuses TLS-to-cleartext redirects, SHA-256 is mandatory, downloaded bytes are verified, and
+the verified APK is published atomically. Existing older v12 databases receive one verified durable
+v12 backup and a transactional security-conservative union into canonical `denylist`; fresh
+databases skip the backup/import. `user_version` stays 12 so an older published daemon does not
+destructively reject the database. The internal `hide_migration_v13` name recognizes the short-lived
+development experiment but is only a completion/audit marker. Host tests cover fresh, divergent,
+malformed, SuList, read-only/full, repeat, schema-failure, short-lived v13, and abrupt
+commit-boundary cases.
 
 - Make current update failures explicit.
 - Add migration fixtures for empty v12, `hidelist` only, `denylist` only, both tables, malformed rows, and SuList mode.
 - Keep `denylist` as the canonical normal-hide target. Add the transactional migration to current `kitsune` only if it will ship again; otherwise carry the fixtures and migration directly into the first `next-system` build that accepts existing users.
 
-**Exit:** no automatically published APK is called stable, and the pointer-only hide-table change is not represented as migration-safe.
+**Exit:** once this PR #26 range is reachable from `kitsune`, no automatically published APK is called stable, the pointer-only
+hide-table change is not represented as migration-safe, and rollback compatibility is preserved
+without falsely claiming a public schema-v13 release.
 
 ## PR 4A — Portable macOS/AVD and multi-target lab
 
@@ -1337,7 +1799,7 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 
 ## PR 4B — Full upstream ledger and security-research lab
 
-**Implementation status (2026-07-22 UTC): complete on the frozen `f943ecdd` baseline.** The
+**Implementation status (2026-07-31 UTC): merged as [GitHub #24](https://github.com/Jordan231111/KitsuneMagisk/pull/24); complete on the frozen `f943ecdd` baseline.** The
 reproducible outputs, three finding dispositions, all-ABI build gates, MuMu/disposable-AVD parser
 records, and normal debug/release AVD lifecycle evidence are described in
 [`docs/security-lab.md`](docs/security-lab.md). Coverage-guided ASan/Rust fuzzing, the remaining
@@ -1351,27 +1813,175 @@ builds.
 - Add the full dependency/toolchain/SBOM inventory, compare latest compatible versions to the chosen
   stable and observed `master`, and record evidence-backed holds instead of bulk updating the old
   core.
-- Threat-model the current global package-signature bypass and carry a regression that proves the
-  pristine upstream baseline rejects an untrusted replacement while hidden-manager recovery works.
+- Threat-model the inherited global package-signature bypass and carry a regression that proves the
+  pristine upstream baseline rejects an untrusted replacement while hidden-manager recovery works;
+  PR #26 applies the current-line release enforcement fix.
 - Run privilege-path and defect proofs on disposable project lab targets; turn findings into regressions, bootstrap/install adapters, and capability records on this fork. Optional notes to upstream/vendor are fine when useful, but are not a gate on Kitsune work.
 - Publish architecture evidence separately for build, parser corpus, normal AVD runtime, System Mode runtime, and real-device recovery.
 
 **Exit:** maintainers can regenerate the upstream/security delta, every discovered finding has a disposition, and no privileged upstream change enters the release branch without a targeted test.
 
-## PR 5 — Conditional current-`kitsune` System Mode safety fixes
+## PR 5 — Production hardening and experimental System Mode containment
 
-Do this PR only for fixes needed by a current-branch build that will actually be released. Otherwise, carry the failing test into the `next-system` implementation instead of fixing both cores.
+**Implementation status (reconciled 2026-08-01 UTC): implemented as [GitHub #26](https://github.com/Jordan231111/KitsuneMagisk/pull/26), final code commit `530f2a3f8` plus this roadmap commit. The prior hosted head was green; the exact two-commit head is the required merge gate. If this commit is reachable from `kitsune`, that gate and merge have completed and PR5 is done.**
 
-- Extract and lint the installer script.
-- Add explicit mode selection, preflight, external backup, manifest, staging/journal, exact-path uninstall, and verified rollback.
-- Remove the live permissive probe, fix/remove unsafe `--auto-selinux`, and make runtime tmpfs layout-aware.
-- Fix the recovery boot-image prerequisite for explicitly selected System Mode.
+This PR is the current merge unit. It intentionally combines mutually dependent release/data/runtime
+hardening that must agree on the exact APK/backend identity; it does not broaden into an upstream
+merge, dependency-major update, full System Mode transaction, or hiding-provider rewrite.
 
-**Exit:** any current-branch build that will still ship fails safely and passes the first supported emulator lanes.
+Implemented scope:
 
-Current-branch SELinux modernization is also conditional: do the isolated Path B change only if current `kitsune` will ship again. Otherwise `next-system` inherits the maintained official SELinux pin and no duplicate dependency PR is needed.
+- Remove the repository's public historical test keystore and tracked credentials; require one
+  explicit external config/keystore for release-shaped builds while leaving debug builds automatic.
+- Restore release manager/stub certificate enforcement, harden hidden-manager replacement/recovery,
+  and add a four-APK signer, compile-identity, 16 KiB ELF/ZIP, and System Mode reachability contract.
+- Preserve the lowercase Kitsune compatibility identity after removing tracked configuration:
+  configuration-free Python and Gradle builds both emit `<short-commit>-kitsune`, configured builds
+  fail if the marker is absent, and a focused regression prevents external providers from silently
+  treating the fork as official Magisk.
+- Correct PR4's database design to the one-time rollback-compatible v12 reconciliation described
+  above, including online backup verification and interruption/failure fixtures.
+- Verify custom-channel update metadata/download bytes and harden manager/stub download, installer
+  session, receiver/job, splash/activity, coroutine, and cancellation lifecycles.
+- Make the hidden-manager install permission boundary tolerate a missing vendor Settings activity and
+  trust the authoritative app-op after Settings returns instead of inconsistent result codes.
+- Harden daemon/package/superuser failure paths and retain one bounded concurrent-`su` regression;
+  keep high-volume stress loops local and remove their temporary payloads after verification.
+- Remove three always-`NO-SOURCE` shared/native/stub Gradle test invocations while retaining the real
+  app JVM suite and all app/shared/stub Android lint lanes.
+- Keep RustSec live and fail-closed for product-relevant dependency findings while preventing an
+  unrelated global advisory-database metadata commit from invalidating an unchanged reviewed report;
+  fingerprint each observed advisory's affected/version record so relevant changes still fail closed.
+- Keep System Mode debug-only, add a direct warning/confirmation, gate the payload by its compile
+  identity, exclude API 23–24, use a private mount namespace, add preflight/free-space/write checks,
+  replace the state-mutating policy probe, fix bounded procattr I/O, and add exact in-process
+  rollback for selected runtime/addon/init/policy sidecars.
+- Compare the released backend and hardened artifacts on the same BlueStacks instance without
+  cloning the app, restore the starting payload, and record the read-only System Mode rejection as
+  negative evidence. Treat the reproduced `launch_start_timeout`/`qemu-img` host failure that passed
+  unchanged on immediate retry as strong BlueStacks-side evidence, not proof that all future boot
+  failures are vendor bugs.
+
+Measured code-head qualification:
+
+- Exact pre-final `1cac2135e` artifact identities were `1cac2135-kitsune` with `versionCode=31000` and the
+  correct debug/release native mode. SHA-256 values were debug app
+  `e5a33a041f42ff9b5865b62aa4c17570031bf5190828482e86ccd018d5e27131`, debug stub
+  `7532cab6d16bd384a25f0d48bb1ce57d752f181615caa46909d81c05ad6f49fe`, release app
+  `1ab86a50602b16ce98afd254141442fa57bfba42bd1b66a1f0d219ff323d4aac`, and release stub
+  `3abb9a07d4e0281b22a1b0514f238a1b7cd40f6b8454b860627aa5ee541a0ac3`.
+- The debug certificate SHA-256 was
+  `29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027`. The local release
+  certificate `5b2ab441d6b413598e08d1be8ded88f7ac3414d3605f788172b4d657600642a4` was a disposable
+  qualification identity, not the future production key.
+- Official local ARM64 API 34/35/36 debug and release lifecycles all passed and restored their SDK
+  inputs. A separate API 35 lane passed internal MagiskHide plus NeoZygisk v2.3/Vector v2.0/CorePatch
+  4.9 startup/hook checks and exposed the external clean-namespace limitation recorded in P1.3.
+- A full Google APIs API 35 release lane proved hidden-manager randomized install/relaunch/root and
+  exact dynamic-manager byte/certificate recovery, then proved a debug-signed dynamic replacement
+  is logged and deleted. Final code commit `530f2a3f8` passed the 99-test local host suite and the
+  refreshed semantic RustSec gate; its product-code predecessor passed ATD missing-activity,
+  full-image permission-grant, and both Android 6 ADB-PTY CRLF regressions.
+- Pre-final two-commit run `30697832776` passed the complete hosted source/build/artifact/API
+  23/29/35/product matrix after the CRLF correction. Paired run `30697832807` failed solely because
+  the official RustSec database commit changed while its count remained 1,177 and all six observed
+  Kitsune findings remained identical; the final code makes that metadata evidence non-semantic.
+- The final roadmap commit changes repository `HEAD` without changing production source. Therefore
+  no code-head APK above may be promoted directly; the final two-commit history must rebuild and
+  pass the hosted identity/build/AVD/security gates before merge.
+
+Explicit non-claims and remaining limits:
+
+- No writable target completed persistent System Mode install/cold-boot/upgrade/uninstall.
+- Rollback is not power-loss atomic across the persistent system payload, `/data/adb/magisk`,
+  addon survival, upgrade, and uninstall; no persistent ownership manifest drives recovery yet.
+- Recovery ZIP filename magic remains as a legacy compatibility trigger; explicitly selected
+  System Mode no longer performs unconditional boot-image discovery.
+- Runtime location still assumes legacy `/sbin` in important paths; actual next-boot init import and
+  split/precompiled SELinux policy selection are not qualified.
+- PR #26 does not create a production certificate, project update service, supported Zygisk/SuList
+  contract, physical-device claim, or stable release.
+
+**Exit:** the amended head passes the complete hosted gate; the PR is reviewed and merged as one
+security/reliability unit; its exact limitations remain in `docs/status.md`; no artifact from a
+pre-merge commit is promoted as the first production release.
+
+## PR 5A — One writable-target baseline-versus-hardened lifecycle
+
+**Implementation status: next engineering PR once this GitHub #26 range is reachable from
+`kitsune`. Not started.**
+
+This is deliberately evidence-first and should be small in repository code. Use one exact
+snapshot-capable LDPlayer, MuMu, Nox, custom writable Android image, or other controlled target.
+Do not create multiple application clones or infer System Mode from ADB/root alone. Reinject each
+comparison artifact into the same restored instance or identical byte-verified snapshots.
+
+- Record emulator/player version and application path, Android fingerprint/API/ABI/page size,
+  system/vendor/odm mount sources and filesystems, AVB/dm-verity state, SELinux state/policy source,
+  init import path, bootstrap root, vendor Root/System Writable settings, snapshot/image digest, and
+  exact restore command.
+- Start from a verified clean/recoverable snapshot. Run the released pre-PR #26 comparison first,
+  restore, then run the exact merged hardened debug artifact; do not compare two differently
+  contaminated instances.
+- Attest the emulator host lifecycle: distinguish Android boot failure, Magisk daemon failure,
+  bundled-ADB conflict, stale player lock, wrong application binary, hypervisor failure, and vendor
+  image/snapshot corruption. Stop the exact bundled ADB server when required rather than killing an
+  unrelated system-wide server.
+- Exercise install, three true cold boots, player stop/start, host restart where practical, root
+  prompt/policy, one minimal module, upgrade, reinstall, one injected failure/rollback, uninstall,
+  and byte/digest-verified snapshot or stock-image restore.
+- Disable vendor root after installation wherever independent persistence is claimed. Record if
+  vendor root or the manager APK remains a boot dependency.
+- Collect doctor/characterization JSON, installer logs, boot/logcat/kernel evidence, final owned and
+  residual paths, policy/init digests, and artifact SHA-256/certificate/source commit.
+- Keep destructive loops and large concurrency/stress tests local to the disposable snapshot. Add
+  only a small deterministic regression to CI when a concrete bug is found.
+
+**Exit:** one exact writable target has a reproducible released-versus-hardened lifecycle record and
+verified restore. If no target passes, publish the precise blocker and keep System Mode
+experimental; do not manufacture a successful support claim.
+
+## PR 5B — Conditional current-line durable System Mode transaction
+
+**Implementation status: not started; decision follows PR5A.**
+
+Do this on the old core only if PR5A shows that a current-`kitsune` build is a necessary release or
+comparison candidate. Otherwise move the target-backed failing tests and requirements into PR7 and
+close PR5B as intentionally superseded. Do not modernize both privileged cores indefinitely.
+
+- Extract/lint the complete install and uninstall paths and remove duplicate manager/recovery logic
+  where one shared implementation can preserve behavior.
+- Define one versioned persistent install manifest containing owned paths, original and payload
+  digests, file metadata, adapter, init/policy/runtime strategy, artifact/source identity, and
+  transaction state.
+- Recover deterministically after process death or power loss in `STAGED`, `COMMITTED`,
+  `ROLLBACK_REQUIRED`, and `UNINSTALLED` states. Include `/data/adb/magisk`, persistent system
+  payload, init/policy files, addon survival, upgrade/reinstall, and uninstall.
+- Use an external verified backup or emulator snapshot, not only rollback copies stored on the
+  partition being modified. `fsync` files and parent directories at the actual commit boundaries.
+- Make uninstall exact-path and hash-aware; never delete wildcard/unowned files or overwrite a
+  user/vendor change silently.
+- Remove recovery filename-substring activation, use an explicit mode, and bypass ordinary
+  boot-image discovery only for explicitly selected System Mode.
+- Make runtime selection layout-aware (`/sbin`, `/debug_ramdisk`, or an adapter-declared location),
+  prove the init import that will run on the next boot, and select/restore the actual split,
+  monolithic, or precompiled SELinux policy used by that boot.
+- Inject ENOSPC, EROFS, short write, rename/fsync, process-death, and reboot failures after every
+  persistent mutation; verify original digests and a cold-bootable restored state.
+
+Current-branch SELinux modernization remains conditional: do Path B only when a target-backed
+current-line release needs it. Otherwise PR6 inherits the maintained official SELinux pin and no
+duplicate dependency PR is created.
+
+**Exit:** either the current line passes the full manifest-owned lifecycle on the PR5A target, or
+the work is explicitly superseded by PR7 with every failing test preserved. “Interim rollback seems
+to work” is not an exit.
 
 ## PR 6 — Pristine latest-audited-stable `next-system` baseline
+
+**Implementation status: not started. Depends on PR #26 merge, PR5A evidence, and an explicit PR5B
+ship/supersede decision.** The official API still reports v30.7 as latest stable on 2026-08-01, but
+the release must be resolved again at the actual branch cut.
 
 - Re-check official releases at branch cut; if v30.7 remains latest stable, create `next-system` from
   `e8a58776...`. If not, record the newer candidate and rerun the upstream/security/port-feasibility
@@ -1382,40 +1992,88 @@ Current-branch SELinux modernization is also conditional: do the isolated Path B
 - Run upstream test suite and the project’s smoke matrix.
 - Preserve ordinary file patch, Direct Install, inactive-slot, recovery, and emulator live-setup
   behavior; restore official non-debug package signature enforcement and keep built-in Zygisk.
+- Build the unmodified upstream source first for every supported ABI and run its own tests before
+  adding project identity metadata. Then run Kitsune's API 23/29/35 smoke, artifact, boot-image,
+  signer, and source-identity gates on the minimally branded baseline.
+- Record exact submodule gitlinks, JDK/Python/SDK/NDK requirements, dependency advisories, APK hashes,
+  signer, and source delta. A clean baseline should have no System Mode, MagiskHide/SuList,
+  early-mount, or external-Zygisk changes yet.
+- Use an unmistakable experimental package/version/channel. Do not solve the historical
+  certificate migration or claim production identity inside this baseline PR.
 
 **Exit:** clean base boots and passes tests before Kitsune features.
 
 ## PR 7 — System Mode vertical slice on the PR6 stable base
 
+**Implementation status: not started. Depends on a green PR6 baseline and PR5A's exact writable
+target/restore contract.** This is the first product feature on `next-system`.
+
 - Port the dedicated installer, capability contract, persistent launcher/RC, upstream live-setup-derived tmpfs bootstrap, current policy CLI, manifest/transaction, and uninstall.
 - Keep built-in Zygisk and upstream native core intact unless a target-backed failing test requires a narrow hook.
 - Add Tier A adapters first and a separate Tier B host-adapter interface.
+- Reuse upstream live setup, policy, boot-stage, module, extraction, and runtime-path primitives when
+  they satisfy the contract. Add a native hook only for a named missing capability with a failing
+  regression from PR5A/PR5B.
+- Implement the complete manifest-owned, crash/power-loss-recoverable transaction described in
+  P0.6/PR5B on this maintained base, including exact uninstall and external restore evidence.
+- Compare released current Kitsune, merged PR #26 current Kitsune, and `next-system` on restored
+  copies of the same target. Record duration, reboots, root/module policy, AVCs, residual paths,
+  rollback, and source/artifact identity.
 
 **Exit:** at least one writable commercial emulator completes install, three cold boots, upgrade,
 module/root smoke, uninstall, and restore on the exact PR6 stable base.
 
 ## PR 8 — Branch parity decision
 
+**Implementation status: not started. Depends on PR7 completing at least one writable target.**
+
 - Run current and next artifacts on identical snapshots across the complete initial System Mode matrix.
 - Publish the results, remaining gaps, fork-delta comparison, and selected release line.
 - If `next-system` loses a required target, keep current `kitsune` as the reference and split the failing adapter into a follow-up; do not waive the result.
+- Compare ordinary Magisk paths as well as System Mode so a newer System Mode port cannot silently
+  regress Select-and-Patch, Direct Install, inactive-slot, recovery, modules, MagiskSU, or safe-mode
+  recovery.
+- Publish the exact keep/port/retire disposition for every privileged fork delta needed by the
+  selected line. Tag the old implementation after promotion instead of maintaining two permanent
+  products.
 
 **Exit:** the main-line decision is evidence-backed and reversible.
 
 ## PR 9 — Version/build-info separation
 
+**Implementation status: not started; PR #26 provides only source-identity and artifact-consistency
+foundations.**
+
 - Add product, app upgrade, upstream base, compatibility, protocol, commit, and channel fields.
 - Add metadata consistency tests and truthful tags.
+- Define the upgrade rule from inherited Android `versionCode=31000`, the module-facing compatibility
+  epoch, app/daemon protocol compatibility, and capability discovery without pretending the core is
+  official Magisk 31.
+- Generate one build-info source consumed by Kotlin, native code, shell, CI, release metadata, and
+  diagnostics; include upstream base, full fork commit, dirty-state policy, channel, and signer
+  certificate digest where applicable.
 
 **Exit:** no field or release text claims Magisk 31 source.
 
 ## PR 10 — Project-owned update service and stub
 
+**Implementation status: not started; inherited-service containment and transport/artifact
+verification are present, but no project trust root exists.**
+
 - Implement metadata schema, digest validation, owned endpoints, and failure tests.
+- Prefer a small static, versioned, authenticated metadata service under this project's ownership
+  with immutable release assets. Define rollback resistance, channel switching, expiration/freshness,
+  byte length, SHA-256, source commit, upstream base, certificate identity, and release notes.
+- Make the full manager and clean stub consume the same schema. Test unavailable service, malformed
+  JSON, redirect policy, downgrade, tampering, wrong signer/package, interrupted download, atomic
+  replacement, and post-release download of the actual published asset.
 
 **Exit:** a clean stub downloads the exact candidate APK and rejects tampering.
 
 ## PR 11 — Zygisk architecture ADR and adapter boundary
+
+**Implementation status: not started. Depends on System Mode parity; keep PR6/PR7 built-in Zygisk
+unchanged until this decision.**
 
 - Keep baseline built-in implementation until the ADR is approved.
 - Add provider abstraction/contract tests if external-only is chosen.
@@ -1427,8 +2085,12 @@ module/root smoke, uninstall, and restore on the exact PR6 stable base.
 
 ## PR 12 — MagiskHide/SuList core and DB migration
 
+**Implementation status: not started on `next-system`. The current-line v12 compatibility
+reconciliation in PR #26 is input evidence, not completion of this feature PR.**
+
 - Port current behavior onto upstream core.
-- Add schema migration, CLI tests, namespace checks, and SELinux modes.
+- Define the new line's schema and upgrade/downgrade path; add CLI tests, namespace checks, process
+  lifecycle tests, and enforcing/permissive/disabled SELinux modes.
 - Test multiuser/work-profile, hidden-manager, built-in/external-provider, module visibility, and
   measured detection regressions without claiming universal hiding or attestation bypass.
 
@@ -1436,12 +2098,20 @@ module/root smoke, uninstall, and restore on the exact PR6 stable base.
 
 ## PR 13 — Product manager UI
 
+**Implementation status: not started. Depends on stable PR7 System Mode and PR12 hiding/provider
+contracts; the UI must not invent semantics ahead of the backend.**
+
 - Port System Mode doctor/results/recovery plus Hide/SuList list/settings UI and error/diagnostic states.
 - Add instrumentation tests and consistent terminology.
+- Keep user-facing explanations short and actionable. Put long compatibility matrices and internal
+  rationale in this roadmap or dedicated maintainer evidence, not in an app screen.
 
 **Exit:** app, System Mode CLI/manifest, Hide CLI/DB, daemon, and provider agree.
 
 ## PR 14 — Early-mount v2
+
+**Implementation status: not started. Depends on the selected upstream-based core and stable module
+lifecycle.**
 
 - Port the minimum documented early-mount API.
 - Add safe mode, ordering, collision, and boot-path tests.
@@ -1450,20 +2120,39 @@ module/root smoke, uninstall, and restore on the exact PR6 stable base.
 
 ## PR 15 — Commercial-emulator and physical-device qualification
 
+**Implementation status: not started as a full qualification PR. PR3/PR4A/PR5A records are inputs,
+not substitutes for this cross-target release matrix.**
+
 - Complete exact LDPlayer/MuMu/Nox lanes and either a BlueStacks adapter or explicit unsupported result.
 - Complete advertised real-device and negative immutable-layout lanes.
 - On physical devices, qualify ordinary patch-file and Direct Install separately from any advertised
   writable-system/custom-ROM System Mode lane, including `boot`, `init_boot`, `vendor_boot`, A/B,
   Samsung/MTK, legacy, uninstall, safe mode, and stock-image recovery as applicable.
 - Exercise emulator upgrade, host restart, clone, snapshot restore, failure injection, and vendor-root-off behavior.
+- Generate machine-readable compatibility records and a concise user-facing table from evidence.
+  Exact version/image/ABI/filesystem/bootstrap/restore tuples are the unit of support; vendor brand
+  names alone are not.
+- Keep one-instance reinjection the default when it yields equivalent clean states. Use clones only
+  when their creation/restoration is itself verified and required for isolation.
 
 **Exit:** the compatibility page is generated from linked test evidence, not brand-level assumptions.
 
 ## PR 16 — Candidate qualification and release pipeline
 
+**Implementation status: not started. This is the first point at which “production release” may be
+considered.**
+
 - Run the full emulator/physical matrix, upgrade/uninstall/recovery tests, and publish the exact tested APK with release notes and a checksum.
 - Re-resolve official stable and dependency advisories, publish the exact upstream/fork/SBOM ledger,
   and block promotion on unexplained security holds or regression versus the chosen stable.
+- Create/use the single external production keystore from P0.7, publish its certificate digest, and
+  execute the tested historical-certificate transition or documented clean-reinstall rule.
+- Promote the exact candidate bytes that passed the release matrix; verify the downloaded GitHub
+  Release asset and project metadata again after publication. Never rebuild after approval and call
+  different bytes the tested artifact.
+- Keep release notes concise: supported exact targets, known limits, upgrade/reinstall rule,
+  checksum, signer certificate, source commit, upstream base, and recovery path. Link to detailed
+  evidence instead of embedding the entire roadmap in the app or README.
 
 **Exit:** every release gate below is checked with linked evidence.
 
@@ -1526,21 +2215,44 @@ No release should be called stable until all applicable boxes are checked.
 
 # Highest-yield outcome cross-check
 
-This is a compact outcome summary, not a second ordered backlog. Implement the numbered sequence (including PR4A and PR4B) in order and use these bullets to confirm that the highest-yield outcomes are not lost in the detail:
+This is a compact outcome summary, not a second ordered backlog. Implement the numbered sequence in
+order and use these status-labelled bullets to confirm that the highest-yield outcomes are not lost
+in the detail:
 
-- Stop automatic stable releases; mark the current artifact experimental and publish the debug-root, broken-update, and denylist-migration warnings.
-- Declare System Mode the primary product in the README and support policy; stop describing it as a later experiment.
-- Snapshot clean LDPlayer, MuMu, Nox, and BlueStacks instances and characterize the current build with exact versions, mount/filesystem/SELinux facts, cold boots, uninstall, and restore results.
-- Add the shared System Mode `doctor`, manifest, state machine, ADB harness, and failure-injection contract before refactoring the installer.
-- If another current-`kitsune` build will ship, fix only its release blockers: explicit System Mode selection, no boot-image prerequisite, no live permissive probe, safe context handling, layout-aware tmpfs, transactional install, external backup, and exact-path uninstall. Otherwise implement these directly on `next-system`.
-- Keep the `denylist` direction and add the migration in the first build existing users will actually receive. Update current-branch SELinux through Path B only if current `kitsune` will ship again; otherwise inherit the maintained official SELinux pin on `next-system`.
-- Add PR build/test CI and keep commercial-emulator qualification manual or isolated from unreviewed public PR code.
-- Re-check official stable, create the latest-audited-stable `next-system` baseline (currently v30.7),
-  and port only the System Mode vertical slice first, reusing current live-setup and policy primitives.
-- Run the same emulator snapshots against both branches and select the future main line only at the parity gate.
-- Separate truthful version fields and replace prior-maintainer update endpoints before a public candidate.
-- Port Hide/SuList, the chosen Zygisk contract, and early-mount after System Mode parity—not before it.
-- Complete the commercial-emulator and advertised real-device recovery matrices, publish the exact tested candidate with a checksum, and promote it only after feedback.
+- **Done:** stop automatic stable releases; mark existing artifacts experimental; keep debug-root,
+  dead-updater, signing, and hide-table compatibility risks explicit.
+- **Done:** declare System Mode the primary fork product while preserving ordinary Magisk paths as
+  first-class compatibility requirements.
+- **Done foundation:** add the shared System Mode doctor, manifest/state schemas, ADB harness,
+  reason codes, fixtures, and failure-injection contract before a forward-port.
+- **Done in this range; externally gated:** GitHub PR #26 contains the current-line
+  release/data/runtime hardening and experimental System Mode containment. If this roadmap commit is
+  not yet reachable from `kitsune`, land it only after its exact amended head is green; otherwise
+  proceed to PR5A.
+- **Next — PR5A:** qualify one exact writable, recoverable target by reinjecting the released
+  comparison and merged hardened artifact into the same restored instance/snapshot. BlueStacks
+  read-only refusal is useful but does not satisfy this result.
+- **Conditional — PR5B:** finish explicit recovery mode, layout-aware runtime, persistent manifest,
+  external backup, crash/power-loss recovery, and exact uninstall on the old core only if PR5A proves
+  a current-line release is needed. Otherwise preserve the tests for PR7.
+- **Done for current data containment:** keep `denylist` canonical and reconcile existing legacy v12
+  data once without a fake public schema bump. **Still open:** provider/process/SuList semantics and
+  the eventual `next-system` schema.
+- **Done foundation:** PR build/test CI and the upstream/security laboratory run on disposable hosted
+  infrastructure; commercial-emulator mutation remains manually controlled and snapshot-backed.
+- **Open — PR6/PR7:** re-check official stable, create the pristine latest-audited-stable baseline
+  (v30.7 at this checkpoint), then port only the System Mode vertical slice first using maintained
+  live-setup, policy, module, and runtime primitives.
+- **Open — PR8:** run identical snapshots against current and next implementations and select the
+  future main line only at the parity gate.
+- **Open — PR9/PR10/P0.7:** separate truthful version/protocol/capability fields, create one simple
+  production signing identity/transition, and establish a project-owned update service before a
+  public candidate.
+- **Open — PR11–PR14:** port the chosen Zygisk contract, Hide/SuList, focused manager UI, and
+  early-mount only after System Mode parity—not before it.
+- **Open — PR15/PR16:** complete commercial-emulator and advertised physical-device recovery
+  matrices, publish the exact tested candidate with checksum/certificate/source evidence, and
+  promote only after all claimed support lanes pass.
 
 These actions produce far more user value and risk reduction than merging the current Dependabot queue, attempting a monolithic upstream merge, rewriting all of Magisk, redesigning the UI, adding more hiding tricks, creating a needless SELinux fork, or continuing to increment the fake Magisk number.
 
@@ -1558,7 +2270,7 @@ These actions produce far more user value and risk reduction than merging the cu
 - [Old Kitsune/LSPosed SELinux pin `8c6acc0d`](https://github.com/LSPosed/selinux/commit/8c6acc0d7792cda5f203dfd8e94c633e9dbfdeae)
 - [Official Android 16 QPR2 SELinux integration commit](https://github.com/topjohnwu/Magisk/commit/dd3798905f1ec75afa71701ff03a5af3be762c83)
 - [Official `cil_deny.c` source-manifest update](https://github.com/topjohnwu/Magisk/commit/b70192ca3e984291afe7cddea83a149f72a66205)
-- [Current-master sepolicy hyphenated-identifier fix](https://github.com/topjohnwu/Magisk/commit/14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c)
+- [Post-v30.7 sepolicy hyphenated-identifier fix](https://github.com/topjohnwu/Magisk/commit/14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c)
 - [AOSP SELinux release refs](https://android.googlesource.com/platform/external/selinux/%2Brefs)
 - [AOSP Verified Boot behavior](https://source.android.com/docs/security/features/verifiedboot/verified-boot)
 - [AOSP dynamic-partition and `adb remount` constraints](https://source.android.com/docs/core/ota/dynamic_partitions/implement)
@@ -1572,9 +2284,16 @@ These actions produce far more user value and risk reduction than merging the cu
 - [BlueStacks official ADB documentation](https://support.bluestacks.com/hc/en-us/articles/23925869130381-How-to-enable-Android-Debug-Bridge-on-BlueStacks-5)
 - [ReZygisk commit removing Kitsune/SuList support](https://github.com/PerformanC/ReZygisk/commit/333d423cde1a959958d9fce380bd017cf6c1cf64)
 - [NeoZygisk current Magisk database adapter](https://github.com/JingMatrix/NeoZygisk/blob/master/zygiskd/src/root_impl/magisk.rs)
+- [NeoZygisk v2.3 release and provider guidance](https://github.com/JingMatrix/NeoZygisk/releases/tag/v2.3)
+- [Vector v2.0 API 100 release](https://github.com/JingMatrix/Vector/releases/tag/v2.0)
+- [CorePatch 4.9 legacy-API release](https://github.com/LSPosed/CorePatch/releases/tag/4.9)
+- [ZygiskNext v1.4.4 release notes and artifact digest](https://github.com/Dr-TSNG/ZygiskNext/releases/tag/v1.4.4)
+- [ZygiskNext current source-availability and redistribution terms](https://github.com/Dr-TSNG/ZygiskNext)
+- [Android Emulator command-line documentation (`-no-window` uses the normal emulator backend)](https://developer.android.com/studio/run/emulator-commandline)
+- [Official Android 16 KiB page-size build guidance](https://developer.android.com/guide/practices/page-sizes)
 - [Audited Kitsune commit range](https://github.com/Jordan231111/KitsuneMagisk/compare/8e854f378ebabe427f02d65615ddee57af5b53d0...25fa2159fa2db2a9327fe69ee094520bd58cc04d)
 - [Current Kitsune release](https://github.com/Jordan231111/KitsuneMagisk/releases/tag/v31.0-25fa2159)
-- [Current successful Kitsune CI run](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/26848644198)
+- [PR #26 successful Kitsune CI run at `e10840782`](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30679867486)
 - [GitHub warning about self-hosted runners and public repositories](https://docs.github.com/en/actions/reference/security/secure-use#hardening-for-self-hosted-runners)
 - [Android app versioning](https://developer.android.com/studio/publish/versioning)
 - [RustSec CXX advisory](https://rustsec.org/advisories/RUSTSEC-2026-0202.html)
