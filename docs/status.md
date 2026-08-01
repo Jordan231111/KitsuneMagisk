@@ -69,13 +69,16 @@ configuration or an already-published artifact.
 
 1. Review the current production-hardening work only after its final host/build/device report is
    green, then merge it as one coherent security/reliability change set.
-2. Complete the current-line System Mode manifest/recovery transaction only to the extent needed to
-   produce trustworthy comparison behavior.
-3. Create the audited stable-based `next-system` line, preserve ordinary upstream Magisk and
+2. On one exact writable, snapshot-capable target, compare the released backend and merged hardened
+   artifact through install, three cold boots, upgrade, reinstall, module/root smoke, uninstall,
+   and verified restore.
+3. Complete the current-line manifest/recovery transaction only if that evidence shows the old core
+   must ship; otherwise carry the failing tests and contract directly into the stable-based port.
+4. Create the audited stable-based `next-system` line, preserve ordinary upstream Magisk and
    built-in Zygisk behavior, then port the System Mode vertical slice behind the same tests.
-4. Run identical target snapshots against the earlier comparison build, hardened current line,
+5. Run identical target snapshots against the earlier comparison build, hardened current line,
    and stable-based port; promote only the implementation that meets the complete lifecycle gate.
-5. Before distributing the first production release, create one protected external release key and
+6. Before distributing the first production release, create one protected external release key and
    complete the transition away from the public historical test certificate.
 
 Support remains attached to an exact emulator/device version, Android image, ABI, filesystem,

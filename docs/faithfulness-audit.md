@@ -47,14 +47,16 @@ line by line.
   fetch, is now the authoritative record.
 - The latest shared official ancestor is `154121f3` from 2024-02-02.
 - Every fork-only commit after that ancestor was catalogued by subject and changed paths. The frozen
-  PR4B ledger contains 178 fork-only commits; the current branch has 184 versus either official
-  comparison ref.
+  PR4B ledger contains 178 fork-only commits; reviewed code head `e10840782` has 186 versus either
+  official comparison ref. The later roadmap-only reconciliation adds one documentation commit, so
+  the current PR #26 head has 187.
 - High-impact fork commits were then diff-reviewed in the installer, init, core/daemon, hiding,
   Zygisk, SELinux, module, manager, build, update, and recovery surfaces.
 - Official Magisk was compared at stable and `master`, including current submodule pins. The frozen
-  ledger has 858 stable-only or 985 observed-master-only commits; the current worktree ancestry has
-  184 fork-only versus 858 stable-only or 985 master-only commits. File counts in the original
-  snapshot remain historical, not a current-drift metric.
+  ledger has 858 stable-only or 985 observed-master-only commits; reviewed code head `e10840782` has
+  186 fork-only versus 858 stable-only or 985 master-only commits. The current documentation-only
+  head has 187 fork-only commits. File counts in the original snapshot remain historical, not a
+  current-drift metric.
 - The current install UI and call graph were traced through Kotlin, shell, native setup, recovery,
   and uninstall code. Debug and release artifacts were built for ARM64, ARMv7, x86_64, and x86.
 - A fresh disposable API 35 ARM64 AVD completed the ordinary Magisk patch/setup/reboot/root flow in
@@ -94,8 +96,8 @@ patching and flashing the active boot-family image from a rooted manager. Kitsun
 | Direct Install on a non-emulator | `method_direct` → `FLASH_MAGISK` → `MagiskInstaller.Direct` | `findImage()` discovers the boot-family image, `boot_patch.sh` patches it, and `direct_install` flashes it. | Preserved statically; physical-device qualification remains open. |
 | Install to Inactive Slot | `method_inactive_slot` → `SecondSlot` | Finds and patches the alternate slot, flashes it, then performs OTA slot handling. | Preserved statically; physical A/B qualification remains open. |
 | Ordinary install on an emulator | `method_direct` → `FLASH_MAGISK` → `MagiskInstaller.Emulator` | Uses `fix_env`/live ramdisk setup, not persistent `/system` modification. | Preserved and proven on a fresh API 35 ARM64 AVD in debug and release. |
-| Direct-System/System Mode | `method_direct_system` → `FLASH_MAGISK_SYSTEM` → `Direct_system` | Calls `xdirect_install_system` and modifies the persistent system/init/policy payload. | Separate and explicit. The current UI gate is too weak and PR5/PR7 must replace it with doctor capabilities. |
-| Recovery ZIP | `SYSTEMMODE=true` or `systemmagisk` name selects `direct_install_system`; otherwise `install_magisk` | Explicit selection determines persistent system versus normal boot-image install. | Semantically separate, but `find_boot_image` currently runs before the branch and can abort a bootless System Mode install. PR5/PR7 retains the fix. |
+| Direct-System/System Mode | `method_direct_system` → `FLASH_MAGISK_SYSTEM` → `Direct_system` | Calls `xdirect_install_system` and modifies the persistent system/init/policy payload. | Separate and explicit. PR #26 makes it debug-only, adds warning/preflight, and improves rollback; PR5A/PR5B/PR7 still must qualify a writable target and complete manifest-owned recovery. |
+| Recovery ZIP | `SYSTEMMODE=true` or `systemmagisk` name selects `direct_install_system`; otherwise `install_magisk` | Explicit selection determines persistent system versus normal boot-image install. | Semantically separate, but `find_boot_image` currently runs before the branch and can abort a bootless System Mode install. PR5B/PR7 retains the fix. |
 
 No PR3, PR4, or PR4A change modifies this dispatch. The ordinary real-device route would still be
 selected on a non-emulator, and System Mode still requires its distinct action. That is a source-level
@@ -113,7 +115,7 @@ compatibility conclusion, not a claim that an untested physical device is safe t
 | Fake `31.0` compatibility number | Intentional workaround with misleading coupling | Split app upgrade order, Kitsune version, upstream base, module compatibility, protocol, and commit identity in PR9. Never imply newer official source. |
 | Debug shell root grant (`cb5779f`) | Intentional test convenience | Acceptable only in unmistakable debug artifacts. Release and canary checks must prove it is absent. |
 | App/stub optimizer/obfuscation disabled (`0128bb18`) | Intentional openness/debuggability choice with unnecessary runtime cost | GPL source availability does not require disabling safe optimization. Restore current upstream optimizer behavior with hidden-manager/release regression tests. |
-| Recovery System Mode boot-image prerequisite | Accidental control-flow contradiction | Explicit System Mode should not require the normal route it exists to avoid. Fix conditionally in PR5 or directly in PR7. |
+| Recovery System Mode boot-image prerequisite | Accidental control-flow contradiction | Explicit System Mode should not require the normal route it exists to avoid. Fix conditionally in PR5B or directly in PR7. |
 | Live SELinux permissive capability probe and non-transactional persistent writes | Legacy safety debt, partly fixed | The current probe serializes policy to a temporary file instead of changing the live policy; exact init/policy sidecars and mount-namespace cleanup are verified on failure. Full cross-filesystem journaling, manifest ownership, power-loss recovery, uninstall, and writable-target cold-boot proof remain open. |
 | Broad architecture/version claims from builds | Evidence gap | Four-ABI compile/link is retained, but runtime and recovery evidence must be recorded per architecture, Android version, page size, boot layout, and adapter. |
 
@@ -159,9 +161,10 @@ dependencies together reduces rather than increases confidence.
 
 The fresh audit currently records one unfixed medium RSA timing advisory and five informational Rust
 warnings. The reachable RSA private-key operation is local boot-image signing, not a network signing
-oracle; that limits the demonstrated exposure but does not erase the advisory. Vendored `cxx` and
-`rand` updates belong in isolated PR4B work with the stated gates. No audit ignore should claim an
-unfixed issue is resolved.
+oracle; that limits the demonstrated exposure but does not erase the advisory. Re-evaluate vendored
+`cxx`, `rand`, and the generator chain on the pristine PR6 baseline, then use focused dependency PRs
+with the stated all-ABI/parser/boot gates only for findings that remain. No audit ignore should claim
+an unfixed issue is resolved.
 
 ## Decision after PR3/PR4 and current-line hardening
 

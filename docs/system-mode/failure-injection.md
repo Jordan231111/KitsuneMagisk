@@ -1,6 +1,6 @@
 # System Mode failure-injection plan
 
-This plan defines the mutation boundaries that PR5/PR7 installers must expose. PR3 adds the
+This plan defines the mutation boundaries that PR5B/PR7 installers must expose. PR3 adds the
 contract only; the current installer is not changed or exercised by this document.
 
 Run every case from a disposable snapshot with an external backup whose digest and restore command
