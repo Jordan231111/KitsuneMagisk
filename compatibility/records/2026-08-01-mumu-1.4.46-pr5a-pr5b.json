@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "record_id": "2026-08-01-mumu-1.4.46-pr5a-pr5b",
+  "qualification_status": "experimental",
+  "clean_snapshot": false,
+  "artifact": {
+    "identity_status": "known",
+    "branch": "codex/pr5a-mumu-lifecycle",
+    "commit": "c86bdce439cba1b0317073a0a50dfda95dfde688",
+    "apk_sha256": "b84171fb47e54cd85248049a792cb1e12d2eabd42ccd042bb6049897c2e0b21a"
+  },
+  "doctor": {
+    "assessment": {
+      "primary_reason": "SUPPORTED",
+      "reason_codes": [
+        "SUPPORTED",
+        "AVB_STATE_UNKNOWN",
+        "SELINUX_NOT_ENFORCING",
+        "SYSTEM_MODE_ALREADY_INSTALLED"
+      ],
+      "verdict": "supported",
+      "warnings": [
+        "AVB_STATE_UNKNOWN",
+        "SELINUX_NOT_ENFORCING",
+        "SYSTEM_MODE_ALREADY_INSTALLED"
+      ]
+    },
+    "bootstrap": {
+      "adb_uid": 2000,
+      "magisk_version": "4a216671-kitsune:MAGISK:D",
+      "magisk_version_code": 31000,
+      "root_available": true,
+      "root_context": "u:r:magisk:s0",
+      "root_uid": 0,
+      "transport": "magisk_su"
+    },
+    "device": {
+      "abis": [
+        "arm64-v8a"
+      ],
+      "android_release": "12",
+      "api": 32,
+      "boot_id_sha256": "d9c3dc267839aa23f73464e0568a3fe7b6b76b3f8633ec64c2b13e5abcea7c72",
+      "brand": "Samsung",
+      "build_id": "W528JS",
+      "build_incremental": "224",
+      "device": "SM-A5460",
+      "emulator_product": "MACPRO",
+      "emulator_product_property": "nemud.player_engine",
+      "emulator_version": "1.4.46",
+      "emulator_version_property": "nemud.player_version",
+      "fingerprint_sha256": "d3eec945343c1dc4b4bf2ea4a6caee01299b405bc66648b846a28ff9e8e3e778",
+      "kernel": "Linux localhost 4.19.195-android-arm64-g61d8c513109a #1 SMP PREEMPT Thu Aug 29 16:36:04 HKT 2024 aarch64",
+      "manufacturer": "Samsung",
+      "model": "SM-A5460",
+      "page_size": 4096,
+      "product": "SM-A5460",
+      "vendor": "mumu",
+      "vendor_evidence": [
+        "mumu12shared",
+        "mumu"
+      ]
+    },
+    "existing_install": {
+      "config_path": "/system/etc/init/magisk/config",
+      "detected": true,
+      "manifest_path": "/system/etc/init/magisk/install-manifest.json",
+      "manifest_present": true,
+      "system_mode": true
+    },
+    "generated_at": "2026-08-01T16:43:50Z",
+    "init": {
+      "candidate_directories": [
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/init",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/init"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/init/hw",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/init/hw"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/vendor/etc/init",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/odm/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/system/vendor/odm/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/product/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/system/product/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/system_ext/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/system/system_ext/etc/init"
+        }
+      ],
+      "import_proof": "proven",
+      "selected_directory": "/system/etc/init"
+    },
+    "layout": {
+      "avb_state": "unknown",
+      "device_mapper": {
+        "layers": [],
+        "probe": "not_applicable"
+      },
+      "dm_verity": false,
+      "dynamic_partitions": false,
+      "ext4_features": [],
+      "ext4_features_method": "superblock",
+      "ext4_features_probe": "observed",
+      "ext4_ro_compat_flags": 123,
+      "overlayfs": false,
+      "shared_blocks": false,
+      "slot_suffix": "",
+      "system_fs_type": "ext4",
+      "system_source": "/dev/block/sda1",
+      "system_target": "/system",
+      "system_writable_backing": true,
+      "system_writable_view": true
+    },
+    "mounts": [
+      {
+        "exists": true,
+        "fs_type": "tmpfs",
+        "major_minor": "0:20",
+        "mount_options": [
+          "ro",
+          "nodev",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/",
+        "root": "/",
+        "source": "tmpfs",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/",
+        "writable_backing": true,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/system",
+        "writable_backing": true,
+        "writable_view": true
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system/vendor",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/vendor",
+        "writable_backing": true,
+        "writable_view": true
+      },
+      {
+        "exists": true,
+        "fs_type": "tmpfs",
+        "major_minor": "0:20",
+        "mount_options": [
+          "ro",
+          "nodev",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/odm",
+        "root": "/",
+        "source": "tmpfs",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/odm",
+        "writable_backing": true,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system/product",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/product",
+        "writable_backing": true,
+        "writable_view": true
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system/system_ext",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/system_ext",
+        "writable_backing": true,
+        "writable_view": true
+      }
+    ],
+    "persistence": {
+      "backing_write_probe": "passed",
+      "cold_boots": 4,
+      "host_restarts": 3,
+      "proven": true
+    },
+    "probe_version": "1.0.0",
+    "recovery": {
+      "backup_digest": "c62ca78e6326d0fdf8920e1c286705883c40ca161db4b2a622bd20c725654db2",
+      "backup_location": "/Users/jordan/Documents/pr5a-mumu-recovery.3ZYfC2/vm",
+      "restore_command": "/Applications/MuMuPlayer.app/Contents/MacOS/mumutool close 0; qemu-img check system.qcow2 and data.qcow2; atomically replace VM0 system.qcow2, data.qcow2, config.json, and setting/vm.json from /Users/jordan/Documents/pr5a-mumu-recovery.3ZYfC2/vm; sync; /Applications/MuMuPlayer.app/Contents/MacOS/mumutool open 0",
+      "snapshot_id": "mumu-vm0-external-byte-clone-c62ca78e6326",
+      "verified": true
+    },
+    "schema_version": 1,
+    "selinux": {
+      "enabled": true,
+      "policy_candidates": [
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/selinux/precompiled_sepolicy",
+          "sha256": "f032c50d4ade574c6d092b14f341782d16a075acfcf2c56d082eac808d6ee0f3",
+          "size": 508390
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/system/etc/selinux/plat_sepolicy.cil",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/selinux/plat_sepolicy.cil",
+          "sha256": "be0219f8be1eb9b03ca9aa74cb3cef86d3ad5fcf5dac05fc4967f3a1ac9e8ec6",
+          "size": 1816428
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/selinux/mapping",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/selinux/mapping",
+          "sha256": null,
+          "size": null
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/vendor_sepolicy.cil",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/selinux/vendor_sepolicy.cil",
+          "sha256": "c3e7b35512487eab0730483b2aaa1820b4b95afa4e1be212dfbbdf2ebcf714a5",
+          "size": 87954
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy.plat_sepolicy_and_mapping.sha256",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/selinux/precompiled_sepolicy.plat_sepolicy_and_mapping.sha256",
+          "sha256": "575586cf4be3a5229db8cbc2040c0a81267ed6f67dae542c4cf800e467253d1c",
+          "size": 65
+        }
+      ],
+      "state": "permissive",
+      "strategy": "precompiled"
+    },
+    "source": {
+      "kind": "adb",
+      "probe_sha256": "b5d4ea0065a5e53237f3fb2d40eaea1c4e6b76716233793b451c9b48c60d8a47",
+      "read_only": true,
+      "repository_commit": "c86bdce439cba1b0317073a0a50dfda95dfde688",
+      "repository_dirty": false,
+      "serial_sha256": "da09b86341cf0b001201905615202d7df7d794dffe1abe531edd88eeede437bc"
+    },
+    "staging": {
+      "available_bytes": 98400460800,
+      "path": "/data/local/tmp",
+      "required_bytes": 33554432,
+      "sufficient": true
+    }
+  },
+  "lifecycle": {
+    "install": "passed",
+    "cold_boots": 1,
+    "upgrade": "passed",
+    "reinstall": "passed",
+    "module_smoke": "not_run",
+    "root_policy_smoke": "passed",
+    "uninstall": "passed",
+    "snapshot_restore": "passed"
+  },
+  "notes": [
+    "MuMuPlayer for macOS 1.4.46, VM index 0, Android 12/API 32, arm64-v8a, 4 KiB pages, writable ext4 /system on /dev/block/sda1, no observed dm-verity/dynamic/shared-block layer, permissive SELinux, precompiled policy, and vendor root disabled.",
+    "The exact c86bdce4 debug artifact upgraded the preceding transactional candidate, committed without staging residue, cold-booted to BOOT_VERIFIED on /debug_ramdisk, returned uid 0 in u:r:magisk:s0, uninstalled exact manifest-owned paths, removed its manager, and restored the external byte-verified baseline.",
+    "The same PR feature set at parent commit 4a216671 completed three cold boots/player stop-start cycles, root deny/allow persistence, a minimal module mount/removal, reinstall, and live staged-process-death rollback. The c86bdce4-only cleanup change was then proven by the before/after staging-residue check.",
+    "The restored starting image intentionally contained released 31.0-kitsune legacy System Mode, so clean_snapshot is false and this record is experimental rather than a production support claim.",
+    "Full ENOSPC, EROFS, short-write, rename, fsync, process-death, reboot, upgrade, and uninstall boundary coverage is retained in host tests; only staged process death was injected live on this MuMu target."
+  ]
+}

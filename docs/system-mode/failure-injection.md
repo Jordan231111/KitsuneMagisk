@@ -1,8 +1,11 @@
 # System Mode failure-injection plan
 
-This plan defines the complete mutation boundaries that PR5B/PR7 installers must expose. PR #26
-hardens and fault-tests the current legacy transaction ordering, but it does not yet implement the
-durable manifest/journal or every crash boundary below.
+This plan defines the complete mutation boundaries exposed by the PR5B current-line transaction and
+required again by the PR7 maintained-base port. PR5B implements the durable receipt,
+manifest/journal, reverse recovery, fsync/rename boundaries, and exact uninstall. Its host suite
+exercises the complete fault classes below; the 2026-08-01 MuMu qualification injected staged
+process death live. Every boundary still requires live repetition on each target before a public
+release claim.
 
 Run every case from a disposable snapshot with an external backup whose digest and restore command
 have already been verified. For each boundary, terminate the installer immediately after the
@@ -29,9 +32,12 @@ digests and metadata. Then exercise the external restore even when automatic rol
 
 ## Injection interface
 
-The future installer accepts a development-only `KITSUNE_FAIL_AFTER=<boundary>` value. Release
-builds must ignore or reject that environment variable unless an internal test flavor is enabled.
-Each boundary is emitted only after the prior operation and journal record are both durable.
+The current transaction accepts the development-only
+`KITSUNE_SYSTEM_MODE_FAIL_AT=<class>:<boundary>` form for `enospc`, `erofs`, `short-write`,
+`fsync-file`, `fsync-parent`, `rename`, `process-death`, and `reboot`, plus an exact boundary name
+for a normal injected failure. The release manager does not expose System Mode, and qualification
+must use a debug artifact with explicit host authorization. Each boundary is emitted only after the
+prior operation and journal record are durable.
 
 The harness records:
 

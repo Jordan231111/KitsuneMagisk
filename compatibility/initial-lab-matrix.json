@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-07-22T04:44:20Z",
+  "reviewed_at": "2026-08-01T16:43:50Z",
   "lanes": [
     {
       "family": "MuMu",
-      "status": "observed",
-      "record": "records/2026-07-22-mumu12-port16384-current-kitsune.json",
-      "reason": "ADB port 16384 exposed MuMu 12 engine 1.4.46 with a pre-existing legacy System Mode installation; the instance was not a clean snapshot."
+      "status": "experimental",
+      "record": "records/2026-08-01-mumu-1.4.46-pr5a-pr5b.json",
+      "reason": "MuMuPlayer 1.4.46 completed the PR5A/PR5B released-versus-current lifecycle and verified external restore on VM index 0. The exact final debug artifact passed install/upgrade, BOOT_VERIFIED, root, exact uninstall, and restore; predecessor-only module and injected-failure subcases keep this below supported."
     },
     {
       "family": "LDPlayer",
