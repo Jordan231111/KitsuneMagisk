@@ -1,4 +1,5 @@
 #include <sys/mount.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,17 +64,19 @@ Available applets:
 
 int magisk_main(int argc, char *argv[]) {
     if (argc >= 2 && argv[1] == "--auto-selinux"sv) {
-        {
-            int secontext_fd = xopen("/proc/self/attr/current", O_RDWR);
-            if (secontext_fd >= 0 && (
-                write(secontext_fd, "u:r:" SEPOL_PROC_DOMAIN ":s0", sizeof("u:r:" SEPOL_PROC_DOMAIN ":s0")) > 0 ||
-                // if selinux cannot be changed to u:r:magisk:s0, try u:r:su:s0
-                write(secontext_fd, "u:r:su:s0", sizeof("u:r:su:s0")) > 0)) {
-                char current_con[128];
-                xread(secontext_fd, current_con, sizeof(current_con));
-                fprintf(stderr, "SeLinux context: %s\n", current_con);
+        // Prefer the dedicated domain and fall back to the legacy su domain.
+        // setcon() performs an exact checked procattr write; read the result
+        // from a fresh descriptor and always bound the diagnostic output.
+        if (setcon("u:r:" SEPOL_PROC_DOMAIN ":s0") == 0 || setcon("u:r:su:s0") == 0) {
+            int fd = open("/proc/self/attr/current", O_RDONLY | O_CLOEXEC);
+            if (fd >= 0) {
+                char current_con[128]{};
+                ssize_t len = read(fd, current_con, sizeof(current_con) - 1);
+                if (len > 0) {
+                    fprintf(stderr, "SELinux context: %.*s\n", static_cast<int>(len), current_con);
+                }
+                close(fd);
             }
-            close(secontext_fd);
         }
         argc--;
         argv++;

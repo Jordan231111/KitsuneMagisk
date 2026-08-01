@@ -2,22 +2,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import re
 import sqlite3
 import unittest
+
+from tools.security_lab.sqlite_fault import migration_sql
 
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "hide_migration"
-MIGRATION_HEADER = ROOT / "native" / "src" / "core" / "db_migrations.hpp"
-
-
-def migration_sql() -> str:
-    text = MIGRATION_HEADER.read_text(encoding="utf-8")
-    matches = re.findall(r'R"sql\((.*?)\)sql"', text, flags=re.DOTALL)
-    if len(matches) != 1:
-        raise AssertionError("expected exactly one v13 migration raw string")
-    return matches[0]
 
 
 def create_fixture(fixture: dict) -> sqlite3.Connection:
@@ -61,14 +53,73 @@ def rows(db: sqlite3.Connection, table: str) -> list[list[str | None]]:
 class HideMigrationTest(unittest.TestCase):
     def test_native_path_backs_up_before_running_migration(self) -> None:
         source = (ROOT / "native" / "src" / "core" / "db.cpp").read_text()
-        v12_checkpoint = source.index('sqlite3_exec(db, "PRAGMA user_version=12"')
         backup_call = source.index("err = backup_v12_database(db);")
-        migration_call = source.index("sqlite3_exec(db, HIDE_TABLE_MIGRATION_V13")
-        self.assertLess(v12_checkpoint, backup_call)
+        migration_call = source.index("sqlite3_exec(db, HIDE_TABLE_COMPAT_MIGRATION")
         self.assertLess(backup_call, migration_call)
+        self.assertIn("#define DB_VERSION 12", source)
+        self.assertIn("if (ver == 13)", source)
+        self.assertIn('sqlite3_exec(db, "PRAGMA user_version=12"', source)
         self.assertNotIn("unlink(MAGISKDB);", source)
         self.assertIn("link(backup_tmp, backup_path)", source)
         self.assertNotIn("rename(backup_tmp, backup_path)", source)
+        self.assertIn("sqlite3_exec(db, HIDE_TABLE_RECONCILE", source)
+        self.assertEqual(1, source.count("sqlite3_exec(db, HIDE_TABLE_RECONCILE"))
+        self.assertIn("if (ver == 12 && !migration_complete)", source)
+        self.assertIn("if (!fresh_database)", source)
+        self.assertNotIn("PRAGMA user_version = 13", migration_sql())
+
+    def test_completion_marker_does_not_replace_live_hide_operations(self) -> None:
+        fixture = {
+            "user_version": 12,
+            "settings": {"sulist": 0},
+            "hidelist": [["com.legacy", "com.legacy"]],
+            "denylist": [],
+            "sulist": [["com.root", "com.root"]],
+        }
+        db = create_fixture(fixture)
+        db.executescript(migration_sql())
+
+        # The marker gates only compatibility import. Runtime add/remove still
+        # targets the canonical denylist and SuList remains independent.
+        db.execute(
+            "DELETE FROM denylist WHERE package_name=? AND process=?",
+            ("com.legacy", "com.legacy"),
+        )
+        db.execute(
+            "INSERT INTO denylist(package_name, process) VALUES(?, ?)",
+            ("com.current", "com.current:remote"),
+        )
+        db.commit()
+
+        self.assertEqual(
+            [["com.current", "com.current:remote"]], rows(db, "denylist")
+        )
+        self.assertEqual([["com.legacy", "com.legacy"]], rows(db, "hidelist"))
+        self.assertEqual([["com.root", "com.root"]], rows(db, "sulist"))
+        self.assertEqual(
+            ("union-preserve-legacy",),
+            db.execute(
+                "SELECT strategy FROM hide_migration_v13 WHERE id=1"
+            ).fetchone(),
+        )
+        triggers = db.execute(
+            "SELECT name FROM sqlite_master WHERE type='trigger'"
+        ).fetchall()
+        self.assertEqual([], triggers)
+        db.close()
+
+        deny_source = (
+            ROOT / "native" / "src" / "core" / "deny" / "utils.cpp"
+        ).read_text()
+        self.assertIn('static const char *table_name = "denylist";', deny_source)
+
+    def test_app_hide_call_sites_use_the_kitsune_applet(self) -> None:
+        receiver_source = (
+            ROOT
+            / "app/src/main/java/com/topjohnwu/magisk/core/Receiver.kt"
+        ).read_text()
+        self.assertNotIn("magisk --denylist", receiver_source)
+        self.assertIn("magisk magiskhide rm $it", receiver_source)
 
     def test_fixture_matrix_uses_exact_native_sql(self) -> None:
         paths = sorted(FIXTURES.glob("*.json"))
@@ -81,7 +132,7 @@ class HideMigrationTest(unittest.TestCase):
                 before_hidelist = rows(db, "hidelist")
                 db.executescript(sql)
 
-                self.assertEqual(13, db.execute("PRAGMA user_version").fetchone()[0])
+                self.assertEqual(12, db.execute("PRAGMA user_version").fetchone()[0])
                 self.assertEqual(
                     sorted(fixture["expected"]["denylist"], key=repr),
                     rows(db, "denylist"),
@@ -99,6 +150,32 @@ class HideMigrationTest(unittest.TestCase):
                 self.assertEqual("union-preserve-legacy", audit.pop("strategy"))
                 self.assertEqual(1, audit.pop("id"))
                 self.assertEqual(fixture["expected"]["audit"], audit)
+                self.assertEqual(
+                    audit["source_hidelist_rows"],
+                    audit["malformed_hidelist_rows"]
+                    + audit["overlap_rows"]
+                    + audit["migrated_rows"],
+                )
+                self.assertLessEqual(
+                    audit["overlap_rows"], audit["source_denylist_rows"]
+                )
+
+                # The raw transaction is independently idempotent. Native code
+                # normally skips it after validating this marker, but rerunning
+                # it must not rewrite the original audit counts.
+                first_audit = db.execute(
+                    "SELECT * FROM hide_migration_v13 WHERE id=1"
+                ).fetchone()
+                db.executescript(sql)
+                self.assertEqual(12, db.execute("PRAGMA user_version").fetchone()[0])
+                self.assertEqual(
+                    first_audit,
+                    db.execute("SELECT * FROM hide_migration_v13 WHERE id=1").fetchone(),
+                )
+                self.assertEqual(
+                    sorted(fixture["expected"]["denylist"], key=repr),
+                    rows(db, "denylist"),
+                )
                 db.close()
 
     def test_schema_failure_rolls_back_without_advancing_version(self) -> None:
@@ -131,7 +208,7 @@ class HideMigrationTest(unittest.TestCase):
         self.assertIsNone(audit_table)
         db.close()
 
-    def test_interruptions_leave_only_complete_v12_or_v13_state(self) -> None:
+    def test_interruptions_leave_only_unmarked_or_complete_v12_state(self) -> None:
         fixture = {
             "user_version": 12,
             "settings": {"sulist": 0},
@@ -140,7 +217,8 @@ class HideMigrationTest(unittest.TestCase):
             "sulist": [],
         }
         interrupted = committed = 0
-        for budget in range(1, 451):
+        budgets = list(range(1, 81)) + [96, 128, 160, 192, 256, 384, 512, 768, 1024]
+        for budget in budgets:
             db = create_fixture(fixture)
             before_hidelist = rows(db, "hidelist")
             before_denylist = rows(db, "denylist")
@@ -163,11 +241,15 @@ class HideMigrationTest(unittest.TestCase):
                 db.set_progress_handler(None, 0)
 
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version == 12:
+            self.assertEqual(12, version)
+            marker = db.execute(
+                "SELECT name FROM sqlite_master "
+                "WHERE type='table' AND name='hide_migration_v13'"
+            ).fetchone()
+            if marker is None:
                 self.assertEqual(before_hidelist, rows(db, "hidelist"))
                 self.assertEqual(before_denylist, rows(db, "denylist"))
             else:
-                self.assertEqual(13, version)
                 self.assertEqual(
                     {
                         ("com.alpha", "com.alpha"),

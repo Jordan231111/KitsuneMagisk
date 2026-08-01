@@ -93,7 +93,7 @@ abstract class MagiskInstallImpl protected constructor(
         return true
     }
 
-    private suspend fun extractFiles(): Boolean {
+    private suspend fun extractFiles(includeSystemModeManager: Boolean = false): Boolean {
         console.add("- Device platform: ${Const.CPU_ABI}")
         console.add("- Installing: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
 
@@ -144,6 +144,10 @@ abstract class MagiskInstallImpl protected constructor(
             for (script in listOf("util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk")) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)
+            }
+            if (includeSystemModeManager) {
+                val dest = File(installDir, "system_mode_manager.sh")
+                context.resources.openRawResource(R.raw.manager).writeTo(dest)
             }
             // Extract chromeos tools
             File(installDir, "chromeos").mkdir()
@@ -537,7 +541,31 @@ abstract class MagiskInstallImpl protected constructor(
 
     protected suspend fun direct() = findImage() && extractFiles() && patchBoot() && flashBoot()
 
-    protected suspend fun direct_system() = extractFiles() && "xdirect_install_system \"$installDir\" \"dummy\" \"$AppApkPath\"".sh().isSuccess
+    protected suspend fun direct_system(): Boolean {
+        if (!BuildConfig.DEBUG) {
+            console.add("! System Mode is disabled in release builds")
+            return false
+        }
+        if (!extractFiles(includeSystemModeManager = true))
+            return false
+
+        val busybox = "$installDir/busybox"
+        val manager = "$installDir/system_mode_manager.sh"
+        val command = """
+            "$busybox" unshare -m "$busybox" sh -c '
+                mount --make-rprivate / || exit 1
+                . "${'$'}1/system_mode_manager.sh" || exit 1
+                rm -f "${'$'}1/system_mode_manager.sh" || exit 1
+                . "${'$'}1/util_functions.sh" || exit 1
+                app_init
+                xdirect_install_system "${'$'}1" "${'$'}2"
+            ' system-mode "$installDir" "$AppApkPath"
+            _system_mode_rc=${'$'}?
+            rm -f "$manager"
+            (exit "${'$'}_system_mode_rc")
+        """.trimIndent()
+        return command.sh().isSuccess
+    }
 
     protected suspend fun secondSlot() =
         findSecondary() && extractFiles() && patchBoot() && flashBoot() && postOTA()
@@ -546,15 +574,33 @@ abstract class MagiskInstallImpl protected constructor(
 
     protected fun uninstall() = "run_uninstaller $AppApkPath".sh().isSuccess
 
+    protected fun cleanupInstallDir() {
+        if (::installDir.isInitialized) {
+            Shell.cmd("rm -rf \"$installDir\"").exec()
+        }
+    }
+
     @WorkerThread
     protected abstract suspend fun operations(): Boolean
+
+    @WorkerThread
+    protected open fun finishOperation(success: Boolean) = Unit
 
     open suspend fun exec(): Boolean {
         if (haveActiveSession.getAndSet(true))
             return false
-        val result = withContext(Dispatchers.IO) { operations() }
-        haveActiveSession.set(false)
-        return result
+        return try {
+            withContext(Dispatchers.IO) {
+                var success = false
+                try {
+                    operations().also { success = it }
+                } finally {
+                    finishOperation(success)
+                }
+            }
+        } finally {
+            haveActiveSession.set(false)
+        }
     }
 
     companion object {
@@ -567,15 +613,13 @@ abstract class MagiskInstaller(
     logs: MutableList<String>
 ) : MagiskInstallImpl(console, logs) {
 
-    override suspend fun exec(): Boolean {
-        val success = super.exec()
+    override fun finishOperation(success: Boolean) {
         if (success) {
             console.add("- All done!")
         } else {
-            Shell.cmd("rm -rf $installDir").submit()
+            cleanupInstallDir()
             console.add("! Installation failed")
         }
-        return success
     }
 
     class Patch(

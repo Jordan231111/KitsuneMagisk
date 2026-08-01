@@ -116,8 +116,6 @@ static set<string> get_users() {
     if (!data_dir)
         return result;
     dirent *entry;
-    struct stat st{};
-    char buf[PATH_MAX] = {0};
     // For each user
     while ((entry = xreaddir(data_dir.get()))) {
         result.insert(entry->d_name);
@@ -157,18 +155,6 @@ static bool proc_name_match(int pid, string_view name) {
     if (auto fp = open_file(buf, "re")) {
         fgets(buf, sizeof(buf), fp.get());
         if (str_op(buf, name)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-static bool proc_context_match(int pid, string_view context) {
-    char buf[PATH_MAX];
-    sprintf(buf, "/proc/%d/attr/current", pid);
-    if (auto fp = open_file(buf, "re")) {
-        fgets(buf, sizeof(buf), fp.get());
-        if (str_starts(buf, context)) {
             return true;
         }
     }

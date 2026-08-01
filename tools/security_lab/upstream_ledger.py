@@ -413,6 +413,13 @@ def _write_or_check(output: Path, payload: str, check: bool) -> None:
     output.write_text(payload, encoding="utf-8")
 
 
+def _discard_verified_release_metadata(ledger: dict[str, Any]) -> None:
+    """Keep a successful live release probe from changing reproducible evidence."""
+    resolution = ledger["release_resolution"]
+    if resolution["latest_matches_configured_stable"]:
+        resolution["latest_release"] = None
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate the Kitsune upstream delta ledger")
     parser.add_argument("--repo", type=Path, default=ROOT)
@@ -464,6 +471,7 @@ def main(argv: list[str] | None = None) -> int:
             if not args.allow_new_stable:
                 raise ValueError(message)
             print(f"warning: {message}", file=sys.stderr)
+        _discard_verified_release_metadata(ledger)
         _write_or_check(args.output, _canonical_json(ledger), args.check)
     except (GitError, OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         print(f"upstream ledger failed: {exc}", file=sys.stderr)

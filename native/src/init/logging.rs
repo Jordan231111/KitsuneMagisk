@@ -1,5 +1,7 @@
 use std::fs::File;
 use std::io::{IoSlice, Write};
+use std::mem::ManuallyDrop;
+use std::os::fd::{FromRawFd, IntoRawFd, RawFd};
 
 use base::libc::{
     makedev, mknod, syscall, SYS_dup3, O_CLOEXEC, O_RDWR, O_WRONLY, STDERR_FILENO, STDIN_FILENO,
@@ -7,8 +9,9 @@ use base::libc::{
 };
 use base::{cstr, exit_on_error, open_fd, raw_cstr, FsPath, LogLevel, Logger, Utf8CStr, LOGGER};
 
-// SAFETY: magiskinit is single threaded
-static mut KMSG: Option<File> = None;
+// SAFETY: magiskinit is single threaded. Store only the descriptor so the log
+// callback never creates a mutable reference to a mutable static.
+static mut KMSG: RawFd = -1;
 
 pub fn setup_klog() {
     unsafe {
@@ -32,7 +35,7 @@ pub fn setup_klog() {
             fd = open_fd!(cstr!("/kmsg"), O_WRONLY | O_CLOEXEC);
             FsPath::from(cstr!("/kmsg")).remove().ok();
         }
-        KMSG = fd.map(|fd| fd.into()).ok();
+        KMSG = fd.map(|fd| fd.into_raw_fd()).unwrap_or(-1);
     }
 
     // Disable kmsg rate limiting
@@ -45,9 +48,11 @@ pub fn setup_klog() {
     }
 
     fn kmsg_log_write(_: LogLevel, msg: &Utf8CStr) {
-        if let Some(kmsg) = unsafe { &mut KMSG } {
+        let fd = unsafe { KMSG };
+        if fd >= 0 {
             let io1 = IoSlice::new("magiskinit: ".as_bytes());
             let io2 = IoSlice::new(msg.as_bytes());
+            let mut kmsg = ManuallyDrop::new(unsafe { File::from_raw_fd(fd) });
             let _ = kmsg.write_vectored(&[io1, io2]).ok();
         }
     }

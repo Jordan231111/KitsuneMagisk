@@ -1,13 +1,14 @@
 #pragma once
 
-// Version 13 makes `denylist` the canonical normal-hide table. The legacy `hidelist`
-// is deliberately retained as an in-database rollback/audit source. The conflict
-// policy is a security-conservative union: valid legacy rows are added without
-// deleting or replacing any existing denylist rows. SuList remains independent.
+// This marker migration makes `denylist` the canonical normal-hide table while
+// deliberately retaining `hidelist` as an in-database rollback/audit source.
+// Keep PRAGMA user_version at 12: every published Kitsune daemon understands that
+// schema version, while the old v12 daemon deletes databases with a newer value.
+// The conflict policy is a security-conservative union. SuList remains independent.
 //
-// Keep this SQL in a standalone raw string: repository host tests execute the exact
-// migration text against the fixture matrix without requiring an Android runtime.
-inline constexpr char HIDE_TABLE_MIGRATION_V13[] = R"sql(
+// Host tests execute these exact SQL fragments as one transaction without
+// requiring an Android runtime.
+inline constexpr char HIDE_TABLE_COMPAT_MIGRATION[] = R"sql(
 BEGIN IMMEDIATE;
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT,
@@ -40,8 +41,7 @@ CREATE TABLE IF NOT EXISTS hide_migration_v13 (
     malformed_hidelist_rows INTEGER NOT NULL,
     sulist_enabled INTEGER NOT NULL
 );
-DELETE FROM hide_migration_v13 WHERE id = 1;
-INSERT INTO hide_migration_v13 (
+INSERT OR IGNORE INTO hide_migration_v13 (
     id,
     strategy,
     source_hidelist_rows,
@@ -69,7 +69,20 @@ SELECT
             AND legacy.package_name <> ''
             AND legacy.process <> ''
     ),
-    0,
+    (
+        SELECT COUNT(*)
+        FROM hidelist AS legacy
+        WHERE legacy.package_name IS NOT NULL
+            AND legacy.process IS NOT NULL
+            AND legacy.package_name <> ''
+            AND legacy.process <> ''
+            AND NOT EXISTS (
+                SELECT 1
+                FROM denylist AS canonical
+                WHERE canonical.package_name = legacy.package_name
+                    AND canonical.process = legacy.process
+            )
+    ),
     (
         SELECT COUNT(*)
         FROM hidelist
@@ -79,6 +92,9 @@ SELECT
             OR process = ''
     ),
     COALESCE((SELECT value FROM settings WHERE key = 'sulist' LIMIT 1), 0);
+)sql";
+
+inline constexpr char HIDE_TABLE_RECONCILE[] = R"sql(
 INSERT OR IGNORE INTO denylist (package_name, process)
 SELECT package_name, process
 FROM hidelist
@@ -86,9 +102,4 @@ WHERE package_name IS NOT NULL
     AND process IS NOT NULL
     AND package_name <> ''
     AND process <> '';
-UPDATE hide_migration_v13
-SET migrated_rows = changes()
-WHERE id = 1;
-PRAGMA user_version = 13;
-COMMIT;
 )sql";

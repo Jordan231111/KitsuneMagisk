@@ -1,118 +1,79 @@
+![](docs/images/logo.png#gh-dark-mode-only)
+![](docs/images/logo_dark.png#gh-light-mode-only)
+
 # KitsuneMagisk
 
-> **Experimental active-development project. There is currently no generally supported stable release.**
-
-KitsuneMagisk is an unofficial Magisk fork whose primary product goal is persistent
-**Direct-System/System Mode** installation for Android environments where normal boot-image
-installation is unavailable or impractical. The main targets are commercial Android emulators and
-selected real devices with a recoverable, persistently writable system layout.
+KitsuneMagisk is an unofficial Magisk fork for Android 6.0 and newer. Its main
+fork-specific feature is **Direct-System/System Mode** for controlled Android
+environments where a normal boot-image installation is unavailable or impractical.
 
 This project is not affiliated with or supported by
-[topjohnwu/Magisk](https://github.com/topjohnwu/Magisk). Do not ask the official Magisk project to
-support Kitsune-specific behavior.
+[topjohnwu/Magisk](https://github.com/topjohnwu/Magisk). Please do not send
+Kitsune-specific support requests to the official Magisk project.
 
-## What Kitsune is for
+## Features
 
-System Mode is the primary differentiator, but Kitsune remains a complete Magisk-derived root and
-systemless-customization platform. It should preserve normal authorized boot/`init_boot`/
-`vendor_boot` installation, superuser policy, modules and boot scripts, BusyBox, `resetprop`,
-`magiskboot`, `magiskpolicy`, manager recovery, and safe uninstall. Its secondary fork features are
-measured MagiskHide/DenyList/SuList behavior, hidden-manager recovery, SELinux-disabled compatibility,
-and a versioned external-Zygisk boundary.
+- **MagiskSU** — root access with app policy management
+- **Magisk Modules** — systemless Android customization
+- **MagiskBoot** and **MagiskPolicy** — boot-image and SELinux policy tools
+- **Direct-System/System Mode** — persistent installation on explicitly qualified,
+  writable emulator or device layouts
+- **Kitsune hiding modes** — MagiskHide/DenyList/SuList behavior retained where it is
+  tested and compatible
 
-The project also maintains capability diagnostics, exact emulator/device qualification, upstream
-change tracking, and an authorized disposable lab for fuzzing, vulnerability discovery, and
-hardening. It does not promise to root arbitrary locked devices without a bootstrap or controlled
-image, bypass every detector/attestation service, or support an architecture merely because its
-binaries compile. See the roadmap's product-purpose hierarchy and evidence gates for the complete
-contract.
+## Project status
 
-## Current status
+The resumed project has not published its first production release. Current APKs are
+development/test builds while installer recovery, signing migration, update ownership,
+and exact emulator/device support are qualified.
 
-Development has resumed, but the existing `kitsune` branch is a reference implementation—not a
-qualified claim of support for every emulator.
+System Mode can modify persistent system, init, and policy files. Use a disposable
+emulator or a device with a verified restore path. Support is recorded for exact
+Android images and emulator/device versions; a successful build alone is not a support
+claim.
 
-- The project currently builds and passes the existing normal Magisk AVD smoke flow on API 23, 29,
-  and 35.
-- Direct-System exists and has real emulator-specific history, but it does not yet have a dedicated
-  automated install/cold-boot/upgrade/uninstall test.
-- Support will be published for exact emulator versions and Android images only after repeatable
-  qualification. “Works on one emulator” is useful evidence, not a universal compatibility claim.
-- The current `31.0-kitsune` label is a compatibility/Android upgrade number inherited from earlier
-  maintainers. It does not mean this tree contains a newer Magisk core than official Magisk.
-
-See [the purpose and faithfulness audit](docs/faithfulness-audit.md) for the history-backed product
-report, [the current support statement](docs/status.md) for the exact limitations, and
-[the development roadmap](DEVELOPMENT_ROADMAP.md) for the audited implementation plan.
-
-## Important current limitations
-
-- Treat every existing APK as experimental. Automatic stable publication from every `kitsune`
-  commit is disabled by the current CI design.
-- Built-in app and stub updates now fail closed with an explicit message; the dead prior-maintainer
-  endpoints are no longer contacted. Install test builds manually from this repository's Actions
-  artifacts or explicitly labeled canary releases until PR10 adds a project-owned update service.
-- Published artifacts through `25fa2159` converged normal hide selections on `denylist` without an
-  upgrade migration. Current source adds transactional database migration v13, preserves a verified
-  version-12 backup and the legacy table, and tests divergent/SuList fixtures; published older APKs
-  remain subject to the original caveat.
-- Debug native builds automatically grant ADB shell root during the current test flow. Debug APKs
-  are development artifacts and must not be described as ordinary stable releases.
-- ReZygisk, NeoZygisk, DenyList, and SuList compatibility is provider- and version-specific. No
-  blanket external-Zygisk or current SuList guarantee is made.
-- Direct-System modifies persistent Android partitions and boot-time policy/init files. Use a
-  disposable emulator instance or a recoverable device snapshot until the transactional installer
-  and rollback gates in the roadmap are complete.
-
-## Development branches
-
-- `kitsune` remains the known-working comparison branch. It keeps its name and receives only tests
-  or fixes needed by another build that will actually be released.
-- `next-system` will start from the latest audited official stable (currently Magisk v30.7 after a
-  branch-cut recheck) and forward-port System Mode first.
-- `next-system` becomes the new `kitsune` only after it meets or beats the current branch on the same
-  emulator/device parity matrix. The old implementation is then retained as a tag, not maintained as
-  a second product.
-
-## How to contribute
-
-Use the **Proposed pull-request sequence** in [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) as the
-execution order. The P0/P1/P2 sections are the detailed requirements, evidence, test cases, and
-acceptance criteria used while implementing those PRs; they are not a competing second task list.
-
-For the current development phase:
-
-1. Keep System Mode as the product gate.
-2. Add a failing test or reproducible emulator case before changing boot/init/SELinux behavior.
-3. Keep current-branch fixes conditional; do not modernize the old and new cores in parallel.
-4. Run the same evidence-driven checks on current `kitsune` and `next-system` before promotion.
+See the [current status](docs/status.md), [development roadmap](DEVELOPMENT_ROADMAP.md),
+and [release notes](docs/release-notes.md) for details.
 
 ## Building
 
-Requirements and platform details are in [docs/build.md](docs/build.md). The short path is:
+Requirements and platform setup are documented in [docs/build.md](docs/build.md).
 
 ```sh
-export ANDROID_SDK_ROOT=/path/to/android-sdk
 git submodule update --init --recursive
 ./build.py ndk
-./build.py all       # debug APKs and native binaries
-./build.py -r all    # release variant for testing
+./build.py all
 ```
 
-Build outputs are written under `out/`. A clean checkout should use `config.prop.sample` as the
-configuration reference.
+Debug builds use the normal Android debug key. A release build uses one private,
+long-lived maintainer keystore configured in the ignored `config.prop`, or in a
+custom config file:
+
+```sh
+./build.py -r all
+# or: ./build.py -r -c /path/to/release.prop all
+```
+
+The config format is shown in [config.prop.sample](config.prop.sample). Private signing
+material must never be committed to the repository.
 
 ## Documentation
 
-- [Current support and known limitations](docs/status.md)
-- [Purpose, history, install-route, and faithfulness audit](docs/faithfulness-audit.md)
-- [Development roadmap and commit audit](DEVELOPMENT_ROADMAP.md)
-- [Building and development](docs/build.md)
 - [Installation background](docs/install.md)
+- [Building and development](docs/build.md)
+- [Current support and limitations](docs/status.md)
+- [Development roadmap](DEVELOPMENT_ROADMAP.md)
 - [Internal details](docs/details.md)
-- [GPLv3 license](LICENSE)
+
+## Bug reports and contributions
+
+Use a debug build when reporting a reproducible issue. Include install logs for install
+failures and logcat or kernel/Magisk logs for runtime failures. Never attach private
+keys, account credentials, or device secrets.
+
+Translations live under each module's `src/main/res/values-*` directory.
 
 ## License
 
-KitsuneMagisk and its submodules remain free software under the GNU General Public License, version
-3 or later. See [LICENSE](LICENSE).
+KitsuneMagisk and its submodules are free software under the GNU General Public
+License, version 3 or later. See [LICENSE](LICENSE).

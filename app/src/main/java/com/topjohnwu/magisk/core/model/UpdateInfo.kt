@@ -15,7 +15,8 @@ data class MagiskJson(
     val version: String = "",
     val versionCode: Int = -1,
     val link: String = "",
-    val note: String = ""
+    val note: String = "",
+    val sha256: String = ""
 ) : Parcelable
 
 @JsonClass(generateAdapter = true)

@@ -144,7 +144,32 @@ class DeviceCorpusTest(unittest.TestCase):
         self.assertIn('.kitsune-security-owned', source)
         self.assertIn('--adb "$adb"', source)
         self.assertNotIn('"$sdk" --channel=3 tools ', source)
+        self.assertIn('-gpu swiftshader', source)
+        self.assertNotIn('-gpu swiftshader_indirect', source)
         self.assertLess(source.index(export), source.index(create))
+
+    def test_normal_avd_concurrent_su_normalizes_legacy_adb_crlf(self) -> None:
+        source = (ROOT / "scripts" / "avd_test.sh").read_text(encoding="utf-8")
+        normalize = "parallel_result=${parallel_result//$'\\r'/}"
+        count = "grep -c -- '-ok$'"
+        self.assertIn("run_with_timeout()", source)
+        self.assertIn("run_with_timeout 45", source)
+        self.assertNotIn("$(timeout 45s", source)
+        self.assertIn("-gpu swiftshader", source)
+        self.assertNotIn("-gpu swiftshader_indirect", source)
+        self.assertIn(normalize, source)
+        self.assertIn(count, source)
+        self.assertLess(source.index(normalize), source.index(count))
+
+    def test_normal_avd_readiness_normalizes_legacy_adb_crlf(self) -> None:
+        source = (ROOT / "scripts" / "avd_test.sh").read_text(encoding="utf-8")
+        start = source.index("wait_test_ready()")
+        end = source.index("run_content_cmd()", start)
+        readiness = source[start:end]
+        normalize = "| tr -d '\\r'"
+        match = 'case "$package_out:$magisk_out"'
+        self.assertEqual(2, readiness.count(normalize))
+        self.assertLess(readiness.rindex(normalize), readiness.index(match))
 
 
 if __name__ == "__main__":

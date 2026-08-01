@@ -174,7 +174,7 @@ def parse_props(file):
         for line in [l.strip(" \t\r\n") for l in f]:
             if line.startswith("#") or len(line) == 0:
                 continue
-            prop = line.split("=")
+            prop = line.split("=", 1)
             if len(prop) != 2:
                 continue
             value = prop[1].strip(" \t\r\n")
@@ -184,11 +184,49 @@ def parse_props(file):
     return props
 
 
+RELEASE_SIGNING_KEYS = ("keyStore", "keyStorePass", "keyAlias", "keyPass")
+
+
+def validate_release_signing(args):
+    """Require production-shaped builds to name complete signing material."""
+
+    if not args.release or getattr(args, "_release_signing_validated", False):
+        return
+
+    config_path = op.realpath(args.config)
+    if not op.isfile(config_path):
+        error(
+            "Release signing requires a config file containing all four "
+            "signing values"
+        )
+
+    release_config = parse_props(config_path)
+    missing = [key for key in RELEASE_SIGNING_KEYS if not release_config.get(key)]
+    if missing:
+        error(
+            "Release signing is not configured. Pass -c with an external config "
+            "containing all of: " + ", ".join(RELEASE_SIGNING_KEYS)
+        )
+
+    key_store = release_config["keyStore"]
+    key_store = op.realpath(key_store)
+    if not op.isfile(key_store):
+        error(f"Release keystore does not exist: {key_store}")
+
+    # `all` validates before native compilation and later reaches build_apk().
+    # Remember the successful check so direct app/stub actions stay protected
+    # without parsing and resolving the same external inputs twice.
+    args._release_signing_validated = True
+
+
 def load_config(args):
     commit_hash = cmd_out(["git", "rev-parse", "--short=8", "HEAD"])
 
     # Default values
-    config["version"] = commit_hash
+    # Keep the exact source identity while retaining the lowercase Kitsune
+    # marker consumed by compatible external Zygisk implementations when they
+    # resolve this fork's manager package.
+    config["version"] = f"{commit_hash}-kitsune"
     config["versionCode"] = 1000000
     config["outdir"] = "out"
 
@@ -205,6 +243,12 @@ def load_config(args):
         config["versionCode"] = int(config["versionCode"])
     except ValueError:
         error('Config error: "versionCode" is required to be an integer')
+
+    if "kitsune" not in config["version"]:
+        error(
+            'Config error: "version" must contain the lowercase Kitsune '
+            'identity marker "kitsune"'
+        )
 
     mkdir_p(config["outdir"])
     global STDOUT
@@ -488,6 +532,7 @@ def find_jdk():
 
 
 def build_apk(args, module):
+    validate_release_signing(args)
     env = find_jdk()
 
     build_type = "Release" if args.release else "Debug"
@@ -676,6 +721,8 @@ def patch_avd_ramdisk(args):
 
 
 def build_all(args):
+    # Fail before the expensive native build if a release cannot be signed.
+    validate_release_signing(args)
     build_binary(args)
     build_app(args)
 

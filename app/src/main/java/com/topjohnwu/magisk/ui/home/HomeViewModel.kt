@@ -179,6 +179,7 @@ class HomeViewModel(
                 UpdateUnavailableReason.OFFLINE -> R.string.no_connection
                 UpdateUnavailableReason.EMPTY_CUSTOM_URL,
                 UpdateUnavailableReason.INVALID_CUSTOM_URL -> R.string.invalid_update_channel
+                UpdateUnavailableReason.INVALID_UPDATE_METADATA,
                 UpdateUnavailableReason.REQUEST_FAILED -> R.string.update_check_failed
             }
             UpdateCheckResult.NotChecked,

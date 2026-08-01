@@ -779,23 +779,30 @@ warn_system_ro(){
 
 remount_check(){
     local mode="$1"
-    local part="$(realpath "$2")"
+    local part
     local ignore_not_exist="$3"
-    local i
-    if ! grep -q " $part " /proc/mounts && [ ! -z "$ignore_not_exist" ]; then
-        return "$ignore_not_exist"
+    if [ ! -e "$2" ]; then
+        [ -n "$ignore_not_exist" ] && return "$ignore_not_exist"
+        return 1
     fi
-    mount -o "$mode,remount" "$part"
-    local IFS=$'\t\n ,'
-    for i in $(cat /proc/mounts | grep " $part " | awk '{ print $4 }'); do
-        test "$i" == "$mode" && return 0
-    done
-    return 1
+    part="$(realpath "$2")" || return 1
+    if ! awk -v part="$part" '$2 == part { found = 1 } END { exit !found }' /proc/mounts; then
+        [ -n "$ignore_not_exist" ] && return "$ignore_not_exist"
+        return 1
+    fi
+    mount -o "$mode,remount" "$part" || return 1
+    awk -v part="$part" -v mode="$mode" '
+        $2 == part {
+            count = split($4, options, ",")
+            for (i = 1; i <= count; i++)
+                if (options[i] == mode) found = 1
+        }
+        END { exit !found }
+    ' /proc/mounts
 }
 
 force_bind_mount(){
-    mount -o bind,private "$1" "$2"
-    mount -o rw,remount "$2"
+    mount -o bind,private "$1" "$2" || return 1
     remount_check rw "$2" || warn_system_ro
 }
 

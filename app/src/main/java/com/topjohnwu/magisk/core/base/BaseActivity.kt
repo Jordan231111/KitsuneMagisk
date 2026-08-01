@@ -26,6 +26,7 @@ import com.topjohnwu.magisk.core.wrap
 
 interface ContentResultCallback: ActivityResultCallback<Uri>, Parcelable {
     fun onActivityLaunch() {}
+    fun onActivityCancel() {}
     // Make the result type explicitly non-null
     override fun onActivityResult(result: Uri)
 }
@@ -40,7 +41,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private var installCallback: ((Boolean) -> Unit)? = null
     private val requestInstall = registerForActivityResult(RequestInstall()) {
-        installCallback?.invoke(it)
+        // Settings implementations do not consistently return RESULT_OK after
+        // changing this app-op. Query the authoritative state on return.
+        val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+            packageManager.canRequestPackageInstalls()
+        installCallback?.invoke(granted)
         installCallback = null
     }
 
@@ -53,6 +58,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private var contentCallback: ContentResultCallback? = null
     private val getContent = registerForActivityResult(GetContent()) {
         if (it != null) contentCallback?.onActivityResult(it)
+        else contentCallback?.onActivityCancel()
         contentCallback = null
     }
 
@@ -104,7 +110,12 @@ abstract class BaseActivity : AppCompatActivity() {
         }
         if (permission == REQUEST_INSTALL_PACKAGES) {
             installCallback = callback
-            requestInstall.launch(Unit)
+            try {
+                requestInstall.launch(Unit)
+            } catch (e: ActivityNotFoundException) {
+                installCallback?.invoke(false)
+                installCallback = null
+            }
         } else {
             permissionCallback = callback
             requestPermission.launch(permission)
@@ -117,6 +128,8 @@ abstract class BaseActivity : AppCompatActivity() {
             getContent.launch(type)
             callback.onActivityLaunch()
         } catch (e: ActivityNotFoundException) {
+            contentCallback?.onActivityCancel()
+            contentCallback = null
             toast(R.string.app_not_found, Toast.LENGTH_SHORT)
         }
     }

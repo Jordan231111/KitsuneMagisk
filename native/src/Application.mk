@@ -6,7 +6,11 @@ APP_CFLAGS       := -Wall -Oz -fomit-frame-pointer -flto
 # panic=abort/no C++ exceptions; retaining their otherwise-dead unwind helpers
 # makes ARMv7 pull libunwind and fail on dl_unwind_find_exidx with ONDK r27.1.
 # Keep the canonical build.py and Gradle link semantics aligned.
-APP_LDFLAGS      := -flto -Wl,--gc-sections
+# Android devices with a 16 KiB kernel page size require every packaged native
+# ELF load segment to support that maximum page size. The old ONDK ignores
+# APP_SUPPORT_FLEXIBLE_PAGE_SIZES, so keep the explicit linker contract until
+# the current upstream toolchain is inherited.
+APP_LDFLAGS      := -flto -Wl,--gc-sections -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384
 APP_CPPFLAGS     := -std=c++20
 APP_STL          := none
 APP_PLATFORM     := android-23
@@ -25,7 +29,7 @@ ifdef KITSUNE_SANITIZE
 # both this pin and v30.7. Suppress only signed shift-base overflow; invalid
 # shift exponents and every other undefined-behavior check remain enabled.
 APP_CFLAGS       := -Wall -O1 -g -fno-omit-frame-pointer -flto -DKITSUNE_SANITIZE_BUILD=1 -fsanitize=$(KITSUNE_SANITIZE) -fno-sanitize=shift-base -fsanitize-minimal-runtime -fno-sanitize-recover=all
-APP_LDFLAGS      := -flto -Wl,--gc-sections -fsanitize=$(KITSUNE_SANITIZE) -fsanitize-minimal-runtime -static-libsan -fno-sanitize-recover=all
+APP_LDFLAGS      := -flto -Wl,--gc-sections -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -fsanitize=$(KITSUNE_SANITIZE) -fsanitize-minimal-runtime -static-libsan -fno-sanitize-recover=all
 endif
 
 # Busybox should use stock libc.a

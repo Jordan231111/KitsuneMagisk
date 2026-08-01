@@ -15,7 +15,7 @@ from tools.security_lab.inventory import (
     build_spdx,
 )
 from tools.security_lab.licenses import _map_license
-from tools.security_lab.rustsec import build_report
+from tools.security_lab.rustsec import _write_or_check, build_report
 from tools.security_lab.signature_contract import analyze_ref
 from tools.security_lab.submodules import parse_raw_gitlinks, validate_missing
 from tools.security_lab.git import GitRepository
@@ -150,6 +150,22 @@ direct = "junit:junit:4.13.2"
 
 
 class RustSecPolicyTest(unittest.TestCase):
+    def test_live_database_metadata_drift_is_not_product_report_drift(self) -> None:
+        recorded = {
+            "database": {"advisory_count": 100, "commit": "a" * 40},
+            "finding_count": 1,
+            "findings": [{"id": "RUSTSEC-2099-0001", "advisory_record_sha256": "c" * 64}],
+        }
+        refreshed = copy.deepcopy(recorded)
+        refreshed["database"] = {"advisory_count": 101, "commit": "b" * 40}
+        with tempfile.TemporaryDirectory(prefix="kitsune-rustsec-report-") as directory:
+            report = Path(directory) / "report.json"
+            _write_or_check(report, recorded, check=False)
+            _write_or_check(report, refreshed, check=True)
+            refreshed["findings"][0]["advisory_record_sha256"] = "d" * 64
+            with self.assertRaisesRegex(ValueError, "is stale"):
+                _write_or_check(report, refreshed, check=True)
+
     def test_unknown_advisory_fails_closed(self) -> None:
         audit = {
             "database": {"advisory-count": 1, "last-commit": "a" * 40},
@@ -207,7 +223,7 @@ class SubmoduleAuditTest(unittest.TestCase):
 
 
 class SignatureContractTest(unittest.TestCase):
-    def test_current_bypass_and_pristine_stable_enforcement_are_explicit(self) -> None:
+    def test_cpp_and_rust_release_enforcement_are_recognized(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-signature-contract-") as directory:
             root = Path(directory)
             package_dir = root / "native" / "src" / "core"
@@ -216,7 +232,7 @@ class SignatureContractTest(unittest.TestCase):
 
             (package_dir / "package.cpp").write_text(
                 """\
-#define ENFORCE_SIGNATURE 0
+#define ENFORCE_SIGNATURE (!MAGISK_DEBUG)
 APK signature mismatch
 uninstall_pkg(JAVA_PACKAGE_NAME)
 dyn APK signature mismatch
@@ -241,7 +257,7 @@ preserve_stub_apk
                     "commit",
                     "--quiet",
                     "-m",
-                    "bypass fixture",
+                    "cpp enforcement fixture",
                 ],
                 check=True,
             )
@@ -297,8 +313,10 @@ self.install_stub()
             repo = GitRepository(root)
             current = analyze_ref(repo, current_ref)
             stable = analyze_ref(repo, "stable-fixture")
-        self.assertTrue(current["global_bypass_detected"])
-        self.assertFalse(current["release_signature_enforced"])
+        self.assertFalse(current["global_bypass_detected"])
+        self.assertTrue(current["release_signature_enforced"])
+        self.assertTrue(current["normal_replacement_rejected"])
+        self.assertTrue(current["hidden_dyn_replacement_rejected"])
         self.assertTrue(stable["release_signature_enforced"])
         self.assertTrue(stable["normal_replacement_rejected"])
         self.assertTrue(stable["hidden_dyn_replacement_rejected"])

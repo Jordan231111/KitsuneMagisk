@@ -6,7 +6,9 @@ import com.topjohnwu.magisk.core.di.AppContext
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.download.DownloadEngine
 import com.topjohnwu.magisk.core.download.Subject
+import com.topjohnwu.magisk.core.ktx.writeTextAtomically
 import com.topjohnwu.magisk.view.MagiskDialog
+import timber.log.Timber
 import java.io.File
 
 class ManagerInstallDialog : MarkDownDialog() {
@@ -14,13 +16,14 @@ class ManagerInstallDialog : MarkDownDialog() {
     private val svc get() = ServiceLocator.networkService
 
     override suspend fun getMarkdownText(): String {
-        val text = svc.fetchString(Info.remote.magisk.note)
-        // Cache the changelog
-        AppContext.cacheDir.listFiles { _, name -> name.endsWith(".md") }.orEmpty().forEach {
-            it.delete()
+        val remote = Info.remote.magisk
+        if (remote.note.isEmpty()) return ""
+        val cache = File(AppContext.cacheDir, "update-note-${remote.versionCode}.md")
+        if (cache.isFile) return cache.readText()
+        return svc.fetchString(remote.note).also {
+            runCatching { cache.writeTextAtomically(it) }
+                .onFailure { error -> Timber.w(error, "Unable to cache update notes") }
         }
-        File(AppContext.cacheDir, "${Info.remote.magisk.versionCode}.md").writeText(text)
-        return text
     }
 
     override fun build(dialog: MagiskDialog) {

@@ -14,22 +14,35 @@ import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.download.DownloadEngine
 import com.topjohnwu.magisk.core.download.Subject
 import com.topjohnwu.magisk.core.repository.UpdateChannelPolicy
-import com.topjohnwu.magisk.core.repository.UpdateCheckResult
 import com.topjohnwu.magisk.core.repository.UpdateEndpointResolution
 import com.topjohnwu.magisk.view.Notifications
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class JobService : BaseJobService() {
 
+    @Volatile
     private var mSession: Session? = null
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    @Volatile
+    private var updateJob: Job? = null
 
     @TargetApi(value = 34)
     inner class Session(
+        @Volatile
         private var params: JobParameters
     ) : DownloadEngine.Session {
+
+        @Volatile
+        private var stopped = false
 
         override val context get() = this@JobService
         val engine = DownloadEngine(this)
@@ -44,7 +57,17 @@ class JobService : BaseJobService() {
         }
 
         override fun onDownloadComplete() {
-            jobFinished(params, false)
+            if (mSession === this) {
+                mSession = null
+            }
+            if (!stopped) {
+                jobFinished(params, false)
+            }
+        }
+
+        fun stop() {
+            stopped = true
+            engine.cancel()
         }
     }
 
@@ -57,7 +80,29 @@ class JobService : BaseJobService() {
         }
     }
 
-    override fun onStopJob(params: JobParameters?) = false
+    override fun onStopJob(params: JobParameters?): Boolean {
+        return if (params?.jobId == Const.ID.CHECK_UPDATE_JOB_ID) {
+            val job = updateJob
+            if (job?.isActive == true) {
+                job.cancel()
+                updateJob = null
+                true
+            } else {
+                false
+            }
+        } else {
+            mSession?.stop()
+            mSession = null
+            false
+        }
+    }
+
+    override fun onDestroy() {
+        mSession?.stop()
+        mSession = null
+        serviceScope.cancel()
+        super.onDestroy()
+    }
 
     @TargetApi(value = 34)
     private fun downloadFile(params: JobParameters): Boolean {
@@ -77,21 +122,28 @@ class JobService : BaseJobService() {
     }
 
     private fun checkUpdate(params: JobParameters): Boolean {
-        GlobalScope.launch(Dispatchers.IO) {
+        // Start lazily so the completion path can never run before updateJob
+        // publishes the exact Job instance used for compare-and-clear.
+        val job = serviceScope.launch(start = CoroutineStart.LAZY) {
             try {
-                when (val result = ServiceLocator.networkService.fetchUpdate()) {
-                    is UpdateCheckResult.Success -> {
-                        Info.remote = result.info
-                        if (Info.env.isActive && BuildConfig.VERSION_CODE < result.info.magisk.versionCode)
-                            Notifications.updateAvailable()
-                    }
-                    is UpdateCheckResult.Unavailable,
-                    UpdateCheckResult.NotChecked -> Unit
+                val info = Info.getRemote(ServiceLocator.networkService)
+                if (info != null && Info.env.isActive &&
+                    BuildConfig.VERSION_CODE < info.magisk.versionCode
+                ) {
+                    Notifications.updateAvailable()
                 }
             } finally {
-                jobFinished(params, false)
+                if (currentCoroutineContext().isActive) {
+                    jobFinished(params, false)
+                }
+                val completed = currentCoroutineContext()[Job]
+                if (updateJob === completed) {
+                    updateJob = null
+                }
             }
         }
+        updateJob = job
+        job.start()
         return true
     }
 
