@@ -1,66 +1,83 @@
 # KitsuneMagisk current support status
 
-Last reviewed: 2026-07-22
+Last reviewed: 2026-07-31
 
-Reference branch before PR3/PR4 work: `kitsune` at `cf149fcf`
+Current hardening worktree: `codex/production-hardening`, based on `kitsune` at
+`bcdf65f0af1882e46cd435379bee4535e4aab87f`
+
+Official comparison points: Magisk `v30.7` at
+`e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac` and observed `master` at
+`0404e0ca346d9bdeeb9fe9d951c599c05b2583f6`.
 
 ## Release level
 
-KitsuneMagisk is in active experimental development. Existing `v31.0-*` artifacts are not qualified
-stable System Mode releases. The `31.0` label was inherited as a module-compatibility and Android
-upgrade-ordering value; it does not describe the age of the underlying Magisk source.
+KitsuneMagisk remains an experimental development line. Earlier maintainer/test artifacts exist,
+but the resumed project has not shipped its first production release. The current hardening work
+fixes several release-critical defects, but it is not yet a stable System Mode release. The inherited `31.0`
+value is a fork compatibility and Android upgrade-ordering value; it does not mean that this branch
+contains a newer Magisk core than official Magisk v30.7.
 
-## Evidence currently available
+The repository no longer contains a signing keystore or a maintainer-specific `config.prop`.
+Debug builds use the Android debug signer. Release builds fail closed unless an external signing
+configuration is supplied. A configuration-free local build reports the source identity selected
+by `build.py`; `31.0-kitsune` is retained only by an explicitly supplied compatibility/release
+configuration or an already-published artifact.
 
-| Area | Current evidence | Status |
+## Current evidence
+
+| Area | Evidence | Status |
 |---|---|---|
-| Repository build | PR3/PR4 source passes host/JVM tests, zero-error full Android lint, canonical debug/release builds, and Gradle debug native links for ARM64, ARMv7, x86, and x86_64. The macOS paths also disable the pinned ONDK output-sync defect and explicitly retain section GC so Gradle debug cannot pull dead ARMv7 unwind code. | Buildable |
-| Normal Magisk AVD flow | Current CI covers API 23, 29, and 35 x86_64 jobs; the final disposable API 35 Google APIs ARM64 run completed debug and release ramdisk patch, manager setup, reboot, app self-test, and `su -c id`, then byte-restored the stock image and deleted the AVD. See the [PR4A lab record](system-mode/avd-lab-2026-07-22.md). | Tested on x86_64 CI and local ARM64 |
-| Normal real-device install | Static tracing confirms the non-emulator Direct Install route still discovers, patches, and flashes the boot-family image; Direct-System remains a separate explicit action. No physical device was flashed in this audit. See the [faithfulness audit](faithfulness-audit.md). | Preserved in source; runtime qualification open |
-| System Mode contract | Versioned doctor, reason codes, install manifest/state-machine schemas, fixtures, failure-injection plan, and ADB driver are implemented; three sanitized real records cover MuMu plus immutable API 35 16 KiB/API 36 ARM64 guests | Source-ready; lifecycle qualification incomplete |
-| Direct-System/System Mode | Implementation and historical LDPlayer/MuMu/Nox-specific fixes exist, but no dedicated CI job runs `direct_install_system` | Experimental |
-| LDPlayer | Individual configurations may work; no exact current version/image has completed the new qualification gate | Unqualified |
-| MuMuPlayer 12 | A read-only record from engine 1.4.46 on port 16384 found writable ext4 and a pre-existing legacy install; the instance was not clean and no cold boot or restore was run | Characterized, not qualified |
-| Immutable Android Studio images | Fresh API 35 16 KiB and Android 16/API 36 ARM64 guests exposed EROFS, enforcing AVB/dm-verity, and no bootstrap root; the doctor rejected both without mutation | Correctly blocked negative evidence |
-| NoxPlayer | A historical Android 12 `/sbin` regression was fixed; current exact images still require repeatable qualification | Experimental evidence only |
-| BlueStacks | ADB availability alone does not provide a supported writable-system/bootstrap path | Unsupported until an adapter is proven |
-| Real devices | Requires a recoverable writable layout and explicit AVB/filesystem qualification | No general support claim |
-| DenyList | Fresh/reselected normal-hide entries use `denylist` and can interoperate with compatible external providers | Works with upgrade caveat |
-| Existing HideList data | Current source adds transactional v13 union migration, a verified version-12 DB backup, an audit row, and divergent/SuList fixtures | Implemented in source; published older artifacts remain unsafe |
-| App/stub updater | Built-in inherited channels make no metadata request and show an explicit project-service-unavailable result; only an explicitly configured HTTPS custom channel can be queried | Contained pending PR10 service |
-| SuList/external Zygisk | Current provider projects do not establish one universal SuList contract | Version-specific/unsupported unless tested |
+| Host/build gates | Security, System Mode, migration, artifact, JVM, lint, shell syntax, and canonical all-ABI build gates exist. The artifact gate checks both ELF load segments and APK ZIP placement for 16 KiB pages. The final local run passed 87 host tests, JVM tests, zero-error lint, security ledgers, clean all-ABI debug/release builds, and the schema-3 four-APK artifact contract. | Passed locally; PR CI and a final merged-commit release rebuild remain required |
+| Ordinary Magisk flow | Prior API 23/29/35 CI and API 35 ARM64 disposable-AVD records cover patched-ramdisk setup, reboot, manager self-test, and `su -c id`. The one real BlueStacks `Tiramisu64` instance also cold-booted the released comparison and intensive-test debug/release pair, then the exact final debug backend, with app/databin/daemon alignment and sole-root verification. | Preserved on tested targets; physical-device qualification remains open |
+| Release signature trust | Release native code now enforces manager/stub certificate identity; debug-only relaxation remains explicit. The final four-APK artifact contract rejects the historical public TestKey. The intensive-test live release manager/backend matched the same external lab signer used by the final contract-tested release APK. | Fixed in this worktree; production key transition remains blocked |
+| Hide/DenyList compatibility | Fresh installs simply use the current tables. When an older Kitsune/Delta test install already has legacy `hidelist` rows, the daemon keeps database `user_version=12`, creates a durable pre-change backup, transactionally unions valid rows into `denylist`, and records an internal completion marker. On `Tiramisu64`, the active DB and backup both passed `quick_check`; the backup stayed root-owned mode `0600`, schema 12, and unmarked while the active DB carried the complete marker. | Rollback-compatible implementation present |
+| App/stub updater | Built-in inherited endpoints make no request and fail explicitly. Custom metadata is HTTPS-only, requires SHA-256, rejects cleartext redirects, verifies the downloaded bytes, and publishes the APK atomically. | Transport/artifact contract hardened; no project-owned service |
+| Direct-System/System Mode | The action is debug-only, displays an explicit warning, uses the payload binary's compile identity rather than a possibly older running daemon, enters a private mount namespace, performs non-mutating policy capability inspection, checks remount/write capability, and rolls back exact policy/init sidecars on failure. The live release UI omitted the action; the debug UI rejected read-only `/system` before mutation with identical pre/post init-policy hashes. | Experimental; transaction and writable-target qualification incomplete |
+| BlueStacks | The local adapter cleanly reinjected the released comparison, intensive-test pair, and exact final debug APK into the same installed BlueStacks Air 5.21.782.7501 `Tiramisu64` instance at `127.0.0.1:5555`; no application clone was used for the final comparison. Its ext4 `/system` is mounted read-only, so System Mode is unsupported on this image. Host logs show clean code-0 exits, orphaned bundled-ADB/player-lock failures, and—while restoring the unchanged known-good APK—a BlueStacks `launch_start_timeout`, failed `qemu-img info`, and forced power-down. The identical payload passed on immediate retry. | Root/backend adapter proven for this exact instance; observed intermittent failure is strongly BlueStacks-side; in-guest System Mode unsupported |
+| Existing released artifact | The previous released manager/root backend remains useful as the behavioral comparison. Its certificate is the repository's former publicly exposed test key and must not be reused for a production release. | Comparison-only; not a production trust root |
+| Zygisk/provider behavior | The manager reports built-in Zygisk as disabled while the installed external ReZygisk processes run. All three existing module directories remained enabled throughout the one-instance comparison, so this audit does not attribute the intermittent BlueStacks launch failures to those modules. ReZygisk v1.0.0 explicitly removed Kitsune support; NeoZygisk has a different ptrace/provider model and no universal Kitsune SuList contract. | Exactly one named provider/version still needs formal qualification |
 
-## Current release blockers
+## Remaining release blockers
 
-1. System Mode has no maintained install/cold-boot/upgrade/uninstall/rollback matrix.
-2. Recovery System Mode still reaches boot-image discovery before its System Mode branch.
-3. Installer selection depends on filename magic in one recovery path.
-4. The SELinux capability probe changes the live policy instead of only inspecting capability.
-5. Installation and uninstall are not yet manifest-owned and transactional.
-6. Project-owned, digest-validated app/stub update infrastructure does not yet exist; current source
-   disables inherited endpoints and reports the failure explicitly.
-7. The Rust dependency audit still has an unfixed RSA timing advisory plus five informational
-   warnings. Current RSA private-key signing is a local maintainer operation rather than a network
-   oracle, but the finding and the isolated `rand`/vendored-`cxx` updates remain pre-stable work.
-8. Built-in Zygisk was removed from the current fork, and package signature enforcement remains
-   globally disabled. The forward port must retain official built-in Zygisk through parity and
-   restore upstream signature trust unless a narrow, threat-modeled hidden-manager test proves a
-   required exception.
+1. Use PR CI to rebuild the reviewed commit and rebuild any distribution artifacts from the final
+   merged commit. The archived local APKs identify their `bcdf65f0` base and are pre-commit lab
+   evidence, not release candidates.
+2. Configure a new external production signing identity and design an explicit migration from the
+   leaked historical certificate. Android package replacement and the old daemon's certificate
+   trust make this a product migration, not a keystore swap.
+3. Finish manifest-owned, crash-recoverable transactions across `/data/adb/magisk`, the persistent
+   system payload, init/policy files, addon survival, upgrade, and uninstall. The current worktree
+   improves rollback but is not power-loss atomic across every filesystem.
+4. Qualify System Mode on at least one exact writable target through install, three cold boots,
+   upgrade, reinstall, modules/root policy, uninstall, and snapshot/stock restore. The BlueStacks
+   read-only-system rejection is valuable negative evidence, not a successful persistent install.
+5. Keep release System Mode disabled until that lifecycle evidence exists. A successful compile,
+   root shell, or normal Magisk backend does not prove persistent System Mode.
+6. Forward-port the tested product behavior onto an audited current official stable rather than
+   independently merging the roughly 985 official-master-only commits into this old core.
+7. Establish a project-owned, signed or equivalently authenticated update service. The SHA-256 and
+   atomic-download implementation protects supplied metadata but does not make an arbitrary custom
+   endpoint trustworthy.
+8. Select and qualify one Zygisk architecture. Do not enable built-in and external providers
+   together, and do not advertise ReZygisk v1.0.0 as Kitsune-compatible.
+9. Complete physical-device, commercial-emulator, ABI/runtime, recovery, module, hidden-manager,
+   multiuser, SELinux, safe-mode, and failure-injection matrices for every support claim.
+10. Resolve or explicitly carry the remaining dependency/security holds, including the no-fixed-
+   version RSA timing advisory, through the release evidence ledger.
 
-## What “supported” will mean
+## Recommended development order
 
-Support will be attached to an exact emulator/device version, Android image, ABI, filesystem/layout,
-bootstrap method, and tested lifecycle. A supported target must pass installation, three cold boots,
-root/module smoke, upgrade/reinstall, uninstall, and snapshot or stock restoration. Unsupported
-immutable layouts must be rejected before persistent mutation.
+1. Review the current production-hardening work only after its final host/build/device report is
+   green, then merge it as one coherent security/reliability change set.
+2. Complete the current-line System Mode manifest/recovery transaction only to the extent needed to
+   produce trustworthy comparison behavior.
+3. Create the audited stable-based `next-system` line, preserve ordinary upstream Magisk and
+   built-in Zygisk behavior, then port the System Mode vertical slice behind the same tests.
+4. Run identical target snapshots against the earlier comparison build, hardened current line,
+   and stable-based port; promote only the implementation that meets the complete lifecycle gate.
+5. Before distributing the first production release, create one protected external release key and
+   complete the transition away from the public historical test certificate.
 
-Until those records exist, use disposable emulator instances or recoverable snapshots and describe
-successful configurations as test evidence rather than general product support.
-
-## Development direction
-
-Current `kitsune` remains the comparison baseline. After rechecking official releases at branch cut,
-`next-system` will forward-port System Mode onto the latest audited stable (currently Magisk v30.7)
-and will replace `kitsune` only after identical parity tests pass. See
-[`DEVELOPMENT_ROADMAP.md`](../DEVELOPMENT_ROADMAP.md) for the implementation sequence and complete
-acceptance criteria.
+Support remains attached to an exact emulator/device version, Android image, ABI, filesystem,
+bootstrap, adapter, and tested lifecycle. See [`DEVELOPMENT_ROADMAP.md`](../DEVELOPMENT_ROADMAP.md)
+for the ordered work and [the faithfulness audit](faithfulness-audit.md) for the historical rationale.

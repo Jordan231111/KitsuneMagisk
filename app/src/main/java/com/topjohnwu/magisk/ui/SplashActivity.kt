@@ -27,11 +27,12 @@ import com.topjohnwu.magisk.ui.theme.Theme
 import com.topjohnwu.magisk.view.MagiskDialog
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
-import java.io.IOException
 
 @SuppressLint("CustomSplashScreen")
 abstract class SplashActivity<Binding : ViewDataBinding> : NavigationActivity<Binding>() {
@@ -155,11 +156,20 @@ abstract class SplashActivity<Binding : ViewDataBinding> : NavigationActivity<Bi
                         val apk = File(cacheDir, "stub.apk")
                         try {
                             assets.open("stub.apk").writeTo(apk)
-                            HideAPK.upgrade(this@SplashActivity, apk)?.let {
-                                startActivity(it)
+                            val (accepted, installIntent) =
+                                HideAPK.upgrade(this@SplashActivity, apk)
+                            if (!accepted) {
+                                Timber.e("Failed to upgrade hidden app stub")
                             }
-                        } catch (e: IOException) {
+                            if (installIntent != null) {
+                                withContext(Dispatchers.Main) { startActivity(installIntent) }
+                            }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
                             Timber.e(e)
+                        } finally {
+                            apk.delete()
                         }
                     }
                 }

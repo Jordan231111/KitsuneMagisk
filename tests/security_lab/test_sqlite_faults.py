@@ -15,21 +15,21 @@ def rows(db: sqlite3.Connection, table: str) -> set[tuple[str, str]]:
     return set(db.execute(f"SELECT package_name, process FROM {table}"))
 
 
-def assert_complete_state(test: unittest.TestCase, path: Path) -> int:
+def assert_complete_state(test: unittest.TestCase, path: Path) -> bool:
     db = sqlite3.connect(path)
     version = db.execute("PRAGMA user_version").fetchone()[0]
-    if version == 12:
+    test.assertEqual(12, version)
+    audit_table = db.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='hide_migration_v13'"
+    ).fetchone()
+    migrated = audit_table is not None
+    if not migrated:
         test.assertEqual(
             {("com.alpha", "com.alpha"), ("com.beta", "com.beta:remote")},
             rows(db, "hidelist"),
         )
         test.assertEqual({("org.example", "org.example")}, rows(db, "denylist"))
-        audit = db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='hide_migration_v13'"
-        ).fetchone()
-        test.assertIsNone(audit)
     else:
-        test.assertEqual(13, version)
         test.assertEqual(
             {
                 ("com.alpha", "com.alpha"),
@@ -45,13 +45,13 @@ def assert_complete_state(test: unittest.TestCase, path: Path) -> int:
     integrity = db.execute("PRAGMA integrity_check").fetchone()[0]
     test.assertEqual("ok", integrity)
     db.close()
-    return version
+    return migrated
 
 
 class SQLiteFaultInjectionTest(unittest.TestCase):
-    def test_abrupt_process_death_recovers_only_complete_v12_or_v13(self) -> None:
+    def test_abrupt_process_death_recovers_only_unmarked_or_complete_v12(self) -> None:
         budgets = list(range(1, 65)) + [80, 96, 128, 160, 192, 256, 384, 512, 768, 1024]
-        versions = set()
+        states = set()
         with tempfile.TemporaryDirectory(prefix="kitsune-db-crash-") as temp:
             root = Path(temp)
             template = root / "template.db"
@@ -75,8 +75,8 @@ class SQLiteFaultInjectionTest(unittest.TestCase):
                     check=False,
                 )
                 self.assertIn(proc.returncode, (0, 86), msg=proc.stderr)
-                versions.add(assert_complete_state(self, database))
-        self.assertEqual({12, 13}, versions)
+                states.add(assert_complete_state(self, database))
+        self.assertEqual({False, True}, states)
 
     def test_database_full_rolls_back_without_partial_schema(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-db-full-") as temp:
@@ -89,7 +89,7 @@ class SQLiteFaultInjectionTest(unittest.TestCase):
                 db.executescript(migration_sql())
             db.rollback()
             db.close()
-            self.assertEqual(12, assert_complete_state(self, database))
+            self.assertFalse(assert_complete_state(self, database))
 
     def test_read_only_database_refuses_before_schema_change(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-db-readonly-") as temp:
@@ -99,7 +99,7 @@ class SQLiteFaultInjectionTest(unittest.TestCase):
             with self.assertRaises(sqlite3.OperationalError):
                 db.executescript(migration_sql())
             db.close()
-            self.assertEqual(12, assert_complete_state(self, database))
+            self.assertFalse(assert_complete_state(self, database))
 
 
 if __name__ == "__main__":

@@ -207,7 +207,7 @@ class SubmoduleAuditTest(unittest.TestCase):
 
 
 class SignatureContractTest(unittest.TestCase):
-    def test_current_bypass_and_pristine_stable_enforcement_are_explicit(self) -> None:
+    def test_cpp_and_rust_release_enforcement_are_recognized(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-signature-contract-") as directory:
             root = Path(directory)
             package_dir = root / "native" / "src" / "core"
@@ -216,7 +216,7 @@ class SignatureContractTest(unittest.TestCase):
 
             (package_dir / "package.cpp").write_text(
                 """\
-#define ENFORCE_SIGNATURE 0
+#define ENFORCE_SIGNATURE (!MAGISK_DEBUG)
 APK signature mismatch
 uninstall_pkg(JAVA_PACKAGE_NAME)
 dyn APK signature mismatch
@@ -241,7 +241,7 @@ preserve_stub_apk
                     "commit",
                     "--quiet",
                     "-m",
-                    "bypass fixture",
+                    "cpp enforcement fixture",
                 ],
                 check=True,
             )
@@ -297,8 +297,10 @@ self.install_stub()
             repo = GitRepository(root)
             current = analyze_ref(repo, current_ref)
             stable = analyze_ref(repo, "stable-fixture")
-        self.assertTrue(current["global_bypass_detected"])
-        self.assertFalse(current["release_signature_enforced"])
+        self.assertFalse(current["global_bypass_detected"])
+        self.assertTrue(current["release_signature_enforced"])
+        self.assertTrue(current["normal_replacement_rejected"])
+        self.assertTrue(current["hidden_dyn_replacement_rejected"])
         self.assertTrue(stable["release_signature_enforced"])
         self.assertTrue(stable["normal_replacement_rejected"])
         self.assertTrue(stable["hidden_dyn_replacement_rejected"])

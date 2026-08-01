@@ -256,7 +256,8 @@
     <string name="restore_app_confirmation">This will restore the hidden app back to the original app. Do you really want to do this?</string>
 
 <!--Delta-->
-    <string name="direct_install_system">Direct Install (modify /system directly)</string>
+    <string name="direct_install_system">System Mode (experimental; modifies /system)</string>
+    <string name="system_mode_warning">System Mode directly changes persistent system, init, and SELinux policy files. It is available only for qualified writable layouts with a tested recovery path. A failed or incompatible install can prevent Android from booting.</string>
     <string name="settings_hidelist_config_title">Configure MagiskHide</string>
     <string name="settings_hidelist_config_summary">Select the processes to be included on the hidelist</string>
     <string name="settings_magiskhide_title">MagiskHide</string>

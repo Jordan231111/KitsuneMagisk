@@ -1,69 +1,62 @@
-# Hide-table migration v13
+# Hide-table compatibility reconciliation
 
-Database version 13 completes the storage change started by `25fa2159`. Normal MagiskHide mode uses
-`denylist` as its canonical table; SuList continues to use the independent `sulist` table.
+This is an internal upgrade/rollback safeguard, not a new public database release.
+
+A fresh KitsuneMagisk install has no HideList rows to move. It creates the current tables and an
+internal completion marker directly, without creating a pointless pre-migration backup.
+
+The compatibility path matters when an older Kitsune/Delta development build already stored
+normal-hide selections in `hidelist`.
+
+Commit `25fa2159` switched current normal-hide behavior to `denylist` without moving old rows. If an
+existing database is opened without reconciliation, previous selections can silently disappear from
+the active view. SuList is separate and remains in `sulist`.
 
 ## Conflict rule
 
-The migration uses a security-conservative union:
+The daemon uses a security-conservative union:
 
-1. Preserve every existing `denylist` row.
-2. Add each valid `hidelist` row that is not already in `denylist`.
-3. Leave `hidelist` intact as a legacy audit/rollback source.
-4. Do not copy null or empty package/process values into the active table; retain them in
-   `hidelist` and count them as malformed.
-5. Never copy, clear, or reinterpret `sulist` rows.
+1. Keep every existing `denylist` row.
+2. Add each non-empty `hidelist` package/process pair that is not already present.
+3. Keep `hidelist` as the rollback/audit source.
+4. Never copy, clear, or reinterpret `sulist` rows.
 
-This can hide more processes when the two legacy tables diverge, which is safer than silently
-dropping an existing hide selection but can affect app behavior. The exact source, overlap,
-migrated, malformed, and SuList counts are stored in the singleton `hide_migration_v13` row with
-strategy `union-preserve-legacy`.
+The database stays at `PRAGMA user_version=12`, which is the version understood by the older
+daemon. The historical internal table name `hide_migration_v13` is retained only so databases made
+by the short-lived development experiment can be recognized safely; it does not advertise schema
+version 13.
 
-Inspect the audit without modifying it:
+Keeping version 12 prevents an older daemon from treating the database as an unsupported downgrade
+and deleting/rebuilding it. It does not attempt bidirectional synchronization between two daemon
+implementations. Changes made after deliberately rolling back to an older daemon should be treated
+as a separate recovery event; repeatedly importing the legacy table would incorrectly resurrect
+entries that a user intentionally removed from the current `denylist`.
+
+Inspect the internal audit row without changing it:
 
 ```sh
 magisk --sqlite 'SELECT * FROM hide_migration_v13'
 ```
 
-## Transaction and recovery behavior
+## Existing-database recovery
 
-Before running the SQL transaction, the daemon uses SQLite's online backup API to create and verify
-`/data/adb/magisk.db.v12.bak`. The first valid version-12 backup is never overwritten. Migration is
-blocked unless the backup is a root-owned, owner-only mode-`0600` regular file with one link,
-reports `user_version=12`, passes `PRAGMA quick_check`, and is fsynced with its parent directory.
-Publication uses an atomic no-replace hard link, so a concurrently created first backup cannot be
-overwritten; an interrupted two-link publication is recognized and completed on the next run.
+Before changing an existing schema, the daemon uses SQLite's online backup API to create
+`/data/adb/magisk.db.v12.bak`. It verifies that the backup is a root-owned mode-`0600` regular file,
+has `user_version=12`, passes `PRAGMA quick_check`, and is durably synced. Atomic no-replace
+publication prevents a concurrent or interrupted attempt from overwriting the first valid backup.
 
-The exact SQL in `native/src/core/db_migrations.hpp` performs all table creation, union, audit
-recording, and `PRAGMA user_version=13` under `BEGIN IMMEDIATE`. Any error triggers an explicit
-rollback. Database initialization now fails closed; it no longer unlinks the complete Magisk
-database after an arbitrary schema or migration error.
+The marker creation, audit counts, and union run under one `BEGIN IMMEDIATE` transaction. Any real
+error rolls the transaction back and database initialization fails closed instead of deleting the
+database. Commit-boundary tests accept only the original unmarked v12 state or the complete marked
+v12 state.
 
-SQLite may surface cancellation at the commit boundary after the transaction is already durable.
-The daemon rolls back first, then accepts that late-error state only when autocommit is restored and
-both `user_version=13` and the singleton migration audit row are visible. Interruption tests require
-every boundary to expose either the complete original v12 state or the complete audited v13 state;
-a partial mixture is never accepted.
+## Test coverage
 
-An older version-12 daemon does not understand version 13. Do not treat an APK/native rollback as a
-database rollback: restore the verified `.v12.bak` from a vendor-root/recovery context before
-starting the older daemon. The retained `hidelist` table is useful for forward repair but does not
-replace the full database backup because SU policies and settings share the same database.
-
-## Fixture coverage
-
-Repository tests execute the exact native SQL against:
-
-- an empty version-12 database;
-- `hidelist` only;
-- `denylist` only;
-- overlapping and divergent tables;
-- SuList enabled with independent rows;
-- malformed legacy rows;
-- a forced schema failure that must leave `user_version=12` and the original rows intact.
-
-Run them with:
+Host tests execute the exact native SQL against empty, legacy-only, canonical-only, divergent,
+malformed, and SuList fixtures. They also cover read-only/full databases, forced schema failures,
+abrupt process death, and repeat execution.
 
 ```sh
-python3 -m unittest discover -s tests -p 'test_*.py'
+python3 -m unittest tests.system_mode.test_hide_migration \
+  tests.security_lab.test_sqlite_faults -v
 ```

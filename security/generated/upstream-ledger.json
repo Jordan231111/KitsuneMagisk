@@ -4,7 +4,7 @@
   "counts": {
     "fork_vs_master": {
       "left": 178,
-      "right": 971
+      "right": 985
     },
     "fork_vs_stable": {
       "left": 178,
@@ -18,7 +18,7 @@
   "inputs": {
     "fork_ref": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
     "master_ref": "upstream/master",
-    "path_policy_sha256": "3562407ba9c827fb53814889dc61f6d56224ac153c9e251662b987ba99e56ffd",
+    "path_policy_sha256": "915cb07ace8768921644806de43de883f641284c52c09d7d9d58f9308d563b94",
     "previous_stable_ref": "v30.6",
     "stable_ref": "v30.7"
   },
@@ -3683,10 +3683,10 @@
       ]
     },
     "master": {
-      "commit_count": 113,
-      "commits_with_unowned_paths": 106,
-      "revision_range": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac..14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
-      "sensitive_commit_count": 33,
+      "commit_count": 127,
+      "commits_with_unowned_paths": 116,
+      "revision_range": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac..0404e0ca346d9bdeeb9fe9d951c599c05b2583f6",
+      "sensitive_commit_count": 38,
       "sensitive_commits": [
         {
           "commit": "6bb48df7129d295f7f70d2325acfb77eb8e3b9b9",
@@ -8078,6 +8078,172 @@
             "native/src/sepolicy/statement.rs"
           ],
           "subject": "Fix sepolicy parsing for hyphenated identifiers"
+        },
+        {
+          "commit": "1b9f69b4b8eb424c40afb89e263a45d04fff662f",
+          "commit_time": 1785203359,
+          "disposition": {
+            "decision": "observe_for_targeted_backport",
+            "rationale": "Post-stable master is an observation lane; a change is backported only after a target-backed regression proves it is needed."
+          },
+          "lane": "master",
+          "ownership": {
+            "owners": {
+              "native-sepolicy": 1
+            },
+            "required_gates": [
+              "all-abi-link",
+              "enforcing-avd-boot",
+              "malformed-policy-corpus",
+              "policy-load-save-reload"
+            ],
+            "sensitive": true,
+            "surfaces": {
+              "selinux-policy": 1
+            },
+            "unowned_paths": []
+          },
+          "parents": [
+            "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c"
+          ],
+          "paths": [
+            "native/src/sepolicy/rules.rs"
+          ],
+          "subject": "Update zygisk sepolicy for A17 QPR1 Beta 4"
+        },
+        {
+          "commit": "f5907f257788464dabed2c94ec718b074c0f3eb1",
+          "commit_time": 1785203676,
+          "disposition": {
+            "decision": "observe_for_targeted_backport",
+            "rationale": "Post-stable master is an observation lane; a change is backported only after a target-backed regression proves it is needed."
+          },
+          "lane": "master",
+          "ownership": {
+            "owners": {
+              "build-release": 1
+            },
+            "required_gates": [
+              "all-abi-build",
+              "artifact-identity",
+              "dependency-inventory",
+              "source-static"
+            ],
+            "sensitive": true,
+            "surfaces": {
+              "build-download-release": 1
+            },
+            "unowned_paths": []
+          },
+          "parents": [
+            "1b9f69b4b8eb424c40afb89e263a45d04fff662f"
+          ],
+          "paths": [
+            ".github/workflows/build.yml"
+          ],
+          "subject": "Update CI versions"
+        },
+        {
+          "commit": "e67be65bb295b13a34b2f5ac1399a7ff09efdf86",
+          "commit_time": 1785289045,
+          "disposition": {
+            "decision": "observe_for_targeted_backport",
+            "rationale": "Post-stable master is an observation lane; a change is backported only after a target-backed regression proves it is needed."
+          },
+          "lane": "master",
+          "ownership": {
+            "owners": {
+              "build-release": 1
+            },
+            "required_gates": [
+              "all-abi-build",
+              "artifact-identity",
+              "dependency-inventory",
+              "source-static"
+            ],
+            "sensitive": true,
+            "surfaces": {
+              "build-download-release": 1
+            },
+            "unowned_paths": []
+          },
+          "parents": [
+            "0f59f1f3457b6bc13b51c0ca0c5a5439b68e7ab1"
+          ],
+          "paths": [
+            ".github/workflows/build.yml"
+          ],
+          "subject": "Fix API 37.0 CI"
+        },
+        {
+          "commit": "5c82406ee6155bd657beafa859dce6fdee43891d",
+          "commit_time": 1785289487,
+          "disposition": {
+            "decision": "observe_for_targeted_backport",
+            "rationale": "Post-stable master is an observation lane; a change is backported only after a target-backed regression proves it is needed."
+          },
+          "lane": "master",
+          "ownership": {
+            "owners": {
+              "build-release": 1
+            },
+            "required_gates": [
+              "all-abi-build",
+              "artifact-identity",
+              "dependency-inventory",
+              "source-static"
+            ],
+            "sensitive": true,
+            "surfaces": {
+              "build-download-release": 1
+            },
+            "unowned_paths": []
+          },
+          "parents": [
+            "e67be65bb295b13a34b2f5ac1399a7ff09efdf86"
+          ],
+          "paths": [
+            ".github/workflows/build.yml"
+          ],
+          "subject": "Disable cuttlefish test"
+        },
+        {
+          "commit": "0404e0ca346d9bdeeb9fe9d951c599c05b2583f6",
+          "commit_time": 1785294758,
+          "disposition": {
+            "decision": "observe_for_targeted_backport",
+            "rationale": "Post-stable master is an observation lane; a change is backported only after a target-backed regression proves it is needed."
+          },
+          "lane": "master",
+          "ownership": {
+            "owners": {
+              "modules": 1
+            },
+            "required_gates": [
+              "module-lifecycle",
+              "module-metadata-property",
+              "safe-mode-recovery"
+            ],
+            "sensitive": true,
+            "surfaces": {
+              "module-runtime": 1
+            },
+            "unowned_paths": [
+              "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/component/Permissions.kt",
+              "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/flash/FlashScreen.kt",
+              "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/log/LogScreen.kt"
+            ]
+          },
+          "parents": [
+            "3a9374b9c26a54784731d7d7aa065cff8c3be7c8"
+          ],
+          "paths": [
+            "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/component/Permissions.kt",
+            "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/flash/FlashScreen.kt",
+            "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/log/LogScreen.kt",
+            "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/module/ActionScreen.kt"
+          ],
+          "subject": "Fix NG manager storage permission request"
         }
       ]
     },
@@ -31324,9 +31490,9 @@
       }
     },
     "master": {
-      "changed_paths_from_common_ancestor": 837,
-      "commit": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
-      "commit_time": 1777918516,
+      "changed_paths_from_common_ancestor": 838,
+      "commit": "0404e0ca346d9bdeeb9fe9d951c599c05b2583f6",
+      "commit_time": 1785294758,
       "path_ownership": {
         "owners": {
           "app-update": 5,
@@ -31405,6 +31571,7 @@
           "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/MainActivity.kt",
           "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/MainScreen.kt",
           "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/component/Dialog.kt",
+          "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/component/Permissions.kt",
           "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/component/SettingsComponents.kt",
           "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/deny/AppProcessInfo.kt",
           "app/apk-ng/src/main/java/com/topjohnwu/magisk/ui/deny/DenyListScreen.kt",
@@ -32120,7 +32287,7 @@
         ],
         "build_tools": null,
         "compile_sdk": null,
-        "gradle_distribution": "gradle-9.5.0-rc-2-bin.zip",
+        "gradle_distribution": "gradle-9.6.1-bin.zip",
         "jdk": "21",
         "min_sdk": null,
         "ndk": null,

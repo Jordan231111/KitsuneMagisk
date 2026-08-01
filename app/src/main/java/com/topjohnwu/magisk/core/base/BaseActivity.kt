@@ -26,6 +26,7 @@ import com.topjohnwu.magisk.core.wrap
 
 interface ContentResultCallback: ActivityResultCallback<Uri>, Parcelable {
     fun onActivityLaunch() {}
+    fun onActivityCancel() {}
     // Make the result type explicitly non-null
     override fun onActivityResult(result: Uri)
 }
@@ -53,6 +54,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private var contentCallback: ContentResultCallback? = null
     private val getContent = registerForActivityResult(GetContent()) {
         if (it != null) contentCallback?.onActivityResult(it)
+        else contentCallback?.onActivityCancel()
         contentCallback = null
     }
 
@@ -117,6 +119,8 @@ abstract class BaseActivity : AppCompatActivity() {
             getContent.launch(type)
             callback.onActivityLaunch()
         } catch (e: ActivityNotFoundException) {
+            contentCallback?.onActivityCancel()
+            contentCallback = null
             toast(R.string.app_not_found, Toast.LENGTH_SHORT)
         }
     }

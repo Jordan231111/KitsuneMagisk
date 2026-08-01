@@ -247,7 +247,7 @@
     <string name="restore_app_confirmation">Это действие восстановит пересобранное для скрытия приложение к исходному состоянию. Вы действительно хотите продолжить?</string>
 
     <!-- Delta -->
-    <string name="direct_install_system">Прямая установка (модифицировать /system напрямую)</string>
+    <string name="direct_install_system">Системный режим (экспериментально; изменяет /system)</string>
     <string name="settings_hidelist_config_title">Настроить MagiskHide</string>
     <string name="settings_hidelist_config_summary">Выберите процессы, которые будут включены в список MagiskHide</string>
     <string name="settings_magiskhide_title">MagiskHide</string>

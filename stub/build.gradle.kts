@@ -20,6 +20,7 @@ android {
         // will replace these fields with project-owned, digest-validated metadata.
         buildConfigField("boolean", "UPDATE_SERVICE_CONFIGURED", "false")
         buildConfigField("String", "APK_URL", "null")
+        buildConfigField("String", "APK_SHA256", "null")
         buildConfigField(
             "String",
             "PROJECT_URL",

@@ -174,7 +174,7 @@ def parse_props(file):
         for line in [l.strip(" \t\r\n") for l in f]:
             if line.startswith("#") or len(line) == 0:
                 continue
-            prop = line.split("=")
+            prop = line.split("=", 1)
             if len(prop) != 2:
                 continue
             value = prop[1].strip(" \t\r\n")
@@ -182,6 +182,53 @@ def parse_props(file):
                 continue
             props[prop[0].strip(" \t\r\n")] = value
     return props
+
+
+RELEASE_SIGNING_KEYS = ("keyStore", "keyStorePass", "keyAlias", "keyPass")
+
+
+def validate_release_signing(args):
+    """Require production-shaped builds to use external signing material.
+
+    A private key or credential file inside the source checkout is already part
+    of the source distribution, even when ignored by Git. Release builds must
+    therefore opt in with an explicit config and an absolute keystore outside
+    the repository. Debug builds continue to use the normal Android debug key.
+    """
+
+    if not args.release:
+        return
+
+    repo = op.realpath(".")
+    config_path = op.realpath(args.config)
+    if not op.isfile(config_path):
+        error("Release signing requires an explicit external config file")
+
+    release_config = parse_props(config_path)
+    missing = [key for key in RELEASE_SIGNING_KEYS if not release_config.get(key)]
+    if missing:
+        error(
+            "Release signing is not configured. Pass -c with an external config "
+            "containing all of: " + ", ".join(RELEASE_SIGNING_KEYS)
+        )
+
+    key_store = release_config["keyStore"]
+    if not op.isabs(key_store):
+        error('Release keyStore must be an absolute path outside the source checkout')
+    key_store = op.realpath(key_store)
+
+    def inside_repo(path):
+        try:
+            return op.commonpath((repo, path)) == repo
+        except ValueError:
+            return False
+
+    if inside_repo(config_path):
+        error("Release signing config must be outside the source checkout")
+    if inside_repo(key_store):
+        error("Release keystore must be outside the source checkout")
+    if not op.isfile(key_store):
+        error(f"Release keystore does not exist: {key_store}")
 
 
 def load_config(args):
@@ -488,6 +535,7 @@ def find_jdk():
 
 
 def build_apk(args, module):
+    validate_release_signing(args)
     env = find_jdk()
 
     build_type = "Release" if args.release else "Debug"
@@ -676,6 +724,8 @@ def patch_avd_ramdisk(args):
 
 
 def build_all(args):
+    # Fail before the expensive native build if a release cannot be signed.
+    validate_release_signing(args)
     build_binary(args)
     build_app(args)
 

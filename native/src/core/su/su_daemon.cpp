@@ -328,7 +328,11 @@ void su_daemon_handler(int client, const sock_cred *cred) {
         return;
     }
 
-    LOGD("su: fork handler\n");
+    // magiskd is multi-threaded. A fork can inherit the Rust log mutex while a
+    // sibling request owns it, so any child-side LOG call can deadlock forever
+    // before exec. The child has no useful daemon log ownership anyway; keep
+    // the parent-side request/wait/return logs and mute this short-lived copy.
+    logging_muted = true;
 
     // Abort upon any error occurred
     exit_on_error(true);

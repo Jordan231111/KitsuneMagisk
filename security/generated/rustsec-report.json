@@ -2,8 +2,8 @@
   "audit_command": "cargo audit --file native/src/Cargo.lock --json",
   "audit_ignore_used": false,
   "database": {
-    "advisory_count": 1167,
-    "commit": "7a086e691bff2c299fe16dda543daa3b5e7f4397"
+    "advisory_count": 1177,
+    "commit": "685d32fd681b540aa64019820639613c5a4fd922"
   },
   "finding_count": 6,
   "findings": [

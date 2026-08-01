@@ -7,8 +7,10 @@
 using namespace std;
 using rust::Vec;
 
-// we don't need ENFORCE_SIGNATURE
-#define ENFORCE_SIGNATURE 0
+// Release daemons must bind the manager/stub identity to the certificate
+// embedded in the trusted APK. Debug builds retain diagnostics without making
+// locally generated debug certificates a production trust anchor.
+#define ENFORCE_SIGNATURE (!MAGISK_DEBUG)
 
 // These functions will be called on every single zygote process specialization and su request,
 // so performance is absolutely critical. Most operations should either have its result cached

@@ -13,7 +13,6 @@ import com.topjohnwu.magisk.core.repository.PreferenceConfig
 import com.topjohnwu.magisk.core.utils.refreshLocale
 import com.topjohnwu.magisk.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.IOException
@@ -23,7 +22,7 @@ object Config : PreferenceConfig, DBConfig {
     override val stringDB get() = ServiceLocator.stringDB
     override val settingsDB get() = ServiceLocator.settingsDB
     override val context get() = ServiceLocator.deContext
-    override val coroutineScope get() = GlobalScope
+    override val coroutineScope get() = appScope
 
     private val prefsFile = File("${context.filesDir.parent}/shared_prefs", "${fileName}.xml")
 
@@ -166,11 +165,8 @@ object Config : PreferenceConfig, DBConfig {
     var suMntNamespaceMode by dbSettings(Key.SU_MNT_NS, Value.NAMESPACE_MODE_REQUESTER)
     var suMultiuserMode by dbSettings(Key.SU_MULTIUSER_MODE, Value.MULTIUSER_MODE_OWNER_ONLY)
     var suBiometric by dbSettings(Key.SU_BIOMETRIC, Value.BIOMETRIC_DISABLED)
-    var userAuth
+    val userAuth
         get() = Info.isDeviceSecure && suBiometric == Value.BIOMETRIC_SYSTEM
-        set(value) {
-            userAuth = value
-        }
     var zygisk by dbSettings(Key.ZYGISK, false)
     var denyList by BoolDBPropertyNoWrite(Key.DENYLIST, false)
     var sulist by BoolDBPropertyNoWrite(Key.SULIST, false)

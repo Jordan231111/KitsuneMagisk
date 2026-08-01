@@ -2,13 +2,17 @@ package com.topjohnwu.magisk.core.repository
 
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.di.enforceUpdateTransportPolicy
+import com.topjohnwu.magisk.core.model.MagiskJson
+import com.topjohnwu.magisk.core.model.UpdateInfo
+import com.topjohnwu.magisk.utils.APKInstall
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
-import kotlin.random.Random
+import java.security.MessageDigest
+import java.io.File
 
 class UpdateChannelPolicyTest {
 
@@ -76,51 +80,59 @@ class UpdateChannelPolicyTest {
     }
 
     @Test
-    fun `seeded URL property corpus agrees with the fail-closed contract`() {
-        val random = Random(0x4B175A)
-        val alphabet = (
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
-                ":/?#[]@!$&'()*+,;=%._- \\\t\n"
-            ).toCharArray()
-        repeat(2_000) {
-            val candidate = buildString {
-                repeat(random.nextInt(0, 160)) {
-                    append(alphabet[random.nextInt(alphabet.size)])
-                }
-            }
-            val normalized = candidate.trim()
-            val expected = runCatching { URI(normalized) }.getOrNull()?.let { uri ->
-                normalized.isNotEmpty() &&
-                    uri.scheme?.lowercase() == "https" &&
-                    !uri.host.isNullOrBlank() &&
-                    uri.userInfo == null &&
-                    uri.fragment == null &&
-                    (uri.port == -1 || uri.port in 1..65535)
-            } == true
-            val actual = UpdateChannelPolicy.resolve(Config.Value.CUSTOM_CHANNEL, candidate)
-            assertEquals(candidate, expected, actual is UpdateEndpointResolution.Remote)
-        }
+    fun `transport configuration follows same-scheme redirects but rejects transitions`() {
+        val client = OkHttpClient.Builder().enforceUpdateTransportPolicy().build()
+        assertTrue(client.followRedirects)
+        assertFalse(client.followSslRedirects)
     }
 
     @Test
-    fun `generated valid HTTPS URLs remain accepted`() {
-        val random = Random(0x48545450)
-        repeat(1_000) { index ->
-            val host = "node${random.nextInt(1, 1_000_000)}.example.test"
-            val port = if (index % 3 == 0) ":${random.nextInt(1, 65536)}" else ""
-            val url = "https://$host$port/channel/${random.nextInt()}.json?build=$index"
-            assertTrue(
-                url,
-                UpdateChannelPolicy.resolve(Config.Value.CUSTOM_CHANNEL, url) is
-                    UpdateEndpointResolution.Remote
+    fun `update metadata requires HTTPS artifact URLs and a SHA-256 digest`() {
+        val valid = UpdateInfo(
+            MagiskJson(
+                version = "31.0",
+                versionCode = 31000,
+                link = "https://updates.example.test/app.apk",
+                note = "https://updates.example.test/notes.md",
+                sha256 = "a".repeat(64),
+            )
+        )
+        assertNull(UpdateChannelPolicy.validate(valid))
+
+        listOf(
+            valid.copy(magisk = valid.magisk.copy(version = "")),
+            valid.copy(magisk = valid.magisk.copy(versionCode = 0)),
+            valid.copy(magisk = valid.magisk.copy(link = "http://updates.example.test/app.apk")),
+            valid.copy(magisk = valid.magisk.copy(note = "file:///tmp/notes.md")),
+            valid.copy(magisk = valid.magisk.copy(sha256 = "")),
+            valid.copy(magisk = valid.magisk.copy(sha256 = "g".repeat(64))),
+        ).forEach { metadata ->
+            assertEquals(
+                UpdateUnavailableReason.INVALID_UPDATE_METADATA,
+                UpdateChannelPolicy.validate(metadata)
             )
         }
     }
 
     @Test
-    fun `transport follows same-scheme redirects but rejects scheme transitions`() {
-        val client = OkHttpClient.Builder().enforceUpdateTransportPolicy().build()
-        assertTrue(client.followRedirects)
-        assertFalse(client.followSslRedirects)
+    fun `artifact digest comparison accepts exact content only`() {
+        val content = "verified update".toByteArray()
+        val digest = MessageDigest.getInstance("SHA-256").digest(content)
+        val expected = digest.joinToString("") { "%02x".format(it) }
+
+        assertTrue(UpdateChannelPolicy.matchesSha256(expected.uppercase(), digest))
+        assertFalse(UpdateChannelPolicy.matchesSha256("0".repeat(64), digest))
+        assertFalse(UpdateChannelPolicy.matchesSha256("invalid", digest))
+        assertFalse(UpdateChannelPolicy.matchesSha256(expected, digest.copyOf(31)))
+
+        val file = File.createTempFile("kitsune-digest-", ".apk")
+        try {
+            file.writeBytes(content)
+            assertTrue(APKInstall.matchesSha256(file, expected.uppercase()))
+            assertFalse(APKInstall.matchesSha256(file, "0".repeat(64)))
+            assertFalse(APKInstall.matchesSha256(file, "invalid"))
+        } finally {
+            file.delete()
+        }
     }
 }

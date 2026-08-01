@@ -14,7 +14,6 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.JobService
 import com.topjohnwu.magisk.core.di.AppContext
-import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.tasks.HideAPK
 import com.topjohnwu.magisk.core.repository.UpdateChannelPolicy
@@ -309,8 +308,6 @@ object SuList : BaseSettingsItem.Toggle() {
 }
 
 object DenyListConfig : BaseSettingsItem.Blank() {
-    var status = Shell.cmd("magisk magiskhide sulist").exec().isSuccess;
-
     override val title get() =
         if (Info.sulist) R.string.settings_sulist_config_title.asText()
         else R.string.settings_hidelist_config_title.asText()

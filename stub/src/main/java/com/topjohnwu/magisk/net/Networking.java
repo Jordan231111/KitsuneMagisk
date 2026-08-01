@@ -9,6 +9,7 @@ import android.os.Looper;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 
 public class Networking {
 
@@ -18,7 +19,10 @@ public class Networking {
 
     private static Request request(String url, String method) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            URL endpoint = new URL(url);
+            if (!"https".equalsIgnoreCase(endpoint.getProtocol()))
+                throw new IOException("Update endpoint must use HTTPS");
+            HttpURLConnection conn = (HttpsURLConnection) endpoint.openConnection();
             conn.setRequestMethod(method);
             conn.setReadTimeout(READ_TIMEOUT);
             conn.setConnectTimeout(CONNECT_TIMEOUT);

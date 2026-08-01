@@ -409,8 +409,8 @@ impl Cpio {
         let mode = if metadata.file_type().is_file() {
             mode | S_IFREG
         } else {
-            rdevmajor = unsafe { major(metadata.rdev().try_into()?).try_into()? };
-            rdevminor = unsafe { minor(metadata.rdev().try_into()?).try_into()? };
+            rdevmajor = major(metadata.rdev().try_into()?).try_into()?;
+            rdevminor = minor(metadata.rdev().try_into()?).try_into()?;
             if metadata.file_type().is_block_device() {
                 mode | S_IFBLK
             } else if metadata.file_type().is_char_device() {

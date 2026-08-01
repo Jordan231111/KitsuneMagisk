@@ -2,6 +2,7 @@ package com.topjohnwu.magisk.core.repository
 
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.model.UpdateInfo
+import com.topjohnwu.magisk.utils.APKInstall
 import java.net.URI
 
 sealed class UpdateCheckResult {
@@ -15,6 +16,7 @@ enum class UpdateUnavailableReason {
     OFFLINE,
     EMPTY_CUSTOM_URL,
     INVALID_CUSTOM_URL,
+    INVALID_UPDATE_METADATA,
     REQUEST_FAILED,
 }
 
@@ -31,6 +33,18 @@ sealed class UpdateEndpointResolution {
  * request. A user-supplied custom channel remains available only over HTTPS.
  */
 object UpdateChannelPolicy {
+    private val sha256Pattern = Regex("^[0-9a-fA-F]{64}$")
+
+    private fun isValidHttpsUrl(value: String): Boolean {
+        if (value.isEmpty() || value != value.trim()) return false
+        val uri = runCatching { URI(value) }.getOrNull() ?: return false
+        return uri.scheme?.lowercase() == "https" &&
+            !uri.host.isNullOrBlank() &&
+            uri.userInfo == null &&
+            uri.fragment == null &&
+            (uri.port == -1 || uri.port in 1..65535)
+    }
+
     fun resolve(channel: Int, customUrl: String): UpdateEndpointResolution {
         if (channel == Config.Value.CUSTOM_CHANNEL) {
             val normalized = customUrl.trim()
@@ -39,14 +53,7 @@ object UpdateChannelPolicy {
                     UpdateUnavailableReason.EMPTY_CUSTOM_URL
                 )
             }
-            val uri = runCatching { URI(normalized) }.getOrNull()
-            if (uri == null ||
-                uri.scheme?.lowercase() != "https" ||
-                uri.host.isNullOrBlank() ||
-                uri.userInfo != null ||
-                uri.fragment != null ||
-                (uri.port != -1 && uri.port !in 1..65535)
-            ) {
+            if (!isValidHttpsUrl(normalized)) {
                 return UpdateEndpointResolution.Unavailable(
                     UpdateUnavailableReason.INVALID_CUSTOM_URL
                 )
@@ -57,5 +64,22 @@ object UpdateChannelPolicy {
         return UpdateEndpointResolution.Unavailable(
             UpdateUnavailableReason.PROJECT_SERVICE_NOT_CONFIGURED
         )
+    }
+
+    fun validate(info: UpdateInfo): UpdateUnavailableReason? {
+        val apk = info.magisk
+        if (apk.version.isBlank() ||
+            apk.versionCode <= 0 ||
+            !isValidHttpsUrl(apk.link) ||
+            (apk.note.isNotEmpty() && !isValidHttpsUrl(apk.note)) ||
+            !sha256Pattern.matches(apk.sha256)
+        ) {
+            return UpdateUnavailableReason.INVALID_UPDATE_METADATA
+        }
+        return null
+    }
+
+    fun matchesSha256(expected: String, actual: ByteArray): Boolean {
+        return APKInstall.matchesSha256(actual, expected)
     }
 }

@@ -307,6 +307,38 @@ test_emu() {
     return 1
   fi
 
+  # Keep a small concurrent smoke in CI because a debug-only post-fork log
+  # previously deadlocked child handlers while the daemon itself stayed alive.
+  # The much larger stress matrix remains a disposable local-device test.
+  local parallel_result
+  if ! parallel_result=$(timeout 45s "${adb_cmd[@]}" shell '
+      set -e
+      pids=""
+      for worker in 1 2 3 4; do
+        (
+          count=0
+          while [ "$count" -lt 8 ]; do
+            su -c true
+            count=$((count + 1))
+          done
+          echo "worker-$worker-ok"
+        ) &
+        pids="$pids $!"
+      done
+      for pid in $pids; do
+        wait "$pid"
+      done
+    ' 2>&1); then
+    printf '%s\n' "$parallel_result" >&2
+    print_error "Concurrent su smoke timed out or failed"
+    return 1
+  fi
+  printf '%s\n' "$parallel_result" >&2
+  if [ "$(grep -c -- '-ok$' <<< "$parallel_result")" -ne 4 ]; then
+    print_error "Concurrent su smoke did not complete every worker"
+    return 1
+  fi
+
   # Run the actual Android boot/policy parsers against deterministic malformed
   # inputs. The runner owns and removes one narrow /data/local/tmp sandbox.
   if ! python3 -m tools.security_lab.device_corpus \

@@ -5325,7 +5325,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.compose.ui:ui",
       "master": [
-        "1.10.6"
+        "1.11.4"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5335,7 +5335,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.compose.ui:ui-tooling",
       "master": [
-        "1.10.6"
+        "1.11.4"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5345,7 +5345,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.compose.ui:ui-tooling-preview",
       "master": [
-        "1.10.6"
+        "1.11.4"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5411,7 +5411,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.core:core-ktx",
       "master": [
-        "1.18.0"
+        "1.19.0"
       ],
       "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
@@ -5671,7 +5671,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.lifecycle:lifecycle-runtime-compose",
       "master": [
-        "2.10.0"
+        "2.11.0"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5711,7 +5711,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.lifecycle:lifecycle-viewmodel-compose",
       "master": [
-        "2.10.0"
+        "2.11.0"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5731,7 +5731,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.lifecycle:lifecycle-viewmodel-navigation3",
       "master": [
-        "2.10.0"
+        "2.11.0"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5771,7 +5771,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.navigation3:navigation3-runtime",
       "master": [
-        "1.1.0"
+        "1.1.4"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5781,7 +5781,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.navigation3:navigation3-ui",
       "master": [
-        "1.1.0"
+        "1.1.4"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -5823,9 +5823,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.navigation:navigation-fragment-ktx",
       "master": [
-        "2.9.7"
+        "2.9.8"
       ],
-      "reason": "Version differs from the official stable; inherit the coherent baseline first.",
+      "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
         "2.9.7"
       ]
@@ -5879,9 +5879,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.navigation:navigation-ui-ktx",
       "master": [
-        "2.9.7"
+        "2.9.8"
       ],
-      "reason": "Version differs from the official stable; inherit the coherent baseline first.",
+      "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
         "2.9.7"
       ]
@@ -5891,7 +5891,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.navigationevent:navigationevent-compose",
       "master": [
-        "1.0.2"
+        "1.1.2"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -6087,9 +6087,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:androidx.test.uiautomator:uiautomator",
       "master": [
-        "2.3.0"
+        "2.4.0"
       ],
-      "reason": "Dependency is introduced by the selected official stable or observed master.",
+      "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": [
         "2.3.0"
       ]
@@ -6219,7 +6219,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.android.tools.build:gradle",
       "master": [
-        "9.1.1"
+        "9.3.1"
       ],
       "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
@@ -6243,7 +6243,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.android.tools:sdk-common",
       "master": [
-        "32.1.1"
+        "32.3.1"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -6351,9 +6351,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.google.android.material:material",
       "master": [
-        "1.13.0"
+        "1.14.0"
       ],
-      "reason": "Version differs from the official stable; inherit the coherent baseline first.",
+      "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
         "1.13.0"
       ]
@@ -6429,9 +6429,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.squareup.okhttp3:logging-interceptor",
       "master": [
-        "5.3.2"
+        "5.4.0"
       ],
-      "reason": "Version differs from the official stable; inherit the coherent baseline first.",
+      "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
         "5.3.2"
       ]
@@ -6443,9 +6443,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.squareup.okhttp3:okhttp",
       "master": [
-        "5.3.2"
+        "5.4.0"
       ],
-      "reason": "Version differs from the official stable; inherit the coherent baseline first.",
+      "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
         "5.3.2"
       ]
@@ -6457,9 +6457,9 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.squareup.okhttp3:okhttp-dnsoverhttps",
       "master": [
-        "5.3.2"
+        "5.4.0"
       ],
-      "reason": "Version differs from the official stable; inherit the coherent baseline first.",
+      "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
         "5.3.2"
       ]
@@ -6531,7 +6531,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:com.squareup.wire:wire-runtime",
       "master": [
-        "6.2.0"
+        "6.4.5"
       ],
       "reason": "Dependency is introduced by the selected official stable or observed master. Master differs from stable and remains observation-only.",
       "stable": []
@@ -6641,7 +6641,7 @@
       "decision": "inherit_with_pr6_baseline",
       "key": "gradle:org.bouncycastle:bcpkix-jdk18on",
       "master": [
-        "1.84"
+        "1.85"
       ],
       "reason": "Version differs from the official stable; inherit the coherent baseline first. Master differs from stable and remains observation-only.",
       "stable": [
@@ -6994,7 +6994,7 @@
     "unresolved": []
   },
   "observed_master": {
-    "commit": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
+    "commit": "0404e0ca346d9bdeeb9fe9d951c599c05b2583f6",
     "packages": [
       {
         "checksum": null,
@@ -8266,7 +8266,7 @@
         "ecosystem": "gradle",
         "name": "androidx.compose.ui:ui",
         "source": "version-catalog",
-        "version": "1.10.6"
+        "version": "1.11.4"
       },
       {
         "checksum": null,
@@ -8274,7 +8274,7 @@
         "ecosystem": "gradle",
         "name": "androidx.compose.ui:ui-tooling",
         "source": "version-catalog",
-        "version": "1.10.6"
+        "version": "1.11.4"
       },
       {
         "checksum": null,
@@ -8282,7 +8282,7 @@
         "ecosystem": "gradle",
         "name": "androidx.compose.ui:ui-tooling-preview",
         "source": "version-catalog",
-        "version": "1.10.6"
+        "version": "1.11.4"
       },
       {
         "checksum": null,
@@ -8298,7 +8298,7 @@
         "ecosystem": "gradle",
         "name": "androidx.core:core-ktx",
         "source": "version-catalog",
-        "version": "1.18.0"
+        "version": "1.19.0"
       },
       {
         "checksum": null,
@@ -8322,7 +8322,7 @@
         "ecosystem": "gradle",
         "name": "androidx.lifecycle:lifecycle-runtime-compose",
         "source": "version-catalog",
-        "version": "2.10.0"
+        "version": "2.11.0"
       },
       {
         "checksum": null,
@@ -8330,7 +8330,7 @@
         "ecosystem": "gradle",
         "name": "androidx.lifecycle:lifecycle-viewmodel-compose",
         "source": "version-catalog",
-        "version": "2.10.0"
+        "version": "2.11.0"
       },
       {
         "checksum": null,
@@ -8338,7 +8338,7 @@
         "ecosystem": "gradle",
         "name": "androidx.lifecycle:lifecycle-viewmodel-navigation3",
         "source": "version-catalog",
-        "version": "2.10.0"
+        "version": "2.11.0"
       },
       {
         "checksum": null,
@@ -8346,7 +8346,7 @@
         "ecosystem": "gradle",
         "name": "androidx.navigation3:navigation3-runtime",
         "source": "version-catalog",
-        "version": "1.1.0"
+        "version": "1.1.4"
       },
       {
         "checksum": null,
@@ -8354,7 +8354,7 @@
         "ecosystem": "gradle",
         "name": "androidx.navigation3:navigation3-ui",
         "source": "version-catalog",
-        "version": "1.1.0"
+        "version": "1.1.4"
       },
       {
         "checksum": null,
@@ -8362,7 +8362,7 @@
         "ecosystem": "gradle",
         "name": "androidx.navigation:navigation-fragment-ktx",
         "source": "version-catalog",
-        "version": "2.9.7"
+        "version": "2.9.8"
       },
       {
         "checksum": null,
@@ -8370,7 +8370,7 @@
         "ecosystem": "gradle",
         "name": "androidx.navigation:navigation-ui-ktx",
         "source": "version-catalog",
-        "version": "2.9.7"
+        "version": "2.9.8"
       },
       {
         "checksum": null,
@@ -8378,7 +8378,7 @@
         "ecosystem": "gradle",
         "name": "androidx.navigationevent:navigationevent-compose",
         "source": "version-catalog",
-        "version": "1.0.2"
+        "version": "1.1.2"
       },
       {
         "checksum": null,
@@ -8442,7 +8442,7 @@
         "ecosystem": "gradle",
         "name": "androidx.test.uiautomator:uiautomator",
         "source": "version-catalog",
-        "version": "2.3.0"
+        "version": "2.4.0"
       },
       {
         "checksum": null,
@@ -8474,7 +8474,7 @@
         "ecosystem": "gradle",
         "name": "com.android.tools.build:gradle",
         "source": "version-catalog",
-        "version": "9.1.1"
+        "version": "9.3.1"
       },
       {
         "checksum": null,
@@ -8490,7 +8490,7 @@
         "ecosystem": "gradle",
         "name": "com.android.tools:sdk-common",
         "source": "version-catalog",
-        "version": "32.1.1"
+        "version": "32.3.1"
       },
       {
         "checksum": null,
@@ -8538,7 +8538,7 @@
         "ecosystem": "gradle",
         "name": "com.google.android.material:material",
         "source": "version-catalog",
-        "version": "1.13.0"
+        "version": "1.14.0"
       },
       {
         "checksum": null,
@@ -8554,7 +8554,7 @@
         "ecosystem": "gradle",
         "name": "com.squareup.okhttp3:logging-interceptor",
         "source": "version-catalog",
-        "version": "5.3.2"
+        "version": "5.4.0"
       },
       {
         "checksum": null,
@@ -8562,7 +8562,7 @@
         "ecosystem": "gradle",
         "name": "com.squareup.okhttp3:okhttp",
         "source": "version-catalog",
-        "version": "5.3.2"
+        "version": "5.4.0"
       },
       {
         "checksum": null,
@@ -8570,7 +8570,7 @@
         "ecosystem": "gradle",
         "name": "com.squareup.okhttp3:okhttp-dnsoverhttps",
         "source": "version-catalog",
-        "version": "5.3.2"
+        "version": "5.4.0"
       },
       {
         "checksum": null,
@@ -8602,7 +8602,7 @@
         "ecosystem": "gradle",
         "name": "com.squareup.wire:wire-runtime",
         "source": "version-catalog",
-        "version": "6.2.0"
+        "version": "6.4.5"
       },
       {
         "checksum": null,
@@ -8650,7 +8650,7 @@
         "ecosystem": "gradle",
         "name": "org.bouncycastle:bcpkix-jdk18on",
         "source": "version-catalog",
-        "version": "1.84"
+        "version": "1.85"
       },
       {
         "checksum": null,
@@ -8728,7 +8728,7 @@
       ],
       "build_tools": null,
       "compile_sdk": null,
-      "gradle_distribution": "gradle-9.5.0-rc-2-bin.zip",
+      "gradle_distribution": "gradle-9.6.1-bin.zip",
       "jdk": "21",
       "min_sdk": null,
       "ndk": null,

@@ -1,6 +1,7 @@
 ##########################################################
-# All variables in config.prop are optional
-# Removing or leaving them blank will keep default values
+# Debug builds need no local config. Release builds require an explicit config
+# passed with `./build.py -r -c /absolute/path/to/release.prop ...`.
+# Keep the release config and private keystore outside this source checkout.
 ##########################################################
 
 # The version name of Magisk. Default: git HEAD short SHA1
@@ -11,11 +12,11 @@ outdir=string
 
 #####################################################
 # Signing configs for signing zips and APKs
-# These 4 variables has to be either all set or not
+# Release builds require all four variables. Never commit real values.
 #####################################################
 
-# Path to keystore file
-keyStore=string
+# Absolute path to a keystore outside the repository
+keyStore=/absolute/path/outside/checkout/kitsune-release.jks
 # Keystore password
 keyStorePass=string
 # The desired key alias in the keystore

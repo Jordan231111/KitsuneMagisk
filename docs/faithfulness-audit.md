@@ -1,18 +1,21 @@
 # KitsuneMagisk purpose and faithfulness audit
 
-Audit date: 2026-07-22 UTC
+Audit date: 2026-07-22 UTC; hardening reconciliation: 2026-07-31 UTC
 
-Audited reference: `kitsune` at `cf149fcf734539f6077cd6b349d9ffc2496c56ca`, plus the
-uncommitted PR3/PR4/PR4A implementation described in the development roadmap.
+Historical audited reference: `kitsune` at
+`cf149fcf734539f6077cd6b349d9ffc2496c56ca`. Current reconciled worktree:
+`codex/production-hardening`, based on `kitsune` at
+`bcdf65f0af1882e46cd435379bee4535e4aab87f`.
 
 Official comparison points: Magisk `v30.7` at
 `e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac` and the observed official `master` tip at
-`14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c`.
+`0404e0ca346d9bdeeb9fe9d951c599c05b2583f6`.
 
 ## Verdict
 
-Kitsune is still recognizably faithful to its intended product, but the current branch must be
-treated as a reference implementation rather than a modern stable release.
+Kitsune remains recognizably faithful to its intended product. The hardening worktree removes
+several accidental security and reliability divergences, but the old core must still be treated as
+a reference/candidate implementation rather than a modern stable release.
 
 The faithful product is not “System Mode instead of Magisk.” It is the complete Magisk-derived root
 and systemless-customization platform, with persistent Direct-System/System Mode as Kitsune's
@@ -20,11 +23,13 @@ release-defining addition and MagiskHide/SuList/emulator compatibility as import
 differences. Ordinary boot-image installation, superuser policy, modules, MagiskBoot, recovery, and
 safe removal remain first-class responsibilities.
 
-PR3 and PR4 are in scope and do not redirect either installation path. PR3 characterizes System
-Mode without mutating the installer. PR4 contains broken update behavior and preserves existing
-Hide/DenyList/SuList data transactionally. PR4A hardens the local lab/build flow and proves the
-ordinary emulator install route. These changes should remain; they provide safety and evidence
-needed by both the current and forward-port branches.
+PR3 and PR4 did not redirect either installation path. PR3 characterizes System Mode. PR4 contains
+broken inherited update behavior and preserves Hide/DenyList/SuList data. PR4A hardens the local
+lab/build flow and proves the ordinary emulator route. The 2026-07-31 hardening layer then restores
+release signature trust, keeps the hide migration rollback-compatible with published v12 daemons,
+hardens updater publication and app lifecycle handling, and makes current-line System Mode fail
+closed behind a debug warning and private mount namespace. These changes should remain as tests and
+comparison behavior for the forward port.
 
 The current branch is nevertheless far behind official Magisk in Android boot/init/SELinux/SU and
 Zygisk work. Updating scattered dependencies or merging hundreds of commits into it would not
@@ -34,19 +39,22 @@ Hide/SuList, Zygisk, module API, and device-qualification PRs.
 
 ## What was reviewed
 
-This was a graph and semantic audit, not a claim that 6,855 commits were each manually reread line by
-line.
+This was a graph and semantic audit, not a claim that every reachable commit was manually reread
+line by line.
 
-- The complete local reachable graph contains 6,855 commits; 6,838 are ancestors of the audited
-  branch.
+- The original 2026-07-22 review traversed the complete then-reachable graph and the full audited
+  branch ancestry. The reproducible ledger, rather than a prose count that changes after each
+  fetch, is now the authoritative record.
 - The latest shared official ancestor is `154121f3` from 2024-02-02.
-- Every one of the 171 fork-only commits after that ancestor was catalogued by subject and changed
-  paths; the range includes 12 merge commits.
+- Every fork-only commit after that ancestor was catalogued by subject and changed paths. The frozen
+  PR4B ledger contains 178 fork-only commits; the current branch has 184 versus either official
+  comparison ref.
 - High-impact fork commits were then diff-reviewed in the installer, init, core/daemon, hiding,
   Zygisk, SELinux, module, manager, build, update, and recovery surfaces.
-- A temporary full all-branch/all-tag recursive clone of official Magisk was compared at stable and
-  `master`, including all current submodule pins. The PR2 baseline is 858 stable-only commits or 971
-  observed-master-only commits away from the fork, with 763 or 837 differing paths respectively.
+- Official Magisk was compared at stable and `master`, including current submodule pins. The frozen
+  ledger has 858 stable-only or 985 observed-master-only commits; the current worktree ancestry has
+  184 fork-only versus 858 stable-only or 985 master-only commits. File counts in the original
+  snapshot remain historical, not a current-drift metric.
 - The current install UI and call graph were traced through Kotlin, shell, native setup, recovery,
   and uninstall code. Debug and release artifacts were built for ARM64, ARMv7, x86_64, and x86.
 - A fresh disposable API 35 ARM64 AVD completed the ordinary Magisk patch/setup/reboot/root flow in
@@ -100,13 +108,13 @@ compatibility conclusion, not a claim that an untested physical device is safe t
 | Direct-System/System Mode | Intentional product extension | Faithful and essential. The old mutation model is not safe enough for a new stable release; keep the behavior and replace the transaction/recovery mechanics. |
 | MagiskHide/SuList extensions | Intentional product extension | Faithful secondary purpose. PR4 fixes the data migration gap; PR12 must define CLI/database/namespace/provider semantics and test them across users and SELinux modes. |
 | Built-in Zygisk removal (`2ef8f002`) | Intentional but architecturally unresolved | It reflects a later external-provider direction, but diverges from both original Magisk capability and current official maintenance. Do not copy the deletion into `next-system`; retain official Zygisk through parity and decide later. |
-| Package signature enforcement disabled (`c12fca79`) | Security-sensitive and insufficiently justified | `ENFORCE_SIGNATURE` remains forced to zero, weakening manager/stub identity checks beyond debug builds. The pristine upstream baseline restores enforcement. PR4B must threat-model hidden-manager requirements; any exception must be narrow and tested, not global. |
-| Pointer-only `hidelist` → `denylist` selection (`25fa2159`) | Accidental upgrade defect around a reasonable compatibility direction | Current PR4's v13 migration conservatively unions rows, keeps legacy/SuList state, makes a verified v12 backup, and tests interruption. Runtime semantics remain PR12 work. |
+| Package signature enforcement disabled (`c12fca79`) | Accidental security regression, fixed in the hardening worktree | Release builds now use `ENFORCE_SIGNATURE=(!MAGISK_DEBUG)` and retain certificate-bound normal/hidden-manager recovery. A disposable BlueStacks run proved rejection of a differently signed manager and trusted-stub recovery. Debug relaxation remains explicit. Production identity rotation is still a blocker because the historical release key was public. |
+| Pointer-only `hidelist` → `denylist` selection (`25fa2159`) | Accidental upgrade defect around a reasonable compatibility direction | The hardening migration conservatively unions rows, keeps legacy/SuList state, makes a verified v12 backup, and tests interruption while deliberately retaining `user_version=12`. A completion marker distinguishes the migrated state, and the abandoned local v13 state is normalized back to v12. Runtime provider semantics remain PR12 work. |
 | Fake `31.0` compatibility number | Intentional workaround with misleading coupling | Split app upgrade order, Kitsune version, upstream base, module compatibility, protocol, and commit identity in PR9. Never imply newer official source. |
 | Debug shell root grant (`cb5779f`) | Intentional test convenience | Acceptable only in unmistakable debug artifacts. Release and canary checks must prove it is absent. |
 | App/stub optimizer/obfuscation disabled (`0128bb18`) | Intentional openness/debuggability choice with unnecessary runtime cost | GPL source availability does not require disabling safe optimization. Restore current upstream optimizer behavior with hidden-manager/release regression tests. |
 | Recovery System Mode boot-image prerequisite | Accidental control-flow contradiction | Explicit System Mode should not require the normal route it exists to avoid. Fix conditionally in PR5 or directly in PR7. |
-| Live SELinux permissive capability probe and non-transactional persistent writes | Legacy safety debt | Replace with read-only capability detection, an external verified backup, staging/journal/manifest ownership, rollback, and cold-boot recovery proof. |
+| Live SELinux permissive capability probe and non-transactional persistent writes | Legacy safety debt, partly fixed | The current probe serializes policy to a temporary file instead of changing the live policy; exact init/policy sidecars and mount-namespace cleanup are verified on failure. Full cross-filesystem journaling, manifest ownership, power-loss recovery, uninstall, and writable-target cold-boot proof remain open. |
 | Broad architecture/version claims from builds | Evidence gap | Four-ABI compile/link is retained, but runtime and recovery evidence must be recorded per architecture, Android version, page size, boot layout, and adapter. |
 
 ## Zygisk and hiding direction
@@ -155,7 +163,7 @@ oracle; that limits the demonstrated exposure but does not erase the advisory. V
 `rand` updates belong in isolated PR4B work with the stated gates. No audit ignore should claim an
 unfixed issue is resolved.
 
-## Decision for PR3 and PR4
+## Decision after PR3/PR4 and current-line hardening
 
 Keep both implementations.
 
@@ -166,10 +174,15 @@ Keep both implementations.
   Its migration must also be carried into the first future build that accepts existing databases.
 - PR4A is necessary lab infrastructure and caught a real ARMv7 debug-link inconsistency. Its final
   AVD result proves normal emulator setup remains independent from System Mode.
+- The current hardening changes should be kept as one reviewed security/reliability set. They remove
+  global signature bypass, tracked signing secrets, unsafe release fallback, updater partial-file
+  publication, post-fork logging hazards, unsafe native bounds/lifetime behavior, and avoidable app
+  lifecycle leaks. They also add high-yield regression contracts rather than duplicating the full
+  heavy device/stress matrix in routine CI.
 
-No additional boot/init/System Mode mutation should be slipped into these PRs. The newly identified
-signature-enforcement, Zygisk, optimizer, real-device, and dependency work is safer and more
-reviewable in PR4B and the already ordered PR6–PR16 sequence.
+Do not expand this current-line patch set into an in-place upstream merge. Production-key migration,
+full System Mode transaction/recovery, Zygisk/provider selection, real-device qualification, and
+the official-stable forward port remain separately reviewable work in the ordered roadmap.
 
 ## Release-level conclusion
 

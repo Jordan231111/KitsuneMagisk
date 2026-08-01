@@ -164,6 +164,10 @@ public class Request {
 
     private BufferedInputStream getInputStream() throws IOException {
         connect0();
+        if (!"https".equalsIgnoreCase(conn.getURL().getProtocol())) {
+            conn.disconnect();
+            throw new IOException("Update redirect left HTTPS");
+        }
         InputStream in = new FilterInputStream(conn.getInputStream()) {
             @Override
             public void close() throws IOException {
@@ -191,8 +195,11 @@ public class Request {
 
     private File dlFile(File f) throws IOException {
         try (InputStream in = getInputStream();
-             OutputStream out = new BufferedOutputStream(new FileOutputStream(f))) {
+             FileOutputStream fileOut = new FileOutputStream(f);
+             OutputStream out = new BufferedOutputStream(fileOut)) {
             APKInstall.transfer(in, out);
+            out.flush();
+            fileOut.getFD().sync();
         }
         return f;
     }

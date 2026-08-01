@@ -243,7 +243,7 @@
     <string name="reboot_apply_change">重新啟動裝置以套用設定變更</string>
     <string name="restore_app_confirmation">這將會還原隱藏的應用程式至原始。請問您確定要執行？</string>
 
-    <string name="direct_install_system">直接安裝（直接修改/system）</string>
+    <string name="direct_install_system">系統模式（實驗性；修改 /system）</string>
     <string name="settings_hidelist_config_title">配置 MagiskHide</string>
     <string name="settings_hidelist_config_summary">選擇要包含在隱藏清單中的程序</string>
     <string name="settings_magiskhide_title">MagiskHide</string>

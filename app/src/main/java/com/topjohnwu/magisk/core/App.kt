@@ -22,7 +22,6 @@ import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.internal.UiThreadHandler
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.lang.ref.WeakReference
@@ -89,7 +88,7 @@ open class App() : Application() {
         ProcessLifecycle.init(this)
         NetworkObserver.init(this)
         if (!BuildConfig.DEBUG && !isRunningAsStub) {
-            GlobalScope.launch(Dispatchers.IO) {
+            appScope.launch(Dispatchers.IO) {
                 ProfileInstaller.writeProfile(this@App)
             }
         }

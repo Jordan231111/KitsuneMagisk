@@ -55,6 +55,7 @@ sealed class Subject : Parcelable {
     ) : Subject() {
         override val title: String get() = "Magisk-${json.version}(${json.versionCode})"
         override val url: String get() = json.link
+        val sha256: String get() = json.sha256
 
         @IgnoredOnParcel
         override val file by lazy {

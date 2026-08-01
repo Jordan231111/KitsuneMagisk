@@ -12,7 +12,6 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Provider
 import com.topjohnwu.magisk.core.ktx.await
-import com.topjohnwu.magisk.core.ktx.copyAndClose
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.utils.AXML
@@ -21,6 +20,7 @@ import com.topjohnwu.magisk.signing.JarMap
 import com.topjohnwu.magisk.signing.SignApk
 import com.topjohnwu.magisk.utils.APKInstall
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.withContext
@@ -30,6 +30,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.security.SecureRandom
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.asKotlinRandom
 
 object HideAPK {
@@ -170,40 +171,59 @@ object HideAPK {
         activity.finish()
     }
 
-    private suspend fun patchAndHide(activity: Activity, label: String, onFailure: Runnable): Boolean {
+    private suspend fun patchAndHide(
+        activity: Activity,
+        label: String,
+        onFailure: Runnable,
+    ): Boolean {
         val stub = File(activity.cacheDir, "stub.apk")
-        try {
-            activity.assets.open("stub.apk").writeTo(stub)
-        } catch (e: IOException) {
-            Timber.e(e)
-            return false
-        }
-
-        // Generate a new random package name and signature
         val repack = File(activity.cacheDir, "patched.apk")
-        val pkg = genPackageName()
-        Config.keyStoreRaw = ""
-
-        if (!patch(activity, stub, FileOutputStream(repack), pkg, label))
-            return false
-
-        // Install and auto launch app
-        val session = APKInstall.startSession(activity, pkg, onFailure) {
-            launchApp(activity, pkg)
-        }
-
-        Config.suManager = pkg
-        val cmd = "adb_pm_install $repack $pkg"
-        if (Shell.cmd(cmd).exec().isSuccess) return true
-
         try {
-            repack.inputStream().copyAndClose(session.openStream(activity))
-        } catch (e: IOException) {
-            Timber.e(e)
-            return false
+            try {
+                activity.assets.open("stub.apk").writeTo(stub)
+            } catch (e: IOException) {
+                Timber.e(e)
+                return false
+            }
+
+            // Generate a new random package name and signature
+            val pkg = genPackageName()
+            Config.keyStoreRaw = ""
+
+            if (!FileOutputStream(repack).use { patch(activity, stub, it, pkg, label) })
+                return false
+
+            val cmd = "adb_pm_install $repack $pkg"
+            if (Shell.cmd(cmd).exec().isSuccess) {
+                Config.suManager = pkg
+                withContext(Dispatchers.Main) { launchApp(activity, pkg) }
+                return true
+            }
+
+            // Install and auto launch app
+            val session = APKInstall.startSession(
+                activity,
+                {
+                    Config.suManager = pkg
+                    launchApp(activity, pkg)
+                },
+                onFailure,
+            )
+            try {
+                repack.inputStream().use { session.write(it) }
+            } catch (e: IOException) {
+                Timber.e(e)
+                return false
+            }
+            val intent = session.waitIntent()
+            if (intent != null) {
+                withContext(Dispatchers.Main) { activity.startActivity(intent) }
+            }
+            return intent != null || session.isSuccessful
+        } finally {
+            stub.delete()
+            repack.delete()
         }
-        session.waitIntent()?.let { activity.startActivity(it) } ?: return false
-        return true
     }
 
     @Suppress("DEPRECATION")
@@ -214,12 +234,22 @@ object HideAPK {
             setCancelable(false)
             show()
         }
+        val failureReported = AtomicBoolean(false)
         val onFailure = Runnable {
-            dialog.dismiss()
-            activity.toast(R.string.failure, Toast.LENGTH_LONG)
+            if (failureReported.compareAndSet(false, true)) {
+                activity.runOnUiThread {
+                    dialog.dismiss()
+                    activity.toast(R.string.failure, Toast.LENGTH_LONG)
+                }
+            }
         }
-        val success = withContext(Dispatchers.IO) {
-            patchAndHide(activity, label, onFailure)
+        val success = try {
+            withContext(Dispatchers.IO) { patchAndHide(activity, label, onFailure) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e)
+            false
         }
         if (!success) onFailure.run()
     }
@@ -232,41 +262,72 @@ object HideAPK {
             setCancelable(false)
             show()
         }
+        val failureReported = AtomicBoolean(false)
         val onFailure = Runnable {
-            dialog.dismiss()
-            activity.toast(R.string.failure, Toast.LENGTH_LONG)
+            if (failureReported.compareAndSet(false, true)) {
+                activity.runOnUiThread {
+                    dialog.dismiss()
+                    activity.toast(R.string.failure, Toast.LENGTH_LONG)
+                }
+            }
         }
         val apk = StubApk.current(activity)
-        val session = APKInstall.startSession(activity, APPLICATION_ID, onFailure) {
-            launchApp(activity, APPLICATION_ID)
-            dialog.dismiss()
-        }
-        Config.suManager = ""
         val cmd = "adb_pm_install $apk $APPLICATION_ID"
-        if (Shell.cmd(cmd).await().isSuccess) return
-        val success = withContext(Dispatchers.IO) {
-            try {
-                apk.inputStream().copyAndClose(session.openStream(activity))
-            } catch (e: IOException) {
-                Timber.e(e)
-                return@withContext false
+        if (Shell.cmd(cmd).await().isSuccess) {
+            Config.suManager = ""
+            dialog.dismiss()
+            launchApp(activity, APPLICATION_ID)
+            return
+        }
+        val session = APKInstall.startSession(
+            activity,
+            {
+                Config.suManager = ""
+                launchApp(activity, APPLICATION_ID)
+                dialog.dismiss()
+            },
+            onFailure,
+        )
+        val success = try {
+            withContext(Dispatchers.IO) {
+                try {
+                    apk.inputStream().use { session.write(it) }
+                } catch (e: IOException) {
+                    Timber.e(e)
+                    return@withContext false
+                }
+                val intent = session.waitIntent()
+                if (intent != null) {
+                    withContext(Dispatchers.Main) { activity.startActivity(intent) }
+                }
+                return@withContext intent != null || session.isSuccessful
             }
-            session.waitIntent()?.let { activity.startActivity(it) } ?: return@withContext false
-            return@withContext true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e)
+            false
         }
         if (!success) onFailure.run()
     }
 
     @WorkerThread
-    fun upgrade(context: Context, apk: File): Intent? {
+    fun upgrade(context: Context, apk: File): Pair<Boolean, Intent?> {
         val label = context.applicationInfo.nonLocalizedLabel
         val pkg = context.packageName
-        val session = APKInstall.startSession(context)
-        session.openStream(context).use {
-            if (!patch(context, apk, it, pkg, label)) {
-                return null
+        val repack = File.createTempFile("magisk-upgrade-", ".apk", context.cacheDir)
+        return try {
+            FileOutputStream(repack).use {
+                if (!patch(context, apk, it, pkg, label)) {
+                    return false to null
+                }
             }
+            val session = APKInstall.startSession(context)
+            repack.inputStream().use { session.write(it) }
+            val intent = session.waitIntent()
+            (intent != null || session.isSuccessful) to intent
+        } finally {
+            repack.delete()
         }
-        return session.waitIntent()
     }
 }
