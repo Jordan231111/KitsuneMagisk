@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -21,6 +22,11 @@ from tools.system_mode.doctor import (  # noqa: E402
     load_fixture,
     validate_report,
 )
+from tools.system_mode.authorization import (  # noqa: E402
+    build_authorization,
+    load_authorization_report,
+    stage_authorization,
+)
 
 
 def _endpoint(value: str) -> str:
@@ -35,6 +41,7 @@ def _doctor(args: argparse.Namespace) -> int:
         evidence = QualificationEvidence(
             init_import_proven=args.init_import_proven,
             snapshot_id=args.snapshot_id,
+            backup_location=args.backup_location,
             backup_digest=args.backup_digest,
             restore_command=args.restore_command,
             recovery_verified=args.recovery_verified,
@@ -99,6 +106,28 @@ def _validate_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _authorize(args: argparse.Namespace) -> int:
+    try:
+        report, raw = load_authorization_report(Path(args.report))
+        authorization = build_authorization(report, raw)
+        client = AdbClient(adb=args.adb, serial=args.serial, timeout=args.timeout)
+        if args.connect:
+            client.connect(_endpoint(args.connect))
+        client.wait_for_device()
+        fingerprint = client.shell("getprop ro.build.fingerprint")
+        if fingerprint.returncode != 0 or not fingerprint.stdout:
+            raise ProbeError("could not read the live target fingerprint")
+        live_digest = hashlib.sha256(fingerprint.stdout.encode("utf-8")).hexdigest()
+        if live_digest != report["device"]["fingerprint_sha256"]:
+            raise ValueError("doctor report fingerprint does not match the live target")
+        digest = stage_authorization(client, authorization)
+    except (OSError, ProbeError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        print(f"authorization failed: {exc}", file=sys.stderr)
+        return 2
+    print(f"staged System Mode recovery authorization: sha256={digest}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="kitsune", description="KitsuneMagisk host tooling")
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -114,6 +143,7 @@ def build_parser() -> argparse.ArgumentParser:
     doctor.add_argument("--output", help="write canonical JSON to this path")
     doctor.add_argument("--init-import-proven", action="store_true")
     doctor.add_argument("--snapshot-id")
+    doctor.add_argument("--backup-location")
     doctor.add_argument("--backup-digest")
     doctor.add_argument("--restore-command")
     doctor.add_argument("--recovery-verified", action="store_true")
@@ -133,6 +163,17 @@ def build_parser() -> argparse.ArgumentParser:
     report = system_commands.add_parser("validate-report", help="validate a stored doctor report")
     report.add_argument("path")
     report.set_defaults(handler=_validate_report)
+
+    authorize = system_commands.add_parser(
+        "authorize",
+        help="stage a verified doctor report for one explicit System Mode install",
+    )
+    authorize.add_argument("report", help="supported doctor JSON with verified external recovery")
+    authorize.add_argument("--adb", default="adb", help="ADB executable")
+    authorize.add_argument("--serial", help="existing ADB serial")
+    authorize.add_argument("--connect", help="ADB endpoint or port to connect before staging")
+    authorize.add_argument("--timeout", type=int, default=15)
+    authorize.set_defaults(handler=_authorize)
     return parser
 
 

@@ -10,6 +10,7 @@ boot_timeout="${KITSUNE_AVD_BOOT_TIMEOUT:-600}"
 show_kernel="${KITSUNE_AVD_SHOW_KERNEL:-1}"
 corpus_iterations="${KITSUNE_SECURITY_CORPUS_ITERATIONS:-2}"
 emu_pid=
+emu_boot_id=
 emu_args=()
 avd_created=false
 
@@ -175,6 +176,27 @@ stop_emu() {
   fi
 }
 
+wait_emu_transport_gone() {
+  local deadline=$((SECONDS + 30))
+  local state
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    state=$("${adb_cmd[@]}" get-state 2>/dev/null) || state=
+    [ -z "$state" ] && return 0
+    sleep 1
+  done
+  echo "Emulator transport emulator-$emulator_port is still occupied" >&2
+  return 1
+}
+
+start_emu() {
+  # ADB can retain the previous emulator transport briefly after QEMU exits.
+  # Starting a replacement during that window can make boot_completed from the
+  # old guest authorize patching the new SDK image against the wrong process.
+  wait_emu_transport_gone || return 1
+  "$emu" "@$avd_name" "${emu_args[@]}" &
+  emu_pid=$!
+}
+
 cleanup_avd_backups() {
   if [ -n "$ramdisk" ]; then
     rm -f -- "${ramdisk}.bak"
@@ -241,13 +263,20 @@ wait_emu() {
   local property=$1
   local expected=$2
   local deadline=$((SECONDS + boot_timeout))
-  local result
+  local result boot_id active_avd
 
   # This polling loop works with macOS's Bash 3.2 and checks only the explicit
   # AVD serial, so another connected target can never receive these commands.
   while kill -0 "$emu_pid" 2>/dev/null; do
     result=$("${adb_cmd[@]}" exec-out getprop "$property" 2>/dev/null | tr -d '\r') || true
-    if [ "$result" = "$expected" ]; then
+    boot_id=$("${adb_cmd[@]}" exec-out cat /proc/sys/kernel/random/boot_id 2>/dev/null | tr -d '\r') || true
+    active_avd=$("${adb_cmd[@]}" exec-out getprop ro.boot.qemu.avd_name 2>/dev/null | tr -d '\r') || true
+    if [ -z "$active_avd" ]; then
+      active_avd=$("${adb_cmd[@]}" exec-out getprop ro.kernel.qemu.avd_name 2>/dev/null | tr -d '\r') || true
+    fi
+    if [ "$result" = "$expected" ] && [ "$active_avd" = "$avd_name" ] &&
+       [ -n "$boot_id" ] && [ "$boot_id" != "$emu_boot_id" ]; then
+      emu_boot_id=$boot_id
       return 0
     fi
     if [ "$SECONDS" -ge "$deadline" ]; then
@@ -321,8 +350,7 @@ test_emu() {
 
   print_title "* Testing $pkg ($variant)"
 
-  "$emu" "@$avd_name" "${emu_args[@]}" &
-  emu_pid=$!
+  start_emu || return 1
   if ! wait_emu sys.boot_completed 1 || ! wait_test_ready "$variant"; then
     print_error "Failed to boot $variant image for $pkg"
     return 1
@@ -435,8 +463,7 @@ run_test() {
   # Launch stock emulator
   print_title "* Launching $pkg"
   restore_avd
-  "$emu" "@$avd_name" "${emu_args[@]}" &
-  emu_pid=$!
+  start_emu || return 1
   # API 36 images launched with -no-boot-anim may never publish the
   # init.svc.bootanim property even though Android has completed booting.
   if ! wait_emu sys.boot_completed 1; then

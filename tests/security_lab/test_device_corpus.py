@@ -171,6 +171,32 @@ class DeviceCorpusTest(unittest.TestCase):
         self.assertEqual(2, readiness.count(normalize))
         self.assertLess(readiness.rindex(normalize), readiness.index(match))
 
+    def test_normal_avd_waits_for_a_new_owned_boot(self) -> None:
+        source = (ROOT / "scripts" / "avd_test.sh").read_text(encoding="utf-8")
+        start = source.index("wait_emu()")
+        end = source.index("wait_test_ready()", start)
+        readiness = source[start:end]
+        self.assertIn("wait_emu_transport_gone", source)
+        self.assertIn("/proc/sys/kernel/random/boot_id", readiness)
+        self.assertIn("getprop ro.boot.qemu.avd_name", readiness)
+        self.assertIn("getprop ro.kernel.qemu.avd_name", readiness)
+        self.assertIn('[ "$active_avd" = "$avd_name" ]', readiness)
+        self.assertIn('[ "$boot_id" != "$emu_boot_id" ]', readiness)
+
+    def test_manager_extraction_avoids_hidden_multiarch_state(self) -> None:
+        source = (
+            ROOT
+            / "app/src/main/java/com/topjohnwu/magisk/core/tasks/MagiskInstaller.kt"
+        ).read_text(encoding="utf-8")
+        manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn('getDeclaredField("secondaryNativeLibraryDir")', source)
+        self.assertNotIn('android:multiArch="true"', manifest)
+        self.assertIn("Process.is64Bit()", source)
+        self.assertIn('"lib/$abi32/libmagisk32.so"', source)
+        self.assertIn("getResourceAsStream(name)", source)
+
 
 if __name__ == "__main__":
     unittest.main()

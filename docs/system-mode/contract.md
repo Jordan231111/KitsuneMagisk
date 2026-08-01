@@ -55,7 +55,8 @@ The following flags record evidence created by an external lab workflow; they do
 invent the evidence:
 
 - `--init-import-proven`: a harmless marker RC was parsed on a disposable snapshot;
-- `--snapshot-id`, `--backup-digest`, `--restore-command`, and `--recovery-verified`: one complete,
+- `--snapshot-id`, `--backup-location`, `--backup-digest`, `--restore-command`, and
+  `--recovery-verified`: one complete,
   exercised recovery tuple;
 - `--backing-write-probe passed --cold-boots N`: a removed controlled marker survived at least
   three cold boots;
@@ -78,7 +79,7 @@ UNINSTALLED -> PREFLIGHTED -> STAGED -> COMMITTED -> BOOT_VERIFIED
 state; the external restore path is mandatory. A retry is forbidden while a journal is in
 `ROLLBACK_REQUIRED`, `ROLLING_BACK`, or `FAILED`.
 
-The future on-device ownership record must validate against
+The current-line on-device ownership record validates against
 [`install-manifest-v1.schema.json`](../../tools/system_mode/schemas/install-manifest-v1.schema.json).
 It records full source identity, adapter, payload digests, exact original paths and metadata,
 external backup, strategies, and a monotonically ordered mutation journal. Wildcard ownership is

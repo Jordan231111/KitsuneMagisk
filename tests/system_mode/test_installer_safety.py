@@ -11,6 +11,9 @@ ROOT = Path(__file__).resolve().parents[2]
 MANAGER = ROOT / "app" / "src" / "main" / "res" / "raw" / "manager.sh"
 FLASH_SCRIPT = ROOT / "scripts" / "flash_script.sh"
 ADDON_SCRIPT = ROOT / "scripts" / "addon.d.sh"
+TRANSACTION_SCRIPT = ROOT / "scripts" / "system_mode_transaction.sh"
+VERIFY_SCRIPT = ROOT / "scripts" / "system_mode_verify.sh"
+UNINSTALLER_SCRIPT = ROOT / "scripts" / "uninstaller.sh"
 INSTALLER = (
     ROOT
     / "app"
@@ -65,6 +68,9 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
         cls.source = MANAGER.read_text(encoding="utf-8")
         cls.flash_script = FLASH_SCRIPT.read_text(encoding="utf-8")
         cls.addon_script = ADDON_SCRIPT.read_text(encoding="utf-8")
+        cls.transaction_script = TRANSACTION_SCRIPT.read_text(encoding="utf-8")
+        cls.verify_script = VERIFY_SCRIPT.read_text(encoding="utf-8")
+        cls.uninstaller_script = UNINSTALLER_SCRIPT.read_text(encoding="utf-8")
         cls.installer = INSTALLER.read_text(encoding="utf-8")
         cls.install_view_model = INSTALL_VIEW_MODEL.read_text(encoding="utf-8")
         cls.system_mode_dialog = SYSTEM_MODE_DIALOG.read_text(encoding="utf-8")
@@ -102,14 +108,9 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
             direct.index('stage_file_rollback "$MIRRORDIR$sepol"'),
             direct.index('backup_restore "$MIRRORDIR$sepol"'),
         )
-        self.assertLess(
-            direct.index(
-                'stage_file_rollback "$MIRRORDIR/system/etc/init/bootanim.rc"'
-            ),
-            direct.index(
-                'backup_restore "$MIRRORDIR/system/etc/init/bootanim.rc"'
-            ),
-        )
+        self.assertIn("sm_restore_legacy_bootanim", direct)
+        self.assertIn('hijackrc="$(sm_real_path "$SM_INIT_PATH")"', direct)
+        self.assertNotIn('echo "$(magiskrc "$MAGISKTMP_TO_INSTALL")" >>', direct)
         self.assertIn('restore_staged_file "$mirror$SYSTEM_INSTALL_SEPOL"', rollback)
         self.assertIn('"$SYSTEM_INSTALL_SEPOL_HAD_GZ"', rollback)
         self.assertIn('"$SYSTEM_INSTALL_BOOTANIM_HAD_GZ"', rollback)
@@ -273,8 +274,8 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
         self.assertNotIn('"$MODE_BINARY" -v', self.flash_script)
         flash_gate = self.flash_script.index(":MAGISK:D ")
         self.assertLess(flash_gate, self.flash_script.index("remove_system_su"))
-        self.assertLess(flash_gate, self.flash_script.index("rm -rf $MAGISKBIN/*"))
-        self.assertLess(flash_gate, self.flash_script.index("direct_install_system"))
+        self.assertLess(flash_gate, self.flash_script.index('rm -rf "$INSTALL_ENV"/*'))
+        self.assertLess(flash_gate, self.flash_script.index("xdirect_install_system"))
 
         addon_main = self.addon_script[
             self.addon_script.index("main()") : self.addon_script.index('\ncase "$1" in')
@@ -293,6 +294,199 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
                 end = script.index("\n  fi", find)
                 self.assertLess(guard, find)
                 self.assertLess(find, end)
+
+    def test_recovery_mode_requires_explicit_configuration(self) -> None:
+        self.assertNotIn('grep -q "systemmagisk"', self.flash_script)
+        self.assertIn('getvar SYSTEMMODE', self.flash_script)
+        self.assertIn('[ "$SYSTEMINSTALL" != "true" ]', self.flash_script)
+
+    def test_recovery_system_mode_uses_the_complete_app_transaction(self) -> None:
+        system_branch = self.flash_script[
+            self.flash_script.index('if [ "$SYSTEMINSTALL" == "true" ]') :
+            self.flash_script.index("# addon.d")
+        ]
+        self.assertIn('xdirect_install_system "$MAGISKBINTMP" "$APK"', system_branch)
+        self.assertNotIn('\n  direct_install_system "', system_branch)
+        self.assertNotIn("sed -i", system_branch)
+        environment = self.flash_script[
+            self.flash_script.index(
+                "# Build System Mode only in the installer staging directory."
+            ) :
+            self.flash_script.index("# Image Patching")
+        ]
+        self.assertIn('INSTALL_ENV=$MAGISKBINTMP', environment)
+        self.assertIn('if [ "$SYSTEMINSTALL" != "true" ]', environment)
+
+    def test_system_mode_does_not_remove_unowned_legacy_system_su(self) -> None:
+        for source in (self.flash_script, self.addon_script):
+            with self.subTest(source="flash" if source is self.flash_script else "addon"):
+                remove = source.index("remove_system_su")
+                guard = source.rfind('if [ "$SYSTEMINSTALL" != "true" ]', 0, remove)
+                self.assertGreaterEqual(guard, 0)
+
+    def test_persistent_transaction_records_every_release_state(self) -> None:
+        transaction = self.transaction_script
+        for state in (
+            "UNINSTALLED",
+            "PREFLIGHTED",
+            "STAGED",
+            "COMMITTED",
+            "BOOT_VERIFIED",
+            "ROLLBACK_REQUIRED",
+            "ROLLING_BACK",
+            "FAILED",
+        ):
+            self.assertIn(state, transaction)
+        self.assertIn("sm_atomic_publish", transaction)
+        self.assertIn('"$SM_BB" fsync', transaction)
+        self.assertIn("process-death:$boundary", transaction)
+        self.assertIn("reboot:$boundary", transaction)
+
+    def test_commit_removes_staging_before_exposing_committed_state(self) -> None:
+        commit = function_body(self.transaction_script, "sm_commit_transaction")
+        manifest_copy = commit.index("manifest-copy-published")
+        cleanup = commit.index("sm_cleanup_staging", manifest_copy)
+        committed = commit.index("sm_update_state COMMITTED", cleanup)
+        self.assertLess(manifest_copy, cleanup)
+        self.assertLess(cleanup, committed)
+
+    def test_transaction_is_bound_to_external_recovery_and_live_fingerprint(self) -> None:
+        validate = function_body(self.transaction_script, "sm_validate_authorization")
+        live = function_body(self.transaction_script, "sm_validate_live_target")
+        self.assertIn("BACKUP_SHA256", validate)
+        self.assertIn("RESTORE_COMMAND_B64", validate)
+        self.assertIn("sm_validate_live_target", validate)
+        self.assertIn("ro.build.fingerprint", live)
+        self.assertIn("ro.product.cpu.abilist", self.transaction_script)
+        self.assertIn("different target", live)
+
+    def test_context_ownership_is_strict_only_when_selinux_enforces(self) -> None:
+        context = function_body(self.transaction_script, "sm_context")
+        self.assertIn("/sys/fs/selinux/enforce", context)
+        self.assertIn('!= 1', context)
+        self.assertIn("printf '%s\\n' -", context)
+
+    def test_runtime_and_init_selection_are_layout_aware(self) -> None:
+        select = function_body(self.transaction_script, "sm_select_strategies")
+        self.assertIn("/debug_ramdisk", select)
+        self.assertIn("/sbin", select)
+        self.assertIn('SM_INIT_PATH="$SM_AUTH_INIT_DIRECTORY/magisk.rc"', select)
+        self.assertIn('sm_probe_writable_directory "$real"', select)
+        self.assertNotIn('[ -w "$real" ]', select)
+        direct = function_body(self.source, "direct_install_system")
+        self.assertIn('MAGISKTMP_TO_INSTALL="$SM_RUNTIME_PATH"', direct)
+        self.assertIn('hijackrc="$(sm_real_path "$SM_INIT_PATH")"', direct)
+        self.assertIn('sm_probe_writable_directory "$runtime_dir"', direct)
+
+    def test_boot_verifier_recovers_immediately_with_a_real_busybox_name(self) -> None:
+        verify = self.verify_script
+        failed_verify = verify.index("if sm_verify_boot")
+        reload_state = verify.index("sm_load_transaction", failed_verify)
+        recover = verify.index("sm_recover_pending", reload_state)
+        self.assertLess(failed_verify, reload_state)
+        self.assertLess(reload_state, recover)
+        self.assertIn('RECOVERY_BB="$RECOVERY_DIR/busybox"', verify)
+        self.assertNotIn(".kitsune-system-mode-busybox", verify)
+        stop = verify.index('"$SM_RUNTIME_PATH/magisk" --stop')
+        remount = verify.index("sm_prepare_persistent_mounts", stop)
+        self.assertLess(stop, recover)
+        self.assertLess(stop, remount)
+        self.assertLess(remount, recover)
+        self.assertIn("sm_restore_persistent_mounts", verify)
+        self.assertIn('"$RECOVERY_BB" reboot -f', verify)
+        relocate = verify.index('KITSUNE_SYSTEM_MODE_VERIFY_COPY=')
+        source = verify.index('. "$TRANSACTION"')
+        self.assertLess(relocate, source)
+        self.assertIn('exec /system/bin/sh "$KITSUNE_SYSTEM_MODE_VERIFY_COPY"', verify)
+        self.assertIn("verify_exit", verify)
+        remount_function = function_body(self.transaction_script, "sm_remount")
+        self.assertIn("/system/bin/mount", remount_function)
+        self.assertIn('"$SM_BB" mount', remount_function)
+        restore_mounts = function_body(
+            self.transaction_script, "sm_restore_persistent_mounts"
+        )
+        self.assertIn("for mountpoint in $SM_PERSISTENT_REMOUNTED", restore_mounts)
+        self.assertNotIn("remaining%%|*", restore_mounts)
+
+    def test_uninstall_is_manifest_and_hash_driven_without_wildcard_deletes(self) -> None:
+        self.assertIn("sm_uninstall", self.uninstaller_script)
+        self.assertIn("sm_verify_owned", self.transaction_script)
+        self.assertIn("sm_assert_no_unowned_files", self.transaction_script)
+        exact_tail_start = self.uninstaller_script.index(
+            "if $SYSTEM_MODE_UNINSTALL; then",
+            self.uninstaller_script.index("SYSTEM_MODE_UNINSTALLED=true"),
+        )
+        exact_tail = self.uninstaller_script[
+            exact_tail_start : self.uninstaller_script.index("\nelse\n", exact_tail_start)
+        ]
+        self.assertIn("Preserving every path outside", exact_tail)
+        self.assertNotIn("--remove-modules", exact_tail)
+        self.assertNotIn("/data/adb/modules", exact_tail)
+        self.assertNotRegex(self.uninstaller_script, r"rm\s+-rf[^\n]*\*magisk\*")
+        self.assertNotIn("/data/adb/*magisk*", self.uninstaller_script)
+        self.assertNotIn("/data/adb/modules*", self.uninstaller_script)
+
+    def test_upgrade_refuses_to_adopt_modified_or_retargeted_state(self) -> None:
+        validate = function_body(self.transaction_script, "sm_validate_installed_state")
+        begin = function_body(self.transaction_script, "sm_begin_transaction")
+        self.assertIn("sm_verify_owned", validate)
+        self.assertIn("sm_assert_no_unowned_files", validate)
+        self.assertIn("sm_validate_originals", validate)
+        self.assertIn("Refusing to upgrade a modified", begin)
+        self.assertIn("Refusing to change System Mode adapter", begin)
+        self.assertGreater(
+            begin.index('SM_SOURCE_COMMIT="$requested_source_commit"'),
+            begin.index("sm_recover_pending"),
+        )
+
+    def test_interrupted_uninstall_is_discoverable_and_recovered_on_retry(self) -> None:
+        detection = self.uninstaller_script[
+            self.uninstaller_script.index("SYSTEM_MODE_UNINSTALL=false") :
+            self.uninstaller_script.index("backup_restore()")
+        ]
+        uninstall = self.transaction_script[
+            self.transaction_script.index("sm_uninstall()") :
+        ]
+        self.assertIn("/data/adb/kitsune/system-mode/transaction.env", detection)
+        self.assertIn("ROLLBACK_REQUIRED", detection)
+        self.assertIn("ROLLING_BACK", detection)
+        self.assertIn("sm_recover_pending", uninstall)
+        self.assertLess(uninstall.index("sm_recover_pending"), uninstall.index("sm_validate_installed_state"))
+
+    def test_uninstaller_removes_the_manager_before_root_is_torn_down(self) -> None:
+        self.assertIn('pm uninstall "$4"', self.uninstaller_script)
+        uninstall_class = self.installer[
+            self.installer.index("class Uninstall(") :
+            self.installer.index("class FixEnv", self.installer.index("class Uninstall("))
+        ]
+        self.assertNotIn("pm uninstall", uninstall_class)
+
+    def test_system_mode_uninstall_skips_boot_image_discovery(self) -> None:
+        detection = self.uninstaller_script[
+            self.uninstaller_script.index("get_flags") :
+            self.uninstaller_script.index("# Detect version and architecture")
+        ]
+        mode = detection.index("SYSTEM_MODE_UNINSTALL=true")
+        boot = detection.index("find_boot_image")
+        self.assertLess(mode, boot)
+        self.assertIn("else\n  find_boot_image", detection)
+
+    def test_uninstall_receipt_does_not_block_a_clean_reinstall(self) -> None:
+        uninstall = self.transaction_script[
+            self.transaction_script.index("sm_uninstall()") :
+        ]
+        self.assertIn('"$SM_ORIGINAL_FILE"', uninstall)
+        self.assertIn('"$SM_STATE_DIR/original"', uninstall)
+
+    def test_apk_and_script_source_identities_must_match(self) -> None:
+        direct = self.installer[
+            self.installer.index("protected suspend fun direct_system()") :
+            self.installer.index("protected suspend fun secondSlot()")
+        ]
+        self.assertIn("BuildConfig.SOURCE_COMMIT", direct)
+        self.assertIn("BuildConfig.UPSTREAM_BASE", direct)
+        self.assertIn("KITSUNE_SOURCE_COMMIT", direct)
+        self.assertIn("KITSUNE_UPSTREAM_BASE", direct)
 
     def test_recovery_never_sources_a_stale_or_missing_manager_script(self) -> None:
         for script in (self.flash_script, self.addon_script):
@@ -317,7 +511,8 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
     def test_successful_non_deferred_recovery_install_commits_transaction(self) -> None:
         direct = function_body(self.source, "direct_install_system")
         self.assertIn('if [ "$defer_cleanup" != true ]', direct)
-        self.assertIn("commit_system_installation || return 1", direct)
+        self.assertIn("commit_system_installation || { sm_abort_transaction; return 1; }", direct)
+        self.assertIn("sm_commit_transaction || { sm_abort_transaction; return 1; }", direct)
         self.assertNotIn('if $BOOTMODE && [ "$defer_cleanup" != true ]', direct)
 
     def test_new_runtime_directory_is_owned_by_the_transaction(self) -> None:
@@ -332,24 +527,46 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
     def test_addond_replacement_keeps_rollback_copies(self) -> None:
         addond = function_body(self.source, "install_addond")
         preserve = addond.index('mv "$addond/99-magisk.sh" "$script_backup"')
-        publish = addond.index('cp "$installDir/addon.d.sh" "$addond/99-magisk.sh"')
+        stage = addond.index('cp "$installDir/addon.d.sh" "$addon_stage"')
+        publish = addond.index(
+            'sm_atomic_publish "$addon_stage" "$addond/99-magisk.sh"'
+        )
         restore = addond.index('mv "$script_backup" "$addond/99-magisk.sh"')
-        self.assertLess(preserve, publish)
+        self.assertLess(preserve, stage)
+        self.assertLess(stage, publish)
         self.assertGreater(restore, publish)
 
         xdirect = function_body(self.source, "xdirect_install_system")
         self.assertIn('install_addond "$2" "true" "true"', xdirect)
         self.assertNotIn("run_migrations", xdirect)
 
+    def test_app_transaction_applet_survives_staging_cleanup(self) -> None:
+        xdirect = function_body(self.source, "xdirect_install_system")
+        pin = xdirect.index('cp -f "$1/busybox" "$transaction_bb"')
+        install = xdirect.index('direct_install_system "$1" true "$2"')
+        select = xdirect.index('SM_BB="$transaction_bb"', install)
+        cleanup = xdirect.index('fix_env "$1" true', select)
+        commit = xdirect.index("sm_commit_transaction", cleanup)
+        release = xdirect.rindex('"$transaction_bb" rm -rf "$transaction_dir"')
+        self.assertIn('/dev/.kitsune-system-mode.$$', xdirect)
+        self.assertIn('transaction_bb="$transaction_dir/busybox"', xdirect)
+        self.assertLess(pin, install)
+        self.assertLess(install, select)
+        self.assertLess(select, cleanup)
+        self.assertLess(cleanup, commit)
+        self.assertGreater(release, commit)
+        self.assertIn("command -v sm_abort_transaction", xdirect)
+        normalize = xdirect.index('"$runtime_magisk" --restorecon', cleanup)
+        self.assertLess(normalize, commit)
+
     def run_manager_harness(
         self,
         harness: str,
         *,
         expose_addond_path: bool = False,
-        expose_system_path: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         source = self.source
-        if expose_addond_path or expose_system_path:
+        if expose_addond_path:
             start = source.index("install_addond(){")
             end = source.index("\n}\n\ndirect_install()", start) + 3
             function = source[start:end]
@@ -357,12 +574,7 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
             declaration = "    local addond=/system/addon.d"
             self.assertEqual(1, function.count(declaration))
             function = function.replace(declaration, '    local addond="$4"')
-        if expose_system_path:
-            self.assertIn("/system/etc/init/magisk", function)
-            function = function.replace(
-                "/system/etc/init/magisk", "${SYSTEM_TEST_DIR}"
-            )
-        if expose_addond_path or expose_system_path:
+        if expose_addond_path:
             source = source[:start] + function + source[end:]
         with tempfile.TemporaryDirectory(prefix="kitsune-installer-fault-") as temp:
             return subprocess.run(
@@ -455,14 +667,18 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
             mkblknode() { return 0; }
             blockdev() { return 0; }
             mount() { return 0; }
+            sm_fsync() { return 0; }
+            sm_failpoint() { return 0; }
+            sm_atomic_publish() { command mv -f "$1" "$2"; }
+            sm_sha256_file() { shasum -a 256 "$1" | awk '{ print $1 }'; }
             root="$1"
             addond="$root/addon.d"
             MAGISKBIN="$root/runtime"
-            SYSTEM_TEST_DIR="$root/system/etc/init/magisk"
-            mkdir -p "$addond" "$MAGISKBIN" "$SYSTEM_TEST_DIR"
+            mkdir -p "$addond" "$MAGISKBIN"
             printf payload > "$MAGISKBIN/payload"
             printf 'SYSTEMINSTALL=false\n' > "$MAGISKBIN/addon.d.sh"
             printf apk > "$root/app.apk"
+            SM_ARTIFACT_SHA256="$(sm_sha256_file "$root/app.apk")"
             ln -s "$root/escaped" "$addond/99-magisk.sh"
 
             install_addond "$root/app.apk" true true "$addond"
@@ -472,7 +688,6 @@ class SystemModeInstallerSafetyTest(unittest.TestCase):
             test ! -e "$addond/.99-magisk.sh.kitsune-old"
             """,
             expose_addond_path=True,
-            expose_system_path=True,
         )
         self.assertEqual(0, result.returncode, result.stderr)
 

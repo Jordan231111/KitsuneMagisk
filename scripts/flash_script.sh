@@ -30,10 +30,6 @@ getvar SYSTEMMODE
 SYSTEMINSTALL="$SYSTEMMODE"
 [ -z "$SYSTEMINSTALL" ] && SYSTEMINSTALL=false
 
-if echo "$3" | grep -q "systemmagisk"; then
-  SYSTEMINSTALL=true
-fi
-
 setup_flashable
 
 ############
@@ -80,8 +76,11 @@ if [ "$SYSTEMINSTALL" = "true" ]; then
     abort "! System Mode is disabled in release builds"
 fi
 
-# Check if system root is installed and remove
-$BOOTMODE || remove_system_su
+# Legacy system-root cleanup is part of ordinary boot-image installation, not
+# the manifest-owned System Mode transaction.
+if [ "$SYSTEMINSTALL" != "true" ]; then
+  $BOOTMODE || remove_system_su
+fi
 
 ##############
 # Environment
@@ -89,19 +88,26 @@ $BOOTMODE || remove_system_su
 
 ui_print "- Constructing environment"
 
-# Copy required files
-rm -rf $MAGISKBIN/* 2>/dev/null
-mkdir -p $MAGISKBIN 2>/dev/null
-cp -af $BINDIR/. $COMMONDIR/. $BBBIN $MAGISKBIN
+# Build System Mode only in the installer staging directory. xdirect_install_system
+# snapshots the old runtime before fix_env publishes this complete tree.
+INSTALL_ENV=$MAGISKBIN
+if [ "$SYSTEMINSTALL" = "true" ]; then
+  INSTALL_ENV=$MAGISKBINTMP
+fi
+rm -rf "$INSTALL_ENV"/* 2>/dev/null
+mkdir -p "$INSTALL_ENV" 2>/dev/null
+cp -af $BINDIR/. $COMMONDIR/. $BBBIN "$INSTALL_ENV"
 
 # Remove files only used by the Magisk app
-rm -f $MAGISKBIN/bootctl $MAGISKBIN/main.jar \
-  $MAGISKBIN/module_installer.sh $MAGISKBIN/uninstaller.sh
+rm -f "$INSTALL_ENV/bootctl" "$INSTALL_ENV/main.jar" \
+  "$INSTALL_ENV/module_installer.sh" "$INSTALL_ENV/uninstaller.sh"
 
-cat "$APK" >"$MAGISKBIN/magisk.apk"
-cp -af $MAGISKBIN/* $MAGISKBINTMP
+cat "$APK" >"$INSTALL_ENV/magisk.apk"
+if [ "$SYSTEMINSTALL" != "true" ]; then
+  cp -af "$MAGISKBIN"/* "$MAGISKBINTMP"
+fi
 
-chmod -R 755 $MAGISKBIN
+chmod -R 755 "$INSTALL_ENV"
 chmod -R 755 $MAGISKBINTMP
 
 
@@ -122,19 +128,13 @@ if [ "$SYSTEMINSTALL" == "true" ]; then
   rm -f ./manager.sh
   BOOTMODE="$BOOTMODE_OLD"
   . $COMMONDIR/util_functions.sh
-  ADDOND_MAGISK=/system/etc/init/magisk
-  [ -f "$ADDOND/99-magisk.sh" ] && sed -i "s/^SYSTEMINSTALL=.*/SYSTEMINSTALL=true/g" $ADDOND/99-magisk.sh
-  if $BOOTMODE; then
-    direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; unmount_system_mirrors; abort "! Installation failed"; }
-  else
-    direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; abort "! Installation failed"; }
-  fi
+  xdirect_install_system "$MAGISKBINTMP" "$APK" || abort "! Installation failed"
 else
   install_magisk
 fi
 
 # addon.d
-if [ -d /system/addon.d ]; then
+if [ "$SYSTEMINSTALL" != "true" ] && [ -d /system/addon.d ]; then
   ui_print "- Adding addon.d survival script"
   blockdev --setrw /dev/block/mapper/system$SLOT 2>/dev/null
   mount -o rw,remount /system || mount -o rw,remount /
@@ -151,7 +151,9 @@ if [ -d /system/addon.d ]; then
 fi
 
 # Cleanups
-$BOOTMODE || recovery_cleanup
+if [ "$SYSTEMINSTALL" != "true" ]; then
+  $BOOTMODE || recovery_cleanup
+fi
 rm -rf $TMPDIR
 
 ui_print "- Done"

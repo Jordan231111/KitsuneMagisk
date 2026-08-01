@@ -184,6 +184,8 @@ private fun Project.setupAppCommon() {
 
         defaultConfig {
             buildConfigField("int", "STUB_VERSION", Config.stubVersion)
+            buildConfigField("String", "SOURCE_COMMIT", "\"${Config.sourceCommit}\"")
+            buildConfigField("String", "UPSTREAM_BASE", "\"${Config.upstreamBase}\"")
         }
 
         buildTypes {
@@ -307,6 +309,7 @@ fun Project.setupApp() {
             from(rootProject.file("scripts")) {
                 include("util_functions.sh", "boot_patch.sh", "addon.d.sh")
                 include("uninstaller.sh", "module_installer.sh")
+                include("system_mode_transaction.sh", "system_mode_verify.sh")
             }
             from(rootProject.file("tools/bootctl"))
             into("chromeos") {
@@ -322,7 +325,10 @@ fun Project.setupApp() {
                 filter {
                     it.replace(
                         "#MAGISK_VERSION_STUB",
-                        "MAGISK_VER='${Config.version}'\nMAGISK_VER_CODE=${Config.versionCode}"
+                        "MAGISK_VER='${Config.version}'\n" +
+                            "MAGISK_VER_CODE=${Config.versionCode}\n" +
+                            "KITSUNE_SOURCE_COMMIT='${Config.sourceCommit}'\n" +
+                            "KITSUNE_UPSTREAM_BASE='${Config.upstreamBase}'"
                     )
                 }
                 filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))

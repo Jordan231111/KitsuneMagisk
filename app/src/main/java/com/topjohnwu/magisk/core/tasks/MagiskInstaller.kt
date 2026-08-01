@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.core.tasks
 
 import android.net.Uri
+import android.os.Process
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
@@ -123,25 +124,37 @@ abstract class MagiskInstallImpl protected constructor(
                 zf.close()
             } else {
                 val info = context.applicationInfo
-                var libs = File(info.nativeLibraryDir).listFiles { _, name ->
+                val libs = File(info.nativeLibraryDir).listFiles { _, name ->
                     name.startsWith("lib") && name.endsWith(".so")
                 } ?: emptyArray()
-
-                // Also symlink magisk32 on non 64-bit only 64-bit devices
-                val lib32 = info.javaClass.getDeclaredField("secondaryNativeLibraryDir")
-                    .get(info) as String?
-                if (lib32 != null) {
-                    libs += File(lib32, "libmagisk32.so")
-                }
 
                 for (lib in libs) {
                     val name = lib.name.substring(3, lib.name.length - 3)
                     Os.symlink(lib.path, "$installDir/$name")
                 }
+
+                // Do not depend on the hidden secondaryNativeLibraryDir field.
+                // Android's multi-arch extraction is unstable across package
+                // replacement on legacy releases; read the one 32-bit applet
+                // directly from the installed APK, matching current upstream.
+                val abi32 = Const.CPU_ABI_32
+                if (Process.is64Bit() && abi32 != null) {
+                    val name = "lib/$abi32/libmagisk32.so"
+                    javaClass.classLoader!!.getResourceAsStream(name)?.use {
+                        it.writeTo(File(installDir, "magisk32"))
+                    }
+                }
             }
 
             // Extract scripts
-            for (script in listOf("util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk")) {
+            for (script in listOf(
+                "util_functions.sh",
+                "boot_patch.sh",
+                "addon.d.sh",
+                "system_mode_transaction.sh",
+                "system_mode_verify.sh",
+                "stub.apk",
+            )) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)
             }
@@ -157,7 +170,8 @@ abstract class MagiskInstallImpl protected constructor(
                 context.assets.open(name).writeTo(dest)
             }
         } catch (e: Exception) {
-            console.add("! Unable to extract files")
+            console.add("! Unable to extract files: ${e.javaClass.simpleName}: ${e.message}")
+            logs.add(e.stackTraceToString())
             Timber.e(e)
             return false
         }
@@ -557,9 +571,12 @@ abstract class MagiskInstallImpl protected constructor(
                 . "${'$'}1/system_mode_manager.sh" || exit 1
                 rm -f "${'$'}1/system_mode_manager.sh" || exit 1
                 . "${'$'}1/util_functions.sh" || exit 1
+                [ "${'$'}KITSUNE_SOURCE_COMMIT" = "${'$'}3" ] || exit 1
+                [ "${'$'}KITSUNE_UPSTREAM_BASE" = "${'$'}4" ] || exit 1
                 app_init
                 xdirect_install_system "${'$'}1" "${'$'}2"
-            ' system-mode "$installDir" "$AppApkPath"
+            ' system-mode "$installDir" "$AppApkPath" \
+                "${BuildConfig.SOURCE_COMMIT}" "${BuildConfig.UPSTREAM_BASE}"
             _system_mode_rc=${'$'}?
             rm -f "$manager"
             (exit "${'$'}_system_mode_rc")
@@ -572,7 +589,8 @@ abstract class MagiskInstallImpl protected constructor(
 
     protected suspend fun fixEnv() = extractFiles() && "fix_env $installDir".sh().isSuccess
 
-    protected fun uninstall() = "run_uninstaller $AppApkPath".sh().isSuccess
+    protected fun uninstall() =
+        "run_uninstaller \"$AppApkPath\" \"${context.packageName}\"".sh().isSuccess
 
     protected fun cleanupInstallDir() {
         if (::installDir.isInitialized) {
@@ -664,15 +682,7 @@ abstract class MagiskInstaller(
     ) : MagiskInstallImpl(console, logs) {
         override suspend fun operations() = uninstall()
 
-        override suspend fun exec(): Boolean {
-            val success = super.exec()
-            if (success) {
-                UiThreadHandler.handler.postDelayed(3000) {
-                    Shell.cmd("pm uninstall ${context.packageName}").exec()
-                }
-            }
-            return success
-        }
+        override suspend fun exec() = super.exec()
     }
 
     class FixEnv(private val callback: () -> Unit) : MagiskInstallImpl() {

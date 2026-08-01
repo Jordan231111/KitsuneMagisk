@@ -10,6 +10,7 @@ import java.util.*
 
 private val props = Properties()
 private var commitHash = ""
+private var sourceRevision = ""
 
 object Config {
     operator fun get(key: String): String? {
@@ -22,6 +23,8 @@ object Config {
     val version: String get() = get("version") ?: commitHash
     val versionCode: Int get() = get("magisk.versionCode")!!.toInt()
     val stubVersion: String get() = get("magisk.stubVersion")!!
+    val sourceCommit: String get() = sourceRevision
+    val upstreamBase: String get() = get("upstreamBase") ?: "154121f3dd92e67a3d8e3f518684932c0f9783e6"
 }
 
 class MagiskPlugin : Plugin<Project> {
@@ -36,7 +39,7 @@ class MagiskPlugin : Plugin<Project> {
         if (config.exists())
             config.inputStream().use { props.load(it) }
 
-        commitHash = Config["version"] ?: run {
+        sourceRevision = Config["sourceCommit"] ?: run {
             val builder = FileRepositoryBuilder()
                 .readEnvironment()
                 .findGitDir(rootProject.rootDir)
@@ -48,15 +51,20 @@ class MagiskPlugin : Plugin<Project> {
             builder.build().use { repo ->
                 val refId = repo.resolve(Constants.HEAD)
                     ?: throw GradleException("Cannot resolve the Git HEAD revision")
-                repo.newObjectReader().use { reader ->
-                    "${reader.abbreviate(refId, 8).name()}-kitsune"
-                }
+                refId.name()
             }
         }
+        if (!sourceRevision.matches(Regex("^[a-f0-9]{40}$"))) {
+            throw GradleException("sourceCommit must be the full lowercase 40-character Git revision")
+        }
+        commitHash = Config["version"] ?: "${sourceRevision.take(8)}-kitsune"
         if (!commitHash.contains("kitsune")) {
             throw GradleException(
                 "Version must contain the lowercase Kitsune identity marker 'kitsune'"
             )
+        }
+        if (!Config.upstreamBase.matches(Regex("^[a-f0-9]{40}$"))) {
+            throw GradleException("upstreamBase must be a full lowercase 40-character Git revision")
         }
     }
 }

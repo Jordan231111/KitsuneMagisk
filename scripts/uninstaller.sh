@@ -40,7 +40,21 @@ mount_partitions
 check_data
 $DATA_DE || abort "! Cannot access /data, please uninstall with the Magisk app"
 get_flags
-find_boot_image
+
+SYSTEM_MODE_UNINSTALL=false
+SYSTEM_MODE_RECEIPT_STATE="$(grep_prop STATE /data/adb/kitsune/system-mode/transaction.env)"
+if [ "$(grep_prop SYSTEMMODE /system/etc/init/magisk/config)" = "true" ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = BOOT_VERIFIED ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = COMMITTED ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = PREFLIGHTED ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = STAGED ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = ROLLBACK_REQUIRED ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = ROLLING_BACK ] ||
+   [ "$SYSTEM_MODE_RECEIPT_STATE" = FAILED ]; then
+  SYSTEM_MODE_UNINSTALL=true
+else
+  find_boot_image
+fi
 
 backup_restore(){
 test -f "${1}.gz" || { test -f "$1" && gzip -k "$1"; }
@@ -59,7 +73,7 @@ api_level_arch_detect
 
 ui_print "- Device platform: $ABI"
 
-if ( [ -z "$(grep_prop SHA1 "$MAGISKTMP/.magisk/config")" ] && $BOOTMODE ) || [ "$(grep_prop SYSTEMMODE /system/etc/init/magisk/config)" == "true" ]; then
+if $SYSTEM_MODE_UNINSTALL; then
 
 # Use kernel trick to clean up mirrors automatically when installer completed
 MIRRORDIR="/proc/$$/attr"
@@ -108,7 +122,7 @@ if $BOOTMODE; then
         ln -fs ./system_root/odm "$ODM_DIR"
     fi
 else
-    local MIRRORDIR="/" ROOTDIR SYSTEMDIR VENDORDIR
+    MIRRORDIR="/"
     ROOTDIR="$MIRRORDIR/system_root"
     SYSTEMDIR="$MIRRORDIR/system"
     VENDORDIR="$MIRRORDIR/vendor"
@@ -122,25 +136,17 @@ mount -o rw,remount /system || mount -o rw,remount /
 mount -o rw,remount /system_root
 mount -o rw,remount /vendor
 mount -o rw,remount /odm
-
-for file in /vendor/etc/selinux/precompiled_sepolicy /odm/etc/selinux/precompiled_sepolicy /system/etc/selinux/precompiled_sepolicy /system_root/sepolicy /system_root/sepolicy_debug /system_root/sepolicy.unlocked; do
-    if [ -f "$MIRRORDIR$file" ]; then
-        sepol="$file"
-        break
-    fi
-done
-
-if [ ! -z "$sepol" ]; then
-    ui_print "- Restore sepolicy patch"
-    backup_restore "$MIRRORDIR$sepol" && rm -rf "$MIRRORDIR$sepol".gz
-fi
-
-
-ui_print "- Removing Magisk binaries"
-rm -rf $MIRRORDIR/system/etc/init/*magisk* $MIRRORDIR/system/system/etc/init/*magisk* $MIRRORDIR/system_root/system/etc/init/*magisk* \
-$MIRRORDIR/system/xbin/magisk $MIRRORDIR/system/xbin/.magisk || abort "! Cannot uninstall"
-
-backup_restore "$MIRRORDIR/system/etc/init/bootanim.rc" && rm -rf "$MIRRORDIR/system/etc/init/bootanim.rc.gz"
+TRANSACTION=$COMMONDIR/system_mode_transaction.sh
+SM_UNINSTALL_BB=$INSTALLER/lib/$ABI/libbusybox.so
+[ -f "$TRANSACTION" ] || abort "! System Mode transaction support is missing"
+[ -f "$SM_UNINSTALL_BB" ] || abort "! System Mode transaction runtime is missing"
+chmod 755 "$SM_UNINSTALL_BB" || abort "! Cannot prepare System Mode transaction runtime"
+. "$TRANSACTION" || abort "! Cannot load System Mode transaction support"
+sm_configure "$COMMONDIR" "$MIRRORDIR" /system/etc/init/magisk "$SM_UNINSTALL_BB" || \
+  abort "! Cannot initialize System Mode transaction support"
+ui_print "- Restoring exact manifest-owned System Mode paths"
+sm_uninstall || abort "! Exact System Mode uninstall refused; use the verified external restore"
+SYSTEM_MODE_UNINSTALLED=true
 
 else
 
@@ -242,23 +248,28 @@ esac
 
 fi
 
-if $BOOTMODE; then
-  ui_print "- Removing modules"
-  magisk --remove-modules -n
-fi
+if $SYSTEM_MODE_UNINSTALL; then
+  ui_print "- Preserving every path outside the System Mode ownership manifest"
+else
+  if $BOOTMODE; then
+    ui_print "- Removing modules"
+    magisk --remove-modules -n
+  fi
 
-ui_print "- Removing Magisk files"
-rm -rf \
-/cache/*magisk* /cache/unblock /data/*magisk* /data/cache/*magisk* /data/property/*magisk* \
-/data/Magisk.apk /data/busybox /data/custom_ramdisk_patch.sh /data/adb/*magisk* \
-/data/adb/post-fs-data.d /data/adb/service.d /data/adb/modules* \
-/data/unencrypted/magisk /metadata/magisk /persist/magisk /mnt/vendor/persist/magisk
+  ui_print "- Removing Magisk files"
+  rm -rf \
+  /cache/magisk /cache/magisk.log /cache/magisk.apk /cache/unblock \
+  /data/magisk /data/magisk.img /data/magisk_merge.img /data/cache/magisk /data/property/magisk \
+  /data/Magisk.apk /data/busybox /data/custom_ramdisk_patch.sh /data/adb/magisk /data/adb/magisk.db \
+  /data/adb/modules /data/adb/modules_update \
+  /data/unencrypted/magisk /metadata/magisk /persist/magisk /mnt/vendor/persist/magisk
 
-ADDOND=/system/addon.d/99-magisk.sh
-if [ -f $ADDOND ]; then
-  blockdev --setrw /dev/block/mapper/system$SLOT 2>/dev/null
-  mount -o rw,remount /system || mount -o rw,remount /
-  rm -f $ADDOND
+  ADDOND=/system/addon.d/99-magisk.sh
+  if [ -f $ADDOND ]; then
+    blockdev --setrw /dev/block/mapper/system$SLOT 2>/dev/null
+    mount -o rw,remount /system || mount -o rw,remount /
+    rm -f $ADDOND
+  fi
 fi
 
 cd /
@@ -268,7 +279,17 @@ if $BOOTMODE; then
   ui_print " The Magisk app will uninstall itself, and"
   ui_print " the device will reboot after a few seconds"
   ui_print "********************************************"
-  (sleep 8; /system/bin/reboot)&
+  case "$4" in
+    ""|*[!A-Za-z0-9._]*|.*|*.|*..*)
+      (sleep 8; /system/bin/reboot)&
+      ;;
+    *.*)
+      (sleep 4; pm uninstall "$4" >/dev/null 2>&1; sleep 4; /system/bin/reboot)&
+      ;;
+    *)
+      (sleep 8; /system/bin/reboot)&
+      ;;
+  esac
 else
   ui_print "********************************************"
   ui_print " The Magisk app will not be uninstalled"

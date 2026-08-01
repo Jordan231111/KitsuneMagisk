@@ -15,7 +15,6 @@
     <application
         android:name=".core.App"
         android:icon="@drawable/ic_launcher"
-        android:multiArch="true"
         tools:ignore="UnusedAttribute,GoogleAppIndexingWarning"
         tools:remove="android:appComponentFactory">
 

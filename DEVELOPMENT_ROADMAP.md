@@ -12,7 +12,7 @@
 >
 > Product charter: KitsuneMagisk exists primarily to provide persistent Magisk through **Direct-System/System Mode** on environments where normal boot-image installation is unavailable or impractical—especially commercial Android emulators—and secondarily to provide Kitsune-specific hiding and module behavior.
 
-> Implementation progress reconciled for the PR #26 range on 2026-08-01 UTC. The repository's default/mainline branch is `kitsune` (`origin/HEAD` points to `origin/kitsune`); there is intentionally no separate branch named `main`. Roadmap PR1 merged as [GitHub #22](https://github.com/Jordan231111/KitsuneMagisk/pull/22); PR2 merged as [GitHub #23](https://github.com/Jordan231111/KitsuneMagisk/pull/23). PR3 (`e3fa3e829`), PR4 (`8e4e952b6`), and PR4A (`52aaf1658` plus follow-ups) are in the remote `kitsune` history. PR4B merged as [GitHub #24](https://github.com/Jordan231111/KitsuneMagisk/pull/24), bringing those prerequisite commits with it. PR3's reusable characterization exit is met, but full writable-target lifecycle qualification remains open. GitHub PR #26 is the review/merge unit represented by this roadmap commit: it completes current-line release/data containment and implements the target-independent safety portion of roadmap PR5 while keeping release System Mode unreachable. It does **not** prove persistent System Mode support or finish a power-loss-safe install/uninstall transaction. If this roadmap commit is already reachable from `kitsune`, treat PR5 as merged and begin PR5A; otherwise PR #26 still requires its exact-head merge gate.
+> Implementation progress reconciled for the PR5A/PR5B branch on 2026-08-01 UTC. The repository's default/mainline branch is `kitsune` (`origin/HEAD` points to `origin/kitsune`); there is intentionally no separate branch named `main`. Roadmap PR1 merged as [GitHub #22](https://github.com/Jordan231111/KitsuneMagisk/pull/22); PR2 merged as [GitHub #23](https://github.com/Jordan231111/KitsuneMagisk/pull/23). PR3 (`e3fa3e829`), PR4 (`8e4e952b6`), and PR4A (`52aaf1658` plus follow-ups) are in the remote `kitsune` history. PR4B merged as [GitHub #24](https://github.com/Jordan231111/KitsuneMagisk/pull/24), bringing those prerequisite commits with it. GitHub PR #26 merged the current-line release/data containment and target-independent PR5 safety work. This branch completes the PR5A same-target MuMu comparison and the conditional PR5B durable current-line transaction. It deliberately keeps release System Mode unreachable and records an experimental exact-version result rather than promoting a stable release. After this branch merges, PR6 is the next engineering unit.
 
 > The explicit history-backed purpose, install-route, and divergence report is
 > [`docs/faithfulness-audit.md`](docs/faithfulness-audit.md). It covers the complete reachable graph,
@@ -35,16 +35,16 @@ execution order.
 | 3 | Roadmap PR3 — System Mode contract and read-only characterization | **Integrated into `kitsune`** | Reuse its schemas/driver for all current/next comparisons. |
 | 4 | Roadmap PR4 and PR4A — data/update containment and portable AVD lab | **Integrated into `kitsune`; corrected further by PR #26** | Do not revert the rollback-compatible database design or safe SDK/AVD restoration. |
 | 5 | Roadmap PR4B / GitHub #24 — upstream/security laboratory | **Merged** | Regenerate the ledger when upstream refs or release candidates change. |
-| 6 | Roadmap PR5 / GitHub #26 — production hardening and experimental System Mode containment | **Implemented in this two-commit range; exact-head gate/merge state is external** | If this commit is not yet on `kitsune`, merge only after the exact two-commit head is green. If it is reachable from `kitsune`, this item is complete. |
-| 7 | Roadmap PR5A — one writable-target baseline-versus-hardened lifecycle | **Next engineering PR** | Qualify one exact snapshot-capable target through install, three cold boots, upgrade, reinstall, module/root smoke, uninstall, and restore. |
-| 8 | Roadmap PR5B — conditional current-line durable transaction | **Not started; conditional** | Implement only the gaps required to ship the old core. Otherwise carry the failing tests and contract into PR7. |
-| 9 | Roadmap PR6 onward — stable-base forward-port, parity, product features, and release | **Not started** | Begin only after PR5A provides a trustworthy comparison target and the PR5B branch decision is explicit. |
+| 6 | Roadmap PR5 / GitHub #26 — production hardening and experimental System Mode containment | **Merged** | Preserve its release/data containment and debug-only System Mode boundary. |
+| 7 | Roadmap PR5A — one writable-target baseline-versus-hardened lifecycle | **Implemented on this branch; merge-gated** | Preserve the exact MuMu 1.4.46 evidence and experimental/non-release boundary. |
+| 8 | Roadmap PR5B — conditional current-line durable transaction | **Implemented on this branch; merge-gated** | Keep its tests/manifest contract as the behavioral oracle for PR7; do not turn the old core into a second permanent line. |
+| 9 | Roadmap PR6 onward — stable-base forward-port, parity, product features, and release | **Next after this branch merges** | Re-resolve official stable and create the pristine maintained-base baseline before porting features. |
 
-The next engineering task once PR #26 is present on `kitsune` is therefore **PR5A, not PR6 and not more speculative installer
-code**. PR5A is evidence-first: use one existing, recoverable emulator instance or image at a time,
-restore the same baseline between artifacts, and separate emulator-host boot failures from Android or
-Magisk failures. BlueStacks Air `Tiramisu64` at `127.0.0.1:5555` is useful negative and ordinary-root
-evidence, but its read-only system mount does not satisfy the writable System Mode exit.
+The next engineering task after this PR5A/PR5B branch merges is **PR6**: re-resolve the latest
+audited official stable and create the pristine `next-system` baseline. PR5A used only the existing
+MuMu VM index 0, restored the same byte-verified baseline between comparisons, and separated player,
+ADB, Android, and Magisk failures. PR5B now supplies the current-line manifest/recovery oracle that
+PR7 must port rather than reinvent.
 
 ### Current hardening evidence and limits
 
@@ -59,6 +59,13 @@ evidence, but its read-only system mount does not satisfy the writable System Mo
   hardened debug/release artifacts; ordinary root/backend alignment passed and the original payload
   was restored. Legacy Android 6 ADB-PTY CRLF is normalized at both readiness and concurrent-`su`
   result boundaries, with focused regressions for each parser.
+- The PR5A/PR5B hosted gate then exposed an inherited Android 6 x86_64 manager-extraction defect:
+  release setup failed twice after a complete debug lifecycle. Diagnostic run
+  [30710846323](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30710846323) proved that
+  root was valid and extraction failed before `fix_env`. The branch ports upstream `cf12087e2` by
+  removing `android:multiArch` and hidden `secondaryNativeLibraryDir` reflection, then loading
+  Kitsune's 32-bit companion through the APK classloader. A focused contract and the hosted API 23
+  debug/release lane retain the before/after regression.
 - Exact two-commit hosted reruns caught two harness-only edge cases before merge. [Run
   30696816242](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30696816242) showed that
   Android 6 retained a carriage return in otherwise-correct PackageManager and Magisk readiness
@@ -99,9 +106,17 @@ evidence, but its read-only system mount does not satisfy the writable System Mo
 - Three Gradle tasks that were permanently `NO-SOURCE` in the shared/native/stub modules were removed
   from the hosted command. The real app JVM tests and app/shared/stub lint lanes remain; this removes
   empty task scheduling, not test coverage.
-- PR #26 improves staging and in-process rollback, but there is still no versioned persistent
-  ownership manifest or deterministic recovery after process death/power loss across system files,
-  `/data/adb/magisk`, addon survival, upgrade, and uninstall. Do not call that transaction complete.
+- PR5B adds the versioned persistent ownership/original/journal/receipt set, exact target and artifact
+  binding, durable publication, boot verification, interrupted-state recovery, and manifest-owned
+  uninstall. Host faults cover ENOSPC, EROFS, short write, rename/fsync, process death, and reboot;
+  MuMu also completed a live staged-process-death rollback. Every boundary has not been power-cut on
+  every target, so this remains experimental qualification rather than a release claim.
+- PR5A's exact MuMuPlayer 1.4.46 record covers the same-instance released comparison, restored
+  hardened runs, three candidate cold boots/player cycles, root policy, a minimal module,
+  upgrade/reinstall, exact uninstall, and verified external restoration. The final cleanup-only head
+  then passed upgrade, a BOOT_VERIFIED cold boot, root, staging-residue proof, exact uninstall, and
+  another verified restore. See
+  [`docs/system-mode/mumu-pr5a-pr5b-2026-08-01.md`](docs/system-mode/mumu-pr5a-pr5b-2026-08-01.md).
 - The old released certificate came from a publicly exposed historical test keystore. PR #26 removes
   that keystore and restores release identity checks, but the first production identity and its
   explicit upgrade/reinstall transition remain future release work.
@@ -350,10 +365,12 @@ Add a read-mostly preflight command with human and `--json` output. The manager 
 - [x] Parse `/proc/self/mountinfo`; report the real source, filesystem, mount flags, device-mapper layer, and slot for `/`, `/system`, `/vendor`, `/odm`, `/product`, and `/system_ext`.
 - [x] Detect EROFS, squashfs, shared-block ext4, overlayfs, dynamic partitions, dm-verity, and AVB/verified-boot state.
 - [x] Distinguish “currently writable overlay” from “persistent backing image is writable.” Prove persistence only through a controlled probe plus cold boot, then remove the probe.
-- [ ] Locate every candidate init import directory and verify whether a harmless marker RC is parsed on a disposable snapshot before installing root services.
+- [x] Locate every candidate init import directory and require external proof that a harmless marker
+  RC is parsed on the disposable target before authorizing root-service installation.
 - [x] Locate live, precompiled, monolithic, and split SELinux policy sources and their validation/hash metadata.
 - [x] Verify at least 32 MiB of safe staging capacity rather than writing a 20 MB zero file directly into the final system target.
-- [ ] Verify the system image/snapshot backup location, free space, digest, and restore command before the first mutation.
+- [x] Bind the system image/snapshot backup location, digest, and restore command into authorization;
+  PR5A verified host space and exercised the exact recovery tuple before mutation.
 - [x] Return stable reason codes such as `NO_BOOTSTRAP_ROOT`, `READ_ONLY_FS`, `EROFS`, `VERITY_ACTIVE`, `INIT_IMPORT_UNPROVEN`, `SEPOLICY_UNSUPPORTED`, `NO_RECOVERY_PATH`, and `SUPPORTED`.
 - [ ] Make the UI explain the failed capability and supported alternative; never show a generic “system is read-only” for every layout.
 
@@ -365,38 +382,42 @@ needed to make the project’s core purpose dependable. Status labels were recon
 
 #### Release-blocking issues
 
-1. **Open — no writable System Mode CI or maintained compatibility matrix.** Host tests now cover
-   schemas, gating, parsing, preflight, and rollback helpers; API 23/29/35 AVD jobs still test
-   ramdisk/boot-style setup, not a persistent `direct_install_system` lifecycle.
+1. **Partially closed by PR5A — one writable target is now recorded.** MuMuPlayer 1.4.46 completed
+   the same-instance released/current comparison, persistent lifecycle, uninstall, and external
+   restore. It is an experimental exact-version record, not broad commercial-emulator CI or a
+   maintained cross-vendor compatibility matrix. API 23/29/35/36 AVD jobs remain ordinary
+   ramdisk/boot-style coverage rather than persistent `direct_install_system` qualification.
 2. **Fixed in PR #26 — an explicitly selected recovery System Mode path required a boot image.**
    `scripts/flash_script.sh` now runs `find_boot_image` only for the normal boot-image route; a
    selected System Mode route reaches its debug-payload gate without requiring `BOOTIMAGE`.
-3. **Open — recovery activation still accepts filename magic.** A ZIP/APK path containing
-   `systemmagisk` silently changes installation mode. Replace it with an explicit visible option and
-   confirmation.
+3. **Fixed in PR5B — recovery activation is explicit.** Filename-substring activation is removed;
+   only explicit `SYSTEMMODE` selection enters the shared complete transaction and bypasses ordinary
+   boot-image discovery.
 4. **Fixed in PR #26 — the live SELinux probe changed policy.** The installer now parses/saves the
    live policy without applying `permissive su`. Persistent next-boot policy selection remains open.
-5. **Open — static SELinux selection patches only the first matching file.** Modern
-   split/precompiled policy selection can depend on platform/vendor inputs and matching hashes. A
-   successful write to one candidate does not prove init will load it.
-6. **Partially mitigated, still open — installation is not durably transactional.** PR #26 stages
-   selected runtime/addon/init/policy sidecars and can reverse an in-process failure, but backups are
-   still on modified filesystems and no persistent journal recovers the full transaction after
-   process death or power loss.
-7. **Open — uninstall ownership is too broad.** Wildcards such as `*magisk*` under init directories
-   can delete files not created by this exact installation. No runtime versioned install manifest
-   lists owned paths and original digests.
+5. **Implemented in PR5B; enforcing-target breadth remains open.** The transaction records and
+   restores the actual disabled/live/precompiled/monolithic/split policy strategy instead of
+   patching the first filename match. MuMu proved live plus precompiled selection while permissive;
+   split and enforcing layouts remain PR7/PR15 qualification work.
+6. **Fixed for the current-line transaction in PR5B.** A persistent receipt, original inventory,
+   ownership list, ordered journal, external recovery tuple, fsync/rename boundaries, boot proof,
+   and reverse recovery cover process death across install, upgrade, boot verification, and
+   uninstall. Live MuMu staged-process-death recovery passed; exhaustive live power cuts remain a
+   release-matrix item.
+7. **Fixed in PR5B — uninstall is manifest-owned and hash-aware.** It refuses modified or
+   unrecognized state, restores exact originals, removes only recorded paths, and preserves files
+   outside the manifest. Wildcard Magisk deletion is absent from the System Mode path.
 8. **Fixed in PR #26 — native context-switch I/O was unsafe.** `--auto-selinux` now uses checked
    `setcon`, a fresh bounded descriptor read, the actual read length, and deterministic close. PR7
    should still prefer maintained upstream bootstrap primitives where possible.
-9. **Open — `/sbin` remains an important hard-coded runtime assumption.** The Nox Android 12 fix
-   proves this is a compatibility fault line; current official live setup selects `/sbin` or
-   `/debug_ramdisk` by layout.
+9. **Fixed in PR5B — runtime selection is layout-aware.** The authorization and receipt bind the
+   selected `/sbin` or `/debug_ramdisk` strategy; MuMu cold-booted the `/debug_ramdisk` path.
 10. **Contained, not proven — Android 6/API 23–24 System Mode persistence is unproven.** PR #26
     rejects these APIs for System Mode while retaining ordinary Magisk support. Re-enable only after
     a dedicated persistent launch path cold-boots successfully.
-11. **Open — System Mode ownership/detection remains heuristic.** Persist an explicit
-    mode/schema/install ID and refuse destructive cleanup when ownership cannot be proven.
+11. **Fixed in PR5B — ownership/detection is explicit.** The state directory records schema,
+    install/transaction IDs, target and source identity, owned/original paths, and manifest copies;
+    upgrade and uninstall refuse destructive work when that receipt cannot be proven exact.
 12. **Partially mitigated, still open — the UI lacked capability truth.** PR #26 makes the action
     debug-only, adds a destructive warning, and the tested read-only target rejects before persistent
     mutation. Full doctor result/adapter/recovery integration and already-installed/conversion states
@@ -405,20 +426,23 @@ needed to make the project’s core purpose dependable. Status labels were recon
 #### Required characterization and conditional current-branch fixes
 
 - [x] Add characterization tests around the current behavior before changing it.
-- [ ] Extract System Mode shell logic from the oversized manager resource into a separately linted/tested script with a versioned interface.
+- [x] Extract System Mode shell logic from the oversized manager resource into a separately linted/tested script with a versioned interface.
 - [x] Implement the read-only doctor, schemas, reason codes, ADB driver, debug-only warning, and
   explicit confirmation.
-- [ ] Require and verify an external backup/snapshot and restore command before the first persistent mutation.
-- [ ] Replace filename magic and SHA1 inference with an explicit `SYSTEM_MODE_SCHEMA` and install manifest.
-- [ ] Stage all new files, calculate digests, validate policy/init output, and commit with a journal. On failure, roll back in reverse order and verify the original digests.
-- [ ] Write backups outside the mutated image when possible; never claim recovery until a restore has been exercised.
+- [x] Require and verify an external backup/snapshot and restore command before the first persistent mutation.
+- [x] Replace filename magic and SHA1 inference with an explicit mode, schema, and install manifest.
+- [x] Stage all new files, calculate digests, validate policy/init output, and commit with a journal. On failure, roll back in reverse order and verify the original digests.
+- [x] Write backups outside the mutated image when possible; never claim recovery until a restore has been exercised.
 - [x] Replace the permissive live-policy probe with a non-mutating parse/save check on the current line.
-- [ ] Replace wildcard uninstall with manifest-owned exact paths and hash-aware restoration.
+- [x] Replace wildcard uninstall with manifest-owned exact paths and hash-aware restoration.
 - [x] Fix and unit-test the `--auto-selinux` context and bounded I/O behavior on the current line;
   prefer removing the custom option during the upstream-based port if maintained primitives suffice.
-- [ ] Make runtime tmpfs selection layout-aware using the maintained upstream live-setup logic.
-- [ ] Separate System Mode from dynamic `/system/bin` SU visibility so persistence can be tested without Hide/SuList complexity.
-- [ ] Add shell static analysis and failure-injection tests after every mutation boundary.
+- [x] Make runtime tmpfs selection layout-aware for `/sbin`, `/debug_ramdisk`, and an
+  adapter-authorized location; PR7 should still prefer the maintained upstream live-setup primitive.
+- [x] Test System Mode persistence independently from Hide/SuList; dynamic `/system/bin` visibility
+  remains a separate provider/hiding question.
+- [x] Add shell static analysis and durable-boundary failure-injection tests. Repeat every boundary
+  live on each advertised target before release.
 
 ### v30.7 System Mode vertical-slice design
 
@@ -461,9 +485,9 @@ Start with current official code, but reuse current Kitsune behavior and fixture
 | Latest Kitsune CI and local AVD evidence | [PR #26 run 30697832776](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30697832776) passed source, build/JVM, API 23/29/35, and aggregate product gates at pre-final two-commit head `fc10d9242`, including the Android 6 readiness fix. Its paired security run exposed only volatile global RustSec metadata and led to the final semantic-comparison fix. Pre-final artifact head `1cac2135e` passed local official ARM64 API 34/35/36 debug and release patched-ramdisk boots, manager setup/reboot/self-test/root, 32 concurrent `su` calls per artifact, 137-case parser/policy/signing corpus per artifact, byte restoration, and AVD deletion. Final code commit `530f2a3f8` adds no app/native change beyond that product-tested content; it passed the 99-test local host suite and a fresh semantic RustSec check. The earlier [PR4A lab record](docs/system-mode/avd-lab-2026-07-22.md) retains immutable API 35 16 KiB/API 36 negative evidence. | Ordinary Magisk integration is evidenced on hosted x86_64, local ARM64 Android 14–16, and the exact BlueStacks comparison target. The exact two-commit hosted run after the semantic RustSec fix is the mandatory merge record; none of these normal-install lanes substitutes for writable System Mode qualification. |
 | Local build | The pinned ONDK is installed; canonical debug/minified-release builds and Gradle debug native links pass for ARM64, ARM32, x86_64, and x86 on this Mac. Final testing found that Gradle's `NDK_DEBUG=1` omitted section GC and pulled dead ARMv7 unwind code; `Application.mk` now makes the canonical and Gradle link contracts explicit and the formerly failing ARMv7 path passes. | Preserve the exact toolchain/bootstrap checks so another maintainer can reproduce the result. |
 | Local submodules | All current Kitsune submodules are initialized at their recorded gitlinks. A separate full recursive official-Magisk clone also checked out every current upstream submodule. | Recursive checkout remains a documented prerequisite; PR4B now automates reachability and pin drift. |
-| Tests | PR #26's squashed local candidate passed 99 host tests, JVM tests, zero-error lint, shell/source checks, clean all-ABI debug/release builds, artifact identity/signing checks, same-instance BlueStacks backend comparisons, official Android 14–16 ARM64 lifecycles, and API 35 provider/module/HideList/hidden-manager characterization. Three always-`NO-SOURCE` Gradle test tasks were removed while the real app JVM tests and all app/shared/stub lint lanes remain. | The local module lane closes basic startup/hook questions but exposes an external-provider mount-cleanup gap. SuList, early-mount, broad module compatibility, and actual writable Direct-System install/upgrade/uninstall remain release blockers. Heavy stress stays local; retained CI regressions are bounded and high-yield. |
+| Tests | PR #26's squashed local candidate passed 99 host tests, JVM tests, zero-error lint, shell/source checks, clean all-ABI debug/release builds, artifact identity/signing checks, same-instance BlueStacks backend comparisons, official Android 14–16 ARM64 lifecycles, and API 35 provider/module/HideList/hidden-manager characterization. PR5A/PR5B expands the host suite to 127 tests, passes exact all-ABI debug/release artifact checks, repeats ordinary debug/release lifecycles on temporary ARM64 API 23 and API 36 AVDs, and completes the exact MuMu evidence described below. | The writable current-line oracle now exists, but it remains debug-only and exact-version experimental. SuList, early-mount, broad module compatibility, enforcing/multi-target System Mode, production identity, and the maintained-base port remain release blockers. Heavy stress stays local; retained CI regressions are bounded and high-yield. |
 | Primary product feature | System Mode originated in `05289fb5` and now spans manager UI, shell/recovery installation, native tmpfs setup, policy, init, persistence, and uninstall | It must be treated as the branch-selection and release-qualification gate, not an optional later experiment |
-| System Mode test coverage | Host tests exercise installer parsing, debug/release gating, preflight, private mount namespace behavior, and rollback functions; live BlueStacks testing proved the debug warning and read-only rejection without changing selected init/policy hashes. No CI or qualified writable target completes a persistent `direct_install_system` lifecycle. | Use PR5A to qualify one writable target, then implement only evidence-backed transaction gaps. Characterization and negative refusal are not install qualification. |
+| System Mode test coverage | Host tests exercise authorization, target/source binding, manifest/state parsing, debug/release gating, private mount behavior, fsync/atomic fault classes, reverse recovery, boot verification, upgrade, and exact uninstall. Live BlueStacks still proves read-only refusal. MuMuPlayer 1.4.46 now has the same-instance released/current comparison, three candidate cold boots, player cycles, root policy, a minimal module, reinstall, staged-process-death rollback, exact-final upgrade/boot/uninstall, and two byte-verified external restores. | Preserve MuMu as an exact experimental record, not a brand-level support claim. Use this current-line transaction and its failures as the PR7 oracle on the maintained official base; PR15 must repeat the full exact-artifact matrix across every advertised target. |
 | Official reusable emulator logic | Magisk v30.7 `scripts/live_setup.sh` supports API 23–36 and handles legacy `/sbin` versus modern `/debug_ramdisk` runtime setup | The v30.7 port can replace several old custom primitives; it is a bounded vertical slice, not a from-scratch Magisk rewrite |
 | PR checks | PR2 added pull-request checks, static/host/JVM tests, debug/release builds, API 23/29/35 AVD jobs, and an aggregate product gate. | Stable qualification is still broader, but ordinary code changes no longer lack a build/boot gate. |
 | Update service | The inherited `1q23lyc45.github.io` channels are dead; PR4 now resolves every built-in channel to an explicit unavailable result without a request. Custom metadata requires HTTPS and cannot redirect to cleartext. | A project-owned, digest-validated service remains PR10; containment is complete for the current line. |
@@ -1890,7 +1914,7 @@ Measured code-head qualification:
   no code-head APK above may be promoted directly; the final two-commit history must rebuild and
   pass the hosted identity/build/AVD/security gates before merge.
 
-Explicit non-claims and remaining limits:
+Explicit non-claims and remaining limits at the PR #26 merge, before the PR5A/PR5B follow-up:
 
 - No writable target completed persistent System Mode install/cold-boot/upgrade/uninstall.
 - Rollback is not power-loss atomic across the persistent system payload, `/data/adb/magisk`,
@@ -1908,8 +1932,10 @@ pre-merge commit is promoted as the first production release.
 
 ## PR 5A — One writable-target baseline-versus-hardened lifecycle
 
-**Implementation status: next engineering PR once this GitHub #26 range is reachable from
-`kitsune`. Not started.**
+**Implementation status: implemented on `codex/pr5a-mumu-lifecycle`; merge-gated.** The complete
+record is
+[`docs/system-mode/mumu-pr5a-pr5b-2026-08-01.md`](docs/system-mode/mumu-pr5a-pr5b-2026-08-01.md),
+with a machine-readable experimental record under `compatibility/records/`.
 
 This is deliberately evidence-first and should be small in repository code. Use one exact
 snapshot-capable LDPlayer, MuMu, Nox, custom writable Android image, or other controlled target.
@@ -1941,9 +1967,20 @@ comparison artifact into the same restored instance or identical byte-verified s
 verified restore. If no target passes, publish the precise blocker and keep System Mode
 experimental; do not manufacture a successful support claim.
 
+**Result:** MuMuPlayer for macOS 1.4.46, VM index 0, Android 12/API 32 ARM64 with writable ext4
+`/system` satisfied the engineering exit. The released comparison and current feature set were
+re-injected into the same externally restored VM; candidate runs completed three cold boots/player
+cycles, root policy, a minimal module, reinstall, live staged-process-death rollback, uninstall,
+and restore. The exact final cleanup-only head then completed upgrade, `BOOT_VERIFIED`, root, exact
+uninstall, and another verified restore. The record stays `experimental`: its starting snapshot
+contained released legacy System Mode, only one cold boot was repeated after the final amendment,
+and release System Mode remains unavailable.
+
 ## PR 5B — Conditional current-line durable System Mode transaction
 
-**Implementation status: not started; decision follows PR5A.**
+**Implementation status: implemented on `codex/pr5a-mumu-lifecycle`; merge-gated.** PR5A proved a
+current-line comparison oracle was useful, so the conditional Path B was taken without promoting
+the old core as a permanent release line.
 
 Do this on the old core only if PR5A shows that a current-`kitsune` build is a necessary release or
 comparison candidate. Otherwise move the target-backed failing tests and requirements into PR7 and
@@ -1977,11 +2014,19 @@ duplicate dependency PR is created.
 the work is explicitly superseded by PR7 with every failing test preserved. “Interim rollback seems
 to work” is not an exit.
 
+**Result:** the current line now uses one shared complete installer/uninstaller with a versioned
+receipt, ownership/original inventories, JSON manifest, ordered journal, target/source/artifact and
+external-recovery binding, layout-aware runtime/init/policy selection, durable atomic publication,
+boot-ID verification, deterministic interrupted-state recovery, and exact hash-aware uninstall.
+The 127-test host suite covers the complete required fault classes; live MuMu proves STAGED process
+death recovery and the manifest-owned lifecycle. Every live power-cut boundary and real OTA/addon
+cycle remain PR15/PR16 qualification work, not hidden claims of this exit.
+
 ## PR 6 — Pristine latest-audited-stable `next-system` baseline
 
-**Implementation status: not started. Depends on PR #26 merge, PR5A evidence, and an explicit PR5B
-ship/supersede decision.** The official API still reports v30.7 as latest stable on 2026-08-01, but
-the release must be resolved again at the actual branch cut.
+**Implementation status: next engineering PR after the PR5A/PR5B branch merges.** The official API
+reported v30.7 as latest stable when rechecked on 2026-08-01, but the release must be resolved again
+at the actual branch cut.
 
 - Re-check official releases at branch cut; if v30.7 remains latest stable, create `next-system` from
   `e8a58776...`. If not, record the newer candidate and rerun the upstream/security/port-feasibility
@@ -2195,7 +2240,8 @@ No release should be called stable until all applicable boxes are checked.
 - [ ] Upgrade from current `31000` path tested or reinstall requirement clearly enforced/documented.
 - [ ] Fresh install, upgrade, rollback behavior, uninstall, and stock restoration tested.
 - [ ] API 23, 29, modern stable, and physical device matrix pass.
-- [ ] API 23–24 System Mode is either cold-boot proven or excluded from System Mode support even if normal Magisk still supports those APIs.
+- [x] API 23–24 System Mode is excluded while normal Magisk API 23 support remains tested; re-enable
+  only after a dedicated persistent launch path passes cold boots.
 - [ ] 16 KiB page, `init_boot`, `vendor_boot`, SAR/2SI cases pass as claimed.
 - [ ] MagiskHide/SuList migration and behavior pass.
 - [ ] Chosen Zygisk provider model and representative module pass.
@@ -2225,22 +2271,20 @@ in the detail:
   first-class compatibility requirements.
 - **Done foundation:** add the shared System Mode doctor, manifest/state schemas, ADB harness,
   reason codes, fixtures, and failure-injection contract before a forward-port.
-- **Done in this range; externally gated:** GitHub PR #26 contains the current-line
-  release/data/runtime hardening and experimental System Mode containment. If this roadmap commit is
-  not yet reachable from `kitsune`, land it only after its exact amended head is green; otherwise
-  proceed to PR5A.
-- **Next — PR5A:** qualify one exact writable, recoverable target by reinjecting the released
-  comparison and merged hardened artifact into the same restored instance/snapshot. BlueStacks
-  read-only refusal is useful but does not satisfy this result.
-- **Conditional — PR5B:** finish explicit recovery mode, layout-aware runtime, persistent manifest,
-  external backup, crash/power-loss recovery, and exact uninstall on the old core only if PR5A proves
-  a current-line release is needed. Otherwise preserve the tests for PR7.
+- **Done:** GitHub PR #26 contains the current-line release/data/runtime hardening and experimental
+  System Mode containment.
+- **Done on this merge-gated branch — PR5A:** MuMuPlayer 1.4.46 has the same-instance
+  released-versus-current lifecycle and verified external restore record. Keep it exact-version and
+  experimental; BlueStacks read-only refusal remains negative evidence.
+- **Done on this merge-gated branch — PR5B:** explicit recovery routing, layout-aware runtime,
+  persistent manifest/receipt/journal, external-backup authorization, interrupted-state recovery,
+  boot verification, and exact uninstall now form the current-line behavioral oracle for PR7.
 - **Done for current data containment:** keep `denylist` canonical and reconcile existing legacy v12
   data once without a fake public schema bump. **Still open:** provider/process/SuList semantics and
   the eventual `next-system` schema.
 - **Done foundation:** PR build/test CI and the upstream/security laboratory run on disposable hosted
   infrastructure; commercial-emulator mutation remains manually controlled and snapshot-backed.
-- **Open — PR6/PR7:** re-check official stable, create the pristine latest-audited-stable baseline
+- **Next — PR6/PR7:** re-check official stable, create the pristine latest-audited-stable baseline
   (v30.7 at this checkpoint), then port only the System Mode vertical slice first using maintained
   live-setup, policy, module, and runtime primitives.
 - **Open — PR8:** run identical snapshots against current and next implementations and select the

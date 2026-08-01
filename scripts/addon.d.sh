@@ -131,7 +131,9 @@ main() {
       abort "! System Mode is disabled in release builds"
   fi
 
-  remove_system_su
+  if [ "$SYSTEMINSTALL" != "true" ]; then
+    remove_system_su
+  fi
   if [ "$SYSTEMINSTALL" = "true" ]; then
     local system_apk=$MAGISKBIN/magisk.apk
     rm -f ./manager.sh
@@ -145,10 +147,17 @@ main() {
     BOOTMODE="$BOOTMODE_OLD"
     . $MAGISKBIN/util_functions.sh
     if $BOOTMODE; then
-      direct_install_system "$MAGISKBIN" || { cleanup_system_installation; unmount_system_mirrors; abort "! Installation failed"; }
+      direct_install_system "$MAGISKBIN" true "$system_apk" || { cleanup_system_installation; sm_abort_transaction; unmount_system_mirrors; abort "! Installation failed"; }
     else
-      direct_install_system "$MAGISKBIN" || { cleanup_system_installation; abort "! Installation failed"; }
+      direct_install_system "$MAGISKBIN" true "$system_apk" || { cleanup_system_installation; sm_abort_transaction; abort "! Installation failed"; }
     fi
+    install_addond "$system_apk" true true || {
+      cleanup_system_installation
+      sm_abort_transaction
+      abort "! addon.d publication failed"
+    }
+    commit_system_installation || { sm_abort_transaction; abort "! Installation commit failed"; }
+    sm_commit_transaction || { sm_abort_transaction; abort "! Durable installation commit failed"; }
   else
     install_magisk
   fi

@@ -8,6 +8,13 @@
 # used by compatible external integrations. Default: <git HEAD short SHA1>-kitsune
 version=string
 
+# Full source identity embedded in privileged install manifests. Defaults to
+# the repository HEAD; source archives without .git must set this explicitly.
+sourceCommit=0123456789abcdef0123456789abcdef01234567
+
+# Audited upstream lineage recorded separately from the Kitsune product version.
+upstreamBase=154121f3dd92e67a3d8e3f518684932c0f9783e6
+
 # Output path. Default: out
 outdir=string
 

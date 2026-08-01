@@ -7,17 +7,22 @@ but the resumed project has not shipped its first production release. The inheri
 a fork compatibility and Android upgrade-ordering value; it does not mean this branch is newer than
 official Magisk.
 
-The current hardening work is based on `kitsune` at `bcdf65f0`. Official comparison points are
-Magisk v30.7 (`e8a58776`) and the observed official `master` tip `fd0cb66b`.
+The PR5A/PR5B work is based on merged `kitsune` at `f6beadd7`; the durable System Mode code and
+exact MuMu-tested artifact are at `c86bdce4`. A later branch-only manager compatibility follow-up
+ports upstream's removal of the legacy multi-arch extraction path after the hosted Android 6 lane
+reproduced its failure. Official comparison points rechecked on 2026-08-01 are Magisk v30.7
+(`e8a58776`) and the observed official `master` tip `fd0cb66b`.
 
 ## What currently works
 
 - Ordinary Magisk patch, emulator setup, manager initialization, root, and parser flows pass on the
   official Android 14, 15, and 16 ARM64 Emulator images covered by the project tests. Physical
   boot-image flashing still needs a recoverable-device qualification run.
-- Direct-System/System Mode remains a separate, explicit debug-only action. It now warns before use,
-  checks the target before mutation, uses a private mount namespace, and rolls back staged files on
-  tested failures. It is not yet qualified as a release feature.
+- Direct-System/System Mode remains a separate, explicit debug-only action. The current line now
+  requires a host-authorized supported doctor report and verified external recovery tuple, records a
+  durable ownership/original/journal manifest, verifies the first boot, recovers interrupted states,
+  and uninstalls only exact hash-verified owned paths. MuMuPlayer 1.4.46 completed the experimental
+  lifecycle below. This is not a stable release feature.
 - Existing Kitsune/Delta HideList data is reconciled once into the active DenyList table without
   changing the rollback-compatible database version or touching SuList. Fresh installs do not run a
   legacy-data migration. See [the migration note](hide-migration-v13.md).
@@ -46,26 +51,40 @@ Host logs also reproduced BlueStacks process/ADB/storage-startup failures with a
 payload, so that observed intermittent case is strongly vendor-side. This does not prove that every
 future boot failure is unrelated to Magisk or installed modules.
 
+The writable target is the existing Chinese MuMuPlayer for macOS 1.4.46 VM index 0: Android 12/API
+32, ARM64, 4 KiB pages, writable ext4 `/system` on `/dev/block/sda1`, permissive SELinux with a
+precompiled policy, and vendor root disabled. Released and current artifacts were tested on the same
+externally restored VM. The current feature set passed three cold boots/player cycles, root policy,
+a minimal module, reinstall, staged-process-death rollback, exact uninstall, and verified image
+restore; the exact final `c86bdce4` artifact then passed upgrade, `BOOT_VERIFIED`, root, staging
+cleanup, exact uninstall, and another restore. The record remains experimental because the baseline
+contained released legacy System Mode and not every predecessor stress case was repeated after the
+cleanup-only final amendment. See the
+[PR5A/PR5B MuMu record](system-mode/mumu-pr5a-pr5b-2026-08-01.md).
+
+Temporary ARM64 Android 6/API 23 and Android 16/API 36 AVDs also passed debug and disposable-release
+normal patched-ramdisk boot, manager, reboot, root, concurrent-`su`, and corpus lanes, then had their
+stock ramdisks restored and were deleted. These are ordinary Magisk compatibility results, not
+Direct-System qualification. API 23–24 System Mode remains excluded.
+
 Support remains attached to an exact emulator/device version, Android image, ABI, page size,
 filesystem/layout, bootstrap method, and tested lifecycle. The detailed evidence ledger is in
 [`DEVELOPMENT_ROADMAP.md`](../DEVELOPMENT_ROADMAP.md).
 
 ## Release blockers
 
-1. Finish manifest-owned, crash-recoverable System Mode install, upgrade, addon, uninstall, and
-   restore transactions.
-2. Qualify System Mode on an exact writable, snapshot-capable target through install, three cold
-   boots, upgrade/reinstall, root/module checks, uninstall, and verified restoration.
-3. Create a protected production signing identity and an explicit transition from APKs signed with
+1. Forward-port the tested System Mode contract onto a freshly audited current official stable core;
+   do not maintain the old core as a second permanent release line.
+2. Create a protected production signing identity and an explicit transition from APKs signed with
    the historical public test certificate.
-4. Establish a project-owned authenticated update service before enabling built-in update channels.
-5. Forward-port the tested Kitsune behavior onto an audited current official stable core; do not
-   independently merge hundreds of official `master` commits into this old core.
-6. Select and qualify a Zygisk architecture and define HideList/SuList/provider behavior by exact
+3. Establish a project-owned authenticated update service before enabling built-in update channels.
+4. Repeat the complete exact-artifact System Mode lifecycle and every live failure boundary on each
+   advertised commercial-emulator/enforcing-policy/OTA lane; one MuMu version is not brand support.
+5. Select and qualify a Zygisk architecture and define HideList/SuList/provider behavior by exact
    provider version. ReZygisk 1.0.0 must not be advertised as Kitsune-compatible.
-7. Complete physical-device, commercial-emulator, ABI/runtime, recovery, multiuser, SELinux,
+6. Complete physical-device, ABI/runtime, recovery, multiuser, SELinux,
    hidden-manager, safe-mode, and failure-injection matrices for every support claim.
-8. Resolve or explicitly carry remaining dependency/security holds, including the RSA timing
+7. Resolve or explicitly carry remaining dependency/security holds, including the RSA timing
    advisory with no fixed upstream version.
 
 The ordered implementation plan and acceptance criteria are maintained in the
