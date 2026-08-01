@@ -1,9 +1,11 @@
 ##########################################################
-# All variables in config.prop are optional
-# Removing or leaving them blank will keep default values
+# Debug builds need no local config. Release builds require all four signing
+# values in the ignored `config.prop` or in a file selected with `-c`.
+# Back up the production keystore securely and never commit it.
 ##########################################################
 
-# The version name of Magisk. Default: git HEAD short SHA1
+# The version name of Magisk. It must contain the lowercase marker `kitsune`
+# used by compatible external integrations. Default: <git HEAD short SHA1>-kitsune
 version=string
 
 # Output path. Default: out
@@ -11,10 +13,10 @@ outdir=string
 
 #####################################################
 # Signing configs for signing zips and APKs
-# These 4 variables has to be either all set or not
+# Release builds require all four variables. Never commit real values.
 #####################################################
 
-# Path to keystore file
+# Path to the keystore (relative to the repository root or absolute)
 keyStore=string
 # Keystore password
 keyStorePass=string

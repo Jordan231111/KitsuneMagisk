@@ -18,11 +18,9 @@ def _canonical(value: object) -> str:
     return json.dumps(value, indent=2, sort_keys=True) + "\n"
 
 
-def analyze_ref(repo: GitRepository, ref: str) -> dict[str, Any]:
-    commit = repo.resolve(ref)
-    cpp = repo.show_text(commit, "native/src/core/package.cpp")
-    rust = repo.show_text(commit, "native/src/core/package.rs")
-    cargo = repo.show_text(commit, "native/src/core/Cargo.toml")
+def _analyze_sources(
+    ref: str, commit: str, cpp: str, rust: str, cargo: str
+) -> dict[str, Any]:
     if cpp:
         match = re.search(r"^#define\s+ENFORCE_SIGNATURE\s+(.+)$", cpp, flags=re.MULTILINE)
         value = match.group(1).strip() if match else None
@@ -86,16 +84,41 @@ def analyze_ref(repo: GitRepository, ref: str) -> dict[str, Any]:
     raise ValueError(f"{ref} has no recognized package identity implementation")
 
 
+def analyze_ref(repo: GitRepository, ref: str) -> dict[str, Any]:
+    commit = repo.resolve(ref)
+    return _analyze_sources(
+        ref,
+        commit,
+        repo.show_text(commit, "native/src/core/package.cpp"),
+        repo.show_text(commit, "native/src/core/package.rs"),
+        repo.show_text(commit, "native/src/core/Cargo.toml"),
+    )
+
+
+def analyze_worktree(repo: GitRepository) -> dict[str, Any]:
+    source = repo.path / "native" / "src" / "core"
+
+    def read(name: str) -> str:
+        path = source / name
+        return path.read_text(encoding="utf-8") if path.is_file() else ""
+
+    return _analyze_sources(
+        "WORKTREE",
+        "WORKTREE",
+        read("package.cpp"),
+        read("package.rs"),
+        read("Cargo.toml"),
+    )
+
+
 def build_report(repo: GitRepository, current: str, stable: str, master: str) -> dict[str, Any]:
     snapshots = {
-        "current": analyze_ref(repo, current),
+        "current": analyze_worktree(repo) if current == "WORKTREE" else analyze_ref(repo, current),
         "stable": analyze_ref(repo, stable),
         "master": analyze_ref(repo, master),
     }
     errors = []
-    if not snapshots["current"]["global_bypass_detected"]:
-        errors.append("current baseline no longer matches the audited global bypass; review the threat model")
-    for lane in ("stable", "master"):
+    for lane in ("current", "stable", "master"):
         snapshot = snapshots[lane]
         for field in (
             "release_signature_enforced",
@@ -124,7 +147,7 @@ def build_report(repo: GitRepository, current: str, stable: str, master: str) ->
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Verify manager signature enforcement across lanes")
     parser.add_argument("--repo", type=Path, default=ROOT)
-    parser.add_argument("--current", default="f943ecddd11d0e648877ffb1f917c16767b8f7cc")
+    parser.add_argument("--current", default="WORKTREE")
     parser.add_argument("--stable", default="v30.7")
     parser.add_argument("--master", default="upstream/master")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)

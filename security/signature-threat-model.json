@@ -1,7 +1,8 @@
 {
   "schema_version": 1,
   "asset": "Magisk daemon to manager/stub identity binding",
-  "current_fork_baseline": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+  "historical_frozen_baseline": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
+  "current_worktree": "codex/production-hardening based on bcdf65f0af1882e46cd435379bee4535e4aab87f",
   "official_stable_baseline": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
   "trust_boundaries": [
     {
@@ -27,9 +28,10 @@
     "ship a release with signature checks disabled through an unconditional compile-time constant"
   ],
   "decisions": {
-    "current_kitsune": "global ENFORCE_SIGNATURE=0 is an acknowledged release blocker and must not be copied",
+    "current_kitsune": "release builds enforce ENFORCE_SIGNATURE=(!MAGISK_DEBUG); diagnostic relaxation is debug-only and the former global bypass must not return",
     "next_system": "preserve official stable default check-signature feature and release-only rejection paths",
     "hidden_manager": "permit no package-name-only exception; recovery remains certificate- and identity-bound",
-    "runtime_gate": "PR6 must execute trusted install, untrusted replacement, hidden-manager replacement, and trusted-stub recovery on a disposable AVD"
+    "runtime_gate": "the existing BlueStacks Tiramisu64 test instance has proved untrusted original-manager rejection and trusted-stub recovery through supported same-instance reinjection; trusted hidden-manager acceptance and hidden dyn certificate replacement still require dedicated runtime execution",
+    "release_signing": "the historical repository test certificate is public and forbidden for production; use an external persistent identity and define migration from existing old-certificate installs before release"
   }
 }

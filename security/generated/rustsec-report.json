@@ -2,12 +2,13 @@
   "audit_command": "cargo audit --file native/src/Cargo.lock --json",
   "audit_ignore_used": false,
   "database": {
-    "advisory_count": 1167,
-    "commit": "7a086e691bff2c299fe16dda543daa3b5e7f4397"
+    "advisory_count": 1177,
+    "commit": "84dd82689f285460d9b815c8e3271b33780f411e"
   },
   "finding_count": 6,
   "findings": [
     {
+      "advisory_record_sha256": "4016b904765c2651ce28db9154e4c87e8e1358cf81e42ae473b54d550a84689b",
       "disposition": {
         "disposition": "inherit_with_pr6_baseline",
         "gates": [
@@ -27,6 +28,7 @@
       "version": "0.12.1"
     },
     {
+      "advisory_record_sha256": "b473a6b149d56950b3ba9c1175e3e040ce84e82b302d23792c14bab7501f8bb8",
       "disposition": {
         "disposition": "inherit_with_pr6_baseline",
         "gates": [
@@ -46,6 +48,7 @@
       "version": "0.2.14"
     },
     {
+      "advisory_record_sha256": "305deff995932eb751b54e33a84c4445da07b3cf05f1f6018b2a67fceed93f58",
       "disposition": {
         "disposition": "open_unfixed_visible_risk",
         "fixed": null,
@@ -67,6 +70,7 @@
       "version": "0.9.8"
     },
     {
+      "advisory_record_sha256": "32baf1fb807fb4b321bdd6c190d8baa6db05c52682a8f82a3d48437e59993f09",
       "disposition": {
         "disposition": "inherit_with_pr6_baseline",
         "gates": [
@@ -86,6 +90,7 @@
       "version": "0.2.14"
     },
     {
+      "advisory_record_sha256": "1805e92965e9cd0717cce42ff1845e84e1eb44d597622850be5036472c51c061",
       "disposition": {
         "disposition": "retire_with_current_core",
         "fixed": ">=0.8.6,<0.9.0",
@@ -107,6 +112,7 @@
       "version": "0.8.5"
     },
     {
+      "advisory_record_sha256": "d7f29ee3fab9e690e37e3ffd433f0cf15ff6916495bdaac147db4a51ec944e06",
       "disposition": {
         "disposition": "fix_after_pr6_baseline_before_port",
         "fixed": ">=1.0.195",

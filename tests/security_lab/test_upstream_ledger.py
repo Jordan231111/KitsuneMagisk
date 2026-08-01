@@ -7,7 +7,11 @@ import tempfile
 import unittest
 
 from tools.security_lab.git import GitRepository
-from tools.security_lab.upstream_ledger import _toolchain_snapshot, build_ledger
+from tools.security_lab.upstream_ledger import (
+    _discard_verified_release_metadata,
+    _toolchain_snapshot,
+    build_ledger,
+)
 
 
 def git(path: Path, *args: str) -> str:
@@ -122,6 +126,12 @@ class UpstreamLedgerTest(unittest.TestCase):
                 self.assertEqual(f"{lane}-decision", record["disposition"]["decision"])
                 self.assertTrue(record["ownership"]["required_gates"])
             json.dumps(ledger)
+
+            _discard_verified_release_metadata(ledger)
+            self.assertIsNone(ledger["release_resolution"]["latest_release"])
+            self.assertTrue(
+                ledger["release_resolution"]["latest_matches_configured_stable"]
+            )
 
     def test_release_change_is_machine_visible(self) -> None:
         policy = json.loads(

@@ -51,10 +51,11 @@ is_mounted /data || mount /data || is_mounted /cache || mount /cache
 mount_partitions
 check_data
 get_flags
-find_boot_image
-
-[ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-ui_print "- Target image: $BOOTIMAGE"
+if [ "$SYSTEMINSTALL" != "true" ]; then
+  find_boot_image
+  [ -z "$BOOTIMAGE" ] && abort "! Unable to detect target image"
+  ui_print "- Target image: $BOOTIMAGE"
+fi
 
 # Detect version and architecture
 api_level_arch_detect
@@ -68,6 +69,16 @@ cd $BINDIR
 for file in lib*.so; do mv "$file" "${file:3:${#file}-6}"; done
 cd /
 cp -af $INSTALLER/lib/$ABI32/libmagisk32.so $BINDIR/magisk32 2>/dev/null
+
+# Recovery flashing bypasses the Kotlin install UI. Refuse a release backend
+# before legacy-root removal, runtime publication, or any System Mode remount.
+if [ "$SYSTEMINSTALL" = "true" ]; then
+  MODE_BINARY=$BINDIR/magisk32
+  [ "$IS64BIT" = "true" ] && MODE_BINARY=$BINDIR/magisk64
+  chmod 755 "$MODE_BINARY" || abort "! Unable to inspect System Mode payload"
+  "$MODE_BINARY" -c 2>/dev/null | grep -q ':MAGISK:D ' || \
+    abort "! System Mode is disabled in release builds"
+fi
 
 # Check if system root is installed and remove
 $BOOTMODE || remove_system_su
@@ -102,9 +113,13 @@ ADDOND=/system/addon.d
 ADDOND_MAGISK=$ADDOND/magisk
 
 if [ "$SYSTEMINSTALL" == "true" ]; then
-  unzip -oj "$APK" "res/raw/manager.sh"
+  rm -f ./manager.sh
+  unzip -oj "$APK" "res/raw/manager.sh" || \
+    abort "! System Mode installer is missing"
+  [ -f ./manager.sh ] || abort "! System Mode installer is missing"
   BOOTMODE_OLD="$BOOTMODE"
-  . ./manager.sh
+  . ./manager.sh || abort "! Unable to load System Mode installer"
+  rm -f ./manager.sh
   BOOTMODE="$BOOTMODE_OLD"
   . $COMMONDIR/util_functions.sh
   ADDOND_MAGISK=/system/etc/init/magisk

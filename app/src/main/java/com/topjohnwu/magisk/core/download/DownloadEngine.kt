@@ -10,6 +10,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.system.Os
 import androidx.collection.SparseArrayCompat
 import androidx.collection.isNotEmpty
 import androidx.core.content.getSystemService
@@ -32,20 +33,25 @@ import com.topjohnwu.magisk.core.ktx.forEach
 import com.topjohnwu.magisk.core.ktx.set
 import com.topjohnwu.magisk.core.ktx.withStreams
 import com.topjohnwu.magisk.core.ktx.writeTo
+import com.topjohnwu.magisk.core.repository.UpdateChannelPolicy
 import com.topjohnwu.magisk.core.tasks.HideAPK
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils.outputStream
 import com.topjohnwu.magisk.core.utils.ProgressInputStream
 import com.topjohnwu.magisk.utils.APKInstall
 import com.topjohnwu.magisk.view.Notifications
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import timber.log.Timber
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.OutputStream
+import java.security.DigestInputStream
+import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
@@ -173,12 +179,17 @@ class DownloadEngine(
                 } else {
                     notifyFinish(subject)
                 }
-            } catch (e: IOException) {
+            } catch (e: CancellationException) {
+                notifyRemove(subject.notifyId)
+                throw e
+            } catch (e: Exception) {
                 Timber.e(e)
                 notifyFail(subject)
             }
         }
     }
+
+    fun cancel() = job.cancel()
 
     @Synchronized
     fun reattach() {
@@ -265,13 +276,36 @@ class DownloadEngine(
     }
 
     private suspend fun handleApp(stream: InputStream, subject: Subject.App) {
-        val external = subject.file.outputStream()
+        // Notification IDs are stable UI identifiers, not unique transaction
+        // identifiers. Use a private per-download file so overlapping retries
+        // cannot truncate or install each other's verified bytes.
+        val downloadedApk = File.createTempFile(
+            "update-${subject.notifyId}-",
+            ".apk",
+            context.cacheDir,
+        )
+        try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            DigestInputStream(stream, digest).copyAndClose(downloadedApk.outputStream())
+            if (!UpdateChannelPolicy.matchesSha256(subject.sha256, digest.digest())) {
+                throw IOException("Downloaded APK failed SHA-256 verification")
+            }
 
-        if (isRunningAsStub) {
-            val updateApk = StubApk.update(context)
-            try {
+            val external = subject.file.outputStream()
+            if (isRunningAsStub) {
+                val updateApk = StubApk.update(context)
                 // Download full APK to stub update path
-                stream.copyAndClose(TeeOutputStream(external, updateApk.outputStream()))
+                downloadedApk.inputStream().copyAndClose(external)
+                val staging = File.createTempFile("update-", ".apk", updateApk.parentFile)
+                try {
+                    FileOutputStream(staging).use { output ->
+                        downloadedApk.inputStream().use { it.copyAll(output) }
+                        output.fd.sync()
+                    }
+                    Os.rename(staging.path, updateApk.path)
+                } finally {
+                    staging.delete()
+                }
 
                 // Also upgrade stub
                 notifyUpdate(subject.notifyId) {
@@ -281,25 +315,37 @@ class DownloadEngine(
                 }
 
                 // Extract stub
-                val zf = ZipFile(updateApk)
                 val apk = context.cachedFile("stub.apk")
-                apk.delete()
-                zf.getInputStream(zf.getEntry("assets/stub.apk")).writeTo(apk)
-                zf.close()
+                try {
+                    apk.delete()
+                    ZipFile(updateApk).use { zip ->
+                        val entry = zip.getEntry("assets/stub.apk")
+                            ?: throw IOException("Verified manager APK contains no stub payload")
+                        zip.getInputStream(entry).use { it.writeTo(apk) }
+                    }
 
-                // Patch and install
-                subject.intent = HideAPK.upgrade(context, apk)
-                    ?: throw IOException("HideAPK patch error")
-                apk.delete()
-            } catch (e: Exception) {
-                // If any error occurred, do not let stub load the new APK
-                updateApk.delete()
-                throw e
+                    // Patch and install
+                    val (accepted, intent) = HideAPK.upgrade(context, apk)
+                    if (!accepted) throw IOException("HideAPK patch or install error")
+                    subject.intent = intent
+                } finally {
+                    apk.delete()
+                }
+            } else {
+                downloadedApk.inputStream().copyAndClose(external)
+                val session = APKInstall.startSession(context)
+                downloadedApk.inputStream().use { session.write(it) }
+                subject.intent = session.waitIntent()
+                if (subject.intent == null && !session.isSuccessful) {
+                    throw IOException("Package installer did not accept the verified APK")
+                }
             }
-        } else {
-            val session = APKInstall.startSession(context)
-            stream.copyAndClose(TeeOutputStream(external, session.openStream(context)))
-            subject.intent = session.waitIntent()
+        } catch (e: Exception) {
+            // Never let the stub load an unverified or partially written update.
+            if (isRunningAsStub) StubApk.update(context).delete()
+            throw e
+        } finally {
+            downloadedApk.delete()
         }
     }
 
@@ -327,24 +373,6 @@ class DownloadEngine(
                     }
                 }
             }
-        }
-    }
-
-    private class TeeOutputStream(
-        private val o1: OutputStream,
-        private val o2: OutputStream
-    ) : OutputStream() {
-        override fun write(b: Int) {
-            o1.write(b)
-            o2.write(b)
-        }
-        override fun write(b: ByteArray?, off: Int, len: Int) {
-            o1.write(b, off, len)
-            o2.write(b, off, len)
-        }
-        override fun close() {
-            o1.close()
-            o2.close()
         }
     }
 

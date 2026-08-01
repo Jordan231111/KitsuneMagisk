@@ -18,7 +18,6 @@ MAGISKBIN=/data/adb/magisk
 MAGISKTMPDIR=/tmp/magisk
 [ -z "$S" ] && S=/system
 ADDOND="$S/addon.d"
-APK="$S/addon.d/magisk/magisk.apk"
 
 V1_FUNCS=/tmp/backuptool.functions
 V2_FUNCS=/postinstall/tmp/backuptool.functions
@@ -113,25 +112,42 @@ main() {
     fi
   fi
 
-  find_boot_image
-  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-  ui_print "- Target image: $BOOTIMAGE"
+  if [ "$SYSTEMINSTALL" != "true" ]; then
+    find_boot_image
+    [ -z "$BOOTIMAGE" ] && abort "! Unable to detect target image"
+    ui_print "- Target image: $BOOTIMAGE"
+  fi
 
   api_level_arch_detect
   ui_print "- Device platform: $ABI"
 
-  remove_system_su
   chmod -R 755 $MAGISKBIN
-  if [ "$SYSTEMINSTALL" == "true" ];then
-    unzip -oj "$ADDOND/magisk/magisk.apk" "res/raw/manager.sh"
+  if [ "$SYSTEMINSTALL" = "true" ]; then
+    # The System Mode payload and APK are restored into MAGISKBIN during the
+    # addon.d backup phase; addon.d/magisk is not used by a System Mode install.
+    local mode_binary=$MAGISKBIN/magisk32
+    [ "$IS64BIT" = "true" ] && mode_binary=$MAGISKBIN/magisk64
+    "$mode_binary" -c 2>/dev/null | grep -q ':MAGISK:D ' || \
+      abort "! System Mode is disabled in release builds"
+  fi
+
+  remove_system_su
+  if [ "$SYSTEMINSTALL" = "true" ]; then
+    local system_apk=$MAGISKBIN/magisk.apk
+    rm -f ./manager.sh
+    [ -f "$system_apk" ] || abort "! System Mode APK backup is missing"
+    unzip -oj "$system_apk" "res/raw/manager.sh" || \
+      abort "! System Mode installer is missing"
+    [ -f ./manager.sh ] || abort "! System Mode installer is missing"
     BOOTMODE_OLD="$BOOTMODE"
-    . ./manager.sh
+    . ./manager.sh || abort "! Unable to load System Mode installer"
+    rm -f ./manager.sh
     BOOTMODE="$BOOTMODE_OLD"
     . $MAGISKBIN/util_functions.sh
     if $BOOTMODE; then
-      direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; unmount_system_mirrors; abort "! Installation failed"; }
+      direct_install_system "$MAGISKBIN" || { cleanup_system_installation; unmount_system_mirrors; abort "! Installation failed"; }
     else
-      direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; abort "! Installation failed"; }
+      direct_install_system "$MAGISKBIN" || { cleanup_system_installation; abort "! Installation failed"; }
     fi
   else
     install_magisk

@@ -114,7 +114,7 @@ created=true
 
 "$emu" "@$name" \
   -no-window -no-audio -no-boot-anim -no-metrics \
-  -gpu swiftshader_indirect -read-only -no-snapshot \
+  -gpu swiftshader -read-only -no-snapshot \
   -memory "$memory" -port "$port" &
 emu_pid=$!
 

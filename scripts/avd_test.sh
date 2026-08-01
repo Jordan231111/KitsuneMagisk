@@ -105,6 +105,25 @@ print_error() {
   echo -e "\n\033[41;39m${1}\033[0m\n"
 }
 
+run_with_timeout() {
+  local seconds="$1"
+  shift
+  "$@" &
+  local command_pid=$!
+  (
+    sleep "$seconds"
+    kill -TERM "$command_pid" 2>/dev/null || exit 0
+    sleep 5
+    kill -KILL "$command_pid" 2>/dev/null || true
+  ) &
+  local watchdog_pid=$!
+  local result=0
+  wait "$command_pid" || result=$?
+  kill "$watchdog_pid" 2>/dev/null || true
+  wait "$watchdog_pid" 2>/dev/null || true
+  return "$result"
+}
+
 cleanup() {
   local restore_ok=true
   print_error "! An error occurred when testing $pkg"
@@ -186,7 +205,7 @@ set_api_env() {
     -no-audio
     -no-boot-anim
     -no-metrics
-    -gpu swiftshader_indirect
+    -gpu swiftshader
     -read-only
     -no-snapshot
     -memory "$memory"
@@ -239,6 +258,39 @@ wait_emu() {
   return 1
 }
 
+wait_test_ready() {
+  local variant=$1
+  local deadline=$((SECONDS + boot_timeout))
+  local expected_mode
+  local magisk_out
+  local package_out
+
+  case "$variant" in
+    debug) expected_mode=D ;;
+    release) expected_mode=R ;;
+    *) return 2 ;;
+  esac
+
+  # sys.boot_completed can become visible before PackageManager's Binder
+  # endpoint and Magisk's mounted command path are both available. Require both
+  # in one polling cycle so later failures describe the tested artifact.
+  while kill -0 "$emu_pid" 2>/dev/null; do
+    package_out=$("${adb_cmd[@]}" shell pm path android 2>/dev/null | tr -d '\r') || true
+    magisk_out=$("${adb_cmd[@]}" shell magisk -v 2>/dev/null | tr -d '\r') || true
+    case "$package_out:$magisk_out" in
+      package:*:MAGISK:"$expected_mode")
+        printf '%s\n' "$magisk_out"
+        return 0
+        ;;
+    esac
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      return 1
+    fi
+    sleep 2
+  done
+  return 1
+}
+
 run_content_cmd() {
   local method=$1
   local deadline=$((SECONDS + boot_timeout))
@@ -271,12 +323,8 @@ test_emu() {
 
   "$emu" "@$avd_name" "${emu_args[@]}" &
   emu_pid=$!
-  if ! wait_emu sys.boot_completed 1; then
+  if ! wait_emu sys.boot_completed 1 || ! wait_test_ready "$variant"; then
     print_error "Failed to boot $variant image for $pkg"
-    return 1
-  fi
-
-  if ! "${adb_cmd[@]}" shell magisk -v; then
     return 1
   fi
 
@@ -304,6 +352,42 @@ test_emu() {
   fi
   printf '%s\n' "$root_result" >&2
   if ! grep -q 'uid=0' <<< "$root_result"; then
+    return 1
+  fi
+
+  # Keep a small concurrent smoke in CI because a debug-only post-fork log
+  # previously deadlocked child handlers while the daemon itself stayed alive.
+  # The much larger stress matrix remains a disposable local-device test.
+  local parallel_result
+  if ! parallel_result=$(run_with_timeout 45 "${adb_cmd[@]}" shell '
+      set -e
+      pids=""
+      for worker in 1 2 3 4; do
+        (
+          count=0
+          while [ "$count" -lt 8 ]; do
+            su -c true
+            count=$((count + 1))
+          done
+          echo "worker-$worker-ok"
+        ) &
+        pids="$pids $!"
+      done
+      for pid in $pids; do
+        wait "$pid"
+      done
+    ' 2>&1); then
+    printf '%s\n' "$parallel_result" >&2
+    print_error "Concurrent su smoke timed out or failed"
+    return 1
+  fi
+  # Legacy adb shell uses a PTY and may retain CRLF on Android 6. Normalize
+  # before matching complete worker lines; the command's exit status above is
+  # still authoritative for failures inside any worker.
+  parallel_result=${parallel_result//$'\r'/}
+  printf '%s\n' "$parallel_result" >&2
+  if [ "$(grep -c -- '-ok$' <<< "$parallel_result")" -ne 4 ]; then
+    print_error "Concurrent su smoke did not complete every worker"
     return 1
   fi
 
@@ -353,7 +437,9 @@ run_test() {
   restore_avd
   "$emu" "@$avd_name" "${emu_args[@]}" &
   emu_pid=$!
-  if ! wait_emu init.svc.bootanim stopped; then
+  # API 36 images launched with -no-boot-anim may never publish the
+  # init.svc.bootanim property even though Android has completed booting.
+  if ! wait_emu sys.boot_completed 1; then
     print_error "Failed to boot emulator for $pkg"
     return 1
   fi

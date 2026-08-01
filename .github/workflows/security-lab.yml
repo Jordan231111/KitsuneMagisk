@@ -8,8 +8,15 @@ on:
       - ".gitmodules"
       - "**/*.gradle.kts"
       - "**/Cargo.toml"
+      - "app/shared/src/main/java/com/topjohnwu/magisk/utils/APKInstall.java"
+      - "app/src/main/java/com/topjohnwu/magisk/core/Info.kt"
+      - "app/src/main/java/com/topjohnwu/magisk/core/JobService.kt"
+      - "app/src/main/java/com/topjohnwu/magisk/core/download/**"
       - "app/src/main/java/com/topjohnwu/magisk/core/di/Networking.kt"
       - "app/src/main/java/com/topjohnwu/magisk/core/repository/UpdateCheckResult.kt"
+      - "app/src/main/java/com/topjohnwu/magisk/core/tasks/HideAPK.kt"
+      - "app/src/main/java/com/topjohnwu/magisk/core/tasks/MagiskInstaller.kt"
+      - "app/src/main/res/raw/manager.sh"
       - "app/src/test/java/com/topjohnwu/magisk/core/repository/UpdateChannelPolicyTest.kt"
       - "app/gradle/libs.versions.toml"
       - "build.py"
@@ -19,12 +26,17 @@ on:
       - "native/src/Application.mk"
       - "native/src/Cargo.lock"
       - "native/src/boot/**"
+      - "native/src/core/db.cpp"
+      - "native/src/core/db_migrations.hpp"
+      - "native/src/core/package.cpp"
+      - "native/src/core/su/**"
       - "native/src/external/**"
       - "native/src/sepolicy/**"
       - "scripts/avd_test.sh"
       - "scripts/security_avd_test.sh"
       - "scripts/util_functions.sh"
       - "security/**"
+      - "stub/src/main/java/com/topjohnwu/magisk/**"
       - "tests/security_lab/**"
       - "tools/security_lab/**"
       - "tools/termux-elf-cleaner"
@@ -46,7 +58,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Check out complete fork history
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           submodules: recursive
@@ -90,7 +102,7 @@ jobs:
         run: >-
           ./gradlew :app:dependencies
           --configuration debugRuntimeClasspath
-          -PconfigPath="$PWD/config.prop"
+          -PconfigPath="$RUNNER_TEMP/no-config.prop"
           > "$RUNNER_TEMP/gradle-runtime.txt"
 
       - name: Verify dependency license evidence
@@ -111,11 +123,12 @@ jobs:
       - name: Verify package-signature and hidden-manager recovery contract
         run: python3 -m tools.security_lab.signature_contract --check
 
-      - name: Run host security/property/fault tests
+      - name: Run scheduled host security/property/fault tests
+        if: ${{ github.event_name != 'pull_request' }}
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
       - name: Upload upstream and submodule evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: upstream-security-ledger-${{ github.sha }}
           path: ${{ runner.temp }}/submodule-availability.json
@@ -124,11 +137,12 @@ jobs:
 
   sanitized-device-corpus:
     name: UBSan Android parser corpus
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           submodules: recursive
@@ -153,7 +167,7 @@ jobs:
 
       - name: Upload architecture-specific corpus evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: security-corpus-${{ github.sha }}
           path: out/security-corpus-*.json

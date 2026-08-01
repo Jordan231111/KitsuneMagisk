@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/xattr.h>
+#include <cerrno>
 
 #include <consts.hpp>
 #include <base.hpp>
@@ -13,11 +14,18 @@ using namespace std;
 int setcon(const char *con) {
     int fd = open("/proc/self/attr/current", O_WRONLY | O_CLOEXEC);
     if (fd < 0)
-        return fd;
+        return -1;
     size_t len = strlen(con) + 1;
-    int rc = write(fd, con, len);
+    ssize_t written;
+    do {
+        written = write(fd, con, len);
+    } while (written < 0 && errno == EINTR);
+    int saved_errno = errno;
     close(fd);
-    return rc != len;
+    if (written == static_cast<ssize_t>(len))
+        return 0;
+    errno = written < 0 ? saved_errno : EIO;
+    return -1;
 }
 
 int getfilecon(const char *path, byte_data con) {

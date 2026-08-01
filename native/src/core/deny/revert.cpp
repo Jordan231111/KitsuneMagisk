@@ -1,24 +1,18 @@
 #include <set>
 #include <sys/mount.h>
+#include <sys/stat.h>
+#include <sys/vfs.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <sys/stat.h>
 
 #include <consts.hpp>
 #include <base.hpp>
 #include <core.hpp>
 #include <selinux.hpp>
 
-#include <link.h>
-
 #include "deny.hpp"
 
 using namespace std;
-
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/vfs.h>
 
 #define VLOGD(tag, from, to) LOGD("%-8s: %s <- %s\n", tag, to, from)
 
@@ -27,9 +21,11 @@ bool is_rootfs()
 #define TST_RAMFS_MAGIC    0x858458f6
 #define TST_TMPFS_MAGIC    0x01021994
 #define TST_OVERLAYFS_MAGIC 0x794c7630
-    const char *path= "/";
-    struct statfs s;
-    statfs(path, &s);
+    struct statfs s{};
+    if (statfs("/", &s) != 0) {
+        PLOGE("statfs /");
+        return false;
+    }
 
     switch (s.f_type) {
     case TST_TMPFS_MAGIC:
@@ -39,15 +35,6 @@ bool is_rootfs()
     default:
         return false;
     }
-}
-
-static bool system_lnk(const char *path){
-    char buff[4098];
-    ssize_t len = readlink(path, buff, sizeof(buff)-1);
-    if (len != -1) {
-        return true;
-    }
-    return false;
 }
 
 void recreate_sbin_v2(const char *mirror, bool use_bind_mount) {

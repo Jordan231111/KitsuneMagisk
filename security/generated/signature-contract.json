@@ -10,21 +10,21 @@
   "schema_version": 1,
   "snapshots": {
     "current": {
-      "commit": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
-      "global_bypass_detected": true,
-      "hidden_dyn_replacement_rejected": false,
+      "commit": "WORKTREE",
+      "global_bypass_detected": false,
+      "hidden_dyn_replacement_rejected": true,
       "hidden_identity_bound": true,
       "implementation": "cpp-compile-constant",
-      "normal_replacement_rejected": false,
-      "ref": "f943ecddd11d0e648877ffb1f917c16767b8f7cc",
-      "release_signature_enforced": false,
+      "normal_replacement_rejected": true,
+      "ref": "WORKTREE",
+      "release_signature_enforced": true,
       "source_evidence": {
-        "ENFORCE_SIGNATURE": "0"
+        "ENFORCE_SIGNATURE": "(!MAGISK_DEBUG)"
       },
       "trusted_stub_recovery_present": true
     },
     "master": {
-      "commit": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
+      "commit": "fd0cb66b6b41af41564e692f39db57f21cf378ad",
       "global_bypass_detected": false,
       "hidden_dyn_replacement_rejected": true,
       "hidden_identity_bound": true,

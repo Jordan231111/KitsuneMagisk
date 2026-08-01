@@ -12,12 +12,27 @@ ROOT = Path(__file__).resolve().parents[2]
 MIGRATION_HEADER = ROOT / "native" / "src" / "core" / "db_migrations.hpp"
 
 
-def migration_sql(header: Path = MIGRATION_HEADER) -> str:
+def sql_constant(name: str, header: Path = MIGRATION_HEADER) -> str:
     text = header.read_text(encoding="utf-8")
-    matches = re.findall(r'R"sql\((.*?)\)sql"', text, flags=re.DOTALL)
+    pattern = rf'inline constexpr char {re.escape(name)}\[\]\s*=\s*R"sql\((.*?)\)sql";'
+    matches = re.findall(pattern, text, flags=re.DOTALL)
     if len(matches) != 1:
-        raise ValueError("expected exactly one v13 migration raw string")
+        raise ValueError(f"expected exactly one {name} raw string")
     return matches[0]
+
+
+def reconcile_sql(header: Path = MIGRATION_HEADER) -> str:
+    return sql_constant("HIDE_TABLE_RECONCILE", header)
+
+
+def migration_sql(header: Path = MIGRATION_HEADER) -> str:
+    return "\n".join(
+        (
+            sql_constant("HIDE_TABLE_COMPAT_MIGRATION", header),
+            reconcile_sql(header),
+            "COMMIT;",
+        )
+    )
 
 
 def create_v12(path: Path) -> None:

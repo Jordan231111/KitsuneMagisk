@@ -1,5 +1,7 @@
 
-import org.eclipse.jgit.internal.storage.file.FileRepository
+import org.eclipse.jgit.lib.Constants
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
@@ -34,8 +36,27 @@ class MagiskPlugin : Plugin<Project> {
         if (config.exists())
             config.inputStream().use { props.load(it) }
 
-        val repo = FileRepository(rootProject.file(".git"))
-        val refId = repo.refDatabase.exactRef("HEAD").objectId
-        commitHash = repo.newObjectReader().abbreviate(refId, 8).name()
+        commitHash = Config["version"] ?: run {
+            val builder = FileRepositoryBuilder()
+                .readEnvironment()
+                .findGitDir(rootProject.rootDir)
+            if (builder.gitDir == null) {
+                throw GradleException(
+                    "Cannot determine the source revision; set version in a custom config.prop"
+                )
+            }
+            builder.build().use { repo ->
+                val refId = repo.resolve(Constants.HEAD)
+                    ?: throw GradleException("Cannot resolve the Git HEAD revision")
+                repo.newObjectReader().use { reader ->
+                    "${reader.abbreviate(refId, 8).name()}-kitsune"
+                }
+            }
+        }
+        if (!commitHash.contains("kitsune")) {
+            throw GradleException(
+                "Version must contain the lowercase Kitsune identity marker 'kitsune'"
+            )
+        }
     }
 }

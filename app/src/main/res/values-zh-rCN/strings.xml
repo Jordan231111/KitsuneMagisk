@@ -247,7 +247,7 @@
     <string name="reboot_apply_change">重启后生效</string>
     <string name="restore_app_confirmation">即将把隐藏的 Magisk 应用恢复回原始应用，是否继续？</string>
 
-    <string name="direct_install_system">直接安装（直接修改/system）</string>
+    <string name="direct_install_system">系统模式（实验性；修改 /system）</string>
     <string name="settings_hidelist_config_title">配置 MagiskHide</string>
     <string name="settings_hidelist_config_summary">选择要包含在隐藏列表中的进程</string>
     <string name="settings_magiskhide_title">MagiskHide</string>

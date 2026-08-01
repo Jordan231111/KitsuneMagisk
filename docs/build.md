@@ -22,7 +22,7 @@
 - Setup JDK:
   - The recommended option is to set environment variable `ANDROID_STUDIO` to the path where your Android Studio is installed. The build script will automatically find and use the bundled JDK.
   - You can also setup JDK 17 yourself, but this guide will not cover the instructions.
-- Clone sources: `git clone --recurse-submodules https://github.com/topjohnwu/Magisk.git`
+- Clone sources: `git clone --recurse-submodules https://github.com/Jordan231111/KitsuneMagisk.git`
 - Run `./build.py ndk` to let the script download and install NDK for you
 
 ## Building
@@ -30,7 +30,10 @@
 - To build everything and create the final Magisk APK, run `./build.py all`.
 - You can also build specific sub-components; call `build.py` to see your options. \
   For each action, use `-h` to access help (e.g. `./build.py binary -h`)
-- Configure the build by using `config.prop`. A sample `config.prop.sample` is provided.
+- Debug builds need no configuration file. Optional build values and the release-signing format are
+  shown in `config.prop.sample`.
+- Release builds use all four signing values from the ignored `config.prop`, or from a custom file
+  passed with `-c`. Never commit the config or keystore.
 
 ## IDE Support
 
@@ -59,6 +62,8 @@ rustup default magisk
 ## Signing and Distribution
 
 - In release builds, the certificate of the key signing the Magisk APK will be used by Magisk's root daemon as a reference to reject and forcefully uninstall any non-matching Magisk apps to protect users from malicious and unverified Magisk APKs.
-- To do any development on Magisk itself, switch to an **official debug build and reinstall Magisk** to turn off the signature check.
-- To distribute your own Magisk builds signed with your own keys, set your signing configs in `config.prop`.
+- Development builds automatically use the ordinary Android debug key and identify their native
+  backend as debug code.
+- Distribution uses one long-lived maintainer key. Put its four values in a private property file
+  based on `config.prop.sample`; the release build never falls back to the debug key.
 - Check [Google's Documentation](https://developer.android.com/studio/publish/app-signing.html#generate-key) for more details on generating your own key.

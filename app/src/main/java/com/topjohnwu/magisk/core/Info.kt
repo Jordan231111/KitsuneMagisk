@@ -8,7 +8,10 @@ import com.topjohnwu.magisk.core.ktx.getProperty
 import com.topjohnwu.magisk.core.model.UpdateInfo
 import com.topjohnwu.magisk.core.repository.NetworkService
 import com.topjohnwu.magisk.core.repository.UpdateCheckResult
+import com.topjohnwu.magisk.core.repository.UpdateUnavailableReason
 import com.topjohnwu.superuser.ShellUtils.fastCmd
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 val isRunningAsStub get() = Info.stub != null
 
@@ -17,29 +20,62 @@ object Info {
     var stub: StubApk.Data? = null
 
     val EMPTY_REMOTE = UpdateInfo()
-    var remote = EMPTY_REMOTE
-    var updateCheckResult: UpdateCheckResult = UpdateCheckResult.NotChecked
-        private set
+
+    private class RemoteState(
+        val info: UpdateInfo,
+        val result: UpdateCheckResult,
+    )
+
+    private val remoteFetchLock = Mutex()
+    @Volatile
+    private var remoteState = RemoteState(EMPTY_REMOTE, UpdateCheckResult.NotChecked)
+
+    val remote get() = remoteState.info
+    val updateCheckResult get() = remoteState.result
 
     fun resetRemote() {
-        remote = EMPTY_REMOTE
-        updateCheckResult = UpdateCheckResult.NotChecked
+        remoteState = RemoteState(EMPTY_REMOTE, UpdateCheckResult.NotChecked)
     }
 
     suspend fun getRemote(svc: NetworkService): UpdateInfo? {
-        return if (remote === EMPTY_REMOTE) {
-            when (val result = svc.fetchUpdate()) {
-                is UpdateCheckResult.Success -> result.info.apply {
-                    remote = this
-                    updateCheckResult = result
-                }
-                is UpdateCheckResult.Unavailable -> {
-                    updateCheckResult = result
+        // Capture the state before waiting for the mutex. If another caller
+        // completes the same request first, consume its result instead of
+        // immediately repeating a failed or successful network operation.
+        val observedState = remoteState
+        return remoteFetchLock.withLock {
+            val beforeFetch = remoteState
+            if (beforeFetch !== observedState &&
+                beforeFetch.result !is UpdateCheckResult.NotChecked
+            ) {
+                return@withLock if (beforeFetch.result is UpdateCheckResult.Success) {
+                    beforeFetch.info
+                } else {
                     null
                 }
-                UpdateCheckResult.NotChecked -> null
             }
-        } else remote
+            when (beforeFetch.result) {
+                is UpdateCheckResult.Success -> return@withLock beforeFetch.info
+                is UpdateCheckResult.Unavailable -> {
+                    if (beforeFetch.result.reason != UpdateUnavailableReason.REQUEST_FAILED) {
+                        return@withLock null
+                    }
+                }
+                UpdateCheckResult.NotChecked -> Unit
+            }
+
+            val fetched = svc.fetchUpdate()
+            // A settings or network reset may occur while this request is in
+            // flight. Do not overwrite that newer state.
+            if (remoteState === beforeFetch) {
+                remoteState = when (fetched) {
+                    is UpdateCheckResult.Success -> RemoteState(fetched.info, fetched)
+                    is UpdateCheckResult.Unavailable -> RemoteState(EMPTY_REMOTE, fetched)
+                    UpdateCheckResult.NotChecked -> beforeFetch
+                }
+            }
+            val current = remoteState
+            if (current.result is UpdateCheckResult.Success) current.info else null
+        }
     }
 
     // Device state

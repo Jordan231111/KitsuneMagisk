@@ -7,7 +7,7 @@
   "previous_stable_tag": "v30.6",
   "previous_stable_commit": "ccb264f33aa245aba26a9b2508a54c40041eb46e",
   "stable_commit": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
-  "master_commit": "14ea5cfb4a5771c742f7c3fd1e685bdbfac7aa8c",
+  "master_commit": "fd0cb66b6b41af41564e692f39db57f21cf378ad",
   "audited_common_ancestor": "154121f3dd92e67a3d8e3f518684932c0f9783e6",
   "dispositions": {
     "stable": {

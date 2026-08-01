@@ -71,7 +71,10 @@ bool SecondStageInit::prepare() {
 
     // Some weird devices like meizu, uses 2SI but still have legacy rootfs
     struct statfs sfs{};
-    statfs("/", &sfs);
+    if (statfs("/", &sfs) != 0) {
+        PLOGE("statfs /");
+        return false;
+    }
     if (sfs.f_type == RAMFS_MAGIC || sfs.f_type == TMPFS_MAGIC) {
         // We are still on rootfs, so make sure we will execute the init of the 2nd stage
         unlink("/init");

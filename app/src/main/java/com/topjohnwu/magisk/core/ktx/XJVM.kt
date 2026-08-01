@@ -1,15 +1,19 @@
 package com.topjohnwu.magisk.core.ktx
 
+import android.system.Os
 import androidx.collection.SparseArrayCompat
 import com.topjohnwu.magisk.core.utils.currentLocale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -47,15 +51,32 @@ suspend fun InputStream.copyAll(
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): Long {
     return withContext(dispatcher) {
+        val context = currentCoroutineContext()
         var bytesCopied: Long = 0
         val buffer = ByteArray(bufferSize)
         var bytes = read(buffer)
-        while (isActive && bytes >= 0) {
+        while (bytes >= 0) {
+            context.ensureActive()
             out.write(buffer, 0, bytes)
             bytesCopied += bytes
             bytes = read(buffer)
         }
+        context.ensureActive()
         bytesCopied
+    }
+}
+
+fun File.writeTextAtomically(text: String) {
+    val parent = parentFile ?: throw IOException("File has no parent directory: $this")
+    val staging = File.createTempFile("kitsune-write-", ".tmp", parent)
+    try {
+        FileOutputStream(staging).use { output ->
+            output.write(text.toByteArray())
+            output.fd.sync()
+        }
+        Os.rename(staging.path, path)
+    } finally {
+        staging.delete()
     }
 }
 
@@ -86,6 +107,7 @@ fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> = Collections.synch
 fun Class<*>.reflectField(name: String): Field =
     getDeclaredField(name).apply { isAccessible = true }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 inline fun <T, R> Flow<T>.concurrentMap(crossinline transform: suspend (T) -> R): Flow<R> {
     return flatMapMerge { value ->
         flow { emit(transform(value)) }

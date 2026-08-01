@@ -27,7 +27,13 @@ class NetworkService(
 
         endpoint as UpdateEndpointResolution.Remote
         return try {
-            UpdateCheckResult.Success(pages.fetchUpdateJSON(endpoint.url))
+            val info = pages.fetchUpdateJSON(endpoint.url)
+            val validationError = UpdateChannelPolicy.validate(info)
+            if (validationError == null) {
+                UpdateCheckResult.Success(info)
+            } else {
+                UpdateCheckResult.Unavailable(validationError)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

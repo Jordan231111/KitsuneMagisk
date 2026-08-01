@@ -11,7 +11,7 @@ import com.topjohnwu.magisk.core.download.Subject
 import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.superuser.Shell
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 open class Receiver : BaseReceiver() {
@@ -33,8 +33,15 @@ open class Receiver : BaseReceiver() {
         intent ?: return
         super.onReceive(context, intent)
 
-        fun rmPolicy(uid: Int) = GlobalScope.launch {
-            policyDB.delete(uid)
+        fun rmPolicy(uid: Int) {
+            val pendingResult = goAsync()
+            appScope.launch(Dispatchers.IO) {
+                try {
+                    policyDB.delete(uid)
+                } finally {
+                    pendingResult.finish()
+                }
+            }
         }
 
         when (intent.action ?: return) {
@@ -53,7 +60,7 @@ open class Receiver : BaseReceiver() {
                 getUid(intent)?.let { rmPolicy(it) }
             }
             Intent.ACTION_PACKAGE_FULLY_REMOVED -> {
-                getPkg(intent)?.let { Shell.cmd("magisk --denylist rm $it").submit() }
+                getPkg(intent)?.let { Shell.cmd("magisk magiskhide rm $it").submit() }
             }
             Intent.ACTION_LOCALE_CHANGED -> Shortcuts.setupDynamic(context)
             Intent.ACTION_MY_PACKAGE_REPLACED -> {

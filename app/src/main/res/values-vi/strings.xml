@@ -240,7 +240,7 @@
     <string name="reboot_apply_change">Khởi động lại để áp dụng các thay đổi</string>
     <string name="restore_app_confirmation">Điều này sẽ khôi phục ứng dụng ẩn về nguyên bản. Bạn chắc chắn muốn làm điều này chứ?</string>
 
-    <string name="direct_install_system">Cài đặt trực tiếp (sửa đổi /system trực tiếp)</string>
+    <string name="direct_install_system">Chế độ hệ thống (thử nghiệm; sửa đổi /system)</string>
     <string name="settings_hidelist_config_title">Định cấu hình MagiskHide</string>
     <string name="settings_hidelist_config_summary">Chọn các quy trình sẽ được đưa vào danh sách ẩn</string>
     <string name="settings_magiskhide_title">MagiskHide</string>

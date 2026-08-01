@@ -80,7 +80,8 @@ public class DownloadActivity extends Activity {
 
         ProviderInstaller.install(this);
 
-        if (!BuildConfig.UPDATE_SERVICE_CONFIGURED || BuildConfig.APK_URL == null) {
+        if (!BuildConfig.UPDATE_SERVICE_CONFIGURED ||
+                BuildConfig.APK_URL == null || BuildConfig.APK_SHA256 == null) {
             showUpdateUnavailable();
         } else if (Networking.checkNetworkStatus(this)) {
             showDialog();
@@ -102,7 +103,7 @@ public class DownloadActivity extends Activity {
 
     private void error(Throwable e) {
         Log.e(getClass().getSimpleName(), Log.getStackTraceString(e));
-        finish();
+        runOnUiThread(this::finish);
     }
 
     private Request request(String url) {
@@ -142,24 +143,51 @@ public class DownloadActivity extends Activity {
 
     private void dlAPK() {
         dialog = ProgressDialog.show(themed, getString(dling), getString(dling) + " " + APP_NAME, true);
-        // Download and upgrade the app
+        // Download into a non-loadable staging name. Only a complete artifact
+        // matching the build-pinned digest may reach PackageInstaller or dyn/.
         var request = request(apkLink).setExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        if (dynLoad) {
-            request.getAsFile(StubApk.current(this), file -> StubApk.restartProcess(this));
-        } else {
-            request.getAsInputStream(input -> {
+        File current = StubApk.current(this);
+        final File staging;
+        try {
+            staging = File.createTempFile("download-", ".apk", current.getParentFile());
+        } catch (IOException e) {
+            error(e);
+            return;
+        }
+        request.setErrorHandler((conn, e) -> {
+            staging.delete();
+            error(e);
+        });
+        request.getAsFile(staging, file -> {
+            try {
+                if (!APKInstall.matchesSha256(file, BuildConfig.APK_SHA256))
+                    throw new IOException("Downloaded APK failed SHA-256 verification");
+                if (dynLoad) {
+                    Os.rename(file.getPath(), StubApk.update(this).getPath());
+                    runOnUiThread(() -> StubApk.restartProcess(this));
+                    return;
+                }
                 var session = APKInstall.startSession(this);
-                try (input; var out = session.openStream(this)) {
-                    if (out != null)
-                        APKInstall.transfer(input, out);
-                } catch (IOException e) {
-                    error(e);
+                try (var input = new java.io.FileInputStream(file)) {
+                    session.write(input);
                 }
                 Intent intent = session.waitIntent();
-                if (intent != null)
-                    startActivity(intent);
-            });
-        }
+                if (intent != null) {
+                    runOnUiThread(() -> {
+                        startActivity(intent);
+                        finish();
+                    });
+                } else if (session.isSuccessful()) {
+                    runOnUiThread(this::finish);
+                } else {
+                    throw new IOException("Package installer did not accept the verified APK");
+                }
+            } catch (Exception e) {
+                error(e);
+            } finally {
+                file.delete();
+            }
+        });
     }
 
     private void decryptResources(OutputStream out) throws Exception {

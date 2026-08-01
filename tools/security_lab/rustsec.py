@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -37,10 +38,19 @@ def run_audit(lock: Path) -> dict[str, Any]:
 
 
 def _observed(audit: Mapping[str, Any]) -> list[dict[str, Any]]:
+    def advisory_record_sha256(item: Mapping[str, Any]) -> str:
+        record = {
+            "advisory": item.get("advisory"),
+            "affected": item.get("affected"),
+            "versions": item.get("versions"),
+        }
+        return hashlib.sha256(_canonical(record).encode("utf-8")).hexdigest()
+
     result = []
     for item in audit.get("vulnerabilities", {}).get("list", []):
         result.append(
             {
+                "advisory_record_sha256": advisory_record_sha256(item),
                 "id": item["advisory"]["id"],
                 "kind": "vulnerability",
                 "package": item["package"]["name"],
@@ -52,6 +62,7 @@ def _observed(audit: Mapping[str, Any]) -> list[dict[str, Any]]:
         for item in items:
             result.append(
                 {
+                    "advisory_record_sha256": advisory_record_sha256(item),
                     "id": item["advisory"]["id"],
                     "kind": kind,
                     "package": item["package"]["name"],
@@ -149,9 +160,22 @@ def build_report(
     return report, errors
 
 
-def _write_or_check(path: Path, content: str, check: bool) -> None:
+def _comparison_payload(report: Mapping[str, Any]) -> dict[str, Any]:
+    database = report.get("database")
+    if not isinstance(database, Mapping) or set(database) != {"advisory_count", "commit"}:
+        raise ValueError("RustSec report database evidence has an invalid schema")
+    payload = dict(report)
+    payload["database"] = {"advisory_count": None, "commit": None}
+    return payload
+
+
+def _write_or_check(path: Path, report: Mapping[str, Any], check: bool) -> None:
+    content = _canonical(report)
     if check:
-        if not path.exists() or path.read_text(encoding="utf-8") != content:
+        if not path.exists():
+            raise ValueError(f"{path} is stale; regenerate the RustSec report")
+        recorded = _load(path)
+        if _comparison_payload(recorded) != _comparison_payload(report):
             raise ValueError(f"{path} is stale; regenerate the RustSec report")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
             ]
             if held:
                 errors.append("current core cannot ship with held advisories: " + ", ".join(held))
-        _write_or_check(args.output, _canonical(report), args.check)
+        _write_or_check(args.output, report, args.check)
         if errors:
             raise ValueError("; ".join(errors))
     except (OSError, RuntimeError, ValueError, KeyError, json.JSONDecodeError) as exc:

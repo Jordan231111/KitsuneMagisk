@@ -12,6 +12,7 @@ import com.android.tools.build.apkzlib.zip.ZFileOptions
 import org.apache.tools.ant.filters.FixCrLfFilter
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
@@ -22,6 +23,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskAction
@@ -109,6 +111,7 @@ abstract class AddCommentTask: DefaultTask() {
     abstract val comment: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val signingConfig: Property<ApkSigningConfig>
 
     @get:InputFiles
@@ -125,7 +128,11 @@ abstract class AddCommentTask: DefaultTask() {
         val inFile = File(artifact.outputFile)
         val outFile = outFolder.file(inFile.name).get().asFile
 
-        val privateKey = signingConfig.get().getPrivateKey()
+        val privateKey = signingConfig.orNull?.getPrivateKey()
+            ?: throw GradleException(
+                "Release signing is not configured. Use a private config file; " +
+                    "release builds never fall back to the Android debug key."
+            )
         val signingOptions = SigningOptions.builder()
             .setMinSdkVersion(0)
             .setV1SigningEnabled(true)
@@ -155,6 +162,14 @@ abstract class AddCommentTask: DefaultTask() {
 private fun Project.setupAppCommon() {
     setupCommon()
 
+    val signingKeys = listOf("keyStore", "keyStorePass", "keyAlias", "keyPass")
+    val configuredSigningKeys = signingKeys.filter { Config[it] != null }
+    if (configuredSigningKeys.isNotEmpty() && configuredSigningKeys.size != signingKeys.size) {
+        throw GradleException(
+            "Signing configuration is incomplete; provide all of: ${signingKeys.joinToString()}"
+        )
+    }
+
     android {
         signingConfigs {
             create("config") {
@@ -174,12 +189,15 @@ private fun Project.setupAppCommon() {
         buildTypes {
             signingConfigs["config"].also {
                 debug {
-                    signingConfig = if (it.storeFile?.exists() == true) it
-                    else signingConfigs["debug"]
+                    // Never expose a release trust key to diagnostics-enabled
+                    // binaries, even when an external release config is present.
+                    signingConfig = signingConfigs["debug"]
                 }
                 release {
-                    signingConfig = if (it.storeFile?.exists() == true) it
-                    else signingConfigs["debug"]
+                    // An unsigned release variant is allowed to configure so
+                    // debug-only Gradle tasks keep working. commentRelease
+                    // fails closed if no explicit external key was supplied.
+                    signingConfig = if (it.storeFile?.exists() == true) it else null
                 }
             }
         }
@@ -215,7 +233,7 @@ private fun Project.setupAppCommon() {
         val signingConfig = android.buildTypes.getByName(variant.buildType!!).signingConfig
         commentTask.configure {
             this.transformationRequest.set(transformationRequest)
-            this.signingConfig.set(signingConfig)
+            signingConfig?.let { this.signingConfig.set(it) }
             this.comment.set("version=${Config.version}\n" +
                 "versionCode=${Config.versionCode}\n" +
                 "stubVersion=${Config.stubVersion}\n")

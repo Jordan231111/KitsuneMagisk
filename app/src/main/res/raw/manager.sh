@@ -22,40 +22,135 @@ env_check() {
 }
 
 cp_readlink() {
-  if [ -z $2 ]; then
-    cd $1
+  local source="$1"
+  local destination="$2"
+  local file full
+  if [ -z "$destination" ]; then
+    cd "$source" || return 1
   else
-    cp -af $1/. $2
-    cd $2
+    mkdir -p "$destination" || return 1
+    cp -af "$source"/. "$destination" || return 1
+    cd "$destination" || return 1
   fi
   for file in *; do
-    if [ -L $file ]; then
-      local full=$(readlink -f $file)
-      rm $file
-      cp -af $full $file
+    if [ -L "$file" ]; then
+      full="$(readlink -f "$file")" || { cd /; return 1; }
+      rm "$file" || { cd /; return 1; }
+      cp -af "$full" "$file" || { cd /; return 1; }
     fi
   done
-  chmod -R 755 .
-  cd /
+  chmod -R 755 . || { cd /; return 1; }
+  cd / || return 1
+}
+
+path_present() {
+  [ -e "$1" ] || [ -L "$1" ]
 }
 
 fix_env() {
-  # Cleanup and make dirs
-  rm -rf $MAGISKBIN/*
-  mkdir -p $MAGISKBIN 2>/dev/null
-  chmod 700 $NVBASE
-  cp_readlink $1 $MAGISKBIN
-  rm -rf $1
-  chown -R 0:0 $MAGISKBIN
+  local source="$1"
+  local preserve_old="${2:-false}"
+  local new="$NVBASE/.magisk-new"
+  local old="$NVBASE/.magisk-old"
+  local had_old=false
+
+  # Roll an interrupted swap back before retrying it. If both names exist, the
+  # previous process could have died before the persistent System Mode side was
+  # committed, so silently deleting the old runtime would destroy recovery.
+  if path_present "$old" && [ ! -d "$old" ]; then
+    ui_print "! Invalid interrupted runtime transaction"
+    return 1
+  fi
+  if path_present "$MAGISKBIN" && [ ! -d "$MAGISKBIN" ]; then
+    ui_print "! Invalid Magisk runtime path"
+    return 1
+  fi
+  rm -rf "$new" || return 1
+  if [ -d "$old" ]; then
+    if [ -d "$MAGISKBIN" ]; then
+      mv "$MAGISKBIN" "$new" || return 1
+      if ! mv "$old" "$MAGISKBIN"; then
+        mv "$new" "$MAGISKBIN"
+        return 1
+      fi
+      rm -rf "$new" || return 1
+    else
+      mv "$old" "$MAGISKBIN" || return 1
+    fi
+  fi
+  mkdir -p "$new" || return 1
+  if ! cp_readlink "$source" "$new" ||
+     ! chown -R 0:0 "$new" ||
+     ! chmod -R 755 "$new"; then
+    rm -rf "$new"
+    return 1
+  fi
+  chmod 700 "$NVBASE" || { rm -rf "$new"; return 1; }
+
+  if path_present "$MAGISKBIN"; then
+    mv "$MAGISKBIN" "$old" || { rm -rf "$new"; return 1; }
+    had_old=true
+  fi
+  if ! mv "$new" "$MAGISKBIN"; then
+    path_present "$old" && mv "$old" "$MAGISKBIN"
+    return 1
+  fi
+  if [ "$preserve_old" = true ]; then
+    SYSTEM_INSTALL_ENV_TRANSACTION=true
+    SYSTEM_INSTALL_ENV_HAD_OLD="$had_old"
+  elif ! rm -rf "$old"; then
+    ui_print "W: Runtime installed, but the previous runtime copy remains"
+  fi
+  rm -rf "$source" || ui_print "W: Runtime installed, but staging cleanup failed"
+  return 0
+}
+
+rollback_env() {
+  local new="$NVBASE/.magisk-new"
+  local old="$NVBASE/.magisk-old"
+  [ "$SYSTEM_INSTALL_ENV_TRANSACTION" = true ] || return 0
+  rm -rf "$new" || return 1
+  if [ "$SYSTEM_INSTALL_ENV_HAD_OLD" = true ]; then
+    path_present "$old" || return 1
+    if path_present "$MAGISKBIN"; then
+      mv "$MAGISKBIN" "$new" || return 1
+    fi
+    if ! mv "$old" "$MAGISKBIN"; then
+      path_present "$new" && mv "$new" "$MAGISKBIN"
+      return 1
+    fi
+    rm -rf "$new" || return 1
+  else
+    rm -rf "$MAGISKBIN" "$old" || return 1
+  fi
+  SYSTEM_INSTALL_ENV_TRANSACTION=false
+  SYSTEM_INSTALL_ENV_HAD_OLD=false
+  return 0
+}
+
+commit_env() {
+  [ "$SYSTEM_INSTALL_ENV_TRANSACTION" = true ] || return 1
+  if ! rm -rf "$NVBASE/.magisk-old" "$NVBASE/.magisk-new"; then
+    ui_print "W: Runtime installed, but transactional backup cleanup is incomplete"
+  fi
+  SYSTEM_INSTALL_ENV_TRANSACTION=false
+  SYSTEM_INSTALL_ENV_HAD_OLD=false
+  return 0
 }
 
 install_addond(){
     local installDir="$MAGISKBIN"
     local AppApkPath="$1"
     local SYSTEM_INSTALL="$2"
+    local defer_remount="${3:-false}"
     [ -z "$SYSTEM_INSTALL" ] && SYSTEM_INSTALL=false
-    addond=/system/addon.d
-    test ! -d $addond && return
+    local addond=/system/addon.d
+    local script_backup="$addond/.99-magisk.sh.kitsune-old"
+    local dir_backup="$addond/.magisk.kitsune-old"
+    local BLOCKNAME
+    local failed=0
+    local publish_started=false
+    test ! -d "$addond" && return 0
     ui_print "- Adding addon.d survival script"
     BLOCKNAME="/dev/block/system_block.$(random_str 5 20)"
     rm -rf "$BLOCKNAME"
@@ -64,27 +159,66 @@ install_addond(){
     else
         mkblknode "$BLOCKNAME"  /
     fi
-    blockdev --setrw "$BLOCKNAME"
+    blockdev --setrw "$BLOCKNAME" || { rm -rf "$BLOCKNAME"; return 1; }
     rm -rf "$BLOCKNAME"
-    mount -o rw,remount /
-    mount -o rw,remount /system
-    rm -rf $addond/99-magisk.sh 2>/dev/null
-    rm -rf $addond/magisk 2>/dev/null
-    if [ "$SYSTEM_INSTALL" == "true" ]; then
-        cp -prLf "$installDir"/. /system/etc/init/magisk || { ui_print "! Failed to install addon.d"; return; }
-        mv "$installDir/addon.d.sh" $addond/99-magisk.sh
-        cp "$AppApkPath" /system/etc/init/magisk/magisk.apk
-        chmod 755 /system/etc/init/magisk/*
-        sed -i "s/^SYSTEMINSTALL=.*/SYSTEMINSTALL=true/g" $addond/99-magisk.sh
-    else
-        mkdir -p $addond/magisk
-        cp -prLf "$installDir"/. $addond/magisk || { ui_print "! Failed to install addon.d"; return; }
-        mv $addond/magisk/boot_patch.sh $addond/magisk/boot_patch.sh.in
-        mv $addond/magisk/addon.d.sh $addond/99-magisk.sh
-        cp "$AppApkPath" $addond/magisk/magisk.apk
+    mount -o rw,remount / || return 1
+    mount -o rw,remount /system || {
+        [ "$defer_remount" = true ] || mount -o ro,remount /
+        return 1
+    }
+    if path_present "$script_backup" || path_present "$dir_backup"; then
+        ui_print "! Interrupted addon.d transaction requires recovery"
+        if [ "$defer_remount" != true ]; then
+            mount -o ro,remount /system
+            mount -o ro,remount /
+        fi
+        return 1
     fi
-    mount -o ro,remount /
-    mount -o ro,remount /system
+    if path_present "$addond/99-magisk.sh"; then
+        mv "$addond/99-magisk.sh" "$script_backup" || failed=1
+    fi
+    if [ "$failed" = 0 ] && path_present "$addond/magisk"; then
+        mv "$addond/magisk" "$dir_backup" || failed=1
+    fi
+    [ "$failed" != 0 ] || publish_started=true
+    if [ "$SYSTEM_INSTALL" = "true" ]; then
+        [ "$failed" = 0 ] && cp -prLf "$installDir"/. /system/etc/init/magisk || failed=1
+        [ "$failed" = 0 ] && cp "$installDir/addon.d.sh" "$addond/99-magisk.sh" || failed=1
+        [ "$failed" = 0 ] && cp "$AppApkPath" /system/etc/init/magisk/magisk.apk || failed=1
+        [ "$failed" = 0 ] && chmod 755 /system/etc/init/magisk/* || failed=1
+        [ "$failed" = 0 ] && sed -i "s/^SYSTEMINSTALL=.*/SYSTEMINSTALL=true/g" "$addond/99-magisk.sh" || failed=1
+    else
+        [ "$failed" = 0 ] && mkdir -p "$addond/magisk" || failed=1
+        [ "$failed" = 0 ] && cp -prLf "$installDir"/. "$addond/magisk" || failed=1
+        [ "$failed" = 0 ] && mv "$addond/magisk/boot_patch.sh" "$addond/magisk/boot_patch.sh.in" || failed=1
+        [ "$failed" = 0 ] && mv "$addond/magisk/addon.d.sh" "$addond/99-magisk.sh" || failed=1
+        [ "$failed" = 0 ] && cp "$AppApkPath" "$addond/magisk/magisk.apk" || failed=1
+    fi
+    if [ "$failed" != 0 ]; then
+        ui_print "! Failed to install addon.d; restoring previous files"
+        # Before publication starts, a failed backup rename leaves its source
+        # untouched. Do not delete that original while restoring an earlier
+        # backup that did succeed. Once publication starts, both old paths were
+        # either absent or safely renamed, so remove only the new partial data.
+        if [ "$publish_started" = true ]; then
+            rm -rf "$addond/99-magisk.sh" "$addond/magisk" || failed=2
+        fi
+        if path_present "$script_backup"; then
+            mv "$script_backup" "$addond/99-magisk.sh" || failed=2
+        fi
+        if path_present "$dir_backup"; then
+            mv "$dir_backup" "$addond/magisk" || failed=2
+        fi
+    else
+        if ! rm -rf "$script_backup" "$dir_backup"; then
+            ui_print "W: addon.d installed, but rollback-copy cleanup is incomplete"
+        fi
+    fi
+    if [ "$defer_remount" != true ]; then
+        mount -o ro,remount /
+        mount -o ro,remount /system
+    fi
+    [ "$failed" = 0 ]
 }
 
 direct_install() {
@@ -102,10 +236,13 @@ direct_install() {
   esac
 
   rm -f $1/new-boot.img
-  fix_env $1
-  run_migrations
-  copy_preinit_files
-  install_addond "$3"
+  if ! fix_env "$1"; then
+    echo "! Boot image was flashed, but the Magisk runtime could not be published"
+    return 1
+  fi
+  run_migrations || echo "! Runtime installed, but legacy backup migration was incomplete"
+  copy_preinit_files || echo "! Runtime installed, but pre-init module files were not refreshed"
+  install_addond "$3" || echo "! Runtime installed, but addon.d survival was not refreshed"
   return 0
 }
 
@@ -280,6 +417,19 @@ get_sulist_status(){
 
 # define
 MAGISKSYSTEMDIR="/system/etc/init/magisk"
+SYSTEM_INSTALL_TRANSACTION=false
+SYSTEM_INSTALL_BEGIN_COMPLETE=false
+SYSTEM_INSTALL_MIRROR=
+SYSTEM_INSTALL_HAD_DIR=false
+SYSTEM_INSTALL_HAD_RC=false
+SYSTEM_INSTALL_SEPOL=
+SYSTEM_INSTALL_SEPOL_HAD_GZ=false
+SYSTEM_INSTALL_BOOTANIM=false
+SYSTEM_INSTALL_BOOTANIM_HAD_GZ=false
+SYSTEM_INSTALL_CREATED_RUNTIME_DIR=
+SYSTEM_INSTALL_ENV_TRANSACTION=false
+SYSTEM_INSTALL_ENV_HAD_OLD=false
+STAGED_FILE_HAD_GZ=false
 
 random_str(){
 local FROM
@@ -317,22 +467,6 @@ on property:init.svc.zygote=stopped
 EOF
 }
 
-remount_check(){
-    local mode="$1"
-    local part="$(realpath "$2")"
-    local ignore_not_exist="$3"
-    local i
-    if ! grep -q " $part " /proc/mounts && [ ! -z "$ignore_not_exist" ]; then
-        return "$ignore_not_exist"
-    fi
-    mount -o "$mode,remount" "$part"
-    local IFS=$'\t\n ,'
-    for i in $(cat /proc/mounts | grep " $part " | awk '{ print $4 }'); do
-        test "$i" == "$mode" && return 0
-    done
-    return 1
-}
-
 backup_restore(){
     # if gz is not found and orig file is found, backup to gz
     if [ ! -f "${1}.gz" ] && [ -f "$1" ]; then
@@ -344,18 +478,186 @@ backup_restore(){
     return 1
 }
 
-restore_from_bak(){
-    backup_restore "$1" && rm -rf "${1}.gz"
+stage_file_rollback(){
+    local file="$1"
+    STAGED_FILE_HAD_GZ=false
+    [ -f "$file" ] || return 1
+    ! path_present "$file.kitsune-old" || return 1
+    ! path_present "$file.gz.kitsune-old" || return 1
+    if ! cp -af "$file" "$file.kitsune-old"; then
+        rm -f "$file.kitsune-old" "$file.gz.kitsune-old"
+        return 1
+    fi
+    if [ -f "$file.gz" ]; then
+        if ! cp -af "$file.gz" "$file.gz.kitsune-old"; then
+            rm -f "$file.kitsune-old" "$file.gz.kitsune-old"
+            return 1
+        fi
+        STAGED_FILE_HAD_GZ=true
+    fi
+    return 0
+}
+
+restore_staged_file(){
+    local file="$1"
+    local had_gz="$2"
+    local failed=0
+    [ -f "$file.kitsune-old" ] || return 1
+    if [ "$had_gz" = true ] && [ ! -f "$file.gz.kitsune-old" ]; then
+        return 1
+    fi
+    if ! mv -f "$file.kitsune-old" "$file"; then
+        failed=1
+    fi
+    if [ "$had_gz" = true ]; then
+        if ! mv -f "$file.gz.kitsune-old" "$file.gz"; then
+            failed=1
+        fi
+    else
+        rm -f "$file.gz" "$file.gz.kitsune-old" || failed=1
+    fi
+    return "$failed"
+}
+
+discard_staged_file(){
+    rm -f "$1.kitsune-old" "$1.gz.kitsune-old"
+}
+
+begin_system_installation(){
+    local mirror="${1:-$MIRRORDIR}"
+    local target="$mirror${MAGISKSYSTEMDIR}"
+    local legacy="$mirror${MAGISKSYSTEMDIR}.rc"
+    case "$mirror" in
+        /|"/proc/$$/attr") ;;
+        *) ui_print "! Refusing transaction with an invalid System Mode mirror"; return 1 ;;
+    esac
+    [ "$SYSTEM_INSTALL_TRANSACTION" = false ] || return 1
+    if [ -e "$target.kitsune-old" ] || [ -L "$target.kitsune-old" ] ||
+       [ -e "$legacy.kitsune-old" ] || [ -L "$legacy.kitsune-old" ]; then
+        ui_print "! Interrupted System Mode transaction requires recovery"
+        return 1
+    fi
+
+    SYSTEM_INSTALL_TRANSACTION=true
+    SYSTEM_INSTALL_BEGIN_COMPLETE=false
+    SYSTEM_INSTALL_MIRROR="$mirror"
+    SYSTEM_INSTALL_HAD_DIR=false
+    SYSTEM_INSTALL_HAD_RC=false
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        if ! mv "$target" "$target.kitsune-old"; then
+            SYSTEM_INSTALL_TRANSACTION=false
+            SYSTEM_INSTALL_MIRROR=
+            return 1
+        fi
+        SYSTEM_INSTALL_HAD_DIR=true
+    fi
+    if [ -e "$legacy" ] || [ -L "$legacy" ]; then
+        if ! mv "$legacy" "$legacy.kitsune-old"; then
+            cleanup_system_installation
+            return 1
+        fi
+        SYSTEM_INSTALL_HAD_RC=true
+    fi
+    SYSTEM_INSTALL_BEGIN_COMPLETE=true
+    return 0
 }
 
 cleanup_system_installation(){
-    rm -rf "$MIRRORDIR${MAGISKSYSTEMDIR}"
-    rm -rf "$MIRRORDIR${MAGISKSYSTEMDIR}.rc"
-    backup_restore "$MIRRORDIR/system/etc/init/bootanim.rc" \
-    && rm -rf "$MIRRORDIR/system/etc/init/bootanim.rc.gz"
-    if [ -e "$MIRRORDIR${MAGISKSYSTEMDIR}" ] || [ -e "$MIRRORDIR${MAGISKSYSTEMDIR}.rc" ]; then
+    local mirror="${1:-$SYSTEM_INSTALL_MIRROR}"
+    local target="$mirror${MAGISKSYSTEMDIR}"
+    local legacy="$mirror${MAGISKSYSTEMDIR}.rc"
+    local failed=0
+    [ "$SYSTEM_INSTALL_TRANSACTION" = true ] || return 0
+    [ "$mirror" = "$SYSTEM_INSTALL_MIRROR" ] || {
+        ui_print "! Refusing rollback from a different System Mode mirror"
+        return 1
+    }
+    # Never destroy the replacement until every backup that should exist has
+    # been verified. A missing rollback source is a recoverable/manual state;
+    # deleting the remaining working payload would make it data loss.
+    if [ "$SYSTEM_INSTALL_HAD_DIR" = true ] &&
+       [ ! -e "$target.kitsune-old" ] && [ ! -L "$target.kitsune-old" ]; then
+        ui_print "! System Mode payload rollback backup is missing"
         return 1
     fi
+    if [ "$SYSTEM_INSTALL_HAD_RC" = true ] &&
+       [ ! -e "$legacy.kitsune-old" ] && [ ! -L "$legacy.kitsune-old" ]; then
+        ui_print "! System Mode init rollback backup is missing"
+        return 1
+    fi
+    # No replacement can have been published before the backup phase finished.
+    # During a partial begin, leave every path that did not move untouched and
+    # only restore the paths whose backups exist.
+    if [ "$SYSTEM_INSTALL_BEGIN_COMPLETE" = true ]; then
+        rm -rf "$target" "$legacy" || failed=1
+    fi
+    if [ "$SYSTEM_INSTALL_HAD_DIR" = true ]; then
+        { [ -e "$target.kitsune-old" ] || [ -L "$target.kitsune-old" ]; } &&
+            mv "$target.kitsune-old" "$target" || failed=1
+    fi
+    if [ "$SYSTEM_INSTALL_HAD_RC" = true ]; then
+        { [ -e "$legacy.kitsune-old" ] || [ -L "$legacy.kitsune-old" ]; } &&
+            mv "$legacy.kitsune-old" "$legacy" || failed=1
+    fi
+    if [ -n "$SYSTEM_INSTALL_SEPOL" ]; then
+        restore_staged_file "$mirror$SYSTEM_INSTALL_SEPOL" \
+            "$SYSTEM_INSTALL_SEPOL_HAD_GZ" || failed=1
+    fi
+    if [ "$SYSTEM_INSTALL_BOOTANIM" = true ]; then
+        restore_staged_file "$mirror/system/etc/init/bootanim.rc" \
+            "$SYSTEM_INSTALL_BOOTANIM_HAD_GZ" || failed=1
+    fi
+    if [ -n "$SYSTEM_INSTALL_CREATED_RUNTIME_DIR" ]; then
+        rmdir "$SYSTEM_INSTALL_CREATED_RUNTIME_DIR" || failed=1
+    fi
+    if [ "$failed" = 0 ]; then
+        SYSTEM_INSTALL_TRANSACTION=false
+        SYSTEM_INSTALL_BEGIN_COMPLETE=false
+        SYSTEM_INSTALL_MIRROR=
+        SYSTEM_INSTALL_HAD_DIR=false
+        SYSTEM_INSTALL_HAD_RC=false
+        SYSTEM_INSTALL_SEPOL=
+        SYSTEM_INSTALL_SEPOL_HAD_GZ=false
+        SYSTEM_INSTALL_BOOTANIM=false
+        SYSTEM_INSTALL_BOOTANIM_HAD_GZ=false
+        SYSTEM_INSTALL_CREATED_RUNTIME_DIR=
+    fi
+    return "$failed"
+}
+
+commit_system_installation(){
+    local mirror="${1:-$SYSTEM_INSTALL_MIRROR}"
+    local target="$mirror${MAGISKSYSTEMDIR}"
+    local legacy="$mirror${MAGISKSYSTEMDIR}.rc"
+    [ "$SYSTEM_INSTALL_TRANSACTION" = true ] || return 1
+    [ "$mirror" = "$SYSTEM_INSTALL_MIRROR" ] || return 1
+    local cleanup_failed=0
+    rm -rf "$target.kitsune-old" "$legacy.kitsune-old" || cleanup_failed=1
+    if [ -n "$SYSTEM_INSTALL_SEPOL" ]; then
+        discard_staged_file "$mirror$SYSTEM_INSTALL_SEPOL" || cleanup_failed=1
+        ! path_present "$mirror$SYSTEM_INSTALL_SEPOL.kitsune-old" || cleanup_failed=1
+        ! path_present "$mirror$SYSTEM_INSTALL_SEPOL.gz.kitsune-old" || cleanup_failed=1
+    fi
+    if [ "$SYSTEM_INSTALL_BOOTANIM" = true ]; then
+        discard_staged_file "$mirror/system/etc/init/bootanim.rc" || cleanup_failed=1
+        ! path_present "$mirror/system/etc/init/bootanim.rc.kitsune-old" || cleanup_failed=1
+        ! path_present "$mirror/system/etc/init/bootanim.rc.gz.kitsune-old" || cleanup_failed=1
+    fi
+    ! path_present "$target.kitsune-old" || cleanup_failed=1
+    ! path_present "$legacy.kitsune-old" || cleanup_failed=1
+    SYSTEM_INSTALL_TRANSACTION=false
+    SYSTEM_INSTALL_BEGIN_COMPLETE=false
+    SYSTEM_INSTALL_MIRROR=
+    SYSTEM_INSTALL_HAD_DIR=false
+    SYSTEM_INSTALL_HAD_RC=false
+    SYSTEM_INSTALL_SEPOL=
+    SYSTEM_INSTALL_SEPOL_HAD_GZ=false
+    SYSTEM_INSTALL_BOOTANIM=false
+    SYSTEM_INSTALL_BOOTANIM_HAD_GZ=false
+    SYSTEM_INSTALL_CREATED_RUNTIME_DIR=
+    [ "$cleanup_failed" = 0 ] || \
+        ui_print "W: System Mode installed, but transactional backup cleanup is incomplete"
+    return 0
 }
 
 installer_cleanup(){
@@ -364,7 +666,6 @@ installer_cleanup(){
     else
         recovery_cleanup
     fi
-    mount -o ro,remount /
 }
 
 direct_install_system(){
@@ -372,10 +673,33 @@ direct_install_system(){
     print_title "Powered by Magisk"
     api_level_arch_detect
     local INSTALLDIR="$1"
+    local defer_cleanup="${2:-false}"
+    MIRRORDIR=
+    SYSTEM_INSTALL_SEPOL=
+    SYSTEM_INSTALL_SEPOL_HAD_GZ=false
+    SYSTEM_INSTALL_BOOTANIM=false
+    SYSTEM_INSTALL_BOOTANIM_HAD_GZ=false
+    SYSTEM_INSTALL_CREATED_RUNTIME_DIR=
+    SYSTEM_INSTALL_BEGIN_COMPLETE=false
+    if [ "$API" -le 24 ]; then
+        ui_print "! System Mode is not qualified on API 23-24"
+        return 1
+    fi
+    local mode_binary="$INSTALLDIR/magisk32"
+    [ "$IS64BIT" = true ] && mode_binary="$INSTALLDIR/magisk64"
+    # -v asks the running daemon for its version, which can legitimately still
+    # be a release daemon during a debug upgrade. -c reports this payload
+    # binary's compile-time identity and is therefore the mode we must gate.
+    if [ ! -x "$mode_binary" ] ||
+       ! "$mode_binary" -c 2>/dev/null | grep -q ':MAGISK:D '; then
+        ui_print "! System Mode is disabled in release builds"
+        return 1
+    fi
 
     ui_print "- Remount system partition as read-write"
     # Use kernel trick to clean up mirrors automatically when installer completed
-    local MIRRORDIR="/proc/$$/attr" ROOTDIR SYSTEMDIR VENDORDIR
+    MIRRORDIR="/proc/$$/attr"
+    local ROOTDIR SYSTEMDIR VENDORDIR ODM_DIR
 
     ROOTDIR="$MIRRORDIR/system_root"
     SYSTEMDIR="$MIRRORDIR/system"
@@ -404,17 +728,6 @@ direct_install_system(){
             fi
         fi
 
-        # we are modifying system directly so we need to create /sbin if it does not exist
-        if [ ! -d "$ROOTDIR"/sbin ]; then
-            rm -rf "$ROOTDIR"/sbin
-            mkdir "$ROOTDIR"/sbin
-            if [ ! -d "$ROOTDIR"/sbin ]; then
-                ui_print "! Can't create tmpfs path /sbin"
-                return 1;
-            fi
-        fi
-
-
         # check if /vendor is seperated fs
         if mountpoint -q /vendor; then
             mkdir "$VENDORDIR"
@@ -431,7 +744,7 @@ direct_install_system(){
             ln -fs ./system_root/odm "$ODM_DIR"
         fi
     else
-        local MIRRORDIR="/" ROOTDIR SYSTEMDIR VENDORDIR
+        MIRRORDIR="/"
         ROOTDIR="$MIRRORDIR/system_root"
         SYSTEMDIR="$MIRRORDIR/system"
         VENDORDIR="$MIRRORDIR/vendor"
@@ -442,53 +755,77 @@ direct_install_system(){
         remount_check rw "$VENDORDIR" 0 || { warn_system_ro; return 1; }
         remount_check rw "$ODM_DIR" 0 || { warn_system_ro; return 1; }
 
-        # we are modifying system directly so we need to create /sbin if it does not exist
-        if [ -d "$ROOTDIR" ] && [ ! -d "$ROOTDIR"/sbin ]; then
-            rm -rf "$ROOTDIR"/sbin
-            mkdir "$ROOTDIR"/sbin
-            if [ ! -d "$ROOTDIR"/sbin ]; then
-                ui_print "! Can't create tmpfs path /sbin"
-                return 1;
-            fi
-        fi
-
     fi
 
 
     ui_print "- Cleaning up enviroment..."
     {
         local checkfile="$MIRRORDIR/system/.check_$(random_str 10 20)"
-        # test write, need atleast 20mb
-        dd if=/dev/zero of="$checkfile" bs=1024 count=20000 || \
+        local required_kb available_kb
+        required_kb="$(du -sk "$INSTALLDIR" | awk 'NR == 1 { print $1 }')"
+        available_kb="$(df -Pk "$SYSTEMDIR" | awk 'END { print $4 }')"
+        case "$required_kb" in ''|*[!0-9]*) ui_print "! Unable to measure install payload"; return 1 ;; esac
+        case "$available_kb" in ''|*[!0-9]*) ui_print "! Unable to verify free space on system"; return 1 ;; esac
+        if [ "$available_kb" -lt $((required_kb + 4096)) ]; then
+            ui_print "! Insufficient free space on system"
+            return 1
+        fi
+        # A single block proves the selected mirror is actually writable.
+        dd if=/dev/zero of="$checkfile" bs=4096 count=1 2>/dev/null || \
             { rm -rf "$checkfile"; ui_print "! Insufficient free space or system write protection"; return 1; }
-        rm -rf "$checkfile"
+        rm -f "$checkfile" || { ui_print "! Unable to remove system write probe"; return 1; }
     }
-    cleanup_system_installation || return 1
-
-    local magisk_applet=magisk32 magisk_name=magisk32
-    if [ "$IS64BIT" == true ]; then
+    local magisk magisk_applet=magisk32 magisk_name=magisk32
+    if [ "$IS64BIT" = true ]; then
         magisk_name=magisk64
-        magisk_applet="magisk32 magisk64"
+        magisk_applet=magisk64
+        [ -f "$INSTALLDIR/magisk32" ] && magisk_applet="magisk32 magisk64"
     fi
 
     ui_print "- Copy files to system partition"
+    for magisk in $magisk_applet magiskpolicy magiskinit stub.apk; do
+        [ -f "$INSTALLDIR/$magisk" ] || { ui_print "! Missing install payload: $magisk"; return 1; }
+    done
+    begin_system_installation "$MIRRORDIR" || return 1
+    local runtime_dir="$ROOTDIR$MAGISKTMP_TO_INSTALL"
+    if [ ! -d "$runtime_dir" ]; then
+        if [ -e "$runtime_dir" ] || [ -L "$runtime_dir" ]; then
+            ui_print "! Runtime path exists but is not a directory: $MAGISKTMP_TO_INSTALL"
+            return 1
+        fi
+        mkdir "$runtime_dir" || { ui_print "! Can't create runtime path $MAGISKTMP_TO_INSTALL"; return 1; }
+        SYSTEM_INSTALL_CREATED_RUNTIME_DIR="$runtime_dir"
+    fi
     mkdir -p "$MIRRORDIR$MAGISKSYSTEMDIR" || return 1
     for magisk in $magisk_applet magiskpolicy magiskinit stub.apk; do
         cat "$INSTALLDIR/$magisk" >"$MIRRORDIR$MAGISKSYSTEMDIR/$magisk" || { ui_print "! Unable to write Magisk binaries to system"; return 1; }
     done
-    echo -e "SYSTEMMODE=true\nRECOVERYMODE=false" >"$MIRRORDIR$MAGISKSYSTEMDIR/config"
-    chcon -R u:object_r:system_file:s0 "$MIRRORDIR$MAGISKSYSTEMDIR"
-    chmod -R 700 "$MIRRORDIR$MAGISKSYSTEMDIR"
+    echo -e "SYSTEMMODE=true\nRECOVERYMODE=false" >"$MIRRORDIR$MAGISKSYSTEMDIR/config" || return 1
+    if ! chcon -R u:object_r:system_file:s0 "$MIRRORDIR$MAGISKSYSTEMDIR"; then
+        if [ -d /sys/fs/selinux ]; then
+            ui_print "! Unable to label System Mode payload"
+            return 1
+        fi
+        ui_print "W: SELinux is inactive; payload labeling was skipped"
+    fi
+    chmod -R 700 "$MIRRORDIR$MAGISKSYSTEMDIR" || return 1
 
     if [ "$API" -gt 24 ]; then
 
-        # test live patch
+        # Parse and serialize the current live policy without changing it. The
+        # previous probe added a permissive domain to the running policy and
+        # left that broader policy active even when installation later failed.
         {
             if $BOOTMODE; then
-                ui_print "- Check if kernel supports dynamic SELinux Policy patch"
-                if [ -d /sys/fs/selinux ] && ! "$INSTALLDIR/magiskpolicy" --live "permissive su" &>/dev/null; then
-                    ui_print "! Kernel does not support dynamic SELinux Policy patch"
-                    return 1
+                ui_print "- Validate the current SELinux policy"
+                if [ -d /sys/fs/selinux ]; then
+                    local live_policy_probe="$INSTALLDIR/live-sepolicy.probe"
+                    if ! "$INSTALLDIR/magiskpolicy" --save "$live_policy_probe" &>/dev/null; then
+                        rm -f "$live_policy_probe"
+                        ui_print "! Unable to parse the current SELinux policy"
+                        return 1
+                    fi
+                    rm -f "$live_policy_probe" || return 1
                 fi
             else
                 ui_print "W: It's impossible to check kernel compatible in recovery mode"
@@ -509,24 +846,36 @@ direct_install_system(){
                     return 1
                 else
                     ui_print "- Target sepolicy is $sepol"
-                    backup_restore "$MIRRORDIR$sepol" || { ui_print "! Backup failed"; return 1; }
+                    stage_file_rollback "$MIRRORDIR$sepol" || \
+                        { ui_print "! Transaction backup failed"; return 1; }
+                    SYSTEM_INSTALL_SEPOL="$sepol"
+                    SYSTEM_INSTALL_SEPOL_HAD_GZ="$STAGED_FILE_HAD_GZ"
+                    backup_restore "$MIRRORDIR$sepol" || \
+                        { ui_print "! Backup failed"; return 1; }
                     # copy file to cache
-                    cp -af "$MIRRORDIR$sepol" "$INSTALLDIR/sepol.in"
+                    cp -af "$MIRRORDIR$sepol" "$INSTALLDIR/sepol.in" || return 1
                     if ! "$INSTALLDIR/magiskinit" --patch-sepol "$INSTALLDIR/sepol.in" "$INSTALLDIR/sepol.out" || ! cp -af "$INSTALLDIR/sepol.out" "$MIRRORDIR$sepol"; then
                         ui_print "! Unable to patch sepolicy file"
-                        restore_from_bak "$MIRRORDIR$sepol"
+                        rm -f "$INSTALLDIR/sepol.in" "$INSTALLDIR/sepol.out"
                         return 1
                     fi
+                    rm -f "$INSTALLDIR/sepol.in" "$INSTALLDIR/sepol.out" || return 1
                     ui_print "- Patching sepolicy file success!"
                 fi
               }
             fi
         }
         ui_print "- Add init boot script"
+        local hijackrc
         {
             hijackrc="$MIRRORDIR/system/etc/init/magisk.rc" 
             if [ -f "$MIRRORDIR/system/etc/init/bootanim.rc" ]; then
-                backup_restore "$MIRRORDIR/system/etc/init/bootanim.rc" && hijackrc="$MIRRORDIR/system/etc/init/bootanim.rc"
+                stage_file_rollback "$MIRRORDIR/system/etc/init/bootanim.rc" || \
+                    { ui_print "! Transaction backup failed"; return 1; }
+                SYSTEM_INSTALL_BOOTANIM=true
+                SYSTEM_INSTALL_BOOTANIM_HAD_GZ="$STAGED_FILE_HAD_GZ"
+                backup_restore "$MIRRORDIR/system/etc/init/bootanim.rc" || return 1
+                hijackrc="$MIRRORDIR/system/etc/init/bootanim.rc"
             fi
         }
         echo "$(magiskrc "$MAGISKTMP_TO_INSTALL")" >>"$hijackrc" || return 1
@@ -535,18 +884,32 @@ direct_install_system(){
     ui_print "[*] Reflash your ROM if your ROM is unable to start"
     ui_print "    and do not use this method to install Magisk" 
 
-    $BOOTMODE && installer_cleanup
-    true
+    if [ "$defer_cleanup" != true ]; then
+        commit_system_installation || return 1
+        $BOOTMODE && installer_cleanup
+    fi
     return 0
 }
 
 
 
 xdirect_install_system() {
-  direct_install_system "$@" || { cleanup_system_installation; installer_cleanup; return 1; }
-  fix_env "$1"
-  install_addond "$3" "true"
-  run_migrations
+  direct_install_system "$1" true || { cleanup_system_installation || ui_print "! System Mode rollback incomplete"; installer_cleanup; return 1; }
+  fix_env "$1" true || { cleanup_system_installation || ui_print "! System Mode rollback incomplete"; installer_cleanup; return 1; }
+  install_addond "$2" "true" "true" || {
+    rollback_env || ui_print "! Runtime rollback incomplete"
+    cleanup_system_installation || ui_print "! System Mode rollback incomplete"
+    installer_cleanup
+    return 1
+  }
+  commit_system_installation || {
+    rollback_env || ui_print "! Runtime rollback incomplete"
+    cleanup_system_installation || ui_print "! System Mode rollback incomplete"
+    installer_cleanup
+    return 1
+  }
+  commit_env || ui_print "W: Runtime transaction cleanup was incomplete"
+  installer_cleanup
   return 0
 }
 
