@@ -183,6 +183,20 @@ class DeviceCorpusTest(unittest.TestCase):
         self.assertIn('[ "$active_avd" = "$avd_name" ]', readiness)
         self.assertIn('[ "$boot_id" != "$emu_boot_id" ]', readiness)
 
+    def test_manager_extraction_avoids_hidden_multiarch_state(self) -> None:
+        source = (
+            ROOT
+            / "app/src/main/java/com/topjohnwu/magisk/core/tasks/MagiskInstaller.kt"
+        ).read_text(encoding="utf-8")
+        manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn('getDeclaredField("secondaryNativeLibraryDir")', source)
+        self.assertNotIn('android:multiArch="true"', manifest)
+        self.assertIn("Process.is64Bit()", source)
+        self.assertIn('"lib/$abi32/libmagisk32.so"', source)
+        self.assertIn("getResourceAsStream(name)", source)
+
 
 if __name__ == "__main__":
     unittest.main()

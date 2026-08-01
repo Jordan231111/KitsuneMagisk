@@ -7,7 +7,6 @@ import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.superuser.Shell
-import com.topjohnwu.superuser.internal.NOPList
 import kotlinx.coroutines.runBlocking
 
 object TestHandler {
@@ -16,10 +15,24 @@ object TestHandler {
         val r = Bundle()
 
         fun setup(): Boolean {
-            val nop = NOPList.getInstance()
-            return runBlocking {
-                MagiskInstaller.Emulator(nop, nop).exec()
+            val console = mutableListOf<String>()
+            val logs = mutableListOf<String>()
+            val success = runBlocking {
+                MagiskInstaller.Emulator(console, logs).exec()
             }
+            if (!success) {
+                val output = (console.asSequence() + logs.asSequence())
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .joinToString("\n")
+                    .takeLast(4096)
+                r.putString(
+                    "reason",
+                    "setup failed (root=${Shell.getShell().isRoot})" +
+                        if (output.isEmpty()) " without installer output" else "\n$output"
+                )
+            }
+            return success
         }
 
         fun test(): Boolean {

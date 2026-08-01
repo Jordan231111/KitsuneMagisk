@@ -7,9 +7,11 @@ but the resumed project has not shipped its first production release. The inheri
 a fork compatibility and Android upgrade-ordering value; it does not mean this branch is newer than
 official Magisk.
 
-The PR5A/PR5B work is based on merged `kitsune` at `f6beadd7`; its exact implementation head is
-`c86bdce4`. Official comparison points rechecked on 2026-08-01 are Magisk v30.7 (`e8a58776`) and
-the observed official `master` tip `fd0cb66b`.
+The PR5A/PR5B work is based on merged `kitsune` at `f6beadd7`; the durable System Mode code and
+exact MuMu-tested artifact are at `c86bdce4`. A later branch-only manager compatibility follow-up
+ports upstream's removal of the legacy multi-arch extraction path after the hosted Android 6 lane
+reproduced its failure. Official comparison points rechecked on 2026-08-01 are Magisk v30.7
+(`e8a58776`) and the observed official `master` tip `fd0cb66b`.
 
 ## What currently works
 

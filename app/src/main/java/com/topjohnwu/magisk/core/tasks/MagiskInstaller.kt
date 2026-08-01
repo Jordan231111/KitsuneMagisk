@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.core.tasks
 
 import android.net.Uri
+import android.os.Process
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
@@ -123,20 +124,25 @@ abstract class MagiskInstallImpl protected constructor(
                 zf.close()
             } else {
                 val info = context.applicationInfo
-                var libs = File(info.nativeLibraryDir).listFiles { _, name ->
+                val libs = File(info.nativeLibraryDir).listFiles { _, name ->
                     name.startsWith("lib") && name.endsWith(".so")
                 } ?: emptyArray()
-
-                // Also symlink magisk32 on non 64-bit only 64-bit devices
-                val lib32 = info.javaClass.getDeclaredField("secondaryNativeLibraryDir")
-                    .get(info) as String?
-                if (lib32 != null) {
-                    libs += File(lib32, "libmagisk32.so")
-                }
 
                 for (lib in libs) {
                     val name = lib.name.substring(3, lib.name.length - 3)
                     Os.symlink(lib.path, "$installDir/$name")
+                }
+
+                // Do not depend on the hidden secondaryNativeLibraryDir field.
+                // Android's multi-arch extraction is unstable across package
+                // replacement on legacy releases; read the one 32-bit applet
+                // directly from the installed APK, matching current upstream.
+                val abi32 = Const.CPU_ABI_32
+                if (Process.is64Bit() && abi32 != null) {
+                    val name = "lib/$abi32/libmagisk32.so"
+                    javaClass.classLoader!!.getResourceAsStream(name)?.use {
+                        it.writeTo(File(installDir, "magisk32"))
+                    }
                 }
             }
 
@@ -164,7 +170,8 @@ abstract class MagiskInstallImpl protected constructor(
                 context.assets.open(name).writeTo(dest)
             }
         } catch (e: Exception) {
-            console.add("! Unable to extract files")
+            console.add("! Unable to extract files: ${e.javaClass.simpleName}: ${e.message}")
+            logs.add(e.stackTraceToString())
             Timber.e(e)
             return false
         }
