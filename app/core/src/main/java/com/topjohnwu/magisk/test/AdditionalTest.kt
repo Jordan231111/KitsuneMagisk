@@ -14,6 +14,7 @@ import com.topjohnwu.magisk.test.Environment.Companion.OVERFLOW_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.REMOVE_TEST
 import com.topjohnwu.magisk.test.Environment.Companion.SEPOLICY_RULE
 import com.topjohnwu.magisk.test.Environment.Companion.SPECIAL_ZYGISK
+import com.topjohnwu.magisk.test.Environment.Companion.UNLOAD_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.UPGRADE_TEST
 import com.topjohnwu.magisk.test.Environment.Companion.VALID_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.WRONG_ABI_ZYGISK
@@ -62,7 +63,7 @@ class AdditionalTest : BaseTest {
 
     @Test
     fun testModuleCount() {
-        var expected = 9
+        var expected = 10
         if (Environment.mount()) expected++
         if (Environment.preinit()) expected++
         if (Environment.lsposed()) expected++
@@ -177,6 +178,14 @@ class AdditionalTest : BaseTest {
         assertNotNull("$VALID_ZYGISK is not installed", module)
         module!!
         assertFalse("$VALID_ZYGISK should pass the Zygisk ELF gate", module.zygiskUnloaded)
+    }
+
+    @Test
+    fun testUnloadZygiskModule() {
+        val module = modules.find { it.id == UNLOAD_ZYGISK }
+        assertNotNull("$UNLOAD_ZYGISK is not installed", module)
+        module!!
+        assertFalse("$UNLOAD_ZYGISK should load and unload cleanly", module.zygiskUnloaded)
     }
 
     @Test

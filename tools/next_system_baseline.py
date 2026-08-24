@@ -402,6 +402,20 @@ def elf_identity_and_alignments(data: bytes) -> tuple[int, int, list[int]]:
     return elf_class, machine, alignments
 
 
+def verify_fixture_contract(
+    data: bytes,
+    expected: bytes,
+    allowed: Iterable[bytes],
+) -> None:
+    matches = [
+        (contract, data.count(contract))
+        for contract in allowed
+        if contract in data
+    ]
+    if matches != [(expected, 1)]:
+        raise BaselineError("Zygisk fixture contract is missing, duplicated, or ambiguous")
+
+
 def parse_utility_identity(data: bytes) -> tuple[str, int]:
     versions = UTILITY_VERSION_PATTERN.findall(data)
     codes = UTILITY_CODE_PATTERN.findall(data)
@@ -579,6 +593,10 @@ def inspect_test_apk(apk: Path, aapt: Path, apksigner: Path, app_id: str) -> dic
         )
     fixture_alignments: dict[str, list[int]] = {}
     fixture_packaging: dict[str, str] = {}
+    fixture_contracts = {
+        "libzygisk_test.so": b"kitsune-zygisk-test-v1:minimal-resident\0",
+        "libzygisk_unload_test.so": b"kitsune-zygisk-test-v1:minimal-dlclose\0",
+    }
     with zipfile.ZipFile(apk) as archive:
         names = archive.namelist()
         duplicates = sorted(
@@ -587,42 +605,51 @@ def inspect_test_apk(apk: Path, aapt: Path, apksigner: Path, app_id: str) -> dic
         if duplicates:
             raise BaselineError(f"{apk} has duplicate ZIP entries: {duplicates}")
         for abi, identity in ABI_ELF_IDENTITIES.items():
-            name = f"lib/{abi}/libzygisk_test.so"
-            if name not in names:
-                raise BaselineError(f"{apk} is missing valid Zygisk fixture {name}")
-            info = archive.getinfo(name)
-            # Stored DSOs are mmap'd and must be ZIP-aligned. The instrumentation
-            # APK deliberately keeps legacy deflated packaging so API 23 extracts
-            # its fixture to a real file; ZIP offsets do not constrain extracted bytes.
-            if info.compress_type == zipfile.ZIP_STORED and zip_entry_data_offset(
-                archive, info
-            ) % 16384 != 0:
-                raise BaselineError(f"{apk}:{name} is not 16 KiB ZIP aligned")
-            if info.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
-                raise BaselineError(f"{apk}:{name} uses unsupported ZIP compression")
-            data = archive.read(info)
-            elf_class, machine, alignments = elf_identity_and_alignments(data)
-            if (elf_class, machine) != identity:
-                raise BaselineError(
-                    f"{apk}:{name} has wrong ELF identity {elf_class}/{machine} for {abi}"
+            for library, contract in fixture_contracts.items():
+                name = f"lib/{abi}/{library}"
+                if name not in names:
+                    raise BaselineError(f"{apk} is missing valid Zygisk fixture {name}")
+                info = archive.getinfo(name)
+                # Stored DSOs are mmap'd and must be ZIP-aligned. The instrumentation
+                # APK deliberately keeps legacy deflated packaging so API 23 extracts
+                # its fixture to a real file; ZIP offsets do not constrain extracted bytes.
+                if info.compress_type == zipfile.ZIP_STORED and zip_entry_data_offset(
+                    archive, info
+                ) % 16384 != 0:
+                    raise BaselineError(f"{apk}:{name} is not 16 KiB ZIP aligned")
+                if info.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
+                    raise BaselineError(f"{apk}:{name} uses unsupported ZIP compression")
+                data = archive.read(info)
+                if len(data) >= 64 * 1024:
+                    raise BaselineError(
+                        f"{apk}:{name} unexpectedly embeds a C++ runtime: {len(data)} bytes"
+                    )
+                elf_class, machine, alignments = elf_identity_and_alignments(data)
+                if (elf_class, machine) != identity:
+                    raise BaselineError(
+                        f"{apk}:{name} has wrong ELF identity {elf_class}/{machine} for {abi}"
+                    )
+                minimum = 16384 if abi in {"arm64-v8a", "x86_64"} else 4096
+                invalid = [
+                    value for value in alignments
+                    if value < minimum or value % minimum
+                ]
+                if invalid:
+                    raise BaselineError(
+                        f"{apk}:{name} has invalid PT_LOAD alignment: {invalid}"
+                    )
+                if b"zygisk_module_entry\0" not in data:
+                    raise BaselineError(f"{apk}:{name} has no Zygisk module entry")
+                try:
+                    verify_fixture_contract(data, contract, fixture_contracts.values())
+                except BaselineError as exc:
+                    raise BaselineError(f"{apk}:{name} has the wrong Zygisk fixture contract") from exc
+                fixture_alignments[f"{abi}/{library}"] = alignments
+                fixture_packaging[f"{abi}/{library}"] = (
+                    "stored-16k-aligned"
+                    if info.compress_type == zipfile.ZIP_STORED
+                    else "deflated-for-extraction"
                 )
-            minimum = 16384 if abi in {"arm64-v8a", "x86_64"} else 4096
-            invalid = [
-                value for value in alignments
-                if value < minimum or value % minimum
-            ]
-            if invalid:
-                raise BaselineError(
-                    f"{apk}:{name} has invalid PT_LOAD alignment: {invalid}"
-                )
-            if b"zygisk_module_entry\0" not in data:
-                raise BaselineError(f"{apk}:{name} has no Zygisk module entry")
-            fixture_alignments[abi] = alignments
-            fixture_packaging[abi] = (
-                "stored-16k-aligned"
-                if info.compress_type == zipfile.ZIP_STORED
-                else "deflated-for-extraction"
-            )
     return {
         "path": str(apk.resolve()),
         "sha256": sha256(apk),
@@ -631,7 +658,10 @@ def inspect_test_apk(apk: Path, aapt: Path, apksigner: Path, app_id: str) -> dic
         "target_package": app_id,
         "self_target_package": test_app_id,
         "certificate_sha256": signer_certificate(apksigner, apk),
-        "zygisk_fixture_abis": sorted(fixture_alignments),
+        "zygisk_fixture_abis": sorted(ABI_ELF_IDENTITIES),
+        "zygisk_fixture_contracts": sorted(
+            value.rstrip(b"\0").decode("ascii") for value in fixture_contracts.values()
+        ),
         "zygisk_fixture_packaging": fixture_packaging,
         "zygisk_fixture_zip_16k_compatible": True,
         "zygisk_fixture_elf_alignment_valid_for_abi": True,

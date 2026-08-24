@@ -156,6 +156,23 @@ def rm_rf(path: Path):
         shutil.rmtree(path, ignore_errors=False, onerror=rm_on_error)
 
 
+def remove_test_native_cache(path: Path):
+    """Remove one exact generated CMake tree without following redirections."""
+
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+        error(f"Refusing unsafe test native cache: {path}")
+    try:
+        rm_rf(path)
+    except FileNotFoundError:
+        # A concurrent clean may win after the pinned lstat. No other removal
+        # failure is suppressed.
+        return
+
+
 def execv(cmds: list, env=None):
     out = None if force_out or args.verbose > 0 else subprocess.DEVNULL
     # Use shell on Windows to support PATHEXT
@@ -578,6 +595,11 @@ def build_test():
     # Test APK has to be built as release to prevent classname clash
     args.release = True
     try:
+        # externalNativeBuild can otherwise package an object newer than a
+        # checked-out source file. This target is tiny; always rebuild it so
+        # artifact behavior is bound to the current source tree.
+        remove_test_native_cache(Path("app", "test", ".cxx"))
+        remove_test_native_cache(Path("app", "test", "build", "intermediates", "cxx"))
         header("* Building the test app")
         variant = "release" if old_release else "debug"
         target = build_apk(":test", f"test-{variant}.apk")

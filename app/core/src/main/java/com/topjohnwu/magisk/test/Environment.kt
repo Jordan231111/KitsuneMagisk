@@ -67,6 +67,7 @@ class Environment : BaseTest {
         const val INVALID_ZYGISK = "invalid_zygisk"
         const val OVERFLOW_ZYGISK = "overflow_zygisk"
         const val SPECIAL_ZYGISK = "special_zygisk"
+        const val UNLOAD_ZYGISK = "unload_zygisk"
         const val VALID_ZYGISK = "valid_zygisk"
         const val WRONG_ABI_ZYGISK = "wrong_abi_zygisk"
         const val ZERO_RANGE_ZYGISK = "zero_range_zygisk"
@@ -228,12 +229,20 @@ class Environment : BaseTest {
     }
 
     private fun setupValidZygiskModule(root: ExtendedFile) {
-        val error = "$VALID_ZYGISK setup failed"
-        val path = root.getChildFile(VALID_ZYGISK)
+        setupZygiskTestModule(root, VALID_ZYGISK, "libzygisk_test.so")
+    }
+
+    private fun setupUnloadZygiskModule(root: ExtendedFile) {
+        setupZygiskTestModule(root, UNLOAD_ZYGISK, "libzygisk_unload_test.so")
+    }
+
+    private fun setupZygiskTestModule(root: ExtendedFile, id: String, sourceName: String) {
+        val error = "$id setup failed"
+        val path = root.getChildFile(id)
         val module = LocalModule(path)
         assertTrue(error, module.zygiskFolder.mkdirs())
 
-        val source = File(testContext.applicationInfo.nativeLibraryDir, "libzygisk_test.so")
+        val source = File(testContext.applicationInfo.nativeLibraryDir, sourceName)
         assertTrue(error, source.isFile)
         val library = module.zygiskFolder.getChildFile("${Build.SUPPORTED_ABIS.first()}.so")
         source.inputStream().use { input ->
@@ -417,6 +426,7 @@ class Environment : BaseTest {
         setupZeroRangeZygiskModule(update)
         setupSpecialZygiskModule(update)
         setupValidZygiskModule(update)
+        setupUnloadZygiskModule(update)
         setupRemoveModule(root)
         setupUpgradeModule(root, update)
     }

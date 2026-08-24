@@ -191,6 +191,16 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             "zygisk_test.cpp"
         ).read_text(encoding="utf-8")
         self.assertIn("REGISTER_ZYGISK_MODULE(TestModule)", sample)
+        self.assertIn("kitsune-zygisk-test-v1:minimal-resident", sample)
+        self.assertIn("kitsune-zygisk-test-v1:minimal-dlclose", sample)
+        self.assertIn("DLCLOSE_MODULE_LIBRARY", sample)
+        cmake = (
+            ROOT / "app" / "test" / "src" / "main" / "cpp" /
+            "CMakeLists.txt"
+        ).read_text(encoding="utf-8")
+        self.assertIn("-fno-threadsafe-statics", cmake)
+        self.assertIn("-nostdlib++", cmake)
+        self.assertIn("KITSUNE_ZYGISK_TEST_DLCLOSE=1", cmake)
 
     def test_ui_requires_root_debug_and_android_7_1_or_newer(self) -> None:
         line = next(

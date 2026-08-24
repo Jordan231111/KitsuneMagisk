@@ -17,6 +17,7 @@ from tools.next_system_baseline import (
     BaselineError,
     cargo_lock_packages,
     read_manifest,
+    verify_fixture_contract,
     verify_dependency_contract,
 )
 
@@ -74,6 +75,19 @@ class NextSystemManifestTest(unittest.TestCase):
             with self.assertRaisesRegex(BaselineError, "current source commit"):
                 baseline.expected_source_version(Path("."))
 
+    def test_zygisk_fixture_contract_is_exact_and_exclusive(self):
+        resident = b"resident\0"
+        unload = b"unload\0"
+        verify_fixture_contract(b"prefix" + resident + b"suffix", resident, (resident, unload))
+        for payload in (
+            b"missing",
+            resident + resident,
+            resident + unload,
+            unload,
+        ):
+            with self.subTest(payload=payload), self.assertRaises(BaselineError):
+                verify_fixture_contract(payload, resident, (resident, unload))
+
     def test_instrumentation_variants_use_distinct_output_paths(self):
         for release, variant in ((False, "debug"), (True, "release")):
             with self.subTest(variant=variant):
@@ -84,6 +98,9 @@ class NextSystemManifestTest(unittest.TestCase):
                     mock.patch.object(build, "config", {"outdir": Path("out")}),
                     mock.patch.object(build, "header"),
                     mock.patch.object(
+                        build, "remove_test_native_cache"
+                    ) as remove_tree,
+                    mock.patch.object(
                         build, "build_apk", return_value=target
                     ) as build_apk,
                     mock.patch.object(build, "cp") as copy_apk,
@@ -91,8 +108,44 @@ class NextSystemManifestTest(unittest.TestCase):
                     build.build_test()
 
                 build_apk.assert_called_once_with(":test", f"test-{variant}.apk")
+                self.assertEqual(
+                    [
+                        mock.call(Path("app/test/.cxx")),
+                        mock.call(Path("app/test/build/intermediates/cxx")),
+                    ],
+                    remove_tree.call_args_list,
+                )
                 copy_apk.assert_called_once_with(target, Path("out/test.apk"))
                 self.assertEqual(release, fake_args.release)
+
+    def test_test_native_cache_cleanup_is_absent_safe_and_link_safe(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(
+            build,
+            "args",
+            SimpleNamespace(verbose=0),
+            create=True,
+        ):
+            root = Path(directory)
+            missing = root / "missing"
+            build.remove_test_native_cache(missing)
+
+            generated = root / "generated"
+            generated.mkdir()
+            (generated / "object.o").write_bytes(b"generated")
+            build.remove_test_native_cache(generated)
+            self.assertFalse(generated.exists())
+
+            target = root / "target"
+            target.mkdir()
+            redirected = root / "redirected"
+            redirected.symlink_to(target, target_is_directory=True)
+            with mock.patch.object(
+                build,
+                "error",
+                side_effect=SystemExit(1),
+            ), self.assertRaises(SystemExit):
+                build.remove_test_native_cache(redirected)
+            self.assertTrue(target.is_dir())
 
     def test_manager_build_targets_the_final_output_path(self):
         for release, variant in ((False, "debug"), (True, "release")):
