@@ -208,7 +208,7 @@ dl_emu() {
 setup_emu() {
   local avd_pkg=$1
   local ver=$2
-  local installed_ramdisk="$ANDROID_HOME/${avd_pkg//;/\/}/ramdisk.img"
+  local installed_ramdisk=$3
   if [ -z "${AVD_TEST_SKIP_DOWNLOAD:-}" ]; then
     dl_emu "$avd_pkg"
   else
@@ -270,7 +270,7 @@ test_main() {
   validate_emu_port
   emu_args="$emu_args -port $emu_port"
   export ANDROID_SERIAL="emulator-$emu_port"
-  setup_emu "$avd_pkg" "$ver"
+  setup_emu "$avd_pkg" "$ver" "$ramdisk"
   adb start-server >/dev/null
 
   print_title "* Launching $avd_pkg"
@@ -300,12 +300,12 @@ test_main() {
 }
 
 run_main() {
-  local ver avd_pkg
-  eval "$(resolve_vars 'ver avd_pkg' "$1" "${2:-}")"
+  local ver avd_pkg ramdisk
+  eval "$(resolve_vars 'ver avd_pkg ramdisk' "$1" "${2:-}")"
   validate_emu_port
   emu_args="$emu_args -port $emu_port"
   export ANDROID_SERIAL="emulator-$emu_port"
-  setup_emu "$avd_pkg" "$ver"
+  setup_emu "$avd_pkg" "$ver" "$ramdisk"
   print_title "* Launching $avd_pkg"
   "$emu" "@$avd_name" $emu_args
   cleanup

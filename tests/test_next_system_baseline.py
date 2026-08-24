@@ -101,6 +101,13 @@ class NextSystemManifestTest(unittest.TestCase):
                     build.build_app()
                 build_apk.assert_called_once_with(":apk", f"app-{variant}.apk")
 
+    def test_avd_offline_mode_uses_the_resolved_ramdisk_path(self):
+        source = Path("scripts/avd.sh").read_text(encoding="utf-8")
+        setup = source[source.index("setup_emu()") : source.index("launch_emulator()")]
+        self.assertIn("local installed_ramdisk=$3", setup)
+        self.assertIn('setup_emu "$avd_pkg" "$ver" "$ramdisk"', source)
+        self.assertNotIn("${avd_pkg//;", source)
+
     def test_gradle_identity_uses_exact_git_dirty_status(self):
         plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(
             encoding="utf-8"
