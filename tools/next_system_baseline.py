@@ -588,6 +588,62 @@ def inspect_test_apk(apk: Path, aapt: Path, apksigner: Path, app_id: str) -> dic
     }
 
 
+def inspect_stub_apk(
+    apk: Path,
+    manager_apk: Path,
+    manager: dict[str, Any],
+    aapt: Path,
+    apksigner: Path,
+    app_id: str,
+) -> dict[str, Any]:
+    if not apk.is_file():
+        raise BaselineError(f"missing standalone stub APK: {apk}")
+    badging = run((aapt, "dump", "badging", apk))
+    package_match = PACKAGE_PATTERN.search(badging)
+    sdk_match = SDK_PATTERN.search(badging)
+    target_match = TARGET_SDK_PATTERN.search(badging)
+    if not all((package_match, sdk_match, target_match)):
+        raise BaselineError(f"cannot parse stub APK metadata from {apk}")
+    assert package_match is not None
+    assert sdk_match is not None
+    assert target_match is not None
+    package_name, version_code, version_name = package_match.groups()
+    if package_name != app_id:
+        raise BaselineError(f"unexpected stub package in {apk}: {package_name}")
+    if (version_code, version_name) != ("1", "1.0"):
+        raise BaselineError(
+            f"unexpected standalone stub version in {apk}: {version_code}/{version_name}"
+        )
+    if int(sdk_match.group(1)) != manager["min_sdk"]:
+        raise BaselineError(f"standalone stub minSdk differs from manager: {apk}")
+    if int(target_match.group(1)) != manager["target_sdk"]:
+        raise BaselineError(f"standalone stub targetSdk differs from manager: {apk}")
+    try:
+        with zipfile.ZipFile(manager_apk) as archive:
+            embedded = archive.read("assets/stub.apk")
+        standalone = apk.read_bytes()
+    except (KeyError, OSError, zipfile.BadZipFile) as exc:
+        raise BaselineError(f"cannot compare standalone and embedded stub APKs: {exc}") from exc
+    if standalone != embedded:
+        raise BaselineError(f"standalone stub does not match {manager_apk}:assets/stub.apk")
+    certificate = signer_certificate(apksigner, apk)
+    if certificate != manager["certificate_sha256"]:
+        raise BaselineError(f"standalone stub signer differs from manager: {apk}")
+    return {
+        "path": str(apk.resolve()),
+        "sha256": hashlib.sha256(standalone).hexdigest(),
+        "embedded_sha256": hashlib.sha256(embedded).hexdigest(),
+        "size": len(standalone),
+        "package": package_name,
+        "version_code": int(version_code),
+        "version_name": version_name,
+        "min_sdk": int(sdk_match.group(1)),
+        "target_sdk": int(target_match.group(1)),
+        "certificate_sha256": certificate,
+        "payload_matches_manager": True,
+    }
+
+
 def expected_source_version(root: Path) -> str:
     commit = run(("git", "rev-parse", "HEAD"), root).strip()
     if re.fullmatch(r"[a-f0-9]{40}", commit) is None:
@@ -610,6 +666,22 @@ def verify_artifacts(
     release = inspect_apk(
         outdir / "app-release.apk", "release", aapt, apksigner, manifest,
         expected_version,
+    )
+    stub_debug = inspect_stub_apk(
+        outdir / "stub-debug.apk",
+        outdir / "app-debug.apk",
+        debug,
+        aapt,
+        apksigner,
+        manifest["identity"]["application_id"],
+    )
+    stub_release = inspect_stub_apk(
+        outdir / "stub-release.apk",
+        outdir / "app-release.apk",
+        release,
+        aapt,
+        apksigner,
+        manifest["identity"]["application_id"],
     )
     test_debug = inspect_test_apk(
         outdir / "test-debug.apk",
@@ -634,9 +706,12 @@ def verify_artifacts(
     return {
         "debug": debug,
         "release": release,
+        "stub_debug": stub_debug,
+        "stub_release": stub_release,
         "test_debug": test_debug,
         "test_release": test_release,
         "signer_separation": True,
+        "stub_payloads_and_signers_match": True,
         "instrumentation_signers_match": True,
     }
 
@@ -647,7 +722,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--source", action="store_true", help="verify the reviewed source delta")
     parser.add_argument(
-        "--artifacts", type=Path, help="verify app and signer-matched test APKs"
+        "--artifacts", type=Path, help="verify app, embedded stub, and signer-matched test APKs"
     )
     parser.add_argument("--aapt", type=Path)
     parser.add_argument("--apksigner", type=Path)

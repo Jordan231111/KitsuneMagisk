@@ -18,6 +18,145 @@ run_cvd_bin() {
   HOME=$CF_HOME $CF_HOME/bin/$exe "$@"
 }
 
+list_adb_serials() {
+  python3 - <<'PY'
+import os
+import subprocess
+
+environment = os.environ.copy()
+environment.pop("ANDROID_SERIAL", None)
+try:
+    timeout = float(environment.get("CVD_ADB_COMMAND_TIMEOUT", "10"))
+except ValueError:
+    raise SystemExit(2)
+if timeout <= 0:
+    raise SystemExit(2)
+try:
+    result = subprocess.run(
+        ["adb", "devices"],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        timeout=timeout,
+        env=environment,
+    )
+except subprocess.TimeoutExpired:
+    raise SystemExit(124)
+if result.returncode != 0:
+    raise SystemExit(result.returncode)
+for line in result.stdout.splitlines()[1:]:
+    fields = line.split()
+    if len(fields) >= 2 and fields[1] == "device":
+        print(fields[0])
+PY
+}
+
+pin_new_adb_serial() {
+  local baseline=$1 serial state
+  serial=$(python3 - "$boot_timeout" "$baseline" <<'PY'
+import os
+import subprocess
+import sys
+import time
+
+timeout = int(sys.argv[1])
+baseline = set(sys.argv[2].splitlines())
+environment = os.environ.copy()
+environment.pop("ANDROID_SERIAL", None)
+deadline = time.monotonic() + timeout
+try:
+    command_timeout = float(environment.get("CVD_ADB_COMMAND_TIMEOUT", "10"))
+except ValueError:
+    raise SystemExit(2)
+if command_timeout <= 0:
+    raise SystemExit(2)
+
+
+def run_adb(arguments):
+    try:
+        return subprocess.run(
+            ["adb", *arguments],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=min(command_timeout, max(0.1, deadline - time.monotonic())),
+            env=environment,
+        )
+    except subprocess.TimeoutExpired:
+        return None
+
+
+while time.monotonic() < deadline:
+    result = run_adb(["devices"])
+    if result is None or result.returncode != 0:
+        time.sleep(1)
+        continue
+    online = []
+    for line in result.stdout.splitlines()[1:]:
+        fields = line.split()
+        if len(fields) >= 2 and fields[1] == "device" and fields[0] not in baseline:
+            online.append(fields[0])
+    if len(online) > 1:
+        print("multiple new online ADB transports appeared", file=sys.stderr)
+        raise SystemExit(3)
+    if len(online) == 1:
+        serial = online[0]
+        hardware_result = run_adb(["-s", serial, "shell", "getprop", "ro.hardware"])
+        product_result = run_adb(
+            ["-s", serial, "shell", "getprop", "ro.product.name"]
+        )
+        if (
+            hardware_result is None
+            or product_result is None
+            or hardware_result.returncode != 0
+            or product_result.returncode != 0
+        ):
+            time.sleep(1)
+            continue
+        hardware = hardware_result.stdout.strip().lower()
+        product = product_result.stdout.strip().lower()
+        if not hardware or not product:
+            time.sleep(1)
+            continue
+        if not (
+            ("cutf" in hardware or "vsoc" in hardware)
+            and ("_cf_" in product or product.startswith("aosp_cf"))
+        ):
+            print(
+                f"new ADB transport {serial} is not Cuttlefish: "
+                f"hardware={hardware!r}, product={product!r}",
+                file=sys.stderr,
+            )
+            raise SystemExit(4)
+        print(serial)
+        raise SystemExit(0)
+    time.sleep(1)
+print("no new Cuttlefish ADB transport appeared", file=sys.stderr)
+raise SystemExit(124)
+PY
+  ) || {
+    print_error "! Cuttlefish ADB target did not appear safely"
+    return 1
+  }
+  case "$serial" in
+    ""|unknown|offline|*[![:alnum:].:_-]*)
+      print_error "! Invalid Cuttlefish ADB serial '$serial'"
+      return 1
+      ;;
+  esac
+  state=$(adb -s "$serial" get-state 2>/dev/null) || {
+    print_error "! Cannot validate Cuttlefish ADB serial '$serial'"
+    return 1
+  }
+  if [ "$state" != device ]; then
+    print_error "! Cannot validate Cuttlefish ADB serial '$serial'"
+    return 1
+  fi
+  export ANDROID_SERIAL="$serial"
+}
+
 setup_env() {
   curl -LO https://github.com/topjohnwu/magisk-files/releases/download/files/cuttlefish-base_1.2.0_amd64.deb
   sudo apt-get update
@@ -77,9 +216,12 @@ test_cf() {
 }
 
 test_main() {
+  local preexisting_serials
+  preexisting_serials=$(list_adb_serials)
+
   # Launch stock cuttlefish
   run_cvd_bin launch_cvd $cvd_args -resume=false
-  adb wait-for-device
+  pin_new_adb_serial "$preexisting_serials"
 
   # Patch and test debug build
   ./build.py -v avd_patch "$CF_HOME/init_boot.img" magisk_patched.img

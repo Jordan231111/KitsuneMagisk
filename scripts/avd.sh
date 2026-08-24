@@ -216,7 +216,16 @@ while True:
     result = run_adb(["exec-out", "getprop", "sys.boot_completed"], True)
     if result is not None and result[0] == 0:
         if result[1].strip("\r\n") == "1":
-            raise SystemExit(0)
+            framework = run_adb(["shell", "pm", "path", "android"], True)
+            if (
+                framework is not None
+                and framework[0] == 0
+                and "package:" in framework[1]
+            ):
+                time.sleep(5)
+                raise SystemExit(0)
+            if framework is None or framework[0] != 0:
+                run_adb(["reconnect"], False)
     else:
         run_adb(["reconnect"], False)
     time.sleep(2)

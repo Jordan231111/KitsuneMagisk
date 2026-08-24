@@ -8,6 +8,7 @@ import time
 from types import SimpleNamespace
 import unittest
 from unittest import mock
+import zipfile
 
 import build
 import tools.next_system_baseline as baseline
@@ -105,10 +106,39 @@ class NextSystemManifestTest(unittest.TestCase):
                     mock.patch.object(
                         build, "build_apk", return_value=target
                     ) as build_apk,
-                    mock.patch.object(build, "cp"),
+                    mock.patch.object(build, "export_stub") as export_stub,
+                    mock.patch.object(build, "rm") as remove_output,
                 ):
                     build.build_app()
                 build_apk.assert_called_once_with(":apk", f"app-{variant}.apk")
+                remove_output.assert_called_once_with(
+                    Path("out") / f"stub-{variant}.apk"
+                )
+                export_stub.assert_called_once_with(
+                    target, Path("out") / f"stub-{variant}.apk"
+                )
+
+    def test_manager_exports_the_exact_embedded_stub_fail_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manager = root / "manager.apk"
+            target = root / "stub.apk"
+            with zipfile.ZipFile(manager, "w") as archive:
+                archive.writestr("assets/stub.apk", b"exact-stub")
+            with mock.patch.object(build, "vprint"):
+                build.export_stub(manager, target)
+            self.assertEqual(b"exact-stub", target.read_bytes())
+
+            missing = root / "missing.apk"
+            with zipfile.ZipFile(missing, "w") as archive:
+                archive.writestr("assets/not-stub.apk", b"wrong")
+            with (
+                mock.patch.object(build, "vprint"),
+                mock.patch.object(build, "error", side_effect=SystemExit(1)),
+            ):
+                with self.assertRaises(SystemExit):
+                    build.export_stub(missing, target)
+            self.assertFalse(target.exists())
 
     def test_avd_offline_mode_uses_the_resolved_ramdisk_path(self):
         source = Path("scripts/avd.sh").read_text(encoding="utf-8")
@@ -129,6 +159,7 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertIn("start_new_session=True", waiter)
         self.assertIn("pending_signal", waiter)
         self.assertIn("wait_process_group_gone", waiter)
+        self.assertIn('["shell", "pm", "path", "android"]', waiter)
         self.assertNotIn("adb wait-for-device", waiter)
 
     def test_avd_boot_waiter_reaps_a_hung_adb_process_group(self):
@@ -273,6 +304,7 @@ while True:
     def test_avd_root_stress_is_timeout_bounded_and_checks_orphans(self):
         source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
         self.assertIn("subprocess.TimeoutExpired", source)
+        self.assertIn("AVD_INSTRUMENT_TIMEOUT", source)
         self.assertIn("AVD_STRESS_REQUEST_TIMEOUT", source)
         self.assertIn("assert_no_stale_su", source)
         self.assertIn("Stale MagiskSU process remained", source)
@@ -288,6 +320,162 @@ while True:
             source.index("assert_no_stale_su()") : source.index("run_root_stress()")
         ]
         self.assertNotIn("awk", scanner)
+
+    def test_instrumentation_timeout_preserves_adb_failure_status(self):
+        source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
+        runner = source[
+            source.index("run_instrumentation()") : source.index("wait_for_pm()")
+        ]
+        self.assertIn("subprocess.TimeoutExpired", runner)
+        self.assertIn('"adb", "-s", serial', runner)
+        self.assertIn('raw=$(run_instrumentation "$1" "$2")', runner)
+        self.assertNotIn("am instrument -w", runner)
+
+        cuttlefish = Path("scripts/cuttlefish.sh").read_text(encoding="utf-8")
+        self.assertIn("preexisting_serials=$(list_adb_serials)", cuttlefish)
+        self.assertIn('pin_new_adb_serial "$preexisting_serials"', cuttlefish)
+        self.assertIn('fields[0] not in baseline', cuttlefish)
+        self.assertIn('getprop", "ro.hardware"', cuttlefish)
+        self.assertIn('export ANDROID_SERIAL="$serial"', cuttlefish)
+        self.assertIn('adb -s "$serial" get-state', cuttlefish)
+        self.assertNotIn("ANDROID_SERIAL= adb wait-for-device", cuttlefish)
+
+    def test_cuttlefish_waits_for_a_new_verified_transport(self):
+        source = Path("scripts/cuttlefish.sh").read_text(encoding="utf-8")
+        functions = source[
+            source.index("list_adb_serials()") : source.index("setup_env()")
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fake_adb = root / "adb"
+            count_file = root / "count"
+            log_file = root / "commands.log"
+            fake_adb.write_text(
+                """#!/usr/bin/env python3
+import os
+from pathlib import Path
+import sys
+
+arguments = sys.argv[1:]
+log = Path(os.environ["FAKE_ADB_LOG"])
+with log.open("a", encoding="utf-8") as stream:
+    stream.write(" ".join(arguments) + "\\n")
+if arguments[:2] == ["-s", "127.0.0.1:16384"]:
+    raise SystemExit(9)
+if arguments == ["devices"]:
+    if os.environ.get("FAKE_ADB_HANG_BASELINE") == "1" and not Path(
+        os.environ["FAKE_ADB_COUNT"]
+    ).exists():
+        import time
+        time.sleep(60)
+    counter = Path(os.environ["FAKE_ADB_COUNT"])
+    count = int(counter.read_text(encoding="ascii")) + 1 if counter.exists() else 1
+    counter.write_text(str(count), encoding="ascii")
+    print("List of devices attached")
+    print("127.0.0.1:16384\tdevice")
+    if count >= 3 and os.environ.get("FAKE_ADB_NEVER_NEW") != "1":
+        print("cvd-01\tdevice")
+    else:
+        print("cvd-01\toffline")
+    raise SystemExit(0)
+if arguments == ["-s", "cvd-01", "shell", "getprop", "ro.hardware"]:
+    print("cutf_cvm")
+    raise SystemExit(7 if os.environ.get("FAKE_ADB_PROPERTY_NONZERO") == "1" else 0)
+if arguments == ["-s", "cvd-01", "shell", "getprop", "ro.product.name"]:
+    print("aosp_cf_x86_64_only_phone")
+    raise SystemExit(0)
+if arguments == ["-s", "cvd-01", "get-state"]:
+    print("device")
+    raise SystemExit(8 if os.environ.get("FAKE_ADB_STATE_NONZERO") == "1" else 0)
+raise SystemExit(2)
+""",
+                encoding="utf-8",
+            )
+            fake_adb.chmod(0o700)
+            runner = root / "runner.sh"
+            runner.write_text(
+                "#!/bin/bash\nset -eu\nboot_timeout=${BOOT_TIMEOUT:-5}\n"
+                + functions
+                + '\nbaseline=$(list_adb_serials)\n'
+                + 'pin_new_adb_serial "$baseline"\n'
+                + 'printf "%s\\n" "$ANDROID_SERIAL"\n',
+                encoding="utf-8",
+            )
+            runner.chmod(0o700)
+            env = os.environ.copy()
+            env.update(
+                {
+                    "FAKE_ADB_COUNT": str(count_file),
+                    "FAKE_ADB_LOG": str(log_file),
+                    "PATH": f"{root}{os.pathsep}{env['PATH']}",
+                }
+            )
+            result = subprocess.run(
+                [str(runner)],
+                check=False,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=5,
+            )
+            self.assertEqual(
+                0,
+                result.returncode,
+                result.stdout
+                + "\n"
+                + result.stderr
+                + "\n"
+                + (log_file.read_text(encoding="utf-8") if log_file.exists() else "")
+                + "\n"
+                + runner.read_text(encoding="utf-8"),
+            )
+            self.assertEqual("cvd-01", result.stdout.strip())
+            commands = log_file.read_text(encoding="utf-8")
+            self.assertNotIn("-s 127.0.0.1:16384", commands)
+            self.assertIn("-s cvd-01 shell getprop ro.hardware", commands)
+
+            for extra_environment in (
+                {"BOOT_TIMEOUT": "1", "FAKE_ADB_NEVER_NEW": "1"},
+                {"BOOT_TIMEOUT": "3", "FAKE_ADB_PROPERTY_NONZERO": "1"},
+                {"BOOT_TIMEOUT": "3", "FAKE_ADB_STATE_NONZERO": "1"},
+                {
+                    "BOOT_TIMEOUT": "1",
+                    "CVD_ADB_COMMAND_TIMEOUT": "0.2",
+                    "FAKE_ADB_HANG_BASELINE": "1",
+                },
+            ):
+                if count_file.exists():
+                    count_file.unlink()
+                if log_file.exists():
+                    log_file.unlink()
+                failure_environment = env | extra_environment
+                started = time.monotonic()
+                result = subprocess.run(
+                    [str(runner)],
+                    check=False,
+                    env=failure_environment,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=6,
+                )
+                self.assertNotEqual(0, result.returncode, extra_environment)
+                self.assertLess(time.monotonic() - started, 6)
+                commands = (
+                    log_file.read_text(encoding="utf-8")
+                    if log_file.exists()
+                    else ""
+                )
+                self.assertNotIn("-s 127.0.0.1:16384", commands)
+
+    def test_artifact_verifier_requires_standalone_stub_parity(self):
+        source = Path("tools/next_system_baseline.py").read_text(encoding="utf-8")
+        self.assertIn("def inspect_stub_apk(", source)
+        self.assertIn('archive.read("assets/stub.apk")', source)
+        self.assertIn('outdir / "stub-debug.apk"', source)
+        self.assertIn('outdir / "stub-release.apk"', source)
+        self.assertIn('"stub_payloads_and_signers_match": True', source)
 
     def test_gradle_identity_uses_exact_git_dirty_status(self):
         plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(

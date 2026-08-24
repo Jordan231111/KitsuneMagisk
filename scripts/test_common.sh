@@ -17,6 +17,7 @@ sdk="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
 avd="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 
 boot_timeout="${AVD_BOOT_TIMEOUT:-180}"
+instrument_timeout="${AVD_INSTRUMENT_TIMEOUT:-120}"
 
 if command -v nproc >/dev/null 2>&1; then
   core_count=$(nproc)
@@ -39,10 +40,82 @@ print_error() {
 
 # $1 = TestClass#method
 # $2 = component
+run_instrumentation() {
+  python3 - "$1" "$2" "$instrument_timeout" <<'PY'
+import os
+import subprocess
+import sys
+
+test_class, component, raw_timeout = sys.argv[1:]
+try:
+    timeout = int(raw_timeout)
+except ValueError:
+    raise SystemExit(2)
+if timeout < 1:
+    raise SystemExit(2)
+serial = os.environ.get("ANDROID_SERIAL")
+if not serial:
+    raise SystemExit(2)
+command = [
+    "adb", "-s", serial, "shell", "am", "instrument", "-w", "--user", "0",
+    "-e", "class", test_class, component,
+]
+
+
+def stop_process(process):
+    try:
+        process.terminate()
+    except ProcessLookupError:
+        pass
+    try:
+        output, _ = process.communicate(timeout=2)
+    except subprocess.TimeoutExpired:
+        output = ""
+    if process.poll() is None:
+        try:
+            process.kill()
+        except ProcessLookupError:
+            pass
+        try:
+            output, _ = process.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            return False, output
+    return True, output
+
+
+try:
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+except OSError:
+    raise SystemExit(2)
+try:
+    output, _ = process.communicate(timeout=timeout)
+except subprocess.TimeoutExpired:
+    stopped, output = stop_process(process)
+    sys.stdout.write(output)
+    raise SystemExit(124 if stopped else 125)
+except KeyboardInterrupt:
+    stopped, _ = stop_process(process)
+    raise SystemExit(130 if stopped else 125)
+sys.stdout.write(output)
+raise SystemExit(process.returncode)
+PY
+}
+
 am_instrument() {
   set +x
-  local out
-  out=$(adb shell am instrument -w --user 0 -e class "$1" "$2" | tr -d '\r')
+  local raw out status
+  raw=$(run_instrumentation "$1" "$2") || {
+    status=$?
+    echo "$raw"
+    set -x
+    return "$status"
+  }
+  out=$(printf '%s' "$raw" | tr -d '\r')
   echo "$out"
   if grep -q 'OK (' <<< "$out"; then
     set -x

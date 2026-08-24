@@ -127,6 +127,7 @@
     "native/src/include/consts.hpp",
     "native/src/include/consts.rs",
     "scripts/avd.sh",
+    "scripts/cuttlefish.sh",
     "scripts/kitsune_system_install.sh",
     "scripts/kitsune_system_launcher.sh",
     "scripts/kitsune_system_rescue.sh",

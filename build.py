@@ -12,7 +12,7 @@ import sys
 import tarfile
 import urllib.request
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
 
 def color_print(code, str):
@@ -108,6 +108,26 @@ def cp(source: Path, target: Path):
         vprint(f"cp {source} -> {target}")
     except:
         pass
+
+
+def export_stub(manager_apk: Path, target: Path):
+    """Export exactly the stub APK embedded in the verified manager artifact."""
+
+    temporary = target.with_name(f".{target.name}.tmp")
+    rm(temporary)
+    rm(target)
+    try:
+        with ZipFile(manager_apk) as archive:
+            with archive.open("assets/stub.apk") as source, open(
+                temporary, "xb"
+            ) as output:
+                shutil.copyfileobj(source, output)
+        os.replace(temporary, target)
+        vprint(f"export {manager_apk}:assets/stub.apk -> {target}")
+    except (BadZipFile, KeyError, OSError) as exc:
+        rm(temporary)
+        rm(target)
+        error(f"Cannot export the manager's embedded stub APK: {exc}")
 
 
 def rm(file: Path):
@@ -537,14 +557,14 @@ def build_apk(module: str, output_name=None):
 def build_app():
     header("* Building the Magisk app")
     build_type = "release" if args.release else "debug"
+    stub_target = config["outdir"] / f"stub-{build_type}.apk"
+    rm(stub_target)
     target = build_apk(":apk", f"app-{build_type}.apk")
     header(f"Output: {target}")
 
     # Stub building is directly integrated into the main app
     # build process. Copy the stub APK into output directory.
-    source = Path("app", "core", "src", build_type, "assets", "stub.apk")
-    target = config["outdir"] / f"stub-{build_type}.apk"
-    cp(source, target)
+    export_stub(target, stub_target)
 
 
 def build_stub():
