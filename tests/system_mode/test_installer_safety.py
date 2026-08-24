@@ -67,7 +67,10 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertLess(install.index("ks_validate_debug_payload"), install.index("sm_begin_transaction"))
 
     def test_persistent_mode_rejects_a_dirty_source_identity(self) -> None:
-        self.assertIn("status().call().isClean", self.plugin)
+        self.assertIn("sourceTreeDirty = gitTreeDirty", self.plugin)
+        self.assertIn('"status", "--porcelain=v1"', self.plugin)
+        self.assertIn("check(process.waitFor() == 0)", self.plugin)
+        self.assertIn('findProperty("expectedSourceCommit")', self.plugin)
         self.assertIn("KITSUNE_SOURCE_DIRTY=${Config.sourceDirty}", self.setup)
         validate = function_body(self.installer, "ks_validate_identity")
         self.assertIn('KITSUNE_SOURCE_DIRTY:-true', validate)
