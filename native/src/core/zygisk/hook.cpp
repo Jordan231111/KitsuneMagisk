@@ -605,6 +605,15 @@ void HookContext::hook_zygote_jni() {
         ranges::for_each(fork_app_methods, [](auto &m) { m.fnPtr = nullptr; });
         ranges::for_each(specialize_app_methods, [](auto &m) { m.fnPtr = nullptr; });
         ranges::for_each(fork_server_methods, [](auto &m) { m.fnPtr = nullptr; });
+    } else {
+        // A method family absent from discovery was never replaced. Do not
+        // pass its newer-only wrapper signatures to child restoration.
+        if (!replaced_fork_app)
+            ranges::for_each(fork_app_methods, [](auto &m) { m.fnPtr = nullptr; });
+        if (!replaced_specialize_app)
+            ranges::for_each(specialize_app_methods, [](auto &m) { m.fnPtr = nullptr; });
+        if (!replaced_fork_server)
+            ranges::for_each(fork_server_methods, [](auto &m) { m.fnPtr = nullptr; });
     }
 }
 

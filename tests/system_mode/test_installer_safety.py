@@ -91,6 +91,26 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertLess(child.index("android_logging()"), child.index('debug!("su: fork handler")'))
         self.assertLess(child.index("android_logging()"), child.index("client.write_pod(&0)"))
 
+    def test_zygisk_child_restores_only_discovered_jni_families(self) -> None:
+        hook = (
+            ROOT / "native" / "src" / "core" / "zygisk" / "hook.cpp"
+        ).read_text(encoding="utf-8")
+        discovery = hook[
+            hook.index("void HookContext::hook_zygote_jni()") :
+            hook.index("void HookContext::restore_zygote_hook")
+        ]
+        for family in ("fork_app", "specialize_app", "fork_server"):
+            self.assertIn(f"if (!replaced_{family})", discovery)
+            self.assertIn(
+                f"ranges::for_each({family}_methods, "
+                "[](auto &m) { m.fnPtr = nullptr; });",
+                discovery,
+            )
+        self.assertLess(
+            discovery.index("strcmp(method.name, kSpecializeApp)"),
+            discovery.index("if (!replaced_specialize_app)"),
+        )
+
     def test_ui_requires_root_debug_and_android_7_1_or_newer(self) -> None:
         line = next(
             item for item in self.install_view_model.splitlines()

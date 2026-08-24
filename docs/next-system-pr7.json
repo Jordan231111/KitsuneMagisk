@@ -122,6 +122,7 @@
     "native/src/core/lib.rs",
     "native/src/core/logging.rs",
     "native/src/core/su/daemon.rs",
+    "native/src/core/zygisk/hook.cpp",
     "native/src/external/cxx-rs",
     "native/src/include/codegen.rs",
     "native/src/include/consts.hpp",

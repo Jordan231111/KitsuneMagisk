@@ -2313,6 +2313,9 @@ product feature on `next-system`, not the complete historical Kitsune port.
 
 - Port the dedicated installer, capability contract, persistent launcher/RC, upstream live-setup-derived tmpfs bootstrap, current policy CLI, manifest/transaction, and uninstall.
 - Keep built-in Zygisk and upstream native core intact unless a target-backed failing test requires a narrow hook.
+- On Android 6, retain only JNI method families that Zygisk actually discovered and hooked; child
+  cleanup must not re-register newer `nativeSpecializeAppProcess` signatures that old ART does not
+  declare. Gate this narrow v30.7 fix with repeated app-process starts after module tests.
 - Close every dependency blocker recorded by PR6 before promotion: use the public upstream CXX
   `1.0.195` tag without an unpushable private gitlink, require fixed `anyhow`, `crypto-common`, and
   `digest` lockfile versions, preserve the sole unpatched RSA advisory only for local boot-image
