@@ -1,8 +1,10 @@
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import tempfile
+import time
 from types import SimpleNamespace
 import unittest
 from unittest import mock
@@ -114,6 +116,159 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertIn("local installed_ramdisk=$3", setup)
         self.assertIn('setup_emu "$avd_pkg" "$ver" "$ramdisk"', source)
         self.assertNotIn("${avd_pkg//;", source)
+
+    def test_avd_boot_wait_bounds_shell_transport_and_recovers_it(self):
+        source = Path("scripts/avd.sh").read_text(encoding="utf-8")
+        waiter = source[
+            source.index("start_boot_waiter()") : source.index("validate_emu_port()")
+        ]
+        self.assertIn("subprocess.TimeoutExpired", waiter)
+        self.assertIn('run_adb(["reconnect"], False)', waiter)
+        self.assertIn('"ANDROID_SERIAL"', waiter)
+        self.assertIn("os.killpg(process_group, signal.SIGKILL)", waiter)
+        self.assertIn("start_new_session=True", waiter)
+        self.assertIn("pending_signal", waiter)
+        self.assertIn("wait_process_group_gone", waiter)
+        self.assertNotIn("adb wait-for-device", waiter)
+
+    def test_avd_boot_waiter_reaps_a_hung_adb_process_group(self):
+        source = Path("scripts/avd.sh").read_text(encoding="utf-8")
+        waiter = source[
+            source.index("start_boot_waiter()") : source.index("validate_emu_port()")
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            adb_pid_file = root / "adb.pid"
+            adb_child_pid_file = root / "adb-child.pid"
+            waiter_pid_file = root / "waiter.pid"
+            fake_adb = root / "adb"
+            fake_adb.write_text(
+                """#!/usr/bin/env python3
+import os
+from pathlib import Path
+import signal
+import time
+
+def publish_pid(path):
+    destination = Path(path)
+    temporary = destination.with_name(destination.name + ".new")
+    temporary.write_text(str(os.getpid()), encoding="ascii")
+    os.replace(temporary, destination)
+
+def stop(_signum, _frame):
+    raise SystemExit(0)
+
+for handled in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+    signal.signal(handled, stop)
+child = os.fork()
+if child == 0:
+    publish_pid(os.environ["FAKE_ADB_CHILD_PID"])
+else:
+    publish_pid(os.environ["FAKE_ADB_PID"])
+while True:
+    time.sleep(1)
+""",
+                encoding="utf-8",
+            )
+            fake_adb.chmod(0o700)
+            runner = root / "runner.sh"
+            runner.write_text(
+                "#!/bin/bash\nset -eu\n"
+                + waiter
+                + '\nstart_boot_waiter\nprintf "%s\\n" "$wait_pid" '
+                + '>"$WAITER_PID_FILE"\n'
+                + 'wait "$wait_pid"\n',
+                encoding="utf-8",
+            )
+            runner.chmod(0o700)
+            env = os.environ.copy()
+            env.update(
+                {
+                    "ANDROID_SERIAL": "emulator-5556",
+                    "FAKE_ADB_CHILD_PID": str(adb_child_pid_file),
+                    "FAKE_ADB_PID": str(adb_pid_file),
+                    "PATH": f"{root}{os.pathsep}{env['PATH']}",
+                    "WAITER_PID_FILE": str(waiter_pid_file),
+                }
+            )
+            process = None
+            waiter_pid = None
+            adb_pid = None
+            adb_child_pid = None
+
+            def read_pid(path):
+                try:
+                    return int(path.read_text(encoding="ascii"))
+                except (OSError, ValueError):
+                    return None
+
+            try:
+                process = subprocess.Popen(
+                    [str(runner)],
+                    env=env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    start_new_session=True,
+                )
+                deadline = time.monotonic() + 5
+                while time.monotonic() < deadline:
+                    if waiter_pid is None:
+                        waiter_pid = read_pid(waiter_pid_file)
+                    if adb_pid is None:
+                        adb_pid = read_pid(adb_pid_file)
+                    if adb_child_pid is None:
+                        adb_child_pid = read_pid(adb_child_pid_file)
+                    if None not in (waiter_pid, adb_pid, adb_child_pid):
+                        break
+                    if process.poll() is not None:
+                        break
+                    time.sleep(0.01)
+                self.assertIsNotNone(waiter_pid, "boot waiter did not start")
+                self.assertIsNotNone(adb_pid, "fake adb did not start")
+                self.assertIsNotNone(adb_child_pid, "fake adb child did not start")
+                assert waiter_pid is not None
+                assert adb_pid is not None
+                assert adb_child_pid is not None
+                os.kill(waiter_pid, signal.SIGTERM)
+                process.communicate(timeout=5)
+                deadline = time.monotonic() + 2
+                while time.monotonic() < deadline:
+                    try:
+                        os.kill(adb_pid, 0)
+                        os.kill(adb_child_pid, 0)
+                    except ProcessLookupError:
+                        break
+                    time.sleep(0.01)
+                with self.assertRaises(ProcessLookupError):
+                    os.kill(adb_pid, 0)
+                with self.assertRaises(ProcessLookupError):
+                    os.kill(adb_child_pid, 0)
+            finally:
+                if waiter_pid is None:
+                    waiter_pid = read_pid(waiter_pid_file)
+                if adb_pid is None:
+                    adb_pid = read_pid(adb_pid_file)
+                if adb_child_pid is None:
+                    adb_child_pid = read_pid(adb_child_pid_file)
+                if adb_pid is not None:
+                    try:
+                        os.killpg(adb_pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                for pid in (waiter_pid, adb_pid, adb_child_pid):
+                    if pid is None:
+                        continue
+                    try:
+                        os.kill(pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                if process is not None and process.poll() is None:
+                    try:
+                        os.killpg(process.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    process.communicate(timeout=2)
 
     def test_avd_root_stress_is_timeout_bounded_and_checks_orphans(self):
         source = Path("scripts/test_common.sh").read_text(encoding="utf-8")

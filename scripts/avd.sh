@@ -87,16 +87,141 @@ test_error() {
   exit "$status"
 }
 
-wait_for_boot() {
-  adb wait-for-device
-  while true; do
-    local result
-    result=$(adb exec-out getprop sys.boot_completed | tr -d '\r') || return 1
-    if [ "$result" = "1" ]; then
-      return 0
-    fi
-    sleep 2
-  done
+start_boot_waiter() {
+  python3 - <<'PY' &
+import os
+import signal
+import subprocess
+import sys
+import time
+
+serial = os.environ.get("ANDROID_SERIAL")
+if not serial:
+    raise SystemExit(2)
+adb = ["adb", "-s", serial]
+active = None
+spawning = False
+pending_signal = None
+
+
+def process_group_exists(process_group):
+    try:
+        os.killpg(process_group, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def wait_process_group_gone(process_group, timeout):
+    deadline = time.monotonic() + timeout
+    while process_group_exists(process_group):
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.01)
+    return True
+
+
+def stop_active():
+    global active
+    process = active
+    if process is None:
+        return True
+    process_group = process.pid
+    try:
+        os.killpg(process_group, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.communicate(timeout=2)
+    except subprocess.TimeoutExpired:
+        pass
+    if process_group_exists(process_group):
+        try:
+            os.killpg(process_group, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    if process.poll() is None:
+        try:
+            process.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+            try:
+                process.communicate(timeout=2)
+            except subprocess.TimeoutExpired:
+                active = None
+                return False
+    group_gone = wait_process_group_gone(process_group, 2)
+    active = None
+    return group_gone
+
+
+def stop_waiter(signum, _frame):
+    global pending_signal
+    if spawning and active is None:
+        pending_signal = signum
+        return
+    if not stop_active():
+        raise SystemExit(125)
+    raise SystemExit(128 + signum)
+
+
+for handled_signal in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+    signal.signal(handled_signal, stop_waiter)
+
+
+def run_adb(arguments, capture):
+    global active, pending_signal, spawning
+    spawning = True
+    try:
+        process = subprocess.Popen(
+            [*adb, *arguments],
+            stdout=subprocess.PIPE if capture else subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            start_new_session=True,
+        )
+    except OSError:
+        spawning = False
+        if pending_signal is not None:
+            signum = pending_signal
+            pending_signal = None
+            raise SystemExit(128 + signum)
+        raise SystemExit(2)
+    active = process
+    spawning = False
+    if pending_signal is not None:
+        signum = pending_signal
+        pending_signal = None
+        stop_waiter(signum, None)
+    try:
+        stdout, _ = process.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        if not stop_active():
+            raise SystemExit(125)
+        return None
+    if process_group_exists(process.pid):
+        if not stop_active():
+            raise SystemExit(125)
+        return None
+    active = None
+    return process.returncode, stdout
+
+
+while True:
+    result = run_adb(["exec-out", "getprop", "sys.boot_completed"], True)
+    if result is not None and result[0] == 0:
+        if result[1].strip("\r\n") == "1":
+            raise SystemExit(0)
+    else:
+        run_adb(["reconnect"], False)
+    time.sleep(2)
+PY
+  wait_pid=$!
 }
 
 validate_emu_port() {
@@ -111,8 +236,7 @@ validate_emu_port() {
 
 # Bash 3.2 has no `wait -n` or `wait -p`; poll only the two child PIDs we own.
 wait_emu() {
-  wait_for_boot &
-  wait_pid=$!
+  start_boot_waiter
   local started now status
   started=$(date +%s)
 
