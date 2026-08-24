@@ -76,6 +76,21 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('KITSUNE_SOURCE_DIRTY:-true', validate)
         self.assertIn("exact clean commit", validate)
 
+    def test_su_fork_cannot_inherit_the_daemon_log_mutex(self) -> None:
+        daemon = (
+            ROOT / "native" / "src" / "core" / "su" / "daemon.rs"
+        ).read_text(encoding="utf-8")
+        logging = (
+            ROOT / "native" / "src" / "core" / "logging.rs"
+        ).read_text(encoding="utf-8")
+        child = daemon[daemon.index("let child = fork_with_logging_lock()") :]
+        child = child[: child.index("if child < 0")]
+        self.assertIn("let guard = MAGISK_LOGD_FD.lock()", logging)
+        self.assertIn("let pid = unsafe { libc::fork() }", logging)
+        self.assertLess(logging.index("libc::fork()"), logging.index("drop(guard)"))
+        self.assertLess(child.index("android_logging()"), child.index('debug!("su: fork handler")'))
+        self.assertLess(child.index("android_logging()"), child.index("client.write_pod(&0)"))
+
     def test_ui_requires_root_debug_and_android_7_1_or_newer(self) -> None:
         line = next(
             item for item in self.install_view_model.splitlines()

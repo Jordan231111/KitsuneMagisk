@@ -120,6 +120,8 @@
     "native/src/Cargo.toml",
     "native/src/base/Cargo.toml",
     "native/src/core/lib.rs",
+    "native/src/core/logging.rs",
+    "native/src/core/su/daemon.rs",
     "native/src/external/cxx-rs",
     "native/src/include/codegen.rs",
     "native/src/include/consts.hpp",

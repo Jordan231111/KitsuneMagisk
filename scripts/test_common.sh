@@ -118,12 +118,69 @@ run_tests() {
   run_root_stress
 }
 
+run_root_stress_batch() {
+  local parallel=$1 timeout_seconds=$2
+  python3 - "$parallel" "$timeout_seconds" <<'PY'
+import subprocess
+import sys
+
+parallel = int(sys.argv[1])
+timeout = int(sys.argv[2])
+command = (
+    f"i=0; while [ $i -lt {parallel} ]; do (su -c id) & "
+    "i=$((i + 1)); done; wait"
+)
+try:
+    result = subprocess.run(
+        ["adb", "shell", command],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        timeout=timeout,
+    )
+except subprocess.TimeoutExpired as exc:
+    if exc.stdout:
+        output = exc.stdout.decode() if isinstance(exc.stdout, bytes) else exc.stdout
+        sys.stdout.write(output)
+    raise SystemExit(124)
+sys.stdout.write(result.stdout)
+raise SystemExit(result.returncode)
+PY
+}
+
+assert_no_stale_su() {
+  local raw stale
+  raw=$(adb shell '
+    for process in /proc/[0-9]*; do
+      [ -d "$process" ] || continue
+      name=$(cat "$process/comm" 2>/dev/null) || continue
+      ppid=$(awk "/^PPid:/ { print \$2 }" "$process/status" 2>/dev/null)
+      command=$(tr "\\000" " " <"$process/cmdline" 2>/dev/null)
+      if { [ "$name" = su ] && [ "${command#*su -c id}" != "$command" ]; } ||
+         { [ "$name" = magiskd ] && [ "$ppid" != 1 ]; }; then
+        echo "${process##*/}:$ppid:$name:$(cat "$process/wchan" 2>/dev/null):$command"
+      fi
+    done
+  ') || {
+    print_error "Unable to inspect MagiskSU processes after concurrency stress"
+    return 1
+  }
+  stale=$(printf '%s' "$raw" | tr -d '\r')
+  if [ -n "$stale" ]; then
+    echo "$stale"
+    print_error "Stale MagiskSU process remained after concurrency stress"
+    return 1
+  fi
+}
+
 run_root_stress() {
   local iterations="${AVD_STRESS_ITERATIONS:-0}"
   local parallel="${AVD_STRESS_PARALLEL:-6}"
-  case "$iterations:$parallel" in
-    *[!0-9:]*|:*|*:0)
-      print_error "Invalid AVD stress configuration: $iterations iterations, $parallel parallel"
+  local request_timeout="${AVD_STRESS_REQUEST_TIMEOUT:-30}"
+  case "$iterations:$parallel:$request_timeout" in
+    *[!0-9:]*|::*|:*:|*:0:*|*:*:0)
+      print_error "Invalid AVD stress configuration: $iterations iterations, $parallel parallel, ${request_timeout}s timeout"
       return 1
       ;;
   esac
@@ -132,10 +189,16 @@ run_root_stress() {
   fi
 
   print_title "* Stressing MagiskSU ($iterations x $parallel concurrent requests)"
-  local iteration out root_count version
+  local iteration raw out root_count version
   iteration=0
   while [ "$iteration" -lt "$iterations" ]; do
-    out=$(adb shell "i=0; while [ \$i -lt $parallel ]; do (su -c id) & i=\$((i + 1)); done; wait" | tr -d '\r')
+    raw=$(run_root_stress_batch "$parallel" "$request_timeout") || {
+      echo "$raw"
+      assert_no_stale_su || true
+      print_error "Concurrent MagiskSU stress timed out or failed at iteration $iteration"
+      return 1
+    }
+    out=$(printf '%s' "$raw" | tr -d '\r')
     # PTYs on some real-device shells can interleave multiple results on one line.
     root_count=$(printf '%s' "$out" | awk '{ total += gsub(/uid=0/, "") } END { print total + 0 }')
     if [ "$root_count" -ne "$parallel" ]; then
@@ -150,4 +213,5 @@ run_root_stress() {
     fi
     iteration=$((iteration + 1))
   done
+  assert_no_stale_su
 }

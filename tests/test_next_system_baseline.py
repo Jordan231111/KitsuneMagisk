@@ -108,6 +108,17 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertIn('setup_emu "$avd_pkg" "$ver" "$ramdisk"', source)
         self.assertNotIn("${avd_pkg//;", source)
 
+    def test_avd_root_stress_is_timeout_bounded_and_checks_orphans(self):
+        source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
+        self.assertIn("subprocess.TimeoutExpired", source)
+        self.assertIn("AVD_STRESS_REQUEST_TIMEOUT", source)
+        self.assertIn("assert_no_stale_su", source)
+        self.assertIn("Stale MagiskSU process remained", source)
+        self.assertNotIn(
+            'run_root_stress_batch "$parallel" "$request_timeout" | tr', source
+        )
+        self.assertIn('raw=$(adb shell', source)
+
     def test_gradle_identity_uses_exact_git_dirty_status(self):
         plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(
             encoding="utf-8"

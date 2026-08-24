@@ -117,6 +117,17 @@ fn write_log_to_pipe(mut logd: &File, prio: i32, msg: &Utf8CStr) -> io::Result<u
 
 static MAGISK_LOGD_FD: Mutex<Option<Arc<File>>> = Mutex::new(None);
 
+pub fn fork_with_logging_lock() -> libc::pid_t {
+    // A multithreaded fork copies mutex state but only the calling thread.
+    // Prevent the child from inheriting MAGISK_LOGD_FD while another daemon
+    // thread owns it; dropping this calling-thread guard is valid on both
+    // sides of fork before either process logs again.
+    let guard = MAGISK_LOGD_FD.lock();
+    let pid = unsafe { libc::fork() };
+    drop(guard);
+    pid
+}
+
 fn with_logd_fd<R, F: FnOnce(&File) -> io::Result<R>>(f: F) {
     let fd = MAGISK_LOGD_FD.lock().clone();
     if let Some(logd) = fd

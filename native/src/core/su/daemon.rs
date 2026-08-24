@@ -3,6 +3,7 @@ use super::db::RootSettings;
 use crate::daemon::{AID_ROOT, AID_SHELL, MagiskD, to_app_id, to_user_id};
 use crate::db::{DbSettings, MultiuserMode, RootAccess};
 use crate::ffi::{SuPolicy, SuRequest, exec_root_shell};
+use crate::logging::{android_logging, fork_with_logging_lock};
 use crate::socket::IpcRead;
 use base::{LoggedResult, ResultExt, WriteExt, debug, error, exit_on_error, libc, warn};
 use std::os::fd::IntoRawFd;
@@ -161,8 +162,12 @@ impl MagiskD {
 
         // At this point, the root access is granted.
         // Fork a child root process and monitor its exit value.
-        let child = unsafe { libc::fork() };
+        let child = fork_with_logging_lock();
         if child == 0 {
+            // Never reacquire the daemon pipe logger between fork and exec.
+            // The child is single-threaded, and logcat remains available for
+            // setup diagnostics without touching the inherited Arc/Mutex.
+            android_logging();
             debug!("su: fork handler");
 
             // Abort upon any error occurred
