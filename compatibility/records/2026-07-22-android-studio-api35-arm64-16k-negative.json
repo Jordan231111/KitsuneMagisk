@@ -1,0 +1,445 @@
+{
+  "artifact": {
+    "apk_sha256": null,
+    "branch": null,
+    "commit": null,
+    "identity_status": "unknown"
+  },
+  "clean_snapshot": true,
+  "doctor": {
+    "assessment": {
+      "primary_reason": "NO_BOOTSTRAP_ROOT",
+      "reason_codes": [
+        "NO_BOOTSTRAP_ROOT",
+        "EROFS",
+        "DEVICE_MAPPER_UNPROVEN",
+        "VERITY_ACTIVE",
+        "INIT_PATH_UNAVAILABLE",
+        "NO_RECOVERY_PATH",
+        "PERSISTENT_WRITABILITY_UNPROVEN"
+      ],
+      "verdict": "blocked",
+      "warnings": []
+    },
+    "bootstrap": {
+      "adb_uid": 2000,
+      "magisk_version": null,
+      "magisk_version_code": null,
+      "root_available": false,
+      "root_context": null,
+      "root_uid": null,
+      "transport": "none"
+    },
+    "device": {
+      "abis": [
+        "arm64-v8a"
+      ],
+      "android_release": "15",
+      "api": 35,
+      "boot_id_sha256": "38bdbe9b7199dd0fcbd3d0f2d61321d757fbe196b46a83a8e0cab8e47682de4a",
+      "brand": "google",
+      "build_id": "AE3A.240806.041",
+      "build_incremental": "12890756",
+      "device": "emu64a16k",
+      "emulator_product": null,
+      "emulator_product_property": null,
+      "emulator_version": null,
+      "emulator_version_property": null,
+      "fingerprint_sha256": "82d82263b4d915a7231a6726ad700bb44938333f354b82b106856347146f1771",
+      "kernel": "Linux localhost 6.6.30-android15-8-gdd9c02ccfe27-ab11987101 #1 SMP PREEMPT Tue Jun 18 20:50:32 UTC 2024 aarch64 Toybox",
+      "manufacturer": "Google",
+      "model": "sdk_gphone16k_arm64",
+      "page_size": 16384,
+      "product": "sdk_gphone16k_arm64",
+      "vendor": "android-studio-avd",
+      "vendor_evidence": [
+        "ranchu"
+      ]
+    },
+    "existing_install": {
+      "config_path": null,
+      "detected": false,
+      "manifest_path": null,
+      "manifest_present": false,
+      "system_mode": false
+    },
+    "generated_at": "2026-07-22T04:13:57Z",
+    "init": {
+      "candidate_directories": [
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/init",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/system/etc/init"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/init/hw",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/system/etc/init/hw"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/vendor/etc/init",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/vendor/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/odm/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/vendor/odm/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/product/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/product/etc/init"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system_ext/etc/init",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/system_ext/etc/init"
+        }
+      ],
+      "import_proof": "unproven",
+      "selected_directory": "/system/etc/init"
+    },
+    "layout": {
+      "avb_state": "enforcing",
+      "device_mapper": {
+        "layers": [
+          {
+            "name": null,
+            "resolved_source": "/dev/block/dm-0",
+            "slaves": [],
+            "source": "/dev/block/dm-0",
+            "target_probe": "unavailable",
+            "target_types": [],
+            "uuid": null
+          },
+          {
+            "name": null,
+            "resolved_source": "/dev/block/dm-2",
+            "slaves": [],
+            "source": "/dev/block/dm-2",
+            "target_probe": "unavailable",
+            "target_types": [],
+            "uuid": null
+          },
+          {
+            "name": null,
+            "resolved_source": "/dev/block/dm-3",
+            "slaves": [],
+            "source": "/dev/block/dm-3",
+            "target_probe": "unavailable",
+            "target_types": [],
+            "uuid": null
+          },
+          {
+            "name": null,
+            "resolved_source": "/dev/block/dm-4",
+            "slaves": [],
+            "source": "/dev/block/dm-4",
+            "target_probe": "unavailable",
+            "target_types": [],
+            "uuid": null
+          }
+        ],
+        "probe": "observed"
+      },
+      "dm_verity": true,
+      "dynamic_partitions": true,
+      "ext4_features": [],
+      "ext4_features_method": null,
+      "ext4_features_probe": "unavailable",
+      "ext4_ro_compat_flags": null,
+      "overlayfs": false,
+      "shared_blocks": null,
+      "slot_suffix": "",
+      "system_fs_type": "erofs",
+      "system_source": "/dev/block/dm-0",
+      "system_target": "/system",
+      "system_writable_backing": false,
+      "system_writable_view": false
+    },
+    "mounts": [
+      {
+        "exists": true,
+        "fs_type": "erofs",
+        "major_minor": "254:0",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/",
+        "root": "/",
+        "source": "/dev/block/dm-0",
+        "super_options": [
+          "ro",
+          "seclabel",
+          "user_xattr",
+          "acl",
+          "cache_strategy=readaround"
+        ],
+        "target": "/",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "erofs",
+        "major_minor": "254:0",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/system",
+        "root": "/",
+        "source": "/dev/block/dm-0",
+        "super_options": [
+          "ro",
+          "seclabel",
+          "user_xattr",
+          "acl",
+          "cache_strategy=readaround"
+        ],
+        "target": "/system",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "erofs",
+        "major_minor": "254:4",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/vendor",
+        "resolved_path": "/vendor",
+        "root": "/",
+        "source": "/dev/block/dm-4",
+        "super_options": [
+          "ro",
+          "seclabel",
+          "user_xattr",
+          "acl",
+          "cache_strategy=readaround"
+        ],
+        "target": "/vendor",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "erofs",
+        "major_minor": "254:0",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/odm",
+        "root": "/",
+        "source": "/dev/block/dm-0",
+        "super_options": [
+          "ro",
+          "seclabel",
+          "user_xattr",
+          "acl",
+          "cache_strategy=readaround"
+        ],
+        "target": "/odm",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "erofs",
+        "major_minor": "254:3",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/product",
+        "resolved_path": "/product",
+        "root": "/",
+        "source": "/dev/block/dm-3",
+        "super_options": [
+          "ro",
+          "seclabel",
+          "user_xattr",
+          "acl",
+          "cache_strategy=readaround"
+        ],
+        "target": "/product",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "erofs",
+        "major_minor": "254:2",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/system_ext",
+        "resolved_path": "/system_ext",
+        "root": "/",
+        "source": "/dev/block/dm-2",
+        "super_options": [
+          "ro",
+          "seclabel",
+          "user_xattr",
+          "acl",
+          "cache_strategy=readaround"
+        ],
+        "target": "/system_ext",
+        "writable_backing": false,
+        "writable_view": false
+      }
+    ],
+    "persistence": {
+      "backing_write_probe": "not_run",
+      "cold_boots": 0,
+      "host_restarts": 0,
+      "proven": false
+    },
+    "probe_version": "1.0.0",
+    "recovery": {
+      "backup_location": null,
+      "backup_digest": null,
+      "restore_command": null,
+      "snapshot_id": null,
+      "verified": false
+    },
+    "schema_version": 1,
+    "selinux": {
+      "enabled": true,
+      "policy_candidates": [
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/vendor/etc/selinux/precompiled_sepolicy",
+          "sha256": "0688d764e3d65a5663f0d0734867654f255d883afb4dae88d4c14311e1bc4df5",
+          "size": 696418
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/system/etc/selinux/plat_sepolicy.cil",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/system/etc/selinux/plat_sepolicy.cil",
+          "sha256": "433dcfd986c3fc1a32c286330e91da35397c2db879a7e89ced98256a9d8e05b3",
+          "size": 2240030
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/selinux/mapping",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/system/etc/selinux/mapping",
+          "sha256": null,
+          "size": null
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/vendor_sepolicy.cil",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/vendor/etc/selinux/vendor_sepolicy.cil",
+          "sha256": "0753ba4f63d944517e333fd3077fadc2237c021c09a79fc0866d1418a85059e5",
+          "size": 178105
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/system_ext/etc/selinux/system_ext_sepolicy.cil",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/system_ext/etc/selinux/system_ext_sepolicy.cil",
+          "sha256": "bb7a6678018416df269e9314a42122aaa045689759bdf894a8da43f1f3b12be8",
+          "size": 215
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy.plat_sepolicy_and_mapping.sha256",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/vendor/etc/selinux/precompiled_sepolicy.plat_sepolicy_and_mapping.sha256",
+          "sha256": "855b7a51eb6ee79ae73ec0d7da0cb97223514589870fbf2eb7b71f7499d8b676",
+          "size": 65
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy.system_ext_sepolicy_and_mapping.sha256",
+          "permission_writable": false,
+          "readable": true,
+          "resolved_path": "/vendor/etc/selinux/precompiled_sepolicy.system_ext_sepolicy_and_mapping.sha256",
+          "sha256": "8167aeb28b574763b10fcb6709980f62c0e6f3b1907990ef13890d4b2252431c",
+          "size": 65
+        }
+      ],
+      "state": "enforcing",
+      "strategy": "precompiled"
+    },
+    "source": {
+      "kind": "adb",
+      "probe_sha256": "8296820d5173443ecea0dc6f114034ea781f4ed62a450b16533f7f9ca3d7176f",
+      "read_only": true,
+      "repository_commit": "cf149fcf734539f6077cd6b349d9ffc2496c56ca",
+      "repository_dirty": true,
+      "serial_sha256": "294826d7df9ec83b87aaea17c72e841e9f5ac7d7ee72198dfef380dcea3970c8"
+    },
+    "staging": {
+      "available_bytes": 9635209216,
+      "path": "/data/local/tmp",
+      "required_bytes": 33554432,
+      "sufficient": true
+    }
+  },
+  "lifecycle": {
+    "cold_boots": 0,
+    "install": "not_run",
+    "module_smoke": "not_run",
+    "reinstall": "not_run",
+    "root_policy_smoke": "not_run",
+    "snapshot_restore": "not_run",
+    "uninstall": "not_run",
+    "upgrade": "not_run"
+  },
+  "notes": [
+    "Collected from a fresh Android Studio AVD using system-images;android-35;google_apis_playstore_16k;arm64-v8a package revision 5 and emulator 37.2.1 on macOS 26.5.1 arm64.",
+    "The AVD used a clean temporary home, was never modified through root, and was deleted after the read-only probe.",
+    "The guest reports 16,384-byte kernel pages, EROFS logical partitions, enforcing AVB/dm-verity, and no bootstrap root.",
+    "This is a fail-closed negative System Mode characterization record, not a normal boot-patch compatibility result."
+  ],
+  "qualification_status": "blocked",
+  "record_id": "2026-07-22-android-studio-api35-arm64-16k-negative",
+  "schema_version": 1
+}

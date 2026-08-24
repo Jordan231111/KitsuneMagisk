@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.ui.install
 
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.text.Spanned
@@ -14,14 +15,17 @@ import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.BuildConfig.APP_VERSION_CODE
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.base.ContentResultCallback
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.repository.NetworkService
+import com.topjohnwu.magisk.core.tasks.SystemModeConsent
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.dialog.SecondSlotWarningDialog
+import com.topjohnwu.magisk.dialog.SystemModeWarningDialog
 import com.topjohnwu.magisk.events.GetContentEvent
 import com.topjohnwu.magisk.ui.flash.FlashFragment
 import io.noties.markwon.Markwon
@@ -39,6 +43,8 @@ class InstallViewModel(svc: NetworkService, markwon: Markwon) : BaseViewModel() 
     val isRooted get() = Info.isRooted
     val skipOptions = Info.isEmulator || (Info.isSAR && !Info.isFDE && Info.ramdisk)
     val noSecondSlot = !isRooted || !Info.isAB || Info.isEmulator
+    val allowSystemMode = BuildConfig.DEBUG && isRooted && Build.VERSION.SDK_INT >= 25 &&
+        (!Info.hasMagiskState || Info.isSystemMode)
 
     @get:Bindable
     var step = if (skipOptions) 1 else 0
@@ -94,6 +100,15 @@ class InstallViewModel(svc: NetworkService, markwon: Markwon) : BaseViewModel() 
             R.id.method_patch -> FlashFragment.patch(data.value!!).navigate(true)
             R.id.method_direct -> FlashFragment.flash(false).navigate(true)
             R.id.method_inactive_slot -> FlashFragment.flash(true).navigate(true)
+            R.id.method_system_mode -> {
+                if (!allowSystemMode) {
+                    AppContext.toast(CoreR.string.system_mode_unavailable, Toast.LENGTH_LONG)
+                    return
+                }
+                SystemModeWarningDialog {
+                    FlashFragment.systemMode(SystemModeConsent.issue()).navigate(true)
+                }.show()
+            }
             else -> error("Unknown value")
         }
     }

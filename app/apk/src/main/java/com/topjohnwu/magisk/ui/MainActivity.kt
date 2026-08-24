@@ -173,6 +173,7 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
         return when (name) {
             Const.Nav.SUPERUSER -> MainDirections.actionSuperuserFragment()
             Const.Nav.MODULES -> MainDirections.actionModuleFragment()
+            Const.Nav.INSTALL -> HomeFragmentDirections.actionHomeFragmentToInstallFragment()
             Const.Nav.SETTINGS -> HomeFragmentDirections.actionHomeFragmentToSettingsFragment()
             else -> null
         }

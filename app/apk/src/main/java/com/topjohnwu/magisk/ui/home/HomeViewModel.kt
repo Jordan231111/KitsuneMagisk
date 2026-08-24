@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.home
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -114,9 +115,11 @@ class HomeViewModel(
             stateManagerProgress = progress.times(100f).roundToInt()
     }
 
+    @SuppressLint("UnsafeImplicitIntentLaunch")
     fun onLinkPressed(link: String) = object : ViewEvent(), ContextExecutor {
         override fun invoke(context: Context) {
             val intent = Intent(Intent.ACTION_VIEW, link.toUri())
+            intent.addCategory(Intent.CATEGORY_BROWSABLE)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             try {
                 context.startActivity(intent)

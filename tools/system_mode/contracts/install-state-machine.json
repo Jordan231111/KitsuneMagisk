@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "initial_state": "UNINSTALLED",
+  "states": {
+    "UNINSTALLED": {
+      "persistent_mutation_allowed": false,
+      "description": "No manifest-owned System Mode installation is present."
+    },
+    "PREFLIGHTED": {
+      "persistent_mutation_allowed": false,
+      "description": "Doctor passed and external recovery evidence was verified."
+    },
+    "STAGED": {
+      "persistent_mutation_allowed": true,
+      "description": "All rollback snapshots are durable; ordered persistent publications may proceed, but the new install is not active until COMMITTED."
+    },
+    "COMMITTED": {
+      "persistent_mutation_allowed": true,
+      "description": "All persistent mutations were committed; a boot verification is required."
+    },
+    "BOOT_VERIFIED": {
+      "persistent_mutation_allowed": true,
+      "description": "The committed installation passed its declared cold-boot verification."
+    },
+    "ROLLBACK_REQUIRED": {
+      "persistent_mutation_allowed": false,
+      "description": "A failure occurred after staging or commit and rollback must complete before any retry."
+    },
+    "ROLLING_BACK": {
+      "persistent_mutation_allowed": true,
+      "description": "Manifest-owned paths are being restored in reverse journal order."
+    },
+    "FAILED": {
+      "persistent_mutation_allowed": false,
+      "description": "Automatic rollback could not prove a safe terminal state; external restore is required."
+    }
+  },
+  "transitions": [
+    {"from": "UNINSTALLED", "event": "preflight_passed", "to": "PREFLIGHTED"},
+    {"from": "PREFLIGHTED", "event": "stage_validated", "to": "STAGED"},
+    {"from": "PREFLIGHTED", "event": "cancelled", "to": "UNINSTALLED"},
+    {"from": "STAGED", "event": "commit_complete", "to": "COMMITTED"},
+    {"from": "STAGED", "event": "failure", "to": "ROLLBACK_REQUIRED"},
+    {"from": "COMMITTED", "event": "boot_verified", "to": "BOOT_VERIFIED"},
+    {"from": "COMMITTED", "event": "failure", "to": "ROLLBACK_REQUIRED"},
+    {"from": "BOOT_VERIFIED", "event": "upgrade_preflight_passed", "to": "PREFLIGHTED"},
+    {"from": "BOOT_VERIFIED", "event": "uninstall_requested", "to": "ROLLBACK_REQUIRED"},
+    {"from": "ROLLBACK_REQUIRED", "event": "rollback_started", "to": "ROLLING_BACK"},
+    {"from": "ROLLING_BACK", "event": "original_state_verified", "to": "UNINSTALLED"},
+    {"from": "ROLLING_BACK", "event": "prior_install_verified", "to": "BOOT_VERIFIED"},
+    {"from": "ROLLING_BACK", "event": "restore_failed", "to": "FAILED"}
+  ]
+}

@@ -44,7 +44,9 @@ pub fn gen_cxx_binding(name: &str) {
         path: "rust/cxx.h".to_string(),
         kind: IncludeKind::Bracketed,
     });
-    let code = cxx_gen::generate_header_and_cc_with_path("lib.rs", &opt);
+    let source = fs::read_to_string("lib.rs").ok_or_exit();
+    let tokens = source.parse().ok_or_exit();
+    let code = cxx_gen::generate_header_and_cc(tokens, &opt).ok_or_exit();
     write_if_diff(format!("{name}.cpp"), code.implementation.as_slice()).ok_or_exit();
     write_if_diff(format!("{name}.hpp"), code.header.as_slice()).ok_or_exit();
 }

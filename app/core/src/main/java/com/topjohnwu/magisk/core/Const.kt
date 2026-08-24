@@ -57,12 +57,14 @@ object Const {
         const val FLASH_ZIP = "flash"
         const val PATCH_FILE = "patch"
         const val FLASH_MAGISK = "magisk"
+        const val FLASH_SYSTEM_MODE = "system_mode"
         const val FLASH_INACTIVE_SLOT = "slot"
         const val UNINSTALL = "uninstall"
     }
 
     object Nav {
         const val HOME = "home"
+        const val INSTALL = "install"
         const val SETTINGS = "settings"
         const val MODULES = "modules"
         const val SUPERUSER = "superuser"

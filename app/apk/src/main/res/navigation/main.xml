@@ -51,6 +51,12 @@
             app:argType="android.net.Uri"
             app:nullable="true" />
 
+        <argument
+            android:name="system_mode_consent"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
     </fragment>
 
     <fragment

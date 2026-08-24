@@ -59,8 +59,27 @@ wait_for_pm() {
   adb shell pm uninstall $1 || true
 }
 
+assert_device_contract() {
+  local actual
+  if [ -n "${AVD_EXPECT_API:-}" ]; then
+    actual=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
+    if [ "$actual" != "$AVD_EXPECT_API" ]; then
+      print_error "Unexpected Android API: expected $AVD_EXPECT_API, found $actual"
+      return 1
+    fi
+  fi
+  if [ -n "${AVD_EXPECT_PAGE_SIZE:-}" ]; then
+    actual=$(adb shell getconf PAGESIZE | tr -d '\r')
+    if [ "$actual" != "$AVD_EXPECT_PAGE_SIZE" ]; then
+      print_error "Unexpected guest page size: expected $AVD_EXPECT_PAGE_SIZE, found $actual"
+      return 1
+    fi
+  fi
+}
+
 run_setup() {
   local variant=$1
+  assert_device_contract
   adb shell 'PATH=$PATH:/debug_ramdisk magisk -v' | tr -d '\r'
 
   # Install the Magisk app

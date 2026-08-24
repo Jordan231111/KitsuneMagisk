@@ -11,7 +11,10 @@ wait_pid=
 owned_avd=
 
 avd_name="${MAGISK_AVD_NAME:-magisk-test}"
-emu_port="${MAGISK_AVD_PORT:-5682}"
+# Emulator 37.2+ accepts only even console ports in 5554..5584. MuMu uses the
+# 5554/5555 pair on this Mac, so keep the disposable project lane on the next
+# valid pair while still allowing callers to select another isolated port.
+emu_port="${MAGISK_AVD_PORT:-5556}"
 test_dir="${MAGISK_TEST_DIR:-.}"
 debug_image="$test_dir/magisk_debug.img"
 release_image="$test_dir/magisk_release.img"
@@ -94,6 +97,16 @@ wait_for_boot() {
     fi
     sleep 2
   done
+}
+
+validate_emu_port() {
+  case "$emu_port" in
+    *[!0-9]*|'') print_error "! Invalid AVD console port '$emu_port'"; return 1 ;;
+  esac
+  if [ "$emu_port" -lt 5554 ] || [ "$emu_port" -gt 5584 ] || [ $((emu_port % 2)) -ne 0 ]; then
+    print_error "! AVD console port must be even and in 5554..5584"
+    return 1
+  fi
 }
 
 # Bash 3.2 has no `wait -n` or `wait -p`; poll only the two child PIDs we own.
@@ -195,7 +208,15 @@ dl_emu() {
 setup_emu() {
   local avd_pkg=$1
   local ver=$2
-  dl_emu "$avd_pkg"
+  local installed_ramdisk="$ANDROID_HOME/${avd_pkg//;/\/}/ramdisk.img"
+  if [ -z "${AVD_TEST_SKIP_DOWNLOAD:-}" ]; then
+    dl_emu "$avd_pkg"
+  else
+    [ -x "$emu" ] && [ -x "$avd" ] && [ -f "$installed_ramdisk" ] || {
+      print_error "! Offline AVD inputs are incomplete for $avd_pkg"
+      return 1
+    }
+  fi
   mkdir -p "$ANDROID_AVD_HOME" "$test_dir"
   if [ -e "$ANDROID_AVD_HOME/$avd_name.ini" ] || [ -d "$ANDROID_AVD_HOME/$avd_name.avd" ]; then
     print_error "! Refusing to replace existing AVD '$avd_name'"
@@ -246,6 +267,7 @@ test_main() {
   local ver avd_pkg ramdisk
   eval "$(resolve_vars 'ver avd_pkg ramdisk' "$1" "${2:-}")"
 
+  validate_emu_port
   emu_args="$emu_args -port $emu_port"
   export ANDROID_SERIAL="emulator-$emu_port"
   setup_emu "$avd_pkg" "$ver"
@@ -280,6 +302,7 @@ test_main() {
 run_main() {
   local ver avd_pkg
   eval "$(resolve_vars 'ver avd_pkg' "$1" "${2:-}")"
+  validate_emu_port
   emu_args="$emu_args -port $emu_port"
   export ANDROID_SERIAL="emulator-$emu_port"
   setup_emu "$avd_pkg" "$ver"

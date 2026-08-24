@@ -154,6 +154,52 @@ def cmd_out(cmds: list):
     )
 
 
+def llvm_tool(name: str) -> Path:
+    llvm_prebuilt = ndk_path / "toolchains" / "llvm" / "prebuilt"
+    llvm_hosts = sorted(path for path in llvm_prebuilt.iterdir() if path.is_dir())
+    if len(llvm_hosts) != 1:
+        error(f"Expected one ONDK LLVM host toolchain, found {len(llvm_hosts)}")
+    llvm_bin = llvm_hosts[0] / "bin"
+    for suffix in (EXE_EXT, ".cmd", ""):
+        candidate = llvm_bin / f"{name}{suffix}"
+        if candidate.is_file():
+            return candidate
+    error(f"Missing ONDK LLVM tool: {name}")
+
+
+def strip_cargo_cxx_runtime(archive: Path):
+    """Keep CXX Rust glue but let ndk-build own the single C++ runtime object."""
+    llvm_ar = llvm_tool("llvm-ar")
+    proc = subprocess.run(
+        [llvm_ar, "t", archive],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if proc.returncode != 0:
+        error(f"Cannot inspect Rust archive {archive}: {proc.stderr.strip()}")
+    runtime_objects = [
+        member
+        for member in proc.stdout.splitlines()
+        if re.fullmatch(r"[0-9a-f]+-cxx\.o", member)
+    ]
+    if len(runtime_objects) != 1:
+        error(
+            f"Expected exactly one Cargo CXX runtime object in {archive}, "
+            f"found {runtime_objects}"
+        )
+    proc = subprocess.run(
+        [llvm_ar, "d", archive, runtime_objects[0]],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if proc.returncode != 0:
+        error(f"Cannot remove Cargo CXX runtime from {archive}: {proc.stderr.strip()}")
+
+
 ###############
 # Build Native
 ###############
@@ -239,7 +285,21 @@ def build_cpp_src(targets: set[str]):
 def run_cargo(cmds: list[str]):
     ensure_paths()
     env = os.environ.copy()
-    env["PATH"] = f"{rust_sysroot / 'bin'}{os.pathsep}{env['PATH']}"
+    llvm_bin = llvm_tool("clang").parent
+    env["PATH"] = (
+        f"{rust_sysroot / 'bin'}{os.pathsep}{llvm_bin}{os.pathsep}{env['PATH']}"
+    )
+    cxx_targets = {
+        "thumbv7neon-linux-androideabi": "armv7a-linux-androideabi23-clang++",
+        "aarch64-linux-android": "aarch64-linux-android23-clang++",
+        "i686-linux-android": "i686-linux-android23-clang++",
+        "x86_64-linux-android": "x86_64-linux-android23-clang++",
+        "riscv64-linux-android": "riscv64-linux-android35-clang++",
+    }
+    for triple, compiler in cxx_targets.items():
+        normalized = triple.replace("-", "_")
+        env[f"CXX_{normalized}"] = str(llvm_bin / compiler)
+        env[f"AR_{normalized}"] = str(llvm_bin / f"llvm-ar{EXE_EXT}")
     env["CARGO_BUILD_RUSTFLAGS"] = f"-Z threads={min(8, cpu_count)}"
     # Cargo calls executables in $RUSTROOT/lib/rustlib/$TRIPLE/bin, we need
     # to make sure the runtime linker also search $RUSTROOT/lib for libraries.
@@ -248,7 +308,14 @@ def run_cargo(cmds: list[str]):
         env["DYLD_FALLBACK_LIBRARY_PATH"] = str(rust_sysroot / "lib")
     elif os_name == "linux":
         env["LD_LIBRARY_PATH"] = str(rust_sysroot / "lib")
-    return execv(["cargo", *cmds], env)
+    proc = execv(["cargo", *cmds], env)
+    if proc.returncode != 0:
+        # subprocess uses a negative return code when a child dies from a
+        # signal. Convert it to the conventional shell status so callers do
+        # not accidentally turn a failed Cargo process into success.
+        code = 128 - proc.returncode if proc.returncode < 0 else proc.returncode
+        raise SystemExit(code)
+    return proc
 
 
 def build_rust_src(targets: set[str]):
@@ -293,6 +360,7 @@ def build_rust_src(targets: set[str]):
         for tgt in targets:
             source = rust_out / triple / profile / f"lib{tgt}.a"
             target = arch_out / f"lib{tgt}-rs.a"
+            strip_cargo_cxx_runtime(source)
             mv(source, target)
 
 
@@ -576,9 +644,12 @@ def cargo_cli():
     force_out = True
     if len(args.commands) >= 1 and args.commands[0] == "--":
         args.commands = args.commands[1:]
-    os.chdir(Path("native", "src"))
-    run_cargo(args.commands)
-    os.chdir(Path("..", ".."))
+    cwd = Path.cwd()
+    try:
+        os.chdir(Path("native", "src"))
+        run_cargo(args.commands)
+    finally:
+        os.chdir(cwd)
 
 
 def setup_ndk():

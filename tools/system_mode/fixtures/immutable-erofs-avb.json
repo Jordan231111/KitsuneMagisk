@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "immutable-erofs-avb-negative",
+  "description": "Synthetic negative lane that must be rejected before mutation even when a root shell exists.",
+  "input": {
+    "bootstrap": {"root_available": true},
+    "layout": {"system_fs_type": "erofs", "system_source": "/dev/block/dm-0", "system_writable_view": false, "system_writable_backing": false, "overlayfs": false, "dynamic_partitions": true, "device_mapper": {"probe": "observed", "layers": [{"source": "/dev/block/dm-0", "resolved_source": "/dev/block/dm-0", "name": "system", "uuid": "CRYPT-VERITY-system", "slaves": ["sda"], "target_probe": "observed", "target_types": ["verity"]}]}, "dm_verity": true, "avb_state": "enforcing"},
+    "init": {"import_proof": "unproven"},
+    "selinux": {"enabled": true, "state": "enforcing", "strategy": "precompiled"},
+    "staging": {"required_bytes": 33554432, "sufficient": true},
+    "recovery": {"verified": false},
+    "persistence": {"proven": false},
+    "existing_install": {"system_mode": false, "manifest_present": false}
+  },
+  "expected": {
+    "verdict": "blocked",
+    "primary_reason": "EROFS",
+    "reason_codes": ["EROFS", "VERITY_ACTIVE", "INIT_IMPORT_UNPROVEN", "NO_RECOVERY_PATH", "PERSISTENT_WRITABILITY_UNPROVEN"]
+  }
+}

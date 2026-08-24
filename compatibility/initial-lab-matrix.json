@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-08-01T16:43:50Z",
+  "lanes": [
+    {
+      "family": "MuMu",
+      "status": "experimental",
+      "record": "records/2026-08-01-mumu-1.4.46-pr5a-pr5b.json",
+      "reason": "MuMuPlayer 1.4.46 completed the PR5A/PR5B released-versus-current lifecycle and verified external restore on VM index 0. The exact final debug artifact passed install/upgrade, BOOT_VERIFIED, root, exact uninstall, and restore; predecessor-only module and injected-failure subcases keep this below supported."
+    },
+    {
+      "family": "LDPlayer",
+      "status": "not_run",
+      "record": null,
+      "reason": "No clean LDPlayer snapshot or ADB endpoint was available in this workspace."
+    },
+    {
+      "family": "Nox",
+      "status": "not_run",
+      "record": null,
+      "reason": "No clean Nox snapshot or ADB endpoint was available in this workspace."
+    },
+    {
+      "family": "BlueStacks",
+      "status": "not_run",
+      "record": null,
+      "reason": "No stopped-image adapter fixture or clean BlueStacks instance was available in this workspace."
+    },
+    {
+      "family": "immutable-negative",
+      "status": "observed",
+      "record": "records/2026-07-22-android-studio-api35-arm64-16k-negative.json",
+      "reason": "A fresh API 35 Google Play ARM64 AVD with 16 KiB pages exposed EROFS, enforcing AVB/dm-verity, and no bootstrap root; the doctor failed closed without mutation."
+    },
+    {
+      "family": "immutable-negative-api36",
+      "status": "observed",
+      "record": "records/2026-07-22-android-studio-api36-arm64-negative.json",
+      "reason": "A fresh Android 16/API 36 Google Play ARM64 AVD exposed EROFS, enforcing AVB/dm-verity, and no bootstrap root; the doctor failed closed without mutation."
+    }
+  ]
+}

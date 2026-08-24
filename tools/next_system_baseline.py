@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Verify the PR6 source and APK baseline without network access."""
+"""Verify an inherited next-system source and APK contract without network access."""
 
 from __future__ import annotations
 
 import argparse
 from collections import Counter
+import copy
 import hashlib
 import json
 import os
@@ -85,13 +86,35 @@ def run(command: Iterable[object], cwd: Path = ROOT, check: bool = True) -> str:
     return result.stdout
 
 
-def read_manifest(path: Path) -> dict[str, Any]:
+def merge_manifest(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    merged = copy.deepcopy(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = merge_manifest(merged[key], value)
+        else:
+            merged[key] = copy.deepcopy(value)
+    return merged
+
+
+def read_manifest(
+    path: Path, loading: tuple[Path, ...] = ()
+) -> dict[str, Any]:
+    path = path.resolve()
+    if path in loading:
+        chain = " -> ".join(str(item) for item in (*loading, path))
+        raise BaselineError(f"baseline manifest inheritance cycle: {chain}")
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise BaselineError(f"cannot read baseline manifest {path}: {exc}") from exc
     if data.get("schema") != 1:
         raise BaselineError("unsupported baseline manifest schema")
+    parent = data.pop("extends", None)
+    if parent is not None:
+        if not isinstance(parent, str) or not parent or Path(parent).is_absolute():
+            raise BaselineError("baseline manifest extends must be a relative path")
+        parent_path = (path.parent / parent).resolve()
+        data = merge_manifest(read_manifest(parent_path, (*loading, path)), data)
     return data
 
 
@@ -114,7 +137,52 @@ def source_delta(root: Path, upstream: str) -> list[str]:
     return sorted(changed)
 
 
+def cargo_lock_packages(path: Path) -> set[tuple[str, str]]:
+    try:
+        contents = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise BaselineError(f"cannot read Cargo lockfile {path}: {exc}") from exc
+    packages: set[tuple[str, str]] = set()
+    for block in contents.split("[[package]]")[1:]:
+        name = re.search(r'^name = "([^"]+)"$', block, re.MULTILINE)
+        version = re.search(r'^version = "([^"]+)"$', block, re.MULTILINE)
+        if name is None or version is None:
+            raise BaselineError(f"cannot parse Cargo package block in {path}")
+        packages.add((name.group(1), version.group(1)))
+    if not packages:
+        raise BaselineError(f"Cargo lockfile contains no packages: {path}")
+    return packages
+
+
+def verify_dependency_contract(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    contract = manifest.get("dependency_contract")
+    if contract is None:
+        return {"enforced": False}
+    packages = cargo_lock_packages(root / "native" / "src" / "Cargo.lock")
+    required = {
+        (entry["name"], entry["version"]) for entry in contract.get("required", [])
+    }
+    forbidden = {
+        (entry["name"], entry["version"]) for entry in contract.get("forbidden", [])
+    }
+    missing = sorted(required - packages)
+    present = sorted(forbidden & packages)
+    if missing or present:
+        raise BaselineError(
+            "native dependency contract failed; "
+            f"missing_required={missing}, present_forbidden={present}"
+        )
+    return {
+        "enforced": True,
+        "required": sorted(f"{name}@{version}" for name, version in required),
+        "forbidden_absent": sorted(
+            f"{name}@{version}" for name, version in forbidden
+        ),
+    }
+
+
 def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    phase = manifest.get("phase", "PR6")
     upstream = manifest["upstream"]["commit"]
     run(("git", "cat-file", "-e", f"{upstream}^{{commit}}"), root)
     run(("git", "merge-base", "--is-ancestor", upstream, "HEAD"), root)
@@ -125,18 +193,18 @@ def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
     missing = sorted(set(allowed) - set(delta))
     if unexpected or missing:
         raise BaselineError(
-            "source delta does not match the reviewed PR6 allowlist; "
+            f"source delta does not match the reviewed {phase} allowlist; "
             f"unexpected={unexpected}, missing={missing}"
         )
 
     tracked = set(git_lines(root, "ls-files"))
     forbidden = sorted(set(manifest["forbidden_paths"]) & tracked)
     if forbidden:
-        raise BaselineError(f"PR6 contains post-baseline feature paths: {forbidden}")
+        raise BaselineError(f"{phase} contains forbidden feature paths: {forbidden}")
 
     submodules: dict[str, dict[str, Any]] = {}
     for path, expected in manifest["submodules"].items():
-        actual = run(("git", "rev-parse", f"HEAD:{path}"), root).strip()
+        actual = run(("git", "rev-parse", f":{path}"), root).strip()
         if actual != expected:
             raise BaselineError(
                 f"submodule gitlink changed for {path}: expected {expected}, found {actual}"
@@ -216,6 +284,7 @@ def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
         raise BaselineError(f"ordinary upstream installation surface is incomplete: {absent}")
 
     return {
+        "phase": phase,
         "upstream_commit": upstream,
         "source_delta": delta,
         "submodules": submodules,
@@ -223,6 +292,7 @@ def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
         "signature_enforcement": True,
         "ordinary_install_surface": True,
         "built_in_zygisk": True,
+        "dependencies": verify_dependency_contract(root, manifest),
     }
 
 
@@ -404,7 +474,10 @@ def inspect_apk(
         )
         if duplicates:
             raise BaselineError(f"{apk} has duplicate ZIP entries: {duplicates}")
-        missing_entries = sorted(REQUIRED_INSTALL_ENTRIES - set(names))
+        required_entries = REQUIRED_INSTALL_ENTRIES | set(
+            manifest.get("additional_install_entries", [])
+        )
+        missing_entries = sorted(required_entries - set(names))
         if missing_entries:
             raise BaselineError(f"{apk} is missing install entries: {missing_entries}")
         utility_version, utility_code = parse_utility_identity(

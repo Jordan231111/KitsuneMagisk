@@ -1,4 +1,5 @@
 
+import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -20,6 +21,8 @@ const val VERSION_PREFIX = "30.7-kitsune-next"
 
 private val props = Properties()
 private var commitHash = ""
+private var sourceRevision = ""
+private var sourceTreeDirty = true
 private val supportAbis = setOf("armeabi-v7a", "x86", "arm64-v8a", "x86_64", "riscv64")
 private val defaultAbis = setOf("armeabi-v7a", "x86", "arm64-v8a", "x86_64")
 
@@ -31,9 +34,14 @@ object Config {
 
     fun contains(key: String) = get(key) != null
 
-    val version: String get() = get("version") ?: "$VERSION_PREFIX.$commitHash"
+    val version: String get() {
+        val version = get("version") ?: "$VERSION_PREFIX.$commitHash"
+        return if (sourceTreeDirty) "$version-dirty" else version
+    }
     val versionCode: Int get() = get("magisk.versionCode")!!.toInt()
     val stubVersion: String get() = get("magisk.stubVersion")!!
+    val sourceCommit: String get() = sourceRevision
+    val sourceDirty: Boolean get() = sourceTreeDirty
     val abiList: Set<String> get() {
         val abiList = get("abiList") ?: return defaultAbis
         return abiList.split(Regex("\\s*,\\s*")).toSet() intersect supportAbis
@@ -78,9 +86,14 @@ class MagiskPlugin : Plugin<Project> {
             .use { repo ->
                 val refId = repo.resolve("HEAD")
                     ?: error("Cannot resolve the Git HEAD used for build identity")
+                sourceRevision = refId.name()
                 commitHash = repo.newObjectReader().use {
                     it.abbreviate(refId, 8).name()
                 }
+                sourceTreeDirty = !Git.wrap(repo).status().call().isClean
             }
+        check(sourceRevision.matches(Regex("^[a-f0-9]{40}$"))) {
+            "Cannot derive the full Git source identity"
+        }
     }
 }

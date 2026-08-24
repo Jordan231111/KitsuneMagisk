@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "extends": "next-system-baseline.json",
+  "phase": "PR7",
+  "resolved_at": "2026-08-01",
+  "submodules": {
+    "native/src/external/cxx-rs": "c39c127851ca0e45a05e02a6d98d306e6a0c1398"
+  },
+  "pristine_artifacts": {
+    "disposition": "The inherited hashes describe PR6 only. PR7 artifacts are accepted only through the exact source, identity, signer-separation, ABI, alignment, and embedded-asset report generated for the candidate commit."
+  },
+  "security_audit": {
+    "cargo_audit_version": "0.22.1",
+    "advisory_database_commit": "1237bbe09d2701e14e6593a630fbaf28928df712",
+    "advisory_database_count": 1190,
+    "dependency_count": 156,
+    "findings": [
+      {
+        "id": "RUSTSEC-2023-0071",
+        "package": "rsa",
+        "kind": "vulnerability",
+        "fixed": null,
+        "disposition": "No patched release exists. This code is limited to local boot-image signing and must not be exposed as a remotely timed signing service."
+      }
+    ]
+  },
+  "forbidden_paths": [
+    "app/src/main/res/raw/manager.sh"
+  ],
+  "additional_install_entries": [
+    "assets/kitsune_system_install.sh",
+    "assets/kitsune_system_launcher.sh",
+    "assets/kitsune_system_rescue.sh",
+    "assets/system_mode_transaction.sh",
+    "assets/system_mode_verify.sh"
+  ],
+  "dependency_contract": {
+    "required": [
+      {
+        "name": "anyhow",
+        "version": "1.0.103"
+      },
+      {
+        "name": "crypto-common",
+        "version": "0.2.2"
+      },
+      {
+        "name": "cxx",
+        "version": "1.0.195"
+      },
+      {
+        "name": "digest",
+        "version": "0.11.3"
+      }
+    ],
+    "forbidden": [
+      {
+        "name": "anyhow",
+        "version": "1.0.102"
+      },
+      {
+        "name": "crypto-common",
+        "version": "0.2.0"
+      },
+      {
+        "name": "cxx",
+        "version": "1.0.189"
+      },
+      {
+        "name": "digest",
+        "version": "0.11.0"
+      }
+    ]
+  },
+  "source_delta": [
+    ".gitattributes",
+    ".github/workflows/build.yml",
+    ".gitmodules",
+    "DEVELOPMENT_ROADMAP.md",
+    "README.MD",
+    "app/apk/src/main/java/com/topjohnwu/magisk/dialog/SystemModeWarningDialog.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/MainActivity.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/flash/FlashFragment.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/flash/FlashViewModel.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/home/HomeViewModel.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/install/InstallViewModel.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/surequest/SuRequestActivity.kt",
+    "app/apk/src/main/res/layout/fragment_install_md2.xml",
+    "app/apk/src/main/res/navigation/main.xml",
+    "app/buildSrc/src/main/java/Plugin.kt",
+    "app/buildSrc/src/main/java/Setup.kt",
+    "app/core/build.gradle.kts",
+    "app/core/src/main/java/com/topjohnwu/magisk/core/Config.kt",
+    "app/core/src/main/java/com/topjohnwu/magisk/core/Const.kt",
+    "app/core/src/main/java/com/topjohnwu/magisk/core/Info.kt",
+    "app/core/src/main/java/com/topjohnwu/magisk/core/tasks/MagiskInstaller.kt",
+    "app/core/src/main/res/values/resources.xml",
+    "app/core/src/main/res/values/strings.xml",
+    "app/shared/src/main/AndroidManifest.xml",
+    "app/stub/build.gradle.kts",
+    "app/stub/src/main/java/com/topjohnwu/magisk/DownloadActivity.java",
+    "app/test/build.gradle.kts",
+    "app/test/src/main/AndroidManifest.xml",
+    "app/test/src/main/java/com/topjohnwu/magisk/test/AppMigrationTest.kt",
+    "build.py",
+    "compatibility/README.md",
+    "compatibility/initial-lab-matrix.json",
+    "compatibility/records/2026-07-22-android-studio-api35-arm64-16k-negative.json",
+    "compatibility/records/2026-07-22-android-studio-api36-arm64-negative.json",
+    "compatibility/records/2026-07-22-mumu12-port16384-current-kitsune.json",
+    "compatibility/records/2026-08-01-mumu-1.4.46-pr5a-pr5b.json",
+    "docs/faithfulness-audit.md",
+    "docs/next-system-baseline.json",
+    "docs/next-system-baseline.md",
+    "docs/next-system-pr7.json",
+    "docs/system-mode/mumu-pr5a-pr5b-2026-08-01.md",
+    "docs/system-mode/pr7-machine-qualification.md",
+    "native/src/Cargo.lock",
+    "native/src/Cargo.toml",
+    "native/src/base/Cargo.toml",
+    "native/src/core/lib.rs",
+    "native/src/external/cxx-rs",
+    "native/src/include/codegen.rs",
+    "native/src/include/consts.hpp",
+    "native/src/include/consts.rs",
+    "scripts/avd.sh",
+    "scripts/kitsune_system_install.sh",
+    "scripts/kitsune_system_launcher.sh",
+    "scripts/kitsune_system_rescue.sh",
+    "scripts/system_mode_transaction.sh",
+    "scripts/system_mode_verify.sh",
+    "scripts/test_common.sh",
+    "tests/system_mode/__init__.py",
+    "tests/system_mode/test_adapters.py",
+    "tests/system_mode/test_authorization.py",
+    "tests/system_mode/test_doctor.py",
+    "tests/system_mode/test_installer_safety.py",
+    "tests/system_mode/test_launcher_recovery.py",
+    "tests/system_mode/test_qualification.py",
+    "tests/system_mode/test_transaction.py",
+    "tests/test_next_system_baseline.py",
+    "tools/next_system_baseline.py",
+    "tools/rustup-wrapper/src/main.rs",
+    "tools/system_mode/__init__.py",
+    "tools/system_mode/adapters.py",
+    "tools/system_mode/authorization.py",
+    "tools/system_mode/contracts/install-state-machine.json",
+    "tools/system_mode/contracts/reason-codes.json",
+    "tools/system_mode/doctor.py",
+    "tools/system_mode/fixtures/bluestacks-no-bootstrap.json",
+    "tools/system_mode/fixtures/ext4-shared-blocks.json",
+    "tools/system_mode/fixtures/immutable-erofs-avb.json",
+    "tools/system_mode/fixtures/ldplayer-writable.json",
+    "tools/system_mode/fixtures/mumu-writable.json",
+    "tools/system_mode/fixtures/nox-debug-ramdisk.json",
+    "tools/system_mode/kitsune.py",
+    "tools/system_mode/qualification.py",
+    "tools/system_mode/schema_validation.py",
+    "tools/system_mode/schemas/adapter-v1.schema.json",
+    "tools/system_mode/schemas/characterization-record-v1.schema.json",
+    "tools/system_mode/schemas/doctor-v1.schema.json",
+    "tools/system_mode/schemas/install-manifest-v1.schema.json",
+    "tools/system_mode/schemas/probe-fixture-v1.schema.json",
+    "tools/system_mode/schemas/qualification-v1.schema.json"
+  ]
+}

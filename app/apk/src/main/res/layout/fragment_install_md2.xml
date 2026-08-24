@@ -199,6 +199,14 @@
                             android:text="@string/direct_install" />
 
                         <RadioButton
+                            android:id="@+id/method_system_mode"
+                            style="@style/WidgetFoundation.RadioButton"
+                            gone="@{!viewModel.allowSystemMode}"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/direct_install_system_mode" />
+
+                        <RadioButton
                             android:id="@+id/method_inactive_slot"
                             style="@style/WidgetFoundation.RadioButton"
                             gone="@{viewModel.noSecondSlot}"

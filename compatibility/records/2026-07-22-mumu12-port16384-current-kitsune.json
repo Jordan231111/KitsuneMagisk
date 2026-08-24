@@ -1,0 +1,380 @@
+{
+  "artifact": {
+    "apk_sha256": null,
+    "branch": null,
+    "commit": null,
+    "identity_status": "unknown"
+  },
+  "clean_snapshot": false,
+  "doctor": {
+    "assessment": {
+      "primary_reason": "INIT_IMPORT_UNPROVEN",
+      "reason_codes": [
+        "INIT_IMPORT_UNPROVEN",
+        "NO_RECOVERY_PATH",
+        "PERSISTENT_WRITABILITY_UNPROVEN",
+        "AVB_STATE_UNKNOWN",
+        "SELINUX_NOT_ENFORCING",
+        "SYSTEM_MODE_ALREADY_INSTALLED",
+        "LEGACY_INSTALL_NO_MANIFEST"
+      ],
+      "verdict": "needs_evidence",
+      "warnings": [
+        "AVB_STATE_UNKNOWN",
+        "SELINUX_NOT_ENFORCING",
+        "SYSTEM_MODE_ALREADY_INSTALLED",
+        "LEGACY_INSTALL_NO_MANIFEST"
+      ]
+    },
+    "bootstrap": {
+      "adb_uid": 2000,
+      "magisk_version": "R65C0CF63-kitsune:MAGISK:R",
+      "magisk_version_code": 27001,
+      "root_available": true,
+      "root_context": "u:r:magisk:s0",
+      "root_uid": 0,
+      "transport": "magisk_su"
+    },
+    "device": {
+      "abis": [
+        "arm64-v8a"
+      ],
+      "android_release": "12",
+      "api": 32,
+      "page_size": 4096,
+      "boot_id_sha256": "27192f1645f73d46e2a0c8ab8d07f1014317f07e6f42aa0ff6178a3db6567eb7",
+      "brand": "Samsung",
+      "build_id": "W528JS",
+      "build_incremental": "224",
+      "device": "SM-A5460",
+      "emulator_product": "MACPRO",
+      "emulator_product_property": "nemud.player_engine",
+      "emulator_version": "1.4.46",
+      "emulator_version_property": "nemud.player_version",
+      "fingerprint_sha256": "d3eec945343c1dc4b4bf2ea4a6caee01299b405bc66648b846a28ff9e8e3e778",
+      "kernel": "Linux localhost 4.19.195-android-arm64-g61d8c513109a #1 SMP PREEMPT Thu Aug 29 16:36:04 HKT 2024 aarch64",
+      "manufacturer": "Samsung",
+      "model": "SM-A5460",
+      "product": "SM-A5460",
+      "vendor": "mumu",
+      "vendor_evidence": [
+        "mumu12shared",
+        "mumu"
+      ]
+    },
+    "existing_install": {
+      "config_path": "/system/etc/init/magisk/config",
+      "detected": true,
+      "manifest_path": null,
+      "manifest_present": false,
+      "system_mode": true
+    },
+    "generated_at": "2026-07-22T04:44:20Z",
+    "init": {
+      "candidate_directories": [
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/init",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/init"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/init/hw",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/init/hw"
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/vendor/etc/init",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/odm/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/system/vendor/odm/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/product/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/system/product/etc/init"
+        },
+        {
+          "exists": false,
+          "kind": "missing",
+          "path": "/system_ext/etc/init",
+          "permission_writable": false,
+          "readable": false,
+          "resolved_path": "/system/system_ext/etc/init"
+        }
+      ],
+      "import_proof": "observed_existing_install",
+      "selected_directory": "/system/etc/init"
+    },
+    "layout": {
+      "avb_state": "unknown",
+      "device_mapper": {
+        "layers": [],
+        "probe": "not_applicable"
+      },
+      "dm_verity": false,
+      "dynamic_partitions": false,
+      "ext4_features": [],
+      "ext4_features_method": "superblock",
+      "ext4_features_probe": "observed",
+      "ext4_ro_compat_flags": 123,
+      "overlayfs": false,
+      "shared_blocks": false,
+      "slot_suffix": "",
+      "system_fs_type": "ext4",
+      "system_source": "/dev/block/sda1",
+      "system_target": "/system",
+      "system_writable_backing": true,
+      "system_writable_view": true
+    },
+    "mounts": [
+      {
+        "exists": true,
+        "fs_type": "tmpfs",
+        "major_minor": "0:20",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/",
+        "root": "/",
+        "source": "tmpfs",
+        "super_options": [
+          "ro",
+          "seclabel"
+        ],
+        "target": "/",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/system",
+        "writable_backing": true,
+        "writable_view": true
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system/vendor",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/vendor",
+        "writable_backing": true,
+        "writable_view": true
+      },
+      {
+        "exists": true,
+        "fs_type": "tmpfs",
+        "major_minor": "0:20",
+        "mount_options": [
+          "ro",
+          "relatime"
+        ],
+        "mount_point": "/",
+        "resolved_path": "/odm",
+        "root": "/",
+        "source": "tmpfs",
+        "super_options": [
+          "ro",
+          "seclabel"
+        ],
+        "target": "/odm",
+        "writable_backing": false,
+        "writable_view": false
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system/product",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/product",
+        "writable_backing": true,
+        "writable_view": true
+      },
+      {
+        "exists": true,
+        "fs_type": "ext4",
+        "major_minor": "8:1",
+        "mount_options": [
+          "rw",
+          "noatime"
+        ],
+        "mount_point": "/system",
+        "resolved_path": "/system/system_ext",
+        "root": "/",
+        "source": "/dev/block/sda1",
+        "super_options": [
+          "rw",
+          "seclabel"
+        ],
+        "target": "/system_ext",
+        "writable_backing": true,
+        "writable_view": true
+      }
+    ],
+    "persistence": {
+      "backing_write_probe": "not_run",
+      "cold_boots": 0,
+      "host_restarts": 0,
+      "proven": false
+    },
+    "probe_version": "1.0.0",
+    "recovery": {
+      "backup_location": null,
+      "backup_digest": null,
+      "restore_command": null,
+      "snapshot_id": null,
+      "verified": false
+    },
+    "schema_version": 1,
+    "selinux": {
+      "enabled": true,
+      "policy_candidates": [
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/selinux/precompiled_sepolicy",
+          "sha256": "f032c50d4ade574c6d092b14f341782d16a075acfcf2c56d082eac808d6ee0f3",
+          "size": 508390
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/system/etc/selinux/plat_sepolicy.cil",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/selinux/plat_sepolicy.cil",
+          "sha256": "be0219f8be1eb9b03ca9aa74cb3cef86d3ad5fcf5dac05fc4967f3a1ac9e8ec6",
+          "size": 1816428
+        },
+        {
+          "exists": true,
+          "kind": "directory",
+          "path": "/system/etc/selinux/mapping",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/etc/selinux/mapping",
+          "sha256": null,
+          "size": null
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/vendor_sepolicy.cil",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/selinux/vendor_sepolicy.cil",
+          "sha256": "c3e7b35512487eab0730483b2aaa1820b4b95afa4e1be212dfbbdf2ebcf714a5",
+          "size": 87954
+        },
+        {
+          "exists": true,
+          "kind": "file",
+          "path": "/vendor/etc/selinux/precompiled_sepolicy.plat_sepolicy_and_mapping.sha256",
+          "permission_writable": true,
+          "readable": true,
+          "resolved_path": "/system/vendor/etc/selinux/precompiled_sepolicy.plat_sepolicy_and_mapping.sha256",
+          "sha256": "575586cf4be3a5229db8cbc2040c0a81267ed6f67dae542c4cf800e467253d1c",
+          "size": 65
+        }
+      ],
+      "state": "permissive",
+      "strategy": "precompiled"
+    },
+    "source": {
+      "kind": "adb",
+      "probe_sha256": "d90595177a45c5438c60a5b0121df9408764109a0960449faa0dacaf42a015e7",
+      "read_only": true,
+      "repository_commit": "cf149fcf734539f6077cd6b349d9ffc2496c56ca",
+      "repository_dirty": true,
+      "serial_sha256": "da09b86341cf0b001201905615202d7df7d794dffe1abe531edd88eeede437bc"
+    },
+    "staging": {
+      "available_bytes": 98551242752,
+      "path": "/data/local/tmp",
+      "required_bytes": 33554432,
+      "sufficient": true
+    }
+  },
+  "lifecycle": {
+    "cold_boots": 0,
+    "install": "preexisting",
+    "module_smoke": "not_run",
+    "reinstall": "not_run",
+    "root_policy_smoke": "not_run",
+    "snapshot_restore": "not_run",
+    "uninstall": "not_run",
+    "upgrade": "not_run"
+  },
+  "notes": [
+    "Collected with the read-only PR3 doctor over adb connect 127.0.0.1:16384.",
+    "MuMu 12 engine version 1.4.46 was reported by the whitelisted nemud.player_version property; guest product properties impersonate a Samsung SM-A5460.",
+    "The pre-existing Kitsune artifact cannot be tied to a source commit or APK digest; it reports native version code 27001 and has no versioned ownership manifest.",
+    "The doctor records the host repository baseline, dirty-worktree flag, and probe-source digest separately from the unknown installed artifact identity.",
+    "The observed /system view and ext4 backing are writable; a read-only raw superblock probe reported ro_compat flags 123 with shared_blocks absent.",
+    "No controlled persistence marker, clean snapshot, external backup, restore exercise, or init marker test was supplied.",
+    "SELinux was permissive at collection time and AVB state was not exposed by guest properties.",
+    "This record is characterization evidence only and is not a support claim."
+  ],
+  "qualification_status": "experimental",
+  "record_id": "2026-07-22-mumu12-port16384-current-kitsune",
+  "schema_version": 1
+}

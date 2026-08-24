@@ -18,6 +18,7 @@ cxx-gen = { workspace = true }
 [dependencies]
 derive = { workspace = true }
 cxx = { workspace = true }
+link-cplusplus = { workspace = true }
 libc = { workspace = true }
 cfg-if = { workspace = true }
 thiserror = { workspace = true }

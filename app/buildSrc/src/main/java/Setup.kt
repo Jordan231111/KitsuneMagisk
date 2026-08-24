@@ -188,7 +188,10 @@ fun Project.setupCoreLib() {
                 inputs.property("versionCode", Config.versionCode)
                 from(rootFile("scripts")) {
                     include("util_functions.sh", "boot_patch.sh", "addon.d.sh",
-                        "app_functions.sh", "uninstaller.sh", "module_installer.sh")
+                        "app_functions.sh", "uninstaller.sh", "module_installer.sh",
+                        "kitsune_system_install.sh", "kitsune_system_launcher.sh",
+                        "kitsune_system_rescue.sh",
+                        "system_mode_transaction.sh", "system_mode_verify.sh")
                 }
                 from(rootFile("tools/bootctl"))
                 into("chromeos") {
@@ -205,7 +208,11 @@ fun Project.setupCoreLib() {
                     filter {
                         it.replace(
                             "#MAGISK_VERSION_STUB",
-                            "MAGISK_VER='${Config.version}'\nMAGISK_VER_CODE=${Config.versionCode}"
+                            "MAGISK_VER='${Config.version}'\n" +
+                                "MAGISK_VER_CODE=${Config.versionCode}\n" +
+                                "KITSUNE_SOURCE_COMMIT='${Config.sourceCommit}'\n" +
+                                "KITSUNE_SOURCE_DIRTY=${Config.sourceDirty}\n" +
+                                "KITSUNE_UPSTREAM_BASE='$UPSTREAM_BASE'"
                         )
                     }
                     filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))

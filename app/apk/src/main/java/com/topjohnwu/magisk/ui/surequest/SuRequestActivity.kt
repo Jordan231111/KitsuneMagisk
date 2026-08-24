@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.surequest
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
@@ -59,6 +60,7 @@ open class SuRequestActivity : UIActivity<ActivityRequestBinding>(), UntrackedAc
         return theme
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         viewModel.denyPressed()
     }

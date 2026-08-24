@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jordan231111/KitsuneMagisk/schemas/system-mode/qualification-v1.schema.json",
+  "title": "Kitsune System Mode machine qualification record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_id", "generated_at", "adapter", "source", "target", "instance_identity", "commands", "backup", "challenge", "init", "persistence", "recovery", "seal"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "record_id": {"type": "string", "format": "uuid"},
+    "generated_at": {"type": "string", "format": "date-time", "minLength": 20},
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "execution", "clone_authorized"],
+      "properties": {
+        "id": {"const": "generic-in-guest"},
+        "execution": {"const": "in_guest"},
+        "clone_authorized": {"type": "boolean", "const": false}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository_commit", "probe_sha256"],
+      "properties": {
+        "repository_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "probe_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serial_sha256", "fingerprint_sha256", "api", "abis", "baseline_contract_sha256", "baseline_inventory", "baseline_inventory_sha256"],
+      "properties": {
+        "serial_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "fingerprint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "api": {"type": "integer", "minimum": 25},
+        "abis": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "baseline_contract_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "baseline_inventory": {"$ref": "#/$defs/inventory"},
+        "baseline_inventory_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "instance_identity": {"$ref": "#/$defs/hostFile"},
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backup", "cold_boot", "restore"],
+      "properties": {
+        "backup": {"$ref": "#/$defs/commandIdentity"},
+        "cold_boot": {"$ref": "#/$defs/commandIdentity"},
+        "restore": {"$ref": "#/$defs/commandIdentity"}
+      }
+    },
+    "backup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "location", "sha256_before", "sha256_after", "backup_command", "restore_command", "created_boot_id_sha256", "qualification_residue"],
+      "properties": {
+        "snapshot_id": {"type": "string", "minLength": 1},
+        "location": {"type": "string", "pattern": "^/", "minLength": 2},
+        "sha256_before": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "sha256_after": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "backup_command": {"type": "string", "minLength": 1},
+        "restore_command": {"type": "string", "minLength": 1},
+        "created_boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "qualification_residue": {"const": "absent"}
+      }
+    },
+    "challenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256_before", "sha256_after", "created_boot_id_sha256", "restored_boot_id_sha256", "anchor_before", "anchor_mutated", "anchor_after_restore", "marker", "data_anchor_before", "data_anchor_mutated", "data_anchor_after_restore", "data_marker", "temporary_backup_removed"],
+      "properties": {
+        "sha256_before": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "sha256_after": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "created_boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "restored_boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "anchor_before": {"$ref": "#/$defs/remoteFile"},
+        "anchor_mutated": {"$ref": "#/$defs/remoteFile"},
+        "anchor_after_restore": {"$ref": "#/$defs/remoteFile"},
+        "marker": {"$ref": "#/$defs/remoteFile"},
+        "data_anchor_before": {"$ref": "#/$defs/remoteFile"},
+        "data_anchor_mutated": {"$ref": "#/$defs/remoteFile"},
+        "data_anchor_after_restore": {"$ref": "#/$defs/remoteFile"},
+        "data_marker": {"$ref": "#/$defs/remoteFile"},
+        "temporary_backup_removed": {"type": "boolean", "const": true}
+      }
+    },
+    "init": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["directory", "probe", "helper", "property", "nonce_sha256", "domains"],
+      "properties": {
+        "directory": {"enum": ["/system/etc/init", "/system/etc/init/hw"]},
+        "probe": {"$ref": "#/$defs/remoteFile"},
+        "helper": {"$ref": "#/$defs/remoteFile"},
+        "property": {"const": "kitsune.system_mode.qualify"},
+        "nonce_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "domains": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["init", "magisk"],
+          "properties": {
+            "init": {"const": "u:r:init:s0"},
+            "magisk": {"const": "u:r:magisk:s0"}
+          }
+        }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backing_write_probe", "boot_evidence", "cold_boot_command", "cold_boot_ids", "host_restart_ids", "exec_proofs"],
+      "properties": {
+        "backing_write_probe": {"const": "passed"},
+        "boot_evidence": {"const": "host-command-new-boot-id-and-init-and-magisk-exec"},
+        "cold_boot_command": {"type": "string", "minLength": 1},
+        "cold_boot_ids": {"type": "array", "minItems": 3, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+        "host_restart_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+        "exec_proofs": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["boot_id_sha256", "init_result", "magisk_result"],
+            "properties": {
+              "boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+              "init_result": {"$ref": "#/$defs/remoteFile"},
+              "magisk_result": {"$ref": "#/$defs/remoteFile"}
+            }
+          }
+        }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["marker", "data_marker", "restore_executed", "qualification_paths_absent_after_restore", "restored_boot_id_sha256", "target_contract_sha256_after_restore", "inventory_after_restore", "inventory_sha256_after_restore"],
+      "properties": {
+        "marker": {"$ref": "#/$defs/remoteFile"},
+        "data_marker": {"$ref": "#/$defs/remoteFile"},
+        "restore_executed": {"type": "boolean", "const": true},
+        "qualification_paths_absent_after_restore": {"type": "boolean", "const": true},
+        "restored_boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_contract_sha256_after_restore": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "inventory_after_restore": {"$ref": "#/$defs/inventory"},
+        "inventory_sha256_after_restore": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "seal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value"],
+      "properties": {
+        "algorithm": {"const": "HMAC-SHA256"},
+        "key_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "value": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  },
+  "$defs": {
+    "hostFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "device", "inode", "size", "mode", "uid", "gid", "mtime_ns", "ctime_ns"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/", "minLength": 2},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "device": {"type": "integer", "minimum": 0},
+        "inode": {"type": "integer", "minimum": 1},
+        "size": {"type": "integer", "minimum": 1},
+        "mode": {"type": "string", "pattern": "^[0-7]{4}$"},
+        "uid": {"type": "integer", "minimum": 0},
+        "gid": {"type": "integer", "minimum": 0},
+        "mtime_ns": {"type": "integer", "minimum": 0},
+        "ctime_ns": {"type": "integer", "minimum": 0}
+      }
+    },
+    "commandIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "executable", "interpreter"],
+      "properties": {
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "executable": {"$ref": "#/$defs/hostFile"},
+        "interpreter": {"$ref": "#/$defs/hostFile"}
+      }
+    },
+    "remoteFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size", "mode", "uid", "gid", "selinux_context"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": "integer", "minimum": 0},
+        "mode": {"type": "string", "pattern": "^[0-7]{4}$"},
+        "uid": {"type": "integer", "minimum": 0},
+        "gid": {"type": "integer", "minimum": 0},
+        "selinux_context": {"type": ["string", "null"]}
+      }
+    },
+    "remoteNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "sha256", "size", "mode", "uid", "gid", "mtime_epoch", "selinux_context"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "kind": {"enum": ["absent", "directory", "file"]},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": ["integer", "null"], "minimum": 0},
+        "mode": {"type": ["string", "null"], "pattern": "^[0-7]{4}$"},
+        "uid": {"type": ["integer", "null"], "minimum": 0},
+        "gid": {"type": ["integer", "null"], "minimum": 0},
+        "mtime_epoch": {"type": ["integer", "null"], "minimum": 0},
+        "selinux_context": {"type": ["string", "null"]}
+      }
+    },
+    "inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/remoteNode"}
+    }
+  }
+}

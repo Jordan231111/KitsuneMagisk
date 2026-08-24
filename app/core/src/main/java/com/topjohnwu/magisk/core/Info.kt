@@ -34,6 +34,10 @@ object Info {
     }
 
     var isRooted = false
+    var hasMagiskState = false
+        private set
+    var isSystemMode = false
+        private set
     var noDataExec = false
     var patchBootVbmeta = false
 
@@ -85,13 +89,26 @@ object Info {
     }
 
     fun init(shell: Shell) {
+        hasMagiskState = false
+        isSystemMode = false
         if (shell.isRoot) {
             val v = fastCmd(shell, "magisk -v").split(":")
+            val versionCode = runCatching { fastCmd("magisk -V").toInt() }.getOrDefault(-1)
             env = Env(
                 v[0], v.size >= 3 && v[2] == "D",
-                runCatching { fastCmd("magisk -V").toInt() }.getOrDefault(-1)
+                versionCode
             )
             Config.denyList = fastCmdResult(shell, "magisk --denylist status")
+            hasMagiskState = versionCode > 0 || fastCmdResult(
+                shell,
+                "[ -e /data/adb/magisk ] || [ -L /data/adb/magisk ] || " +
+                    "[ -e /data/adb/magisk.db ] || [ -L /data/adb/magisk.db ]"
+            )
+            isSystemMode = fastCmdResult(
+                shell,
+                "grep -qx 'SYSTEMMODE=true' /system/etc/init/magisk/config 2>/dev/null || " +
+                    "grep -qx 'SYSTEMMODE=true' /data/adb/magisk/config 2>/dev/null"
+            )
         }
 
         val map = mutableMapOf<String, String>()

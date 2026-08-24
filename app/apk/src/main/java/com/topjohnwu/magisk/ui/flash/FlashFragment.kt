@@ -72,9 +72,10 @@ class FlashFragment : BaseFragment<FragmentFlashMd2Binding>(), MenuProvider {
 
         defaultOrientation = activity?.requestedOrientation ?: -1
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null)
             viewModel.startFlashing()
-        }
+        else
+            viewModel.recoverAfterProcessDeath()
     }
 
     @SuppressLint("WrongConstant")
@@ -118,6 +119,11 @@ class FlashFragment : BaseFragment<FragmentFlashMd2Binding>(), MenuProvider {
 
         fun flash(isSecondSlot: Boolean) = MainDirections.actionFlashFragment(
             action = flashType(isSecondSlot)
+        )
+
+        fun systemMode(consent: String) = MainDirections.actionFlashFragment(
+            action = Const.Value.FLASH_SYSTEM_MODE,
+            systemModeConsent = consent,
         )
 
         /* Patching is understood as injecting img files with magisk */

@@ -16,9 +16,9 @@ checksum = "5192cca8006f1fd4f7237516f40fa183bb07f8fbdfedaa0036de5ea9b0b45e78"
 
 [[package]]
 name = "anyhow"
-version = "1.0.102"
+version = "1.0.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "autocfg"
@@ -38,6 +38,7 @@ dependencies = [
  "cxx-gen",
  "derive",
  "libc",
+ "link-cplusplus",
  "nix",
  "num-derive",
  "num-traits",
@@ -88,9 +89,9 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.11.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96eb4cdd6cf1b31d671e9efe75c5d1ec614776856cefbe109ca373554a6d514f"
+checksum = "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa"
 dependencies = [
  "hybrid-array",
 ]
@@ -280,9 +281,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "211f05e03c7d03754740fd9e585de910a095d6b99f8bcfffdef8319fa02a8331"
+checksum = "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453"
 dependencies = [
  "getrandom",
  "hybrid-array",
@@ -312,7 +313,7 @@ dependencies = [
 
 [[package]]
 name = "cxx"
-version = "1.0.189"
+version = "1.0.195"
 dependencies = [
  "cc",
  "cxx-build",
@@ -320,11 +321,12 @@ dependencies = [
  "cxxbridge-flags",
  "cxxbridge-macro",
  "foldhash 0.2.0",
+ "link-cplusplus",
 ]
 
 [[package]]
 name = "cxx-build"
-version = "1.0.189"
+version = "1.0.195"
 dependencies = [
  "cc",
  "codespan-reporting",
@@ -337,7 +339,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-gen"
-version = "0.7.189"
+version = "0.7.195"
 dependencies = [
  "codespan-reporting",
  "indexmap",
@@ -348,7 +350,7 @@ dependencies = [
 
 [[package]]
 name = "cxxbridge-cmd"
-version = "1.0.189"
+version = "1.0.195"
 dependencies = [
  "clap",
  "codespan-reporting",
@@ -360,11 +362,11 @@ dependencies = [
 
 [[package]]
 name = "cxxbridge-flags"
-version = "1.0.189"
+version = "1.0.195"
 
 [[package]]
 name = "cxxbridge-macro"
-version = "1.0.189"
+version = "1.0.195"
 dependencies = [
  "indexmap",
  "proc-macro2",
@@ -417,13 +419,13 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.0"
+version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8bf3682cdec91817be507e4aa104314898b95b84d74f3d43882210101a545b6"
+checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
 dependencies = [
- "block-buffer 0.11.0",
+ "block-buffer 0.12.1",
  "const-oid",
- "crypto-common 0.2.0",
+ "crypto-common 0.2.2",
  "ctutils",
 ]
 
@@ -434,7 +436,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "91bbdd377139884fafcad8dc43a760a3e1e681aa26db910257fa6535b70e1829"
 dependencies = [
  "der",
- "digest 0.11.0",
+ "digest 0.11.3",
  "elliptic-curve",
  "rfc6979",
  "signature",
@@ -450,8 +452,8 @@ checksum = "bde7860544606d222fd6bd6d9f9a0773321bf78072a637e1d560a058c0031978"
 dependencies = [
  "base16ct",
  "crypto-bigint",
- "crypto-common 0.2.0",
- "digest 0.11.0",
+ "crypto-common 0.2.2",
+ "digest 0.11.3",
  "hybrid-array",
  "once_cell",
  "pem-rfc7468",
@@ -567,7 +569,7 @@ version = "0.13.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef451d73f36d8a3f93ad32c332ea01146c9650e1ec821a9b0e46c01277d544f8"
 dependencies = [
- "digest 0.11.0",
+ "digest 0.11.3",
 ]
 
 [[package]]
@@ -630,6 +632,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
+name = "link-cplusplus"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f78c730aaa7d0b9336a299029ea49f9ee53b0ed06e9202e8cb7db9bae7b8c82"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -689,7 +700,7 @@ dependencies = [
  "cxx",
  "cxx-gen",
  "der",
- "digest 0.11.0",
+ "digest 0.11.3",
  "fdt",
  "flate2",
  "lz4",
@@ -894,7 +905,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93401c13cc7ff24684571cfca9d3cf9ebabfaf3d4b7b9963ade41ec54da196b5"
 dependencies = [
  "crypto-bigint",
- "crypto-common 0.2.0",
+ "crypto-common 0.2.2",
  "rand_core",
  "rustcrypto-ff",
  "subtle",
@@ -967,7 +978,7 @@ dependencies = [
  "const-oid",
  "crypto-bigint",
  "crypto-primes",
- "digest 0.11.0",
+ "digest 0.11.3",
  "pkcs1",
  "pkcs8",
  "rand_core",
@@ -1085,7 +1096,7 @@ checksum = "3b167252f3c126be0d8926639c4c4706950f01445900c4b3db0fd7e89fcb750a"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "digest 0.11.0",
+ "digest 0.11.3",
 ]
 
 [[package]]
@@ -1107,7 +1118,7 @@ checksum = "7c5f3b1e2dc8aad28310d8410bd4d7e180eca65fca176c52ab00d364475d0024"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "digest 0.11.0",
+ "digest 0.11.3",
 ]
 
 [[package]]
@@ -1122,7 +1133,7 @@ version = "3.0.0-rc.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f1880df446116126965eeec169136b2e0251dba37c6223bcc819569550edea3"
 dependencies = [
- "digest 0.11.0",
+ "digest 0.11.3",
  "rand_core",
 ]
 

@@ -1,6 +1,9 @@
 use std::env;
 use std::path::Path;
-use std::process::{Command, Stdio};
+use std::process::{self, Command, ExitStatus, Stdio};
+
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
 
 use home::cargo_home;
 
@@ -16,6 +19,32 @@ use home::cargo_home;
  * In this program, we use the output of the command with the nightly
  * channel if any `component` command failed.
 */
+
+fn child_exit_code(status: ExitStatus) -> i32 {
+    if let Some(code) = status.code() {
+        return code;
+    }
+
+    #[cfg(unix)]
+    {
+        // Match the status convention used by POSIX shells for a process
+        // terminated by a signal.
+        128 + status.signal().unwrap_or(1)
+    }
+
+    #[cfg(not(unix))]
+    {
+        1
+    }
+}
+
+fn finish(status: ExitStatus) -> std::io::Result<()> {
+    if status.success() {
+        Ok(())
+    } else {
+        process::exit(child_exit_code(status));
+    }
+}
 
 fn main() -> std::io::Result<()> {
     let exe = env::args().next().unwrap();
@@ -35,10 +64,39 @@ fn main() -> std::io::Result<()> {
             cmd.arg("+nightly");
             // Remove any explicit channel specification
             cmd.args(argv.iter().filter(|s| !s.starts_with('+')));
-            return cmd.status().map(|_| ());
+            return finish(cmd.status()?);
         }
     }
 
     // Simply pass through
-    Command::new(&real_exe).args(argv.iter()).status().map(|_| ())
+    finish(Command::new(&real_exe).args(argv.iter()).status()?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::child_exit_code;
+    use std::process::ExitStatus;
+
+    #[cfg(unix)]
+    use std::os::unix::process::ExitStatusExt;
+
+    #[cfg(windows)]
+    use std::os::windows::process::ExitStatusExt;
+
+    #[test]
+    fn preserves_child_exit_code() {
+        #[cfg(unix)]
+        let status = ExitStatus::from_raw(37 << 8);
+        #[cfg(windows)]
+        let status = ExitStatus::from_raw(37);
+
+        assert_eq!(child_exit_code(status), 37);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn maps_signal_to_shell_status() {
+        let status = ExitStatus::from_raw(15);
+        assert_eq!(child_exit_code(status), 143);
+    }
 }

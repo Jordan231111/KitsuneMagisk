@@ -9,8 +9,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 use crate::ffi::SuRequest;
-use crate::socket::Encodable;
-use base::derive::Decodable;
+use crate::socket::{Decodable, Encodable};
 use daemon::{MagiskD, connect_daemon_for_cxx};
 use logging::{android_logging, zygisk_close_logd, zygisk_get_logd, zygisk_logging};
 use magisk::magisk_main;
@@ -125,7 +124,6 @@ pub mod ffi {
         ProcessIsMagiskApp = 0x80000000,
     }
 
-    #[derive(Decodable)]
     struct SuRequest {
         target_uid: i32,
         target_pid: i32,
@@ -226,6 +224,36 @@ pub mod ffi {
         #[Self = MagiskD]
         #[cxx_name = "Get"]
         fn get() -> &'static MagiskD;
+    }
+}
+
+impl Encodable for SuRequest {
+    fn encode(&self, writer: &mut impl std::io::Write) -> std::io::Result<()> {
+        self.target_uid.encode(writer)?;
+        self.target_pid.encode(writer)?;
+        self.login.encode(writer)?;
+        self.keep_env.encode(writer)?;
+        self.drop_cap.encode(writer)?;
+        self.shell.encode(writer)?;
+        self.command.encode(writer)?;
+        self.context.encode(writer)?;
+        self.gids.encode(writer)
+    }
+}
+
+impl Decodable for SuRequest {
+    fn decode(reader: &mut impl std::io::Read) -> std::io::Result<Self> {
+        Ok(Self {
+            target_uid: Decodable::decode(reader)?,
+            target_pid: Decodable::decode(reader)?,
+            login: Decodable::decode(reader)?,
+            keep_env: Decodable::decode(reader)?,
+            drop_cap: Decodable::decode(reader)?,
+            shell: Decodable::decode(reader)?,
+            command: Decodable::decode(reader)?,
+            context: Decodable::decode(reader)?,
+            gids: Decodable::decode(reader)?,
+        })
     }
 }
 

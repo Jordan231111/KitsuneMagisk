@@ -1,7 +1,9 @@
 package com.topjohnwu.magisk.core.tasks
 
 import android.net.Uri
+import android.os.Build
 import android.os.Process
+import android.os.SystemClock
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
@@ -45,9 +47,58 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PushbackInputStream
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+
+object SystemModeConsent {
+    private const val TTL_MILLIS = 5 * 60 * 1000L
+    private const val TOKEN_BYTES = 32
+    private val hex = "0123456789abcdef".toCharArray()
+    private val random = SecureRandom()
+    private var token: String? = null
+    private var expiresAt = 0L
+
+    @Synchronized
+    fun issue(): String {
+        val bytes = ByteArray(TOKEN_BYTES).also(random::nextBytes)
+        val encoded = CharArray(bytes.size * 2)
+        bytes.forEachIndexed { index, byte ->
+            val value = byte.toInt() and 0xff
+            encoded[index * 2] = hex[value ushr 4]
+            encoded[index * 2 + 1] = hex[value and 0x0f]
+        }
+        return encoded.concatToString().also {
+            token = it
+            expiresAt = SystemClock.elapsedRealtime() + TTL_MILLIS
+        }
+    }
+
+    @Synchronized
+    internal fun consume(candidate: String?): Boolean {
+        val issued = token ?: return false
+        if (SystemClock.elapsedRealtime() >= expiresAt) {
+            clear()
+            return false
+        }
+        if (candidate == null)
+            return false
+        val valid = MessageDigest.isEqual(
+            issued.toByteArray(StandardCharsets.US_ASCII),
+            candidate.toByteArray(StandardCharsets.US_ASCII),
+        )
+        if (valid)
+            clear()
+        return valid
+    }
+
+    private fun clear() {
+        token = null
+        expiresAt = 0L
+    }
+}
 
 abstract class MagiskInstallImpl protected constructor(
     protected val console: MutableList<String>,
@@ -161,7 +212,20 @@ abstract class MagiskInstallImpl protected constructor(
             }
 
             // Extract scripts
-            for (script in listOf("util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk")) {
+            for (script in listOf(
+                "util_functions.sh",
+                "boot_patch.sh",
+                "addon.d.sh",
+                "app_functions.sh",
+                "uninstaller.sh",
+                "module_installer.sh",
+                "kitsune_system_install.sh",
+                "kitsune_system_launcher.sh",
+                "kitsune_system_rescue.sh",
+                "system_mode_transaction.sh",
+                "system_mode_verify.sh",
+                "stub.apk",
+            )) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)
             }
@@ -579,39 +643,237 @@ abstract class MagiskInstallImpl protected constructor(
     private fun String.fsh() = ShellUtils.fastCmd(shell, this)
     private fun Array<String>.fsh() = ShellUtils.fastCmd(shell, *this)
 
+    private fun systemModeTransactionPresent() =
+        (
+            "[ -e /data/adb/kitsune/system-mode/transaction.env ] || " +
+                "[ -L /data/adb/kitsune/system-mode/transaction.env ]"
+        ).sh().isSuccess
+
+    private fun systemModeTerminalMarkerPresent() =
+        (
+            "[ -e /data/adb/.kitsune-system-mode-setup-v1.env ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-setup-v1.env ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-setup-v1.env.new ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-setup-v1.env.new ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-rollback-v1.env ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-rollback-v1.env ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-rollback-v1.env.new ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-rollback-v1.env.new ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-prior-v1.env ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-prior-v1.env ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-prior-v1.env.new ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-prior-v1.env.new ]"
+        ).sh().isSuccess
+
+    private fun systemModeStateStoragePresent() =
+        (
+            "[ -e /data/adb/.kitsune-system-mode-setup-v1.env ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-setup-v1.env ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-setup-v1.env.new ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-setup-v1.env.new ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-rollback-v1.env ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-rollback-v1.env ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-rollback-v1.env.new ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-rollback-v1.env.new ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-prior-v1.env ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-prior-v1.env ] || " +
+                "[ -e /data/adb/.kitsune-system-mode-prior-v1.env.new ] || " +
+                "[ -L /data/adb/.kitsune-system-mode-prior-v1.env.new ] || " +
+                "[ -L /data/adb/kitsune/system-mode ] || " +
+                "{ [ -e /data/adb/kitsune/system-mode ] && " +
+                "[ ! -d /data/adb/kitsune/system-mode ]; } || " +
+                "[ -L /data/adb/kitsune/system-mode/rollback ] || " +
+                "{ [ -e /data/adb/kitsune/system-mode/rollback ] && " +
+                "[ ! -d /data/adb/kitsune/system-mode/rollback ]; } || " +
+                "find /data/adb/kitsune/system-mode -mindepth 1 -maxdepth 1 " +
+                "! -name rollback -print -quit 2>/dev/null | grep -q . || " +
+                "find /data/adb/kitsune/system-mode/rollback -mindepth 1 " +
+                "-print -quit 2>/dev/null | grep -q ."
+        ).sh().isSuccess
+
+    private fun systemModeState() =
+        (
+            "awk 'index(\$0, \"STATE=\") == 1 { count++; value=substr(\$0, 7) } " +
+                "END { if (count == 1) print value; else exit 1 }' " +
+                "/data/adb/kitsune/system-mode/transaction.env 2>/dev/null"
+        ).fsh()
+
+    private fun hasSystemModeFootprint(): Boolean {
+        val command =
+            "grep -qx 'SYSTEMMODE=true' /system/etc/init/magisk/config 2>/dev/null || " +
+                "grep -qx 'SYSTEMMODE=true' /data/adb/magisk/config 2>/dev/null || " +
+                "[ -e /system/etc/init/magisk ] || [ -L /system/etc/init/magisk ] || " +
+                "[ -f /system/etc/init/magisk/install-manifest.json ] || " +
+                "[ -f /data/adb/kitsune/system-mode/install-manifest.json ] || " +
+                "[ -e /system/etc/init/00-kitsune-magisk-rescue.rc ] || " +
+                "[ -L /system/etc/init/00-kitsune-magisk-rescue.rc ] || " +
+                "[ -e /system/etc/init/hw/00-kitsune-magisk-rescue.rc ] || " +
+                "[ -L /system/etc/init/hw/00-kitsune-magisk-rescue.rc ] || " +
+                "[ -e /system/etc/init/.kitsune-system-mode-rescue ] || " +
+                "[ -L /system/etc/init/.kitsune-system-mode-rescue ] || " +
+                "[ -e /system/etc/init/hw/.kitsune-system-mode-rescue ] || " +
+                "[ -L /system/etc/init/hw/.kitsune-system-mode-rescue ] || " +
+                "[ -L /system/etc/init/magisk.rc ] || " +
+                "[ -L /system/etc/init/hw/magisk.rc ] || " +
+                "{ [ -f /system/addon.d/99-magisk.sh ] && " +
+                "grep -qx 'SYSTEMINSTALL=true' /system/addon.d/99-magisk.sh && " +
+                "grep -Fq '/system/etc/init/magisk' /system/addon.d/99-magisk.sh; } || " +
+                "[ -e /system/addon.d/magisk ] || [ -L /system/addon.d/magisk ] || " +
+                "{ [ -f /system/etc/init/bootanim.rc ] && " +
+                "grep -Fq '/system/etc/init/magisk' /system/etc/init/bootanim.rc && " +
+                "grep -Fq -- '--setup-sbin' /system/etc/init/bootanim.rc && " +
+                "grep -Fq -- '--post-fs-data' /system/etc/init/bootanim.rc; } || " +
+                "[ -e /system/etc/init/bootanim.rc.gz ] || " +
+                "[ -L /system/etc/init/bootanim.rc.gz ] || " +
+                "[ -e /vendor/etc/selinux/precompiled_sepolicy.gz ] || " +
+                "[ -L /vendor/etc/selinux/precompiled_sepolicy.gz ] || " +
+                "[ -e /odm/etc/selinux/precompiled_sepolicy.gz ] || " +
+                "[ -L /odm/etc/selinux/precompiled_sepolicy.gz ] || " +
+                "[ -e /system/etc/selinux/precompiled_sepolicy.gz ] || " +
+                "[ -L /system/etc/selinux/precompiled_sepolicy.gz ] || " +
+                "[ -e /system_root/sepolicy.gz ] || [ -L /system_root/sepolicy.gz ] || " +
+                "[ -e /system_root/sepolicy_debug.gz ] || " +
+                "[ -L /system_root/sepolicy_debug.gz ] || " +
+                "[ -e /system_root/sepolicy.unlocked.gz ] || " +
+                "[ -L /system_root/sepolicy.unlocked.gz ] || " +
+                "grep -qs '^# KitsuneMagisk System Mode schema ' " +
+                "/system/etc/init/magisk.rc /system/etc/init/hw/magisk.rc " +
+                "/vendor/etc/init/magisk.rc /odm/etc/init/magisk.rc " +
+                "/product/etc/init/magisk.rc /system_ext/etc/init/magisk.rc"
+        return command.sh().isSuccess
+    }
+
+    private fun systemModeNeedsManagedPath(): Boolean {
+        val state = systemModeState()
+        val footprint = hasSystemModeFootprint()
+        val terminalMarker = systemModeTerminalMarkerPresent()
+        val stateStorage = systemModeStateStoragePresent()
+        if (state == "UNINSTALLED" && !footprint && !terminalMarker && !stateStorage)
+            return false
+        return terminalMarker || systemModeTransactionPresent() || stateStorage || footprint
+    }
+
+    private fun rejectOrdinaryInstallOverSystemMode(): Boolean {
+        if (!systemModeNeedsManagedPath())
+            return false
+        console.add("! A System Mode installation or recovery is pending")
+        console.add("! Use the explicit System Mode action; ordinary install is blocked")
+        return true
+    }
+
     protected suspend fun patchFile(file: Uri) = extractFiles() && processFile(file)
 
-    protected suspend fun direct() = findImage() && extractFiles() && patchBoot() && flashBoot()
+    protected suspend fun direct() =
+        !rejectOrdinaryInstallOverSystemMode() && findImage() && extractFiles() && patchBoot() && flashBoot()
+
+    protected suspend fun directSystem(consent: String?): Boolean {
+        if (!BuildConfig.DEBUG) {
+            console.add("! System Mode is disabled in release builds")
+            return false
+        }
+        if (!SystemModeConsent.consume(consent)) {
+            console.add("! System Mode confirmation is missing or expired")
+            return false
+        }
+        if (!Info.isRooted || Build.VERSION.SDK_INT < 25) {
+            console.add("! System Mode requires bootstrap root on Android 7.1 or newer")
+            return false
+        }
+        if (Info.hasMagiskState && !Info.isSystemMode) {
+            console.add("! Ordinary Magisk is already installed")
+            console.add("! Use the normal Magisk installation path on this device")
+            return false
+        }
+        if (!extractFiles())
+            return false
+
+        val busybox = "$installDir/busybox"
+        val installer = "$installDir/kitsune_system_install.sh"
+        val command =
+            "\"$busybox\" unshare -m \"$busybox\" sh \"$installer\" " +
+                "install \"$installDir\" \"$AppApkPath\""
+        return try {
+            command.sh().isSuccess
+        } finally {
+            "rm -rf \"$installDir\"".sh()
+        }
+    }
 
     protected suspend fun secondSlot() =
-        findSecondary() && extractFiles() && patchBoot() && flashBoot() && postOTA()
+        !rejectOrdinaryInstallOverSystemMode() &&
+            findSecondary() && extractFiles() && patchBoot() && flashBoot() && postOTA()
 
-    protected suspend fun fixEnv() = extractFiles() && "fix_env $installDir".sh().isSuccess
+    protected suspend fun fixEnv() =
+        !rejectOrdinaryInstallOverSystemMode() && extractFiles() && "fix_env $installDir".sh().isSuccess
 
-    protected fun restore() = findImage() && "restore_imgs $srcBoot".sh().isSuccess
+    protected fun restore() =
+        !rejectOrdinaryInstallOverSystemMode() && findImage() && "restore_imgs $srcBoot".sh().isSuccess
 
-    protected fun uninstall() = "run_uninstaller $AppApkPath".sh().isSuccess
+    protected suspend fun uninstall(): Boolean {
+        val state = systemModeState()
+        val footprint = hasSystemModeFootprint()
+        val terminalMarker = systemModeTerminalMarkerPresent()
+        val transaction = systemModeTransactionPresent()
+        val stateStorage = systemModeStateStoragePresent()
+        if (state == "UNINSTALLED" && !footprint && !terminalMarker && !stateStorage)
+            return "run_uninstaller $AppApkPath".sh().isSuccess
+        if (!terminalMarker && !transaction && !stateStorage && !footprint)
+            return "run_uninstaller $AppApkPath".sh().isSuccess
+        if (state !in systemModeStates) {
+            console.add("! System Mode artifacts exist without a valid transaction state")
+            console.add("! Ordinary uninstall is blocked; use verified recovery")
+            return false
+        }
+        if (!extractFiles())
+            return false
+
+        val busybox = "$installDir/busybox"
+        val installer = "$installDir/kitsune_system_install.sh"
+        val command =
+            "\"$busybox\" unshare -m \"$busybox\" sh \"$installer\" " +
+                "uninstall \"$installDir\""
+        return try {
+            command.sh().isSuccess
+        } finally {
+            "rm -rf \"$installDir\"".sh()
+        }
+    }
 
     @WorkerThread
     protected abstract suspend fun operations(): Boolean
 
     open suspend fun exec(): Boolean {
-        if (haveActiveSession.getAndSet(true))
+        if (!haveActiveSession.compareAndSet(false, true))
             return false
-
-        val result = withContext(Dispatchers.IO) { operations() }
-        haveActiveSession.set(false)
-        if (result)
-            return true
-
-        // Not every operation initializes installDir
-        if (::installDir.isInitialized)
-            Shell.cmd("rm -rf $installDir").submit()
-        return false
+        var success = false
+        return try {
+            success = withContext(Dispatchers.IO) { operations() }
+            success
+        } finally {
+            try {
+                if (!success && ::installDir.isInitialized) {
+                    withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
+                        Shell.cmd("rm -rf \"$installDir\"").exec()
+                    }
+                }
+            } finally {
+                haveActiveSession.set(false)
+            }
+        }
     }
 
     companion object {
         private var haveActiveSession = AtomicBoolean(false)
+        private val systemModeStates = setOf(
+            "PREFLIGHTED",
+            "STAGED",
+            "COMMITTED",
+            "BOOT_VERIFIED",
+            "UNINSTALLED",
+            "ROLLBACK_REQUIRED",
+            "ROLLING_BACK",
+            "FAILED",
+        )
     }
 }
 
@@ -660,6 +922,14 @@ class MagiskInstaller {
         logs: MutableList<String>
     ) : ConsoleInstaller(console, logs) {
         override suspend fun operations() = direct()
+    }
+
+    class SystemMode(
+        private val consent: String?,
+        console: MutableList<String>,
+        logs: MutableList<String>
+    ) : ConsoleInstaller(console, logs) {
+        override suspend fun operations() = directSystem(consent)
     }
 
     class Emulator(

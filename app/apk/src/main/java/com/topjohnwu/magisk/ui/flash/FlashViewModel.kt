@@ -42,6 +42,7 @@ class FlashViewModel : BaseViewModel() {
 
     val items = ObservableArrayList<ConsoleItem>()
     lateinit var args: FlashFragmentArgs
+    private var started = false
 
     private val logItems = mutableListOf<String>().synchronized()
     private val outItems = object : CallbackList<String>() {
@@ -53,6 +54,9 @@ class FlashViewModel : BaseViewModel() {
     }
 
     fun startFlashing() {
+        if (started)
+            return
+        started = true
         val (action, uri) = args
 
         viewModelScope.launch {
@@ -71,6 +75,13 @@ class FlashViewModel : BaseViewModel() {
                     else
                         MagiskInstaller.Direct(outItems, logItems).exec()
                 }
+                Const.Value.FLASH_SYSTEM_MODE -> {
+                    MagiskInstaller.SystemMode(
+                        args.systemModeConsent,
+                        outItems,
+                        logItems,
+                    ).exec()
+                }
                 Const.Value.FLASH_INACTIVE_SLOT -> {
                     showReboot = false
                     MagiskInstaller.SecondSlot(outItems, logItems).exec()
@@ -87,6 +98,21 @@ class FlashViewModel : BaseViewModel() {
             }
             onResult(result)
         }
+    }
+
+    fun recoverAfterProcessDeath() {
+        if (started)
+            return
+        started = true
+        if (args.action == Const.Value.FLASH_SYSTEM_MODE) {
+            outItems.add("! The manager process was interrupted")
+            outItems.add("! Reboot once so System Mode can verify or recover safely")
+            outItems.add("! Do not start another installation before that reboot")
+        } else {
+            outItems.add("! The installer process was interrupted")
+            outItems.add("! Re-open the requested action after checking device state")
+        }
+        onResult(false)
     }
 
     private fun onResult(success: Boolean) {

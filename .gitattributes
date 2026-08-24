@@ -14,6 +14,8 @@
 tools/** binary
 tools/rustup-wrapper/** -binary
 tools/elf-cleaner/** -binary
+tools/*.py -binary
+tools/system_mode/** -binary
 *.jar binary
 *.exe binary
 *.apk binary

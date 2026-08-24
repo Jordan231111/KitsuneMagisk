@@ -1,0 +1,797 @@
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+from pathlib import Path
+import os
+import time
+import shlex
+import signal
+import tempfile
+import unittest
+from unittest import mock
+import uuid
+
+from tools.system_mode.authorization import digest_backup_path
+from tools.system_mode.doctor import ProbeError, classify_report, fixture_report
+from tools.system_mode.qualification import (
+    QUALIFICATION_KEY_ENV,
+    IndeterminateLifecycleError,
+    _canonical_bytes,
+    _checked_command,
+    _inventory_digest,
+    _boot_critical_roots,
+    _run_host,
+    _seal_record,
+    _sha256,
+    evidence_from_record,
+    instance_identity,
+    load_qualification_record,
+    qualify_target,
+    stable_target_digest,
+    validate_qualification_record,
+    verify_report_qualification,
+)
+
+
+ROOT = Path(__file__).resolve().parents[2]
+FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
+
+
+class QualificationTest(unittest.TestCase):
+    def tearDown(self) -> None:
+        os.environ.pop(QUALIFICATION_KEY_ENV, None)
+
+    @staticmethod
+    def executable(root: Path, name: str) -> Path:
+        path = root / name
+        path.write_text("#!/bin/sh\nexit 0\n", encoding="ascii")
+        path.chmod(0o700)
+        return path
+
+    def record(self, root: Path) -> tuple[dict[str, object], Path, Path, Path]:
+        root = root.resolve()
+        seal_key = root / "qualification.key"
+        os.environ[QUALIFICATION_KEY_ENV] = str(seal_key)
+        identity_path = root / "instance.json"
+        identity_path.write_text('{"instance":0}\n', encoding="ascii")
+        backup = root / "external-backup.img"
+        backup.write_bytes(b"exact external recovery")
+        identity = instance_identity(identity_path)
+        commands = {
+            "backup": _checked_command(
+                f"{self.executable(root, 'backup.sh')} '{{backup}}'",
+                "backup",
+                backup_placeholder=True,
+            ),
+            "cold_boot": _checked_command(
+                str(self.executable(root, "cold_boot.sh")),
+                "cold boot",
+            ),
+            "restore": _checked_command(
+                f"{self.executable(root, 'restore.sh')} '{{backup}}'",
+                "restore",
+                backup_placeholder=True,
+            ),
+        }
+        contract = "8" * 64
+        record_id = "11111111-1111-1111-1111-111111111111"
+        anchor_before = {
+            "path": f"/system/etc/init/.kitsune-system-mode-backup-anchor-{record_id}",
+            "sha256": "d" * 64,
+            "size": 16,
+            "mode": "0600",
+            "uid": 0,
+            "gid": 0,
+            "selinux_context": "u:object_r:system_file:s0",
+        }
+        anchor_mutated = dict(anchor_before, sha256="e" * 64)
+        data_anchor_before = dict(
+            anchor_before,
+            path=f"/data/adb/.kitsune-system-mode-backup-anchor-{record_id}",
+            sha256="8" * 64,
+            selinux_context="u:object_r:adb_data_file:s0",
+        )
+        data_anchor_mutated = dict(data_anchor_before, sha256="9" * 64)
+        inventory = [
+            {
+                "path": path,
+                "kind": "absent",
+                "sha256": None,
+                "size": None,
+                "mode": None,
+                "uid": None,
+                "gid": None,
+                "mtime_epoch": None,
+                "selinux_context": None,
+            }
+            for path in _boot_critical_roots("/system/etc/init")
+        ]
+        init_result_path = (
+            f"/dev/.kitsune-system-mode-qualification-{record_id}-init.result"
+        )
+        magisk_result_path = (
+            f"/dev/.kitsune-system-mode-qualification-{record_id}-magisk.result"
+        )
+
+        def result(path: str, digest: str) -> dict[str, object]:
+            return {
+                "path": path,
+                "sha256": digest,
+                "size": 128,
+                "mode": "0600",
+                "uid": 0,
+                "gid": 0,
+                "selinux_context": "u:object_r:device:s0",
+            }
+
+        record: dict[str, object] = {
+            "schema_version": 1,
+            "record_id": record_id,
+            "generated_at": "2026-08-01T12:00:00Z",
+            "adapter": {
+                "id": "generic-in-guest",
+                "execution": "in_guest",
+                "clone_authorized": False,
+            },
+            "source": {"repository_commit": "1" * 40, "probe_sha256": "2" * 64},
+            "target": {
+                "serial_sha256": "3" * 64,
+                "fingerprint_sha256": "4" * 64,
+                "api": 32,
+                "abis": ["x86_64"],
+                "baseline_contract_sha256": contract,
+                "baseline_inventory": inventory,
+                "baseline_inventory_sha256": _inventory_digest(inventory),
+            },
+            "instance_identity": identity,
+            "commands": commands,
+            "backup": {
+                "snapshot_id": "external-vm0-baseline",
+                "location": str(backup),
+                "sha256_before": digest_backup_path(backup),
+                "sha256_after": digest_backup_path(backup),
+                "backup_command": shlex.join(
+                    [
+                        str(commands["backup"]["argv"][0]),
+                        str(backup),
+                    ]
+                ),
+                "restore_command": shlex.join(
+                    [
+                        str(commands["restore"]["argv"][0]),
+                        str(backup),
+                    ]
+                ),
+                "created_boot_id_sha256": "f" * 64,
+                "qualification_residue": "absent",
+            },
+            "challenge": {
+                "sha256_before": "0" * 64,
+                "sha256_after": "0" * 64,
+                "created_boot_id_sha256": "d" * 64,
+                "restored_boot_id_sha256": "e" * 64,
+                "anchor_before": anchor_before,
+                "anchor_mutated": anchor_mutated,
+                "anchor_after_restore": dict(anchor_before),
+                "marker": {
+                    "path": (
+                        "/system/etc/init/"
+                        f".kitsune-system-mode-recovery-{record_id}"
+                    ),
+                    "sha256": "7" * 64,
+                    "size": 16,
+                    "mode": "0600",
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:system_file:s0",
+                },
+                "data_anchor_before": data_anchor_before,
+                "data_anchor_mutated": data_anchor_mutated,
+                "data_anchor_after_restore": dict(data_anchor_before),
+                "data_marker": {
+                    "path": f"/data/adb/.kitsune-system-mode-recovery-{record_id}",
+                    "sha256": "a" * 64,
+                    "size": 16,
+                    "mode": "0600",
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:adb_data_file:s0",
+                },
+                "temporary_backup_removed": True,
+            },
+            "init": {
+                "directory": "/system/etc/init",
+                "probe": {
+                    "path": (
+                        "/system/etc/init/"
+                        f"kitsune-system-mode-qualification-{record_id}.rc"
+                    ),
+                    "sha256": "5" * 64,
+                    "size": 16,
+                    "mode": "0644",
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:system_file:s0",
+                },
+                "helper": {
+                    "path": (
+                        "/system/etc/init/"
+                        f".kitsune-system-mode-qualification-{record_id}.sh"
+                    ),
+                    "sha256": "6" * 64,
+                    "size": 256,
+                    "mode": "0755",
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:system_file:s0",
+                },
+                "property": "kitsune.system_mode.qualify",
+                "nonce_sha256": "6" * 64,
+                "domains": {
+                    "init": "u:r:init:s0",
+                    "magisk": "u:r:magisk:s0",
+                },
+            },
+            "persistence": {
+                "backing_write_probe": "passed",
+                "boot_evidence": "host-command-new-boot-id-and-init-and-magisk-exec",
+                "cold_boot_command": shlex.join(commands["cold_boot"]["argv"]),
+                "cold_boot_ids": ["a" * 64, "b" * 64, "c" * 64],
+                "host_restart_ids": [],
+                "exec_proofs": [
+                    {
+                        "boot_id_sha256": boot,
+                        "init_result": result(init_result_path, digest),
+                        "magisk_result": result(magisk_result_path, other),
+                    }
+                    for boot, digest, other in (
+                        ("a" * 64, "1" * 64, "4" * 64),
+                        ("b" * 64, "2" * 64, "5" * 64),
+                        ("c" * 64, "3" * 64, "6" * 64),
+                    )
+                ],
+            },
+            "recovery": {
+                "marker": {
+                    "path": (
+                        "/system/etc/init/"
+                        f".kitsune-system-mode-final-recovery-{record_id}"
+                    ),
+                    "sha256": "7" * 64,
+                    "size": 16,
+                    "mode": "0600",
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:system_file:s0",
+                },
+                "data_marker": {
+                    "path": f"/data/adb/.kitsune-system-mode-final-recovery-{record_id}",
+                    "sha256": "b" * 64,
+                    "size": 16,
+                    "mode": "0600",
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:adb_data_file:s0",
+                },
+                "restore_executed": True,
+                "qualification_paths_absent_after_restore": True,
+                "restored_boot_id_sha256": "9" * 64,
+                "target_contract_sha256_after_restore": contract,
+                "inventory_after_restore": copy.deepcopy(inventory),
+                "inventory_sha256_after_restore": _inventory_digest(inventory),
+            },
+        }
+        _seal_record(record, seal_key)
+        record_path = root / "qualification.json"
+        record_path.write_bytes(_canonical_bytes(record))
+        return record, record_path, backup, identity_path
+
+    def test_host_commands_are_absolute_and_backup_destination_is_new(self) -> None:
+        with self.assertRaisesRegex(ValueError, "absolute executable"):
+            _checked_command("relative-wrapper backup", "backup")
+
+        with tempfile.TemporaryDirectory(prefix="kitsune-existing-backup-") as temp:
+            root = Path(temp)
+            backup = root / "backup.img"
+            backup.write_bytes(b"already exists")
+            with self.assertRaisesRegex(ValueError, "must not exist"):
+                qualify_target(
+                    mock.Mock(),
+                    output=root / "qualification.json",
+                    backup_location=backup,
+                    snapshot_id="existing",
+                    backup_command="/bin/false",
+                    restore_command="/bin/false",
+                    cold_boot_command="/bin/false",
+                    instance_identity_path=backup,
+                )
+
+    def test_record_produces_evidence_only_while_backup_and_identity_match(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-qualification-") as temp:
+            root = Path(temp)
+            record, record_path, backup, identity_path = self.record(root)
+            validate_qualification_record(record)
+            loaded, raw, digest, canonical = load_qualification_record(record_path)
+            self.assertEqual(record, loaded)
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), digest)
+            self.assertEqual(record_path.resolve(), canonical)
+            evidence = evidence_from_record(record_path)
+            self.assertTrue(evidence.recovery_is_proven)
+            self.assertTrue(evidence.persistence_is_proven)
+            self.assertEqual("generic-in-guest", evidence.adapter_id)
+            self.assertEqual(
+                _sha256(_canonical_bytes(record["instance_identity"])),
+                evidence.instance_identity_sha256,
+            )
+
+            backup.write_bytes(b"changed")
+            with self.assertRaisesRegex(ValueError, "backup is missing or changed"):
+                evidence_from_record(record_path)
+            backup.write_bytes(b"exact external recovery")
+            identity_path.write_text('{"instance":1}\n', encoding="ascii")
+            with self.assertRaisesRegex(ValueError, "identity changed"):
+                evidence_from_record(record_path)
+
+    def test_record_rejects_restore_executable_drift(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-command-drift-") as temp:
+            root = Path(temp)
+            record, record_path, _, _ = self.record(root)
+            restore = Path(record["commands"]["restore"]["executable"]["path"])
+            restore.write_text("#!/bin/sh\nexit 1\n", encoding="ascii")
+            restore.chmod(0o700)
+            with self.assertRaisesRegex(ValueError, "changed after qualification"):
+                evidence_from_record(record_path)
+
+    def test_record_seal_rejects_manual_edit_wrong_key_and_unsafe_key(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-sealed-record-") as temp:
+            root = Path(temp).resolve()
+            record, record_path, _, _ = self.record(root)
+            edited = copy.deepcopy(record)
+            edited["generated_at"] = "2026-08-02T12:00:00Z"
+            record_path.write_bytes(_canonical_bytes(edited))
+            with self.assertRaisesRegex(ValueError, "seal is invalid"):
+                load_qualification_record(record_path)
+
+            record_path.write_bytes(_canonical_bytes(record))
+            wrong_key = root / "wrong.key"
+            wrong_key.write_bytes(b"x" * 32)
+            wrong_key.chmod(0o600)
+            with self.assertRaisesRegex(ValueError, "trusted host key"):
+                load_qualification_record(record_path, seal_key_path=wrong_key)
+
+            trusted_key = Path(os.environ[QUALIFICATION_KEY_ENV])
+            trusted_key.chmod(0o644)
+            with self.assertRaisesRegex(ValueError, "group/world"):
+                load_qualification_record(record_path)
+            trusted_key.chmod(0o600)
+            root.chmod(0o777)
+            try:
+                with self.assertRaisesRegex(ValueError, "parent must be owner-only"):
+                    load_qualification_record(record_path)
+            finally:
+                root.chmod(0o700)
+
+    def test_lifecycle_executes_the_opened_wrapper_inode(self) -> None:
+        from tools.system_mode import qualification as module
+
+        with tempfile.TemporaryDirectory(prefix="kitsune-pinned-command-") as temp:
+            root = Path(temp).resolve()
+            marker = root / "marker"
+            wrapper = root / "wrapper.sh"
+            wrapper.write_text(
+                "#!/bin/sh\nprintf 'pinned' > \"$1\"\n",
+                encoding="ascii",
+            )
+            wrapper.chmod(0o700)
+            command = _checked_command(
+                f"{shlex.quote(str(wrapper))} {shlex.quote(str(marker))}",
+                "cold boot",
+            )
+            real_popen = module.subprocess.Popen
+
+            def replace_then_run(*args: object, **kwargs: object):
+                displaced = root / "opened-wrapper.sh"
+                wrapper.rename(displaced)
+                wrapper.write_text(
+                    "#!/bin/sh\nprintf 'replacement' > \"$1\"\n",
+                    encoding="ascii",
+                )
+                wrapper.chmod(0o700)
+                return real_popen(*args, **kwargs)
+
+            with mock.patch(
+                "tools.system_mode.qualification.subprocess.Popen",
+                side_effect=replace_then_run,
+            ):
+                with self.assertRaisesRegex(ValueError, "changed"):
+                    _run_host(command, "cold boot", 10)
+            self.assertEqual("pinned", marker.read_text(encoding="ascii"))
+
+    def test_lifecycle_timeout_stops_the_wrapper_process_group(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-command-timeout-") as temp:
+            root = Path(temp).resolve()
+            pid_file = root / "child.pid"
+            wrapper = root / "timeout.sh"
+            wrapper.write_text(
+                "#!/bin/sh\nsleep 60 &\nchild=$!\nprintf '%s' \"$child\" > \"$1\"\nwait \"$child\"\n",
+                encoding="ascii",
+            )
+            wrapper.chmod(0o700)
+            command = _checked_command(
+                f"{shlex.quote(str(wrapper))} {shlex.quote(str(pid_file))}",
+                "cold boot",
+            )
+            with mock.patch(
+                "tools.system_mode.qualification.os.killpg",
+                wraps=os.killpg,
+            ) as kill_group:
+                with self.assertRaisesRegex(ProbeError, "entire process group"):
+                    _run_host(command, "cold boot", 1)
+            self.assertTrue(
+                any(call.args[1] == signal.SIGKILL for call in kill_group.call_args_list)
+            )
+            child = int(pid_file.read_text(encoding="ascii"))
+            deadline = time.monotonic() + 2
+            while time.monotonic() < deadline:
+                try:
+                    os.kill(child, 0)
+                except ProcessLookupError:
+                    break
+                time.sleep(0.05)
+            else:
+                self.fail("timed-out lifecycle grandchild remained alive")
+
+    def test_lifecycle_refuses_recovery_when_group_death_is_unproven(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-command-indeterminate-") as temp:
+            root = Path(temp).resolve()
+            wrapper = root / "timeout.sh"
+            wrapper.write_text("#!/bin/sh\nsleep 60\n", encoding="ascii")
+            wrapper.chmod(0o700)
+            command = _checked_command(str(wrapper), "cold boot")
+            with mock.patch(
+                "tools.system_mode.qualification._wait_process_group_gone",
+                return_value=False,
+            ):
+                with self.assertRaisesRegex(
+                    IndeterminateLifecycleError,
+                    "could not be proven stopped",
+                ):
+                    _run_host(command, "cold boot", 1)
+
+    def test_record_rejects_inventory_escape_and_reused_domain_proof(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-inventory-record-") as temp:
+            record, _, _, _ = self.record(Path(temp))
+            escaped = copy.deepcopy(record)
+            escaped["target"]["baseline_inventory"].append(
+                {
+                    "path": "/data/local/tmp/not-qualified",
+                    "kind": "absent",
+                    "sha256": None,
+                    "size": None,
+                    "mode": None,
+                    "uid": None,
+                    "gid": None,
+                    "mtime_epoch": None,
+                    "selinux_context": None,
+                }
+            )
+            escaped["target"]["baseline_inventory"].sort(key=lambda item: item["path"])
+            escaped["target"]["baseline_inventory_sha256"] = _inventory_digest(
+                escaped["target"]["baseline_inventory"]
+            )
+            with self.assertRaisesRegex(ValueError, "escaped its allowlist"):
+                validate_qualification_record(escaped)
+
+            reused = copy.deepcopy(record)
+            reused["persistence"]["exec_proofs"][2]["magisk_result"]["sha256"] = (
+                reused["persistence"]["exec_proofs"][0]["magisk_result"]["sha256"]
+            )
+            with self.assertRaisesRegex(ValueError, "not fresh on every boot"):
+                validate_qualification_record(reused)
+
+    def test_record_rejects_duplicate_boots_and_inexact_restore(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-qualification-invalid-") as temp:
+            record, _, _, _ = self.record(Path(temp))
+            duplicate = copy.deepcopy(record)
+            duplicate["persistence"]["cold_boot_ids"][2] = "a" * 64
+            with self.assertRaises(ValueError):
+                validate_qualification_record(duplicate)
+            changed = copy.deepcopy(record)
+            changed["recovery"]["target_contract_sha256_after_restore"] = "9" * 64
+            with self.assertRaisesRegex(ValueError, "restored target contract"):
+                validate_qualification_record(changed)
+            missing_anchor = copy.deepcopy(record)
+            missing_anchor["challenge"]["anchor_after_restore"]["sha256"] = "0" * 64
+            with self.assertRaisesRegex(ValueError, "pre-backup anchor"):
+                validate_qualification_record(missing_anchor)
+            reused_restore_boot = copy.deepcopy(record)
+            reused_restore_boot["recovery"]["restored_boot_id_sha256"] = "a" * 64
+            with self.assertRaisesRegex(ValueError, "distinct boot ID"):
+                validate_qualification_record(reused_restore_boot)
+            escaped_probe = copy.deepcopy(record)
+            escaped_probe["init"]["probe"]["path"] = (
+                "/system/etc/init/../kitsune-system-mode-qualification-"
+                f"{record['record_id']}.rc"
+            )
+            with self.assertRaisesRegex(ValueError, "record identity"):
+                validate_qualification_record(escaped_probe)
+            duplicate_backup_argument = copy.deepcopy(record)
+            duplicate_backup_argument["commands"]["backup"]["argv"].append(
+                "{backup}"
+            )
+            with self.assertRaisesRegex(ValueError, "exact one-path template"):
+                validate_qualification_record(duplicate_backup_argument)
+
+    def test_target_digest_ignores_boot_id_and_incidental_free_space_only(self) -> None:
+        fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        report = fixture_report(fixture["input"])
+        changed = copy.deepcopy(report)
+        changed["device"]["boot_id_sha256"] = "9" * 64
+        changed["staging"]["available_bytes"] += 4096
+        self.assertEqual(stable_target_digest(report), stable_target_digest(changed))
+        changed["staging"]["sufficient"] = False
+        self.assertNotEqual(stable_target_digest(report), stable_target_digest(changed))
+
+    def test_report_cannot_replace_qualified_recovery_or_persistence_evidence(self) -> None:
+        fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        report = fixture_report(fixture["input"])
+        with tempfile.TemporaryDirectory(prefix="kitsune-qualification-binding-") as temp:
+            root = Path(temp)
+            record, record_path, _, _ = self.record(root)
+            report["source"]["serial_sha256"] = record["target"]["serial_sha256"]
+            report["source"]["repository_commit"] = record["source"]["repository_commit"]
+            report["source"]["probe_sha256"] = record["source"]["probe_sha256"]
+            report["device"]["fingerprint_sha256"] = record["target"]["fingerprint_sha256"]
+            report["device"]["api"] = record["target"]["api"]
+            report["device"]["abis"] = record["target"]["abis"]
+            contract = stable_target_digest(report)
+            record["target"]["baseline_contract_sha256"] = contract
+            record["recovery"]["target_contract_sha256_after_restore"] = contract
+            _seal_record(record, Path(os.environ[QUALIFICATION_KEY_ENV]))
+            record_path.write_bytes(_canonical_bytes(record))
+
+            evidence = evidence_from_record(record_path)
+            report["recovery"] = {
+                "snapshot_id": evidence.snapshot_id,
+                "backup_location": evidence.backup_location,
+                "backup_digest": evidence.backup_digest,
+                "restore_command": evidence.restore_command,
+                "qualification_record": evidence.qualification_record,
+                "qualification_sha256": evidence.qualification_sha256,
+                "adapter_id": evidence.adapter_id,
+                "instance_identity_sha256": evidence.instance_identity_sha256,
+                "verified": True,
+            }
+            report["persistence"] = {
+                "backing_write_probe": evidence.backing_write_probe,
+                "cold_boots": evidence.cold_boots,
+                "host_restarts": evidence.host_restarts,
+                "proven": True,
+            }
+            report["assessment"] = classify_report(report)
+            self.assertEqual(record, verify_report_qualification(report))
+
+            replaced_recovery = copy.deepcopy(report)
+            replaced_recovery["recovery"]["restore_command"] = "/opt/mumu restore another-vm"
+            with self.assertRaisesRegex(ValueError, "recovery evidence differs"):
+                verify_report_qualification(replaced_recovery)
+
+            replaced_persistence = copy.deepcopy(report)
+            replaced_persistence["persistence"]["cold_boots"] += 1
+            with self.assertRaisesRegex(ValueError, "persistence evidence differs"):
+                verify_report_qualification(replaced_persistence)
+
+    def test_qualification_executes_three_boots_and_the_restore(self) -> None:
+        fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        baseline = fixture_report(fixture["input"])
+        baseline["init"]["import_proof"] = "unproven"
+        baseline["recovery"]["verified"] = False
+        baseline["persistence"]["proven"] = False
+        baseline["assessment"] = classify_report(baseline)
+        after_backup = copy.deepcopy(baseline)
+        restored = copy.deepcopy(baseline)
+
+        with tempfile.TemporaryDirectory(prefix="kitsune-qualification-runner-") as temp:
+            root = Path(temp).resolve()
+            backup = root / "backup.img"
+            identity_path = root / "instance.json"
+            identity_path.write_text('{"vm":0}\n', encoding="ascii")
+            output = root / "qualification.json"
+            wrappers = {
+                name: self.executable(root, f"{name}.sh")
+                for name in ("backup", "cold-boot", "restore")
+            }
+            boots = [str(uuid.UUID(int=value)) for value in range(2, 9)]
+            host_commands: list[tuple[str, Path | None]] = []
+            remote: dict[str, dict[str, object]] = {}
+            anchors_before: dict[str, dict[str, object]] = {}
+            inventory = [
+                {
+                    "path": path,
+                    "kind": "absent",
+                    "sha256": None,
+                    "size": None,
+                    "mode": None,
+                    "uid": None,
+                    "gid": None,
+                    "mtime_epoch": None,
+                    "selinux_context": None,
+                }
+                for path in _boot_critical_roots("/system/etc/init")
+            ]
+
+            def evidence(path: str, content: bytes, mode: str) -> dict[str, object]:
+                return {
+                    "path": path,
+                    "sha256": hashlib.sha256(content).hexdigest(),
+                    "size": len(content),
+                    "mode": mode,
+                    "uid": 0,
+                    "gid": 0,
+                    "selinux_context": "u:object_r:system_file:s0",
+                }
+
+            def write_probe(
+                _client: object,
+                path: str,
+                content: bytes,
+                mode: str = "0644",
+                selinux_context: str | None = "u:object_r:system_file:s0",
+            ) -> dict[str, object]:
+                item = evidence(path, content, mode)
+                if selinux_context is None:
+                    item["selinux_context"] = "u:object_r:adb_data_file:s0"
+                remote[path] = item
+                if "backup-anchor" in path:
+                    anchors_before[path] = dict(item)
+                return item
+
+            def replace_probe(
+                _client: object,
+                path: str,
+                content: bytes,
+                mode: str = "0600",
+                selinux_context: str | None = "u:object_r:system_file:s0",
+            ) -> dict[str, object]:
+                item = evidence(path, content, mode)
+                if selinux_context is None:
+                    item["selinux_context"] = "u:object_r:adb_data_file:s0"
+                remote[path] = item
+                return item
+
+            def run_host(
+                _command: dict[str, object],
+                purpose: str,
+                _timeout: int,
+                *,
+                backup_location: Path | None = None,
+            ) -> None:
+                host_commands.append((purpose, backup_location))
+                if purpose == "challenge backup creation":
+                    assert backup_location is not None
+                    backup_location.write_bytes(b"challenged-baseline")
+                if purpose == "clean backup creation":
+                    assert backup_location == backup
+                    backup.write_bytes(b"clean-baseline")
+                if purpose == "challenge restore":
+                    for path, item in anchors_before.items():
+                        remote[path] = dict(item)
+
+            def remote_evidence(_client: object, path: str) -> dict[str, object]:
+                return dict(remote[path])
+
+            proof_counter = iter(range(1, 4))
+
+            def exec_proof(
+                _client: object,
+                *,
+                result_paths: dict[str, str],
+                boot_id: str,
+                **_kwargs: object,
+            ) -> dict[str, object]:
+                value = next(proof_counter)
+                return {
+                    "boot_id_sha256": hashlib.sha256(boot_id.encode()).hexdigest(),
+                    "init_result": evidence(
+                        result_paths["init"],
+                        f"init-{value}".encode(),
+                        "0600",
+                    ),
+                    "magisk_result": evidence(
+                        result_paths["magisk"],
+                        f"magisk-{value}".encode(),
+                        "0600",
+                    ),
+                }
+
+            with (
+                mock.patch(
+                    "tools.system_mode.qualification.collect_report",
+                    side_effect=[baseline, after_backup, copy.deepcopy(baseline), restored],
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._boot_id",
+                    return_value=str(uuid.UUID(int=1)),
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._wait_for_new_boot",
+                    side_effect=boots,
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._write_probe",
+                    side_effect=write_probe,
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._replace_probe",
+                    side_effect=replace_probe,
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._remote_file_evidence",
+                    side_effect=remote_evidence,
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._verify_init_exec_probe",
+                    side_effect=exec_proof,
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._boot_critical_inventory",
+                    return_value=inventory,
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._root_checked",
+                    return_value="absent",
+                ),
+                mock.patch(
+                    "tools.system_mode.qualification._run_host",
+                    side_effect=run_host,
+                ),
+            ):
+                record = qualify_target(
+                    mock.Mock(),
+                    output=output,
+                    backup_location=backup,
+                    snapshot_id="baseline-vm0",
+                    backup_command=(
+                        f"{shlex.quote(str(wrappers['backup']))} '{{backup}}'"
+                    ),
+                    restore_command=(
+                        f"{shlex.quote(str(wrappers['restore']))} '{{backup}}'"
+                    ),
+                    cold_boot_command=str(wrappers["cold-boot"]),
+                    instance_identity_path=identity_path,
+                    seal_key_path=root / "seal.key",
+                    endpoint="127.0.0.1:16384",
+                    lifecycle_timeout=30,
+                )
+
+            self.assertTrue(output.is_file())
+            self.assertEqual(3, len(record["persistence"]["cold_boot_ids"]))
+            self.assertEqual(
+                [
+                    "challenge backup creation",
+                    "cold boot",
+                    "cold boot",
+                    "cold boot",
+                    "challenge restore",
+                    "clean backup creation",
+                    "clean backup restore",
+                ],
+                [purpose for purpose, _ in host_commands],
+            )
+            self.assertTrue(record["recovery"]["restore_executed"])
+            self.assertEqual(
+                hashlib.sha256(boots[-1].encode("utf-8")).hexdigest(),
+                record["recovery"]["restored_boot_id_sha256"],
+            )
+            self.assertEqual(
+                record["challenge"]["anchor_before"],
+                record["challenge"]["anchor_after_restore"],
+            )
+            self.assertFalse(any(root.glob(".*kitsune-challenge-*")))
+            self.assertEqual("absent", record["backup"]["qualification_residue"])
+
+
+if __name__ == "__main__":
+    unittest.main()

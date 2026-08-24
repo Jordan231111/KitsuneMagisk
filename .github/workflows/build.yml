@@ -7,18 +7,53 @@ on:
       - "app/**"
       - "native/**"
       - "scripts/**"
+      - "tests/system_mode/**"
+      - "tools/system_mode/**"
       - "tools/next_system_baseline.py"
-      - "docs/next-system-baseline.*"
+      - "docs/next-system-*.json"
       - "build.py"
+      - ".gitmodules"
       - ".github/workflows/build.yml"
   pull_request:
     branches: [master, next-system]
   workflow_dispatch:
 
 jobs:
+  host-contract:
+    name: Test privileged host and transaction contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+
+      - name: Run System Mode contract suite
+        run: |
+          install -d -m 0700 "$HOME/.kitsune-host-tests"
+          TMPDIR="$HOME/.kitsune-host-tests" \
+            python3 -m unittest discover -s tests -v
+
+  security-audit:
+    name: Audit native Rust dependencies
+    runs-on: ubuntu-24.04
+    permissions:
+      checks: write
+      contents: read
+      issues: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+
+      - name: Audit Cargo lockfile
+        uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: native/src
+          ignore: RUSTSEC-2023-0071
+
   build:
     name: Build Magisk artifacts
     runs-on: macos-15
+    needs: [host-contract, security-audit]
     strategy:
       fail-fast: false
     steps:
@@ -34,7 +69,9 @@ jobs:
           is-asset-build: true
 
       - name: Verify next-system source baseline
-        run: python tools/next_system_baseline.py --source
+        run: >-
+          python tools/next_system_baseline.py
+          --manifest docs/next-system-pr7.json --source
 
       - name: Create disposable release signer
         shell: bash
@@ -62,7 +99,8 @@ jobs:
 
       - name: Verify next-system artifacts
         run: >-
-          python tools/next_system_baseline.py --source --artifacts out
+          python tools/next_system_baseline.py
+          --manifest docs/next-system-pr7.json --source --artifacts out
           --report out/next-system-baseline-report.json
 
       - name: Stop gradle daemon

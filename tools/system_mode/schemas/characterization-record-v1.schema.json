@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jordan231111/KitsuneMagisk/schemas/system-mode/characterization-record-v1.schema.json",
+  "title": "Kitsune System Mode characterization record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_id", "qualification_status", "clean_snapshot", "artifact", "doctor", "lifecycle", "notes"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_id": {"type": "string"},
+    "qualification_status": {"enum": ["supported", "experimental", "blocked", "not_run"]},
+    "clean_snapshot": {"type": "boolean"},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity_status", "branch", "commit", "apk_sha256"],
+      "properties": {
+        "identity_status": {"enum": ["known", "unknown"]},
+        "branch": {"type": ["string", "null"]},
+        "commit": {"type": ["string", "null"], "pattern": "^[a-f0-9]{7,40}$"},
+        "apk_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"identity_status": {"const": "known"}}},
+          "then": {
+            "properties": {
+              "branch": {"type": "string", "minLength": 1},
+              "commit": {"type": "string", "pattern": "^[a-f0-9]{7,40}$"},
+              "apk_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            }
+          }
+        }
+      ]
+    },
+    "doctor": {"$ref": "doctor-v1.schema.json"},
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["install", "cold_boots", "upgrade", "reinstall", "module_smoke", "root_policy_smoke", "uninstall", "snapshot_restore"],
+      "properties": {
+        "install": {"enum": ["passed", "failed", "not_run", "preexisting"]},
+        "cold_boots": {"type": "integer", "minimum": 0},
+        "upgrade": {"enum": ["passed", "failed", "not_run"]},
+        "reinstall": {"enum": ["passed", "failed", "not_run"]},
+        "module_smoke": {"enum": ["passed", "failed", "not_run"]},
+        "root_policy_smoke": {"enum": ["passed", "failed", "not_run"]},
+        "uninstall": {"enum": ["passed", "failed", "not_run"]},
+        "snapshot_restore": {"enum": ["passed", "failed", "not_run"]}
+      }
+    },
+    "notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"qualification_status": {"const": "supported"}}},
+      "then": {
+        "properties": {
+          "clean_snapshot": {"const": true},
+          "artifact": {
+            "properties": {
+              "identity_status": {"const": "known"},
+              "branch": {"type": "string", "minLength": 1},
+              "commit": {"type": "string", "pattern": "^[a-f0-9]{7,40}$"},
+              "apk_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            }
+          },
+          "doctor": {
+            "properties": {
+              "assessment": {
+                "properties": {"verdict": {"const": "supported"}}
+              }
+            }
+          },
+          "lifecycle": {
+            "properties": {
+              "install": {"const": "passed"},
+              "cold_boots": {"minimum": 3},
+              "upgrade": {"const": "passed"},
+              "reinstall": {"const": "passed"},
+              "module_smoke": {"const": "passed"},
+              "root_policy_smoke": {"const": "passed"},
+              "uninstall": {"const": "passed"},
+              "snapshot_restore": {"const": "passed"}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

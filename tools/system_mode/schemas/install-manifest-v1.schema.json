@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jordan231111/KitsuneMagisk/schemas/system-mode/install-manifest-v1.schema.json",
+  "title": "Kitsune System Mode install manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "install_id", "state", "product", "target", "strategies", "ownership_inventory_sha256", "originals_inventory_sha256", "secure_dir_metadata_sha256", "mutable_namespaces", "payload", "originals", "backup", "journal"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "install_id": {"type": "string", "format": "uuid"},
+    "state": {"enum": ["UNINSTALLED", "PREFLIGHTED", "STAGED", "COMMITTED", "BOOT_VERIFIED", "ROLLBACK_REQUIRED", "ROLLING_BACK", "FAILED"]},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "version_code", "source_commit", "upstream_base", "artifact_sha256"],
+      "properties": {
+        "name": {"const": "KitsuneMagisk"},
+        "version": {"type": "string"},
+        "version_code": {"type": "integer", "minimum": 1},
+        "source_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "upstream_base": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter_id", "authorization_id", "target_contract_sha256", "authorization_boot_id_sha256", "probe_sha256", "qualification_sha256", "instance_identity_sha256", "serial_sha256", "fingerprint_sha256", "api", "abis"],
+      "properties": {
+        "adapter_id": {"type": "string"},
+        "authorization_id": {"type": "string", "format": "uuid"},
+        "target_contract_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "authorization_boot_id_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "probe_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "qualification_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "instance_identity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "serial_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "fingerprint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "api": {"type": "integer", "minimum": 25},
+        "abis": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "strategies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["init", "selinux", "policy_mutated", "legacy_migration", "runtime_tmpfs", "preinit_device", "preinit_directory", "active_payload", "rescue_payload"],
+      "properties": {
+        "init": {"type": "string"},
+        "selinux": {"type": "string"},
+        "policy_mutated": {"type": "boolean"},
+        "legacy_migration": {"type": "boolean"},
+        "runtime_tmpfs": {"enum": ["/sbin", "/debug_ramdisk"]},
+        "preinit_device": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9._-]+$"},
+        "preinit_directory": {"enum": ["/data/adb", null]},
+        "active_payload": {
+          "type": "string",
+          "pattern": "^/system/etc/init/magisk/versions/[a-f0-9-]{36}$"
+        },
+        "rescue_payload": {
+          "type": "string",
+          "pattern": "^/system/etc/init(?:/hw)?/\\.kitsune-system-mode-rescue/versions/[a-f0-9-]{36}$"
+        }
+      }
+    },
+    "ownership_inventory_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "originals_inventory_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "secure_dir_metadata_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "mutable_namespaces": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 10,
+      "items": {
+        "enum": [
+          "/data/adb/magisk.db",
+          "/data/adb/magisk.db-wal",
+          "/data/adb/magisk.db-shm",
+          "/data/adb/modules",
+          "/data/adb/modules_update",
+          "/data/adb/post-fs-data.d",
+          "/data/adb/service.d",
+          "/data/adb/sepolicy.rule",
+          "/cache/magisk.log",
+          "/cache/magisk.log.bak"
+        ]
+      }
+    },
+    "payload": {"type": "array", "items": {"$ref": "#/$defs/fileRecord"}},
+    "originals": {"type": "array", "items": {"$ref": "#/$defs/originalRecord"}},
+    "backup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external", "location", "sha256", "restore_command"],
+      "properties": {
+        "external": {"const": true},
+        "location": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "restore_command": {"type": "string", "minLength": 1}
+      }
+    },
+    "journal": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "boundary", "operation", "target", "before_sha256", "after_sha256", "committed"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "boundary": {"type": "string"},
+          "operation": {"enum": ["create", "replace", "remove", "metadata"]},
+          "target": {"type": "string", "pattern": "^/"},
+          "before_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "after_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "committed": {"type": "boolean"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fileRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size", "mode", "uid", "gid", "selinux_context", "kind"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": "integer", "minimum": 0},
+        "mode": {"type": "string", "pattern": "^0[0-7]{3}$"},
+        "uid": {"type": "integer", "minimum": 0},
+        "gid": {"type": "integer", "minimum": 0},
+        "selinux_context": {"type": ["string", "null"]},
+        "kind": {"enum": ["file", "link"]}
+      }
+    },
+    "originalRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size", "mode", "uid", "gid", "selinux_context", "existed", "backup_path"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "size": {"type": "integer", "minimum": 0},
+        "mode": {"type": ["string", "null"], "pattern": "^0[0-7]{3}$"},
+        "uid": {"type": ["integer", "null"], "minimum": 0},
+        "gid": {"type": ["integer", "null"], "minimum": 0},
+        "selinux_context": {"type": ["string", "null"]},
+        "existed": {"type": "boolean"},
+        "backup_path": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
