@@ -53,6 +53,13 @@ class NextSystemManifestTest(unittest.TestCase):
                 build.verify_source_state((commit, clean_output), source, target)
         self.assertEqual([mock.call(source), mock.call(target)], remove.call_args_list)
 
+    def test_repository_build_caches_do_not_dirty_source_identity(self):
+        patterns = Path(".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn("/.gradle/", patterns)
+        self.assertIn("/.sccache/", patterns)
+        self.assertIn("__pycache__/", patterns)
+        self.assertIn("*.py[cod]", patterns)
+
     def test_artifact_version_is_bound_to_current_head(self):
         commit = "12345678" + "a" * 32
         with mock.patch.object(baseline, "run", return_value=f"{commit}\n"):
@@ -118,6 +125,14 @@ class NextSystemManifestTest(unittest.TestCase):
             'run_root_stress_batch "$parallel" "$request_timeout" | tr', source
         )
         self.assertIn('raw=$(adb shell', source)
+        self.assertIn('"$process/stat"', source)
+        self.assertIn('unable-to-read-ppid', source)
+        self.assertIn('init_daemon_count=$((init_daemon_count + 1))', source)
+        self.assertGreaterEqual(source.count("__kitsune_avd_su_stress__"), 2)
+        scanner = source[
+            source.index("assert_no_stale_su()") : source.index("run_root_stress()")
+        ]
+        self.assertNotIn("awk", scanner)
 
     def test_gradle_identity_uses_exact_git_dirty_status(self):
         plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(

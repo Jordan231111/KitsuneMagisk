@@ -127,7 +127,8 @@ import sys
 parallel = int(sys.argv[1])
 timeout = int(sys.argv[2])
 command = (
-    f"i=0; while [ $i -lt {parallel} ]; do (su -c id) & "
+    f"i=0; while [ $i -lt {parallel} ]; do "
+    "(su -c 'id; : __kitsune_avd_su_stress__') & "
     "i=$((i + 1)); done; wait"
 )
 try:
@@ -152,17 +153,59 @@ PY
 assert_no_stale_su() {
   local raw stale
   raw=$(adb shell '
+    init_daemon_count=0
     for process in /proc/[0-9]*; do
       [ -d "$process" ] || continue
       name=$(cat "$process/comm" 2>/dev/null) || continue
-      ppid=$(awk "/^PPid:/ { print \$2 }" "$process/status" 2>/dev/null)
       command=$(tr "\\000" " " <"$process/cmdline" 2>/dev/null)
-      if { [ "$name" = su ] && [ "${command#*su -c id}" != "$command" ]; } ||
-         { [ "$name" = magiskd ] && [ "$ppid" != 1 ]; }; then
-        echo "${process##*/}:$ppid:$name:$(cat "$process/wchan" 2>/dev/null):$command"
+      is_stress_su=false
+      case "$command" in
+        *__kitsune_avd_su_stress__*) is_stress_su=true ;;
+      esac
+      if [ "$name" = su ] && [ "$is_stress_su" = true ]; then
+        echo "${process##*/}:?:$name:$(cat "$process/wchan" 2>/dev/null):$command"
+      elif [ "$name" = magiskd ]; then
+        stat_line=
+        ppid=
+        # Parse after the final ") " so even unusual process names cannot shift
+        # the fixed state/PPID fields. read is a shell builtin on Android 6.
+        IFS= read -r stat_line 2>/dev/null <"$process/stat" || true
+        stat_rest=${stat_line##*) }
+        if [ "$stat_rest" != "$stat_line" ]; then
+          stat_rest=${stat_rest#* }
+          ppid=${stat_rest%% *}
+        fi
+        case "$ppid" in
+          ""|*[!0-9]*) ppid= ;;
+        esac
+        current_name=$(cat "$process/comm" 2>/dev/null) || current_name=
+        if [ -z "$current_name" ] && [ ! -d "$process" ]; then
+          continue
+        fi
+        if [ "$current_name" != magiskd ]; then
+          continue
+        fi
+        if [ -z "$ppid" ]; then
+          # A process that disappeared during the scan is not stale. A live
+          # process whose parent cannot be inspected makes the check unknown.
+          [ -d "$process" ] || continue
+          echo "${process##*/}:?:$name:unable-to-read-ppid:$command"
+          exit 75
+        fi
+        if [ "$ppid" = 1 ]; then
+          init_daemon_count=$((init_daemon_count + 1))
+        fi
+        if [ "$ppid" != 1 ] || [ "$init_daemon_count" -gt 1 ]; then
+          echo "${process##*/}:$ppid:$name:$(cat "$process/wchan" 2>/dev/null):$command"
+        fi
       fi
     done
+    if [ "$init_daemon_count" -ne 1 ]; then
+      echo "?:1:magiskd:expected-one-init-daemon:found-$init_daemon_count"
+      exit 75
+    fi
   ') || {
+    echo "$raw"
     print_error "Unable to inspect MagiskSU processes after concurrency stress"
     return 1
   }

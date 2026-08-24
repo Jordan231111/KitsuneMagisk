@@ -5,6 +5,10 @@ out
 *.log
 /config.prop
 /notes.md
+/.gradle/
+/.sccache/
+__pycache__/
+*.py[cod]
 
 # Built binaries
 native/out
