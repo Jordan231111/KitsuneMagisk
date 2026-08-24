@@ -9,6 +9,9 @@ android {
         applicationId = "$APP_ID.test"
         versionCode = 1
         versionName = "1.0"
+        ndk {
+            abiFilters += Config.abiList
+        }
         buildConfigField("String", "APP_PACKAGE_NAME", "\"$APP_ID\"")
         manifestPlaceholders["magiskAppId"] = APP_ID
         manifestPlaceholders["magiskTestAppId"] = "$APP_ID.test"
@@ -23,6 +26,12 @@ android {
 
     buildFeatures {
         buildConfig = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 }
 

@@ -10,9 +10,14 @@ import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.test.Environment.Companion.EMPTY_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.INVALID_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.MOUNT_TEST
+import com.topjohnwu.magisk.test.Environment.Companion.OVERFLOW_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.REMOVE_TEST
 import com.topjohnwu.magisk.test.Environment.Companion.SEPOLICY_RULE
+import com.topjohnwu.magisk.test.Environment.Companion.SPECIAL_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.UPGRADE_TEST
+import com.topjohnwu.magisk.test.Environment.Companion.VALID_ZYGISK
+import com.topjohnwu.magisk.test.Environment.Companion.WRONG_ABI_ZYGISK
+import com.topjohnwu.magisk.test.Environment.Companion.ZERO_RANGE_ZYGISK
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -57,7 +62,7 @@ class AdditionalTest : BaseTest {
 
     @Test
     fun testModuleCount() {
-        var expected = 4
+        var expected = 9
         if (Environment.mount()) expected++
         if (Environment.preinit()) expected++
         if (Environment.lsposed()) expected++
@@ -132,6 +137,46 @@ class AdditionalTest : BaseTest {
         assertNotNull("$INVALID_ZYGISK is not installed", module)
         module!!
         assertTrue("$INVALID_ZYGISK should be zygisk unloaded", module.zygiskUnloaded)
+    }
+
+    @Test
+    fun testWrongAbiZygiskModule() {
+        val module = modules.find { it.id == WRONG_ABI_ZYGISK }
+        assertNotNull("$WRONG_ABI_ZYGISK is not installed", module)
+        module!!
+        assertTrue("$WRONG_ABI_ZYGISK should be zygisk unloaded", module.zygiskUnloaded)
+    }
+
+    @Test
+    fun testOverflowZygiskModule() {
+        val module = modules.find { it.id == OVERFLOW_ZYGISK }
+        assertNotNull("$OVERFLOW_ZYGISK is not installed", module)
+        module!!
+        assertTrue("$OVERFLOW_ZYGISK should be zygisk unloaded", module.zygiskUnloaded)
+    }
+
+    @Test
+    fun testZeroRangeZygiskModule() {
+        val module = modules.find { it.id == ZERO_RANGE_ZYGISK }
+        assertNotNull("$ZERO_RANGE_ZYGISK is not installed", module)
+        module!!
+        assertTrue("$ZERO_RANGE_ZYGISK should be zygisk unloaded", module.zygiskUnloaded)
+    }
+
+    @Test
+    fun testSpecialZygiskModule() {
+        val module = modules.find { it.id == SPECIAL_ZYGISK }
+        assertNotNull("$SPECIAL_ZYGISK is not installed", module)
+        module!!
+        assertTrue("$SPECIAL_ZYGISK should be zygisk unloaded", module.zygiskUnloaded)
+    }
+
+    @Test
+    fun testValidZygiskModule() {
+        val module = modules.find { it.id == VALID_ZYGISK }
+        assertNotNull("$VALID_ZYGISK is not installed", module)
+        module!!
+        assertFalse("$VALID_ZYGISK should pass the Zygisk ELF gate", module.zygiskUnloaded)
     }
 
     @Test

@@ -39,9 +39,10 @@ from tools.system_mode.authorization import (  # noqa: E402
 )
 from tools.system_mode.adapters import built_in_descriptors  # noqa: E402
 from tools.system_mode.qualification import (  # noqa: E402
-    evidence_from_record,
+    load_qualification_evidence,
     qualify_target,
     verify_report_qualification,
+    verify_report_qualification_evidence,
 )
 
 
@@ -59,17 +60,21 @@ def _doctor(args: argparse.Namespace) -> int:
         if args.connect:
             client.connect(_endpoint(args.connect))
         seal_key = Path(args.seal_key).expanduser() if args.seal_key else None
-        evidence = (
-            evidence_from_record(
+        qualification_record = None
+        if args.qualification_record:
+            qualification_record, evidence = load_qualification_evidence(
                 Path(args.qualification_record).expanduser().resolve(),
                 seal_key_path=seal_key,
             )
-            if args.qualification_record
-            else QualificationEvidence()
-        )
+        else:
+            evidence = QualificationEvidence()
         report = collect_report(client, evidence)
-        if args.qualification_record:
-            verify_report_qualification(report, seal_key_path=seal_key)
+        if qualification_record is not None:
+            verify_report_qualification_evidence(
+                report,
+                qualification_record,
+                evidence,
+            )
     except (ProbeError, ValueError) as exc:
         print(f"doctor failed: {exc}", file=sys.stderr)
         return 2
@@ -139,7 +144,12 @@ def _authorize(args: argparse.Namespace) -> int:
         report_path = Path(args.report).expanduser()
         seal_key = Path(args.seal_key).expanduser() if args.seal_key else None
         report, raw = load_authorization_report(report_path)
-        verify_report_qualification(report, seal_key_path=seal_key)
+        record_path = Path(str(report["recovery"]["qualification_record"]))
+        record, evidence = load_qualification_evidence(
+            record_path,
+            seal_key_path=seal_key,
+        )
+        verify_report_qualification_evidence(report, record, evidence)
         initial_report_sha256 = hashlib.sha256(raw).hexdigest()
         artifact_path = Path(args.artifact).expanduser()
         if artifact_path.is_symlink() or not artifact_path.is_file():
@@ -176,13 +186,16 @@ def _authorize(args: argparse.Namespace) -> int:
             if hashlib.sha256(artifact_bytes).hexdigest() != artifact_digest:
                 raise ValueError("captured manager APK differs from its pinned identity")
             client.install_replace(Path(pinned_artifact.name))
-        record_path = Path(str(report["recovery"]["qualification_record"]))
+        fresh_record, fresh_evidence = load_qualification_evidence(
+            record_path,
+            seal_key_path=seal_key,
+        )
         fresh = collect_report(
             client,
-            evidence_from_record(record_path, seal_key_path=seal_key),
+            fresh_evidence,
         )
         validate_fresh_target(report, fresh)
-        verify_report_qualification(fresh, seal_key_path=seal_key)
+        verify_report_qualification_evidence(fresh, fresh_record, fresh_evidence)
 
         authorization_id = str(uuid.uuid4())
 
@@ -193,7 +206,15 @@ def _authorize(args: argparse.Namespace) -> int:
                 or current_report != report
             ):
                 raise ValueError("doctor report changed before installer handoff")
-            verify_report_qualification(current_report, seal_key_path=seal_key)
+            handoff_record, handoff_evidence = load_qualification_evidence(
+                record_path,
+                seal_key_path=seal_key,
+            )
+            verify_report_qualification_evidence(
+                current_report,
+                handoff_record,
+                handoff_evidence,
+            )
             current_artifact, _ = stable_regular_file(
                 artifact_path,
                 purpose="authorized manager APK",
@@ -204,10 +225,14 @@ def _authorize(args: argparse.Namespace) -> int:
                 raise ValueError("ADB transport changed before installer handoff")
             handoff = collect_report(
                 client,
-                evidence_from_record(record_path, seal_key_path=seal_key),
+                handoff_evidence,
             )
             validate_fresh_target(report, handoff)
-            verify_report_qualification(handoff, seal_key_path=seal_key)
+            verify_report_qualification_evidence(
+                handoff,
+                handoff_record,
+                handoff_evidence,
+            )
 
         with HostLease(authorization_id, verify_host_handoff) as lease:
             reverse_port = client.reverse_tcp(lease.host_port)

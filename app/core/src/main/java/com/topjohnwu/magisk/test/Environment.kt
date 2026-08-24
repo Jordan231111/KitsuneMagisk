@@ -29,6 +29,8 @@ import org.junit.runner.RunWith
 import timber.log.Timber
 import java.io.File
 import java.io.PrintStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 @Keep
 @RunWith(AndroidJUnit4::class)
@@ -63,6 +65,11 @@ class Environment : BaseTest {
         const val MOUNT_TEST = "mount_test"
         const val SEPOLICY_RULE = "sepolicy_rule"
         const val INVALID_ZYGISK = "invalid_zygisk"
+        const val OVERFLOW_ZYGISK = "overflow_zygisk"
+        const val SPECIAL_ZYGISK = "special_zygisk"
+        const val VALID_ZYGISK = "valid_zygisk"
+        const val WRONG_ABI_ZYGISK = "wrong_abi_zygisk"
+        const val ZERO_RANGE_ZYGISK = "zero_range_zygisk"
         const val REMOVE_TEST = "remove_test"
         const val REMOVE_TEST_MARKER = "/dev/.remove_test_removed"
         const val EMPTY_ZYGISK = "empty_zygisk"
@@ -157,15 +164,162 @@ class Environment : BaseTest {
         val error = "$INVALID_ZYGISK setup failed"
         val path = root.getChildFile(INVALID_ZYGISK)
 
-        // Create invalid zygisk libraries
+        // Create complete ELF headers whose load segments extend past EOF.
         val module = LocalModule(path)
         assertTrue(error, module.zygiskFolder.mkdirs())
-        assertTrue(error, module.zygiskFolder.getChildFile("armeabi-v7a.so").createNewFile())
-        assertTrue(error, module.zygiskFolder.getChildFile("arm64-v8a.so").createNewFile())
-        assertTrue(error, module.zygiskFolder.getChildFile("x86.so").createNewFile())
-        assertTrue(error, module.zygiskFolder.getChildFile("x86_64.so").createNewFile())
+        for ((abi, elf) in elfFixtures(truncated = true)) {
+            module.zygiskFolder.getChildFile(abi).newOutputStream().use {
+                it.write(elf)
+            }
+        }
 
         assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+    }
+
+    private fun setupWrongAbiZygiskModule(root: ExtendedFile) {
+        val error = "$WRONG_ABI_ZYGISK setup failed"
+        val path = root.getChildFile(WRONG_ABI_ZYGISK)
+        val module = LocalModule(path)
+        assertTrue(error, module.zygiskFolder.mkdirs())
+        for ((abi, elf) in elfFixtures(machineOverride = 0)) {
+            module.zygiskFolder.getChildFile(abi).newOutputStream().use {
+                it.write(elf)
+            }
+        }
+        assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+    }
+
+    private fun setupOverflowZygiskModule(root: ExtendedFile) {
+        val error = "$OVERFLOW_ZYGISK setup failed"
+        val path = root.getChildFile(OVERFLOW_ZYGISK)
+        val module = LocalModule(path)
+        assertTrue(error, module.zygiskFolder.mkdirs())
+        for ((abi, elf) in elfFixtures(addressOverflow = true)) {
+            module.zygiskFolder.getChildFile(abi).newOutputStream().use {
+                it.write(elf)
+            }
+        }
+        assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+    }
+
+    private fun setupZeroRangeZygiskModule(root: ExtendedFile) {
+        val error = "$ZERO_RANGE_ZYGISK setup failed"
+        val path = root.getChildFile(ZERO_RANGE_ZYGISK)
+        val module = LocalModule(path)
+        assertTrue(error, module.zygiskFolder.mkdirs())
+        for ((abi, elf) in elfFixtures(zeroRange = true)) {
+            module.zygiskFolder.getChildFile(abi).newOutputStream().use {
+                it.write(elf)
+            }
+        }
+        assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+    }
+
+    private fun setupSpecialZygiskModule(root: ExtendedFile) {
+        val error = "$SPECIAL_ZYGISK setup failed"
+        val path = root.getChildFile(SPECIAL_ZYGISK)
+        val module = LocalModule(path)
+        assertTrue(error, module.zygiskFolder.mkdirs())
+        for ((abi, _) in elfFixtures()) {
+            val library = module.zygiskFolder.getChildFile(abi)
+            assertTrue(error, Shell.cmd("mkfifo $library").exec().isSuccess)
+        }
+        assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+    }
+
+    private fun setupValidZygiskModule(root: ExtendedFile) {
+        val error = "$VALID_ZYGISK setup failed"
+        val path = root.getChildFile(VALID_ZYGISK)
+        val module = LocalModule(path)
+        assertTrue(error, module.zygiskFolder.mkdirs())
+
+        val source = File(testContext.applicationInfo.nativeLibraryDir, "libzygisk_test.so")
+        assertTrue(error, source.isFile)
+        val library = module.zygiskFolder.getChildFile("${Build.SUPPORTED_ABIS.first()}.so")
+        source.inputStream().use { input ->
+            library.newOutputStream().use { output -> input.copyTo(output) }
+        }
+        assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+    }
+
+    private fun elfFixtures(
+        truncated: Boolean = false,
+        machineOverride: Int? = null,
+        zeroRange: Boolean = false,
+        addressOverflow: Boolean = false,
+    ): Array<Pair<String, ByteArray>> = arrayOf(
+        "armeabi-v7a.so" to elfEnvelope(
+            1, machineOverride ?: 40, truncated, zeroRange, addressOverflow
+        ),
+        "arm64-v8a.so" to elfEnvelope(
+            2, machineOverride ?: 183, truncated, zeroRange, addressOverflow
+        ),
+        "x86.so" to elfEnvelope(
+            1, machineOverride ?: 3, truncated, zeroRange, addressOverflow
+        ),
+        "x86_64.so" to elfEnvelope(
+            2, machineOverride ?: 62, truncated, zeroRange, addressOverflow
+        ),
+        "riscv64.so" to elfEnvelope(
+            2, machineOverride ?: 243, truncated, zeroRange, addressOverflow
+        ),
+    )
+
+    private fun elfEnvelope(
+        elfClass: Int,
+        machine: Int,
+        truncated: Boolean,
+        zeroRange: Boolean,
+        addressOverflow: Boolean,
+    ): ByteArray {
+        val headerSize = if (elfClass == 1) 52 else 64
+        val programHeaderSize = if (elfClass == 1) 32 else 56
+        val programHeaderCount = if (zeroRange) 2 else 1
+        val segmentOffset = headerSize + programHeaderSize * programHeaderCount
+        val size = segmentOffset + if (truncated) 0 else 2
+        val elf = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN)
+        elf.put(0, 0x7f)
+        elf.put(1, 0x45)
+        elf.put(2, 0x4c)
+        elf.put(3, 0x46)
+        elf.put(4, elfClass.toByte())
+        elf.put(5, 1)
+        elf.put(6, 1)
+        elf.putShort(16, 3)
+        elf.putShort(18, machine.toShort())
+        elf.putInt(20, 1)
+        if (elfClass == 1) {
+            elf.putInt(28, headerSize)
+            elf.putShort(40, headerSize.toShort())
+            elf.putShort(42, programHeaderSize.toShort())
+            elf.putShort(44, programHeaderCount.toShort())
+            elf.putInt(headerSize, 1)
+            elf.putInt(headerSize + 4, segmentOffset)
+            if (addressOverflow) elf.putInt(headerSize + 8, -1)
+            elf.putInt(headerSize + 16, 1)
+            elf.putInt(headerSize + 20, if (addressOverflow) 2 else 1)
+            if (zeroRange) {
+                val second = headerSize + programHeaderSize
+                elf.putInt(second, 1)
+                elf.putInt(second + 4, size + 1)
+            }
+        } else {
+            elf.putLong(32, headerSize.toLong())
+            elf.putShort(52, headerSize.toShort())
+            elf.putShort(54, programHeaderSize.toShort())
+            elf.putShort(56, programHeaderCount.toShort())
+            elf.putInt(headerSize, 1)
+            elf.putLong(headerSize + 8, segmentOffset.toLong())
+            if (addressOverflow) elf.putLong(headerSize + 16, -1)
+            elf.putLong(headerSize + 32, 1)
+            elf.putLong(headerSize + 40, if (addressOverflow) 2 else 1)
+            if (zeroRange) {
+                val second = headerSize + programHeaderSize
+                elf.putInt(second, 1)
+                elf.putLong(second + 8, size.toLong() + 1)
+            }
+        }
+        return elf.array()
     }
 
     private fun setupRemoveModule(root: ExtendedFile) {
@@ -258,6 +412,11 @@ class Environment : BaseTest {
         setupSystemlessHost()
         setupEmptyZygiskModule(update)
         setupInvalidZygiskModule(update)
+        setupWrongAbiZygiskModule(update)
+        setupOverflowZygiskModule(update)
+        setupZeroRangeZygiskModule(update)
+        setupSpecialZygiskModule(update)
+        setupValidZygiskModule(update)
         setupRemoveModule(root)
         setupUpgradeModule(root, update)
     }

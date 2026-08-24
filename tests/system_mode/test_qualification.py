@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import inspect
 import json
 from pathlib import Path
 import os
@@ -21,17 +22,23 @@ from tools.system_mode.qualification import (
     _canonical_bytes,
     _checked_command,
     _inventory_digest,
+    _recover_from_candidates,
+    _remove_verified_qualification_backups,
+    _failure_recovery_candidates,
+    _restore_unchanged_backup,
     _boot_critical_roots,
     _run_host,
     _seal_record,
     _sha256,
     evidence_from_record,
     instance_identity,
+    load_qualification_evidence,
     load_qualification_record,
     qualify_target,
     stable_target_digest,
     validate_qualification_record,
     verify_report_qualification,
+    verify_report_qualification_evidence,
 )
 
 
@@ -308,6 +315,259 @@ class QualificationTest(unittest.TestCase):
                     instance_identity_path=backup,
                 )
 
+    def test_failed_recovery_never_deletes_qualification_backups(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-retained-recovery-") as temp:
+            root = Path(temp)
+            for failure in ("restore", "identity", "inventory"):
+                challenge = root / f"challenge-{failure}.img"
+                canonical = root / f"canonical-{failure}.img"
+                challenge.write_bytes(b"challenge")
+                canonical.write_bytes(b"canonical")
+                error = ProbeError(f"{failure} verification failed")
+                returned = _remove_verified_qualification_backups(
+                    challenge,
+                    canonical,
+                    final_ready=False,
+                    qualification_succeeded=False,
+                    recovery_verified=True,
+                    lifecycle_indeterminate=False,
+                    cleanup_error=error,
+                )
+                self.assertIs(error, returned)
+                self.assertTrue(challenge.is_file())
+                self.assertTrue(canonical.is_file())
+
+            challenge = root / "challenge-indeterminate.img"
+            canonical = root / "canonical-indeterminate.img"
+            challenge.write_bytes(b"challenge")
+            canonical.write_bytes(b"canonical")
+            self.assertIsNone(
+                _remove_verified_qualification_backups(
+                    challenge,
+                    canonical,
+                    final_ready=False,
+                    qualification_succeeded=False,
+                    recovery_verified=False,
+                    lifecycle_indeterminate=True,
+                    cleanup_error=None,
+                )
+            )
+            self.assertTrue(challenge.is_file())
+            self.assertTrue(canonical.is_file())
+
+    def test_verified_recovery_removes_only_disposable_backups(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-verified-recovery-") as temp:
+            root = Path(temp)
+            challenge = root / "challenge.img"
+            canonical = root / "canonical.img"
+            challenge.write_bytes(b"challenge")
+            canonical.write_bytes(b"canonical")
+            self.assertIsNone(
+                _remove_verified_qualification_backups(
+                    challenge,
+                    canonical,
+                    final_ready=True,
+                    qualification_succeeded=True,
+                    recovery_verified=True,
+                    lifecycle_indeterminate=False,
+                    cleanup_error=None,
+                )
+            )
+            self.assertFalse(challenge.exists())
+            self.assertTrue(canonical.is_file())
+
+    def test_restore_hashes_before_and_after_and_rejects_changed_backup(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-restore-order-") as temp:
+            backup = Path(temp) / "backup.img"
+            backup.write_bytes(b"baseline")
+            expected = digest_backup_path(backup)
+            events: list[str] = []
+
+            def digest(path: Path) -> str:
+                events.append("digest")
+                return digest_backup_path(path)
+
+            with mock.patch(
+                "tools.system_mode.authorization.digest_backup_path",
+                side_effect=digest,
+            ):
+                _restore_unchanged_backup(
+                    backup,
+                    expected,
+                    "test",
+                    lambda: events.append("restore"),
+                )
+            self.assertEqual(["digest", "restore", "digest"], events)
+
+            backup.write_bytes(b"changed")
+            restored = False
+
+            def restore() -> None:
+                nonlocal restored
+                restored = True
+
+            with self.assertRaisesRegex(ValueError, "changed before restore"):
+                _restore_unchanged_backup(backup, expected, "test", restore)
+            self.assertFalse(restored)
+
+            backup.write_bytes(b"baseline")
+            expected = digest_backup_path(backup)
+            with self.assertRaisesRegex(ValueError, "changed during restore"):
+                _restore_unchanged_backup(
+                    backup,
+                    expected,
+                    "test",
+                    lambda: backup.write_bytes(b"mutated by restore"),
+                )
+
+    def test_failure_recovery_selects_only_proven_backups(self) -> None:
+        canonical = Path("/qualified/final")
+        challenge = Path("/qualified/challenge")
+        common = {
+            "canonical_backup": canonical,
+            "challenge_backup": challenge,
+            "final_digest": "f" * 64,
+            "challenge_digest": "c" * 64,
+        }
+        self.assertEqual(
+            [],
+            _failure_recovery_candidates(
+                final_verified=False,
+                challenge_verified=False,
+                **common,
+            ),
+        )
+        self.assertEqual(
+            [("challenge", challenge, "c" * 64)],
+            _failure_recovery_candidates(
+                final_verified=False,
+                challenge_verified=True,
+                **common,
+            ),
+        )
+        self.assertEqual(
+            [
+                ("clean", canonical, "f" * 64),
+                ("challenge", challenge, "c" * 64),
+            ],
+            _failure_recovery_candidates(
+                final_verified=True,
+                challenge_verified=True,
+                **common,
+            ),
+        )
+
+    def test_corrupt_final_recovery_falls_back_to_verified_challenge(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-recovery-fallback-") as temp:
+            root = Path(temp)
+            canonical = root / "final.img"
+            challenge = root / "challenge.img"
+            canonical.write_bytes(b"clean")
+            challenge.write_bytes(b"challenge")
+            final_digest = digest_backup_path(canonical)
+            challenge_digest = digest_backup_path(challenge)
+            candidates = _failure_recovery_candidates(
+                final_verified=True,
+                challenge_verified=True,
+                canonical_backup=canonical,
+                challenge_backup=challenge,
+                final_digest=final_digest,
+                challenge_digest=challenge_digest,
+            )
+            canonical.write_bytes(b"corrupt")
+            restores: list[str] = []
+            direct_cleanup_called = False
+
+            def recover(candidate: tuple[str, Path, str]) -> None:
+                name, backup, expected = candidate
+                _restore_unchanged_backup(
+                    backup,
+                    expected,
+                    name,
+                    lambda: restores.append(name),
+                )
+
+            def direct_cleanup() -> None:
+                nonlocal direct_cleanup_called
+                direct_cleanup_called = True
+
+            self.assertEqual(
+                "challenge",
+                _recover_from_candidates(candidates, recover, direct_cleanup),
+            )
+            self.assertEqual(["challenge"], restores)
+            self.assertFalse(direct_cleanup_called)
+
+    def test_failed_candidates_use_direct_cleanup_but_indeterminate_stops(self) -> None:
+        candidates = [
+            ("clean", Path("/qualified/final"), "f" * 64),
+            ("challenge", Path("/qualified/challenge"), "c" * 64),
+        ]
+        attempts: list[str] = []
+
+        def fail(candidate: tuple[str, Path, str]) -> None:
+            attempts.append(candidate[0])
+            raise ValueError("candidate changed")
+
+        self.assertIsNone(
+            _recover_from_candidates(
+                candidates,
+                fail,
+                lambda: attempts.append("direct"),
+            )
+        )
+        self.assertEqual(["clean", "challenge", "direct"], attempts)
+
+        attempts.clear()
+
+        def indeterminate(candidate: tuple[str, Path, str]) -> None:
+            attempts.append(candidate[0])
+            raise IndeterminateLifecycleError("unknown lifecycle state")
+
+        with self.assertRaises(IndeterminateLifecycleError):
+            _recover_from_candidates(
+                candidates,
+                indeterminate,
+                lambda: attempts.append("direct"),
+            )
+        self.assertEqual(["clean"], attempts)
+
+    def test_live_state_stays_dirty_until_inventory_and_contract_are_verified(self) -> None:
+        source = inspect.getsource(qualify_target)
+        challenge_cleanup = source[
+            source.index("# The challenge snapshot intentionally contains the anchor.") :
+            source.index('run_lifecycle("backup", "clean backup creation"')
+        ]
+        clean = challenge_cleanup.index("clean_report = collect_report")
+        contract = challenge_cleanup.index("stable_target_digest(clean_report)")
+        inventory = challenge_cleanup.index("_boot_critical_inventory")
+        clean_state = challenge_cleanup.index("live_dirty = False")
+        self.assertLess(inventory, clean_state)
+        self.assertLess(clean, clean_state)
+        self.assertLess(contract, clean_state)
+
+        clean_backup = source[
+            source.index('live_dirty = True\n        run_lifecycle("backup", "clean backup creation"') :
+            source.index("final_marker_evidence = _write_probe")
+        ]
+        self.assertLess(
+            clean_backup.index("after_clean_backup = collect_report"),
+            clean_backup.index("live_dirty = False"),
+        )
+        self.assertLess(
+            clean_backup.index("stable_target_digest(after_clean_backup)"),
+            clean_backup.index("live_dirty = False"),
+        )
+        self.assertLess(
+            clean_backup.index("stable_target_digest(after_clean_backup)"),
+            clean_backup.index("final_verified = True"),
+        )
+        recovery = source[source.index("finally:") : source.index("record: dict")]
+        self.assertIn("_failure_recovery_candidates(", recovery)
+        self.assertIn("final_verified=final_verified", recovery)
+        self.assertIn("challenge_verified=challenge_verified", recovery)
+        self.assertIn("qualification_succeeded=qualification_succeeded", recovery)
+
     def test_record_produces_evidence_only_while_backup_and_identity_match(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-qualification-") as temp:
             root = Path(temp)
@@ -573,6 +833,26 @@ class QualificationTest(unittest.TestCase):
             report["assessment"] = classify_report(report)
             self.assertEqual(record, verify_report_qualification(report))
 
+            with mock.patch(
+                "tools.system_mode.authorization.digest_backup_path",
+                wraps=digest_backup_path,
+            ) as digest_backup:
+                loaded, loaded_evidence = load_qualification_evidence(record_path)
+                self.assertEqual(
+                    record,
+                    verify_report_qualification_evidence(
+                        report,
+                        loaded,
+                        loaded_evidence,
+                    ),
+                )
+                verify_report_qualification_evidence(
+                    report,
+                    loaded,
+                    loaded_evidence,
+                )
+                self.assertEqual(1, digest_backup.call_count)
+
             replaced_recovery = copy.deepcopy(report)
             replaced_recovery["recovery"]["restore_command"] = "/opt/mumu restore another-vm"
             with self.assertRaisesRegex(ValueError, "recovery evidence differs"):
@@ -709,7 +989,13 @@ class QualificationTest(unittest.TestCase):
             with (
                 mock.patch(
                     "tools.system_mode.qualification.collect_report",
-                    side_effect=[baseline, after_backup, copy.deepcopy(baseline), restored],
+                    side_effect=[
+                        baseline,
+                        after_backup,
+                        copy.deepcopy(baseline),
+                        copy.deepcopy(baseline),
+                        restored,
+                    ],
                 ),
                 mock.patch(
                     "tools.system_mode.qualification._boot_id",

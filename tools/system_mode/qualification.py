@@ -15,7 +15,7 @@ import signal
 import stat
 import subprocess
 import time
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 import uuid
 
 from tools.system_mode.adapters import built_in_descriptors
@@ -884,6 +884,97 @@ def _remove_host_backup(path: Path) -> None:
         os.close(descriptor)
 
 
+def _remove_verified_qualification_backups(
+    challenge_backup: Path,
+    canonical_backup: Path,
+    *,
+    final_ready: bool,
+    qualification_succeeded: bool,
+    recovery_verified: bool,
+    lifecycle_indeterminate: bool,
+    cleanup_error: BaseException | None,
+) -> BaseException | None:
+    """Delete temporary recovery artifacts only after a proven clean guest state."""
+
+    if (
+        not qualification_succeeded
+        or lifecycle_indeterminate
+        or cleanup_error is not None
+        or not recovery_verified
+    ):
+        return cleanup_error
+    try:
+        if challenge_backup.exists() or challenge_backup.is_symlink():
+            _remove_host_backup(challenge_backup)
+        if not final_ready and (canonical_backup.exists() or canonical_backup.is_symlink()):
+            _remove_host_backup(canonical_backup)
+    except (OSError, ValueError) as exc:
+        return exc
+    return None
+
+
+def _restore_unchanged_backup(
+    backup: Path,
+    expected_digest: str,
+    purpose: str,
+    restore: Callable[[], None],
+) -> None:
+    """Run one restore only while its complete recovery artifact stays exact."""
+
+    from tools.system_mode.authorization import digest_backup_path
+
+    if digest_backup_path(backup) != expected_digest:
+        raise ValueError(f"{purpose} backup changed before restore")
+    restore()
+    if digest_backup_path(backup) != expected_digest:
+        raise ValueError(f"{purpose} backup changed during restore")
+
+
+def _failure_recovery_candidates(
+    *,
+    final_verified: bool,
+    challenge_verified: bool,
+    canonical_backup: Path,
+    challenge_backup: Path,
+    final_digest: str,
+    challenge_digest: str,
+) -> list[tuple[str, Path, str]]:
+    """Return only proven recovery artifacts, strongest first."""
+
+    candidates: list[tuple[str, Path, str]] = []
+    if final_verified:
+        candidates.append(("clean", canonical_backup, final_digest))
+    if challenge_verified:
+        candidates.append(("challenge", challenge_backup, challenge_digest))
+    return candidates
+
+
+def _recover_from_candidates(
+    candidates: list[tuple[str, Path, str]],
+    recover: Callable[[tuple[str, Path, str]], None],
+    direct_cleanup: Callable[[], None],
+) -> str | None:
+    """Try proven artifacts in order, then an exactly verified direct cleanup."""
+
+    errors: list[BaseException] = []
+    for candidate in candidates:
+        try:
+            recover(candidate)
+            return candidate[0]
+        except IndeterminateLifecycleError:
+            raise
+        except (OSError, ProbeError, ValueError) as exc:
+            errors.append(exc)
+    try:
+        direct_cleanup()
+        return None
+    except IndeterminateLifecycleError:
+        raise
+    except (OSError, ProbeError, ValueError) as exc:
+        errors.append(exc)
+    raise ProbeError("every qualification failure-recovery attempt failed") from errors[-1]
+
+
 def _boot_id(client: AdbClient) -> str:
     result = client.shell("cat /proc/sys/kernel/random/boot_id")
     value = result.stdout.strip().lower()
@@ -1166,32 +1257,42 @@ def _evidence_from_loaded_record(
     )
 
 
+def load_qualification_evidence(
+    path: Path,
+    *,
+    seal_key_path: Path | None = None,
+) -> tuple[dict[str, Any], QualificationEvidence]:
+    """Load one sealed record and hash its bound recovery artifact exactly once."""
+
+    record, _, digest, canonical = load_qualification_record(
+        path,
+        seal_key_path=seal_key_path,
+    )
+    return record, _evidence_from_loaded_record(record, canonical, digest)
+
+
 def evidence_from_record(
     path: Path,
     *,
     seal_key_path: Path | None = None,
 ) -> QualificationEvidence:
-    record, _, digest, canonical = load_qualification_record(
+    _, evidence = load_qualification_evidence(
         path,
         seal_key_path=seal_key_path,
     )
-    return _evidence_from_loaded_record(record, canonical, digest)
+    return evidence
 
 
-def verify_report_qualification(
+def verify_report_qualification_evidence(
     report: Mapping[str, Any],
-    *,
-    seal_key_path: Path | None = None,
+    record: Mapping[str, Any],
+    evidence: QualificationEvidence,
 ) -> dict[str, Any]:
+    """Bind a live report to already verified record and backup evidence."""
+
     recovery = report["recovery"]
-    record_path = Path(str(recovery.get("qualification_record") or ""))
-    record, _, digest, canonical = load_qualification_record(
-        record_path,
-        seal_key_path=seal_key_path,
-    )
-    if digest != recovery.get("qualification_sha256"):
+    if evidence.qualification_sha256 != recovery.get("qualification_sha256"):
         raise ValueError("doctor report qualification digest mismatch")
-    evidence = _evidence_from_loaded_record(record, canonical, digest)
     expected_recovery = {
         "snapshot_id": evidence.snapshot_id,
         "backup_location": evidence.backup_location,
@@ -1226,7 +1327,21 @@ def verify_report_qualification(
         raise ValueError("qualification init directory differs from the live report")
     if stable_target_digest(report) != record["target"]["baseline_contract_sha256"]:
         raise ValueError("qualified target changed after its restore exercise")
-    return record
+    return dict(record)
+
+
+def verify_report_qualification(
+    report: Mapping[str, Any],
+    *,
+    seal_key_path: Path | None = None,
+) -> dict[str, Any]:
+    recovery = report["recovery"]
+    record_path = Path(str(recovery.get("qualification_record") or ""))
+    record, evidence = load_qualification_evidence(
+        record_path,
+        seal_key_path=seal_key_path,
+    )
+    return verify_report_qualification_evidence(report, record, evidence)
 
 
 
@@ -1392,8 +1507,11 @@ def qualify_target(
 
     live_dirty = False
     challenge_ready = False
+    challenge_verified = False
     final_ready = False
+    final_verified = False
     restored = False
+    qualification_succeeded = False
     lifecycle_indeterminate = False
     prior_boot = _boot_id(client)
     cold_boot_ids: list[str] = []
@@ -1518,17 +1636,18 @@ def qualify_target(
             cold_boot_ids.append(_sha256(prior_boot))
             exec_proofs.append(proof)
 
-        if digest_backup_path(challenge_backup) != challenge_before:
-            raise ValueError("challenge backup changed before restore")
-        run_lifecycle("restore", "challenge restore", challenge_backup)
+        _restore_unchanged_backup(
+            challenge_backup,
+            challenge_before,
+            "challenge",
+            lambda: run_lifecycle("restore", "challenge restore", challenge_backup),
+        )
         anchor_after_restore = _remote_file_evidence(client, anchor_path)
         if anchor_after_restore != anchor_before:
             raise ProbeError("challenge restore did not recover the exact random anchor")
         data_anchor_after_restore = _remote_file_evidence(client, data_anchor_path)
         if data_anchor_after_restore != data_anchor_before:
             raise ProbeError("challenge restore did not recover the exact random /data anchor")
-        if digest_backup_path(challenge_backup) != challenge_before:
-            raise ValueError("challenge backup changed during restore")
         challenge_restored_boot_id_sha256 = _sha256(prior_boot)
 
         # The challenge snapshot intentionally contains the anchor. It is never
@@ -1536,13 +1655,15 @@ def qualify_target(
         # state, and create a separate final backup with zero qualification
         # files or property residue.
         cleanup_live_without_restore()
-        live_dirty = False
         if _boot_critical_inventory(client, selected_init) != baseline_inventory:
             raise ProbeError("challenge cleanup did not return boot-critical baseline state")
         clean_report = collect_report(client, QualificationEvidence())
         if stable_target_digest(clean_report) != baseline_digest:
             raise ProbeError("challenge cleanup did not return the baseline target contract")
+        challenge_verified = True
+        live_dirty = False
 
+        live_dirty = True
         run_lifecycle("backup", "clean backup creation", canonical_backup)
         final_before = verify_backup_created(canonical_backup, "clean backup command")
         final_ready = True
@@ -1552,6 +1673,11 @@ def qualify_target(
         _assert_qualification_absent(client, residue_paths)
         if _boot_critical_inventory(client, selected_init) != baseline_inventory:
             raise ProbeError("clean backup lifecycle changed boot-critical state")
+        after_clean_backup = collect_report(client, QualificationEvidence())
+        if stable_target_digest(after_clean_backup) != baseline_digest:
+            raise ProbeError("clean backup lifecycle changed the baseline target contract")
+        final_verified = True
+        live_dirty = False
 
         live_dirty = True
         final_marker_evidence = _write_probe(
@@ -1567,11 +1693,14 @@ def qualify_target(
             mode="0600",
             selinux_context=None,
         )
-        run_lifecycle("restore", "clean backup restore", canonical_backup)
+        _restore_unchanged_backup(
+            canonical_backup,
+            final_before,
+            "clean external",
+            lambda: run_lifecycle("restore", "clean backup restore", canonical_backup),
+        )
         _assert_qualification_absent(client, residue_paths)
-        final_after = digest_backup_path(canonical_backup)
-        if final_after != final_before:
-            raise ValueError("clean external backup changed during final restore")
+        final_after = final_before
         restored_report = collect_report(client, QualificationEvidence())
         restored_digest = stable_target_digest(restored_report)
         if restored_digest != baseline_digest:
@@ -1582,40 +1711,63 @@ def qualify_target(
         restored_boot_id_sha256 = _sha256(prior_boot)
         live_dirty = False
         restored = True
+        qualification_succeeded = True
     finally:
         cleanup_error: BaseException | None = None
+        cleanup_verified = not live_dirty or restored
         if live_dirty and not restored and not lifecycle_indeterminate:
-            try:
-                if final_ready:
-                    run_lifecycle(
-                        "restore",
-                        "failure recovery clean restore",
-                        canonical_backup,
-                    )
+            recovery_errors: list[BaseException] = []
+            candidates = _failure_recovery_candidates(
+                final_verified=final_verified,
+                challenge_verified=challenge_verified,
+                canonical_backup=canonical_backup,
+                challenge_backup=challenge_backup,
+                final_digest=final_before,
+                challenge_digest=challenge_before,
+            )
+
+            def verify_failure_baseline(label: str) -> None:
+                if _boot_critical_inventory(client, selected_init) != baseline_inventory:
+                    raise ProbeError(f"failure recovery {label} inventory mismatch")
+                recovery_report = collect_report(client, QualificationEvidence())
+                if stable_target_digest(recovery_report) != baseline_digest:
+                    raise ProbeError(f"failure recovery {label} contract mismatch")
+
+            def recover_candidate(recovery: tuple[str, Path, str]) -> None:
+                recovery_name, recovery_path, recovery_digest = recovery
+                purpose = f"failure recovery {recovery_name} restore"
+                _restore_unchanged_backup(
+                    recovery_path,
+                    recovery_digest,
+                    f"failure recovery {recovery_name}",
+                    lambda: run_lifecycle("restore", purpose, recovery_path),
+                )
+                if recovery_name == "clean":
                     _assert_qualification_absent(client, residue_paths)
-                    if _boot_critical_inventory(client, selected_init) != baseline_inventory:
-                        raise ProbeError("failure recovery clean restore inventory mismatch")
-                elif challenge_ready:
-                    run_lifecycle(
-                        "restore",
-                        "failure recovery challenge restore",
-                        challenge_backup,
-                    )
-                    cleanup_live_without_restore()
-                    if _boot_critical_inventory(client, selected_init) != baseline_inventory:
-                        raise ProbeError("failure recovery challenge cleanup inventory mismatch")
                 else:
                     cleanup_live_without_restore()
-            except (OSError, ProbeError, ValueError) as exc:
-                cleanup_error = exc
-        if not lifecycle_indeterminate:
+                verify_failure_baseline(recovery_name)
+
+            def direct_cleanup() -> None:
+                cleanup_live_without_restore()
+                verify_failure_baseline("direct cleanup")
+
             try:
-                if challenge_backup.exists() or challenge_backup.is_symlink():
-                    _remove_host_backup(challenge_backup)
-                if not final_ready and (canonical_backup.exists() or canonical_backup.is_symlink()):
-                    _remove_host_backup(canonical_backup)
-            except (OSError, ValueError) as exc:
-                cleanup_error = cleanup_error or exc
+                _recover_from_candidates(candidates, recover_candidate, direct_cleanup)
+                live_dirty = False
+                cleanup_verified = True
+            except (OSError, ProbeError, ValueError) as exc:
+                recovery_errors.append(exc)
+                cleanup_error = recovery_errors[-1]
+        cleanup_error = _remove_verified_qualification_backups(
+            challenge_backup,
+            canonical_backup,
+            final_ready=final_ready,
+            qualification_succeeded=qualification_succeeded,
+            recovery_verified=cleanup_verified,
+            lifecycle_indeterminate=lifecycle_indeterminate,
+            cleanup_error=cleanup_error,
+        )
         if lifecycle_indeterminate:
             raise IndeterminateLifecycleError(
                 "host lifecycle state is indeterminate; automatic guest restore and host backup cleanup were suppressed"

@@ -1,6 +1,6 @@
 # KitsuneMagisk development roadmap
 
-> Roadmap last reconciled: 2026-08-01 UTC
+> Roadmap last reconciled: 2026-08-24 UTC
 >
 > Post-PR2 audit snapshot (not the fidelity boundary): `kitsune` at
 > `cf149fcf734539f6077cd6b349d9ffc2496c56ca`
@@ -21,8 +21,10 @@
 > `154121f3dd92e67a3d8e3f518684932c0f9783e6`. The historical line contains 157 fork-only commits
 > affecting 192 files. The numbered PR sequence below now assigns every effective historical
 > behavior to an implementation PR or an evidence-backed retirement. The fidelity set also includes
-> every material user-visible behavior shipped in any published Kitsune/Delta tag after the fork,
-> even when it was removed before `8e854f378`; the final snapshot alone is not a sufficient audit.
+> every material user-visible behavior shipped in any published Kitsune/Delta line, including the
+> original pre-1q23 Full/Lite channels and externally distributed assets, even when it predates the
+> current shared ancestor or was removed before `8e854f378`; the final snapshot and current Git tags
+> alone are not a sufficient audit.
 > PR16 cannot exit while any historical feature-ledger row is unresolved.
 
 > Historical PR5A/PR5B progress was reconciled on 2026-08-01 UTC and merged to `kitsune` by
@@ -1747,7 +1749,9 @@ Emulators cannot validate the riskiest boot paths. Maintain a small, documented 
 - [ ] Add translation automation and stale-string detection after terminology settles.
 - [ ] Add a compatibility dashboard generated from CI/device results.
 - [ ] Explore fully reproducible release builds and independent verifier instructions.
-- [ ] Build a small module SDK/sample for capability-based Kitsune APIs.
+- [ ] Build a new capability-based module SDK only after PR10/PR14 close the historically shipped
+  Kitsune module-template asset and its migration; this P3 enhancement cannot substitute for that
+  historical compatibility decision.
 
 ---
 
@@ -1755,32 +1759,103 @@ Emulators cannot validate the riskiest boot paths. Maintain a small, documented 
 
 This is the minimum family-level inventory for `docs/port-ledger.md`, not an optional sample. PR8
 must split a family into atomic rows wherever commits, shipped tags, affected users, decisions, or
-evidence differ. It must derive rows from both (a) the effective delta at pre-maintenance commit
-`8e854f378` versus shared official ancestor `154121f3` and (b) every material user-visible behavior
+evidence differ. It must derive rows from (a) the effective delta at pre-maintenance commit
+`8e854f378` versus shared official ancestor `154121f3`, (b) every material user-visible behavior
 present in any published Kitsune/Delta tag after that ancestor, including features removed before
-`8e854f378`. A removed feature still needs an explicit inherited/port/retire decision. No row below
-may disappear merely because official v30.7 has a feature with a similar name.
+`8e854f378`, and (c) surviving original Full/Lite release metadata, release APKs, source archives,
+and externally distributed compatibility assets that predate or sit outside that graph. A removed
+feature still needs an explicit inherited/port/retire decision. No row below may disappear merely
+because official v30.7 has a similar name or a tag was later moved, deleted, or rebuilt.
 
-## Frozen Kitsune tag universe for the port ledger
+## Frozen Kitsune release universe for the port ledger
 
-PR8 must enumerate the following fork tags exactly; this is an allowlist, not a pattern match. It
-must not accidentally treat official `canary-*`, official `v28.*` through `v30.7`, manager-only
+PR8 must enumerate the following fork tag observations exactly as the minimum Git-backed seed; it
+is not permission to omit original Full/Lite releases discovered through the mandatory asset audit.
+It must not accidentally treat official `canary-*`, official `v28.*` through `v30.7`, manager-only
 historical tags, or the internal `kitsune-pr5b-reference-*` maintenance tag as Kitsune product
 releases. The older refs may exist only in the inherited graph, so the ledger must record whether
-each row is backed by a local historical tag, a current remote tag, a GitHub Release asset, or more
-than one of those sources. Absence from the current GitHub Releases page does not erase behavior
-that a historical tag shipped.
+each row is backed by a local historical tag, a current remote tag, a source archive, a release
+asset, or more than one of those sources. Absence from the current GitHub Releases page does not
+erase behavior that a historical release shipped.
 
-| Ledger tag | Exact commit |
+| Ledger tag / observed incarnation | Exact commit |
 |---|---|
 | `refs/tags/b149cd26` | `b149cd26f4add6f2b8ae917a656f88316784445b` |
 | `v27.1-30370a9d` | `30370a9d424b4e4663ebeeb2a4002cf6c658222c` |
 | `v27.2-kitsune-1` | `98ea500fd24d47e7a15e2aee583d89cd753efc52` |
 | `v27.2-kitsune-2` | `0fc898ca3144ebd690f57eec1e65d71e6e3e9a06` |
 | `v27.2-kitsune-3` | `63ddd0781df34b7bd75408f9913738d2af1c9b83` |
-| `v27.2-kitsune-4` | `1279a82c2192fc35e9d93a6d8829dfc827d11528` |
+| `v27.2-kitsune-4` in the inherited 1q23 graph | `1279a82c2192fc35e9d93a6d8829dfc827d11528` |
+| `v27.2-kitsune-4` in the surviving release archive | `d5b60627f2a5b51a7adf0b0ec669d37e001ff4a5` |
 | `v31.0-70068d25` | `70068d25d9f1b2900243fa9685794b6942188ad4` |
 | `v31.0-25fa2159` | `25fa2159fa2db2a9327fe69ee094520bd58cc04d` |
+
+The duplicate `v27.2-kitsune-4` name is deliberate. A surviving release APK with SHA-256
+`818cfa02783ddae573cc953450fbc39ec3e5164b66e517c657ba11cf90963a89` identifies itself as that
+release but has the later 4 KiB-aligned state. PR8 must model the tag as moved/rebuilt, bind each
+observed source and artifact digest, and inventory the post-`1279a82c` `/sbin`, libsu, P-384,
+toolchain, and 16 KiB-disable behavior instead of silently selecting one incarnation.
+
+The exact-commit table is necessary but not sufficient. PR8 must also ingest and preserve source
+provenance for these published surfaces even when no authoritative tag remains locally:
+
+- original Full `v26.4-kitsune-2` (`versionCode=26400`) and the R65/R66 Full manager/stub channel
+  metadata and release assets, including signer, package, database, endpoint, and upgrade impact;
+- `R65B92427-kitsune-lite` (`versionCode=26404`) and every surviving Lite manager/stub channel: the
+  always-enforced SuList/whitelist product, no built-in Zygisk, unsupported modules, and log-based
+  process monitoring require an explicit migration or evidence-backed retirement, not silent loss;
+- the externally advertised Kitsune module-template ZIP, including early-mount, `initrc.d`, expanded
+  `root/*` partitions, whiteouts, `REQUIRED_KITSUNE_MAGISK`, version guards, and installer cleanup.
+  The immutable `effdabea` asset is 8,537 bytes with SHA-256
+  `e1be24050939eaba1d9d6c3073bef61b4d21cfd0cb93abc0d09a88ce6e3a1425` (Git blob
+  `6c76c2453e90aca989cdac2e88cd7a1a9c0a3e8b`). PR10 owns its endpoint and byte-integrity
+  disposition; PR14 owns its API compatibility/migration.
+
+The original-channel metadata seed is exact and mandatory:
+
+| Published channel/version | Version code | Immutable metadata commit |
+|---|---:|---|
+| Full stable `26.4-kitsune-2` | `26400` | `bb4af859f1ac6ed8a500ccbaf587411fa00f0bc8` |
+| Full `R65976974-kitsune` | `26404` | `bb4af859f1ac6ed8a500ccbaf587411fa00f0bc8` |
+| Full `R659E930C-kitsune` | `26404` | `51fad676c48c855d8e94ce054487dc4f00e4446a` |
+| Full `R65A24840-kitsune` | `26404` | `02ba306efeb85827c83effa13b01ef0510192391` |
+| Full `R65B8FE82-kitsune` | `26404` | `7fd85617f9a71d744ff49e8de4dcd8a9e33e53ce` |
+| Full `R65C0A20A-kitsune` | `27001` | `29aaacaa07f74e1838d7c199f4c437aeeeed4702` |
+| Full `R65C0CF63-kitsune` | `27001` | `c5d500af33e829314c05e6a3f722061a0257f6b3` |
+| Full `R65C33E4F-kitsune` | `27001` | `2976a6f5ef29cac693764875dd4d68f1a19f6af6` |
+| Full `R6687BB53-kitsune` | `27001` | `05003cd38adc7613cbfe089bbfd233edd22debfc` |
+| Lite `R65A8DA99-kitsune-lite` | `26404` | `96724b2ee26f7ac537c37fb5298c2a7579a3d322` |
+| Lite `R65B92427-kitsune-lite` | `26404` | `6440334763236cdc7ed30fbc6a98de13d324b5ea` |
+
+The surviving APK-byte seed is also mandatory; sizes are decimal bytes:
+
+| Archived artifact | Size | SHA-256 |
+|---|---:|---|
+| Full `R65976974-kitsune` | `12,751,676` | `f631f9dbb73e8f5a928fc0480f726ee40e50056bafbd33fb09b730ecd2c2b45d` |
+| Full `R659E930C-kitsune` | `12,866,953` | `86a1dedb54a4d1da2b9de429902c5d2b503a96b6ed5cbbd29aecc1ea270d7d14` |
+| Full `R65A24840-kitsune` | `12,871,049` | `e5246e95933111d818b01d925dfdb375f5fc129416783b515b5d959e269189af` |
+| Full `R65B8FE82-kitsune` | `12,871,049` | `50e512b48a79d862f5beacb4bb9b7304d95d8e959d22cc59cfa8bc4767909c03` |
+| Full `R65C0A20A-kitsune` | `12,872,134` | `af26d6133f5729cfb029d129ca8bab77e9d7bb2903565ba2389f657e7d1e2a91` |
+| Full `R65C0CF63-kitsune` | `12,872,134` | `96d80844f7a73984d40d904e31f7134458bb8827cc89daa11517ed2b0d59e844` |
+| Full `R65C33E4F-kitsune` | `12,872,134` | `6b557be3c75de371fed1ac8719c32208f16130b8d3c560b8e4b2a7447b661e1e` |
+| Full `R6687BB53-kitsune` | `12,880,326` | `5a3e77d28d4ead274e39b83fa7a4c60d201c43b2d665b30955685179c77d53e7` |
+| Lite `R65A8DA99-kitsune-lite` | `12,569,035` | `462d923d8c90c4f9f6f90ec7c02dcb8e14d8b3e4e9697f5c5eba83057eaa1d11` |
+| Lite `R65B92427-kitsune-lite` | `12,569,035` | `b96bbf0111cd3770eda44588d2cbb28f86a50e94f718a31802147dcbc7696dd6` |
+| Moved-k4 debug archive | `21,337,293` | `f7e8c0235ddaaa2f4044ed6e9db03b300127a3414fb449a6ebf8f77ffb4d0896` |
+
+PR8 must archive and digest `stable.json`, `beta.json`, `canary.json`, `debug.json`, `note.md`,
+`canary_lite.json`, `debug_lite.json`, and `note_lite.md` at those immutable metadata commits, then
+follow every referenced manager/stub asset without trusting a mutable endpoint.
+
+Provenance is intentionally not overstated: the surviving `os-fork` and `AndnixSH` repositories are
+mirrors, not yet proven original publishing repositories; a release identifier/versionCode is not a
+source commit; and archived bytes are not bound to a source tree or signer until PR8 verifies each
+relationship. Stable `26.4-kitsune-2` APK bytes have not yet been recovered. Those limitations are
+ledger blockers, not reasons to drop the affected users or infer provenance.
+
+PR8's generated audit must accept a versioned release/asset allowlist in addition to Git refs, fail
+when any listed artifact lacks a full digest and provenance record, and add newly discovered original
+Full/Lite releases rather than treating this seed as permission to ignore them.
 
 For every atomic row PR8 records whether it is effective at `8e854f378` (`E`), older-tag-only and
 removed before that endpoint (`O`), or newer published-tag-only (`N`). A row may carry more than one
@@ -1804,6 +1879,7 @@ status. PR16 must close all three classes.
 | HID-08 | `denylist`/`hidelist`/`sulist` database schemas, CLI/provider consumption and rollback-compatible migration | `25fa2159`, historical DB v12, PR #26 reconciliation; external providers commonly expect `denylist` | PR12 defines the new schema/protocol and upgrade/downgrade tests; no pointer swap or silent union is accepted as completion |
 | HID-09 | `magiskhide exec` isolated mount-namespace command | Historical MagiskHide CLI; this is independently useful and not equivalent to list management | PR12 ports and tests command lifecycle/exit behavior or retires it with replacement guidance |
 | HID-10 | Daemon's own internal mount-namespace visibility after reverting upstream concealment | `ba6ed414` deliberately changed daemon-internal mount visibility | PR12 measures dependent behavior and makes an explicit keep/retire decision with namespace regressions |
+| HID-11 | Published MagiskSU exposure transitions: `/system/bin` to `/apex/com.android.runtime/bin`, `/debug_ramdisk/su` fallback, reversion for Termux/root-app compatibility, and delayed mounting until boot complete | Original R65/R66 Full/Lite release notes and assets outside the frozen 1q23 tag graph | PR8 creates transition-specific rows; PR12 owns exposure/lifecycle semantics; PR15 proves retained locations, timing, visibility and affected-app migration |
 | ZYG-01 | Maintained built-in Zygisk and ordinary Zygisk API/module behavior | Official v30.7 contains current built-in Zygisk; late historical Kitsune removed it in `2ef8f002` | PR7 keeps upstream intact; PR11 makes the supported provider decision; PR16 runs ordinary/provider module gates |
 | ZYG-02 | Earlier published-tag built-in Zygisk changes: ptrace injection/monitoring, GrapheneOS compatibility and Futile Hide-era behavior | Shipped in earlier Kitsune tags, later superseded/removed before the fidelity endpoint | PR8 creates tag-specific rows; PR11 ports measured required behavior or retires each with affected-user guidance—late removal does not erase them |
 | ZYG-03 | External-only Zygisk direction, provider tables/adapters and Kitsune Hide/SuList interoperability | `25fa2159`, `2ef8f002`; current ReZygisk removed Kitsune adapter and NeoZygisk is denylist-oriented | PR11 defines versioned provider boundary; PR12 closes Hide/SuList integration; PR15 names exact provider versions; no generic “external Zygisk works” claim |
@@ -1821,6 +1897,9 @@ status. PR16 must close all three classes.
 | MOD-09 | Pre-init storage selection/migration, especially historical avoidance of unsafe `/persist` | `e7192cec`, `98ea500f`, `54114ee4`; v30.7 may use `/persist` last | PR14 specifies policy/low-space/encryption/stale-copy handling; PR15 proves recovery and negative cases |
 | MOD-10 | `.magisk/block` to `.magisk/device` runtime/pre-init layout compatibility | `2a8bdf40`; modules and scripts may observe the path | PR14 owns migration, compatibility, stale-layout and cleanup tests |
 | MOD-11 | Empty-line-safe module `sepolicy.rule` parsing | `0d35c49f`; parser correctness is separate from live refresh semantics | PR14 inherits-and-tests the exact parser behavior or ports the minimal delta |
+| MOD-12 | `/apex` peer-group propagation retained to avoid environment detection, including namespace/boot-order interaction | Original R65/R66 release notes; overlaps shared-tmpfs behavior but shipped as an independently observable compatibility change | PR14 records and tests the exact propagation contract or retires it with affected-app guidance; PR15 owns runtime evidence |
+| MOD-13 | Symlink-versus-whiteout character-device distinction after the published systemless-deletion bug | Original R65/R66 release history; related to but not exhausted by generic whiteout semantics | PR14 owns both the buggy and corrected transition, upgrade cleanup, deletion and symlink regressions; PR15 validates representative mounts |
+| MOD-14 | Externally distributed Kitsune module-template ZIP and its early-mount, `initrc.d`, expanded partitions, whiteout, version-guard and cleanup contract | Historically linked from Kitsune documentation but absent from repository-only commit scans | PR10 owns endpoint, immutable digest and offline/failure disposition; PR14 ports/tests the API or publishes retirement and module-author migration |
 | SU-01 | Three authentication modes: disabled, system credential and manager biometric/interactive authentication | `26f4ee1d`, `5434ed88`; v30.7 exposes a simpler authentication option | PR13 preserves secure backend/UI semantics or retires modes individually with migration; replay/cancel/lockout/fallback tests required |
 | SU-02 | Complete MagiskSU policy lifecycle: prompt, allow, deny, revoke, timeout, shared UID, namespace, multiuser and manager-unavailable behavior | Historical daemon/app policy behavior; upstream v30.7 is maintained starting point | PR13 backend/UI agreement; PR15 physical/emulator runtime matrix; PR16 exact release regression |
 | SU-03 | Correct manager policy-row retrieval and deterministic single-row selection | `173458e9` added the effective `LIMIT 1` correction | PR13 owns database/provider regression tests and migration behavior |
@@ -1834,6 +1913,7 @@ status. PR16 must close all three classes.
 | APP-07 | Kitsune Mask name, labels, logos/colors, attribution, unofficial-build warning, and safe locale fallback | `ed3ff99f` plus fork resources/translations | PR13 owns the truthful, accessible product surface; visual branding never substitutes for package/version identity |
 | APP-08 | Historical HuskyDG/1q23 updater endpoints, channels, full-manager/stub URL transitions, and failure behavior | `ed3ff99f`, `1279a82c`; endpoints are no longer a trustworthy product service by assumption | PR10 replaces or retires each route with signed metadata, byte integrity, migration, and offline/failure tests |
 | APP-09 | Inactive-slot OTA completion prompt requiring the System Updates app's Restart action | `fa25c910`; independently visible from generic inactive-slot installation | PR13 preserves actionable UX or documents the maintained replacement; PR15 tests the real OTA lifecycle |
+| APP-10 | Manager root-shell scheduling across the libsu `5.3.0` transition and `5.2.2` rollback with the custom `DispatcherExecutor` restored | `83b411e6` then `7258ff09`; affects asynchronous manager/root task execution rather than dependency metadata alone | PR13 compares task ordering, cancellation, lifecycle and failure behavior and chooses the maintained implementation; PR15 runs manager/root concurrency regressions |
 | ID-01 | Fake future Magisk/version identity used for module compatibility | `78ff3756`, `8e854f37`; official uses real release/canary codes | PR9 replaces it with truthful product/upstream/protocol/capability fields and a tested `31000` migration |
 | ID-02 | Kitsune application/package identity and upgrade route from `io.github.huskydg.magisk` | `ed3ff99f`; signer/package/version transitions are separate from labels | PR9 defines truthful stable identity and migration; PR10/PR13 close signer/stub/hidden-manager interactions |
 | BOOT-01 | P-521 boot-image key/signature handling | `7443a4a9`, now substantially upstream | PR8 marks exact overlap; PR15 boot corpus/real target; PR16 inherits-and-tests rather than blindly dropping the row |
@@ -1843,11 +1923,14 @@ status. PR16 must close all three classes.
 | BOOT-05 | Legacy rootfs/SAR/2SI, second-stage init, `init_boot`, `vendor_boot`, A/B/recovery and Sony/other OEM boot quirks | Historical native init/boot fixes plus ordinary Magisk routes; maintained upstream is newer | PR15 owns exact device/corpus decisions and recovery; PR16 releases only tested claimed layouts |
 | DEV-01 | Nox `/sbin`, debug-ramdisk and PATH compatibility | `dfb66f0a`, `065953d2` | PR7 generic safe runtime selection; PR15 exact Nox version/lifecycle and residual-path evidence |
 | DEV-02 | Vivo `do_mount_check` kernel workaround | `378965fa`; no maintained generic equivalent proven | PR15 reproduces on owned target/minimized fixture and narrowly ports or retires with affected-device guidance |
-| DEV-03 | Samsung PROCA handling and Samsung-specific boot/package behavior | `e6b3bd6`; v30.7 contains evolved PROCA support | PR8 compares exact delta; PR15 Samsung physical lane proves inherited behavior or ports the remaining delta |
+| DEV-03 | Historical Samsung PROCA disable/rename workaround and Samsung-specific boot/package behavior | `e6b3bd6`; v30.7 contains evolved PROCA support but is not automatically equivalent to the shipped workaround | PR8 compares the exact disable/rename delta; PR15 Samsung physical lane proves inherited behavior or ports/retires the remaining workaround |
 | DEV-04 | SELinux-disabled/Waydroid, Sony, MTK, unusual pre-init and other effective OEM/emulator quirks present in fork commits/tags | Historical native/init/app compatibility patches; overlap varies by current upstream | PR8 must create one atomic row per quirk; PR12/PR14 own semantics; PR15 owns exact reproduction or retirement |
 | SEC-01 | Debug ADB-shell automatic root | `cb5779f`; unsafe in distributed artifacts | PR8 records test-flavor-only isolation or retirement; PR15/PR16 prove no published debug/release artifact auto-grants shell root |
 | SEC-02 | Historical public signing keys, global signature bypass, fake identity and release-wide optimization disablement | Tracked/public development identity and the regressions above are not product features to preserve | PR8 records explicit `retired-with-evidence`; PR9/PR10 implement replacement identity; PR16 verifies secrets/signers/artifacts and no regression |
 | DIST-01 | Published v31 manager/stub debug and release four-APK asset surface, provenance, and its interaction with debug-shell auto-root | `bb190797` through `70068d25`, then `25fa2159`; shipped artifact flavor is user-visible security behavior | PR16 publishes only explicitly qualified artifacts and proves debug-only root cannot enter production channels |
+| DIST-02 | Moved/rebuilt `v27.2-kitsune-4` source and release-APK incarnations | Inherited `1279a82c` tag conflicts with surviving `d5b60627` archive and the `818cfa…` release APK | PR8 inventories both source/artifact states and every intervening user-visible delta; PR16 requires immutable tag/source/asset provenance |
+| DIST-03 | Original Full `v26.4-kitsune-2` and R65/R66 manager/stub channels, identity, signing, update and upgrade paths | Surviving HuskyDG metadata/assets predate the current frozen tag graph | PR8 adds the release/asset ledger; PR9/PR10 own identity/update migration; PR13 owns manager state; PR16 closes exact artifacts and upgrade evidence |
+| DIST-04 | Kitsune Lite as a separately published always-SuList/no-Zygisk/no-modules/log-monitoring product line | `R65B92427-kitsune-lite` and distinct Full/Lite manager/stub metadata; no equivalent line exists in official v30.7 | PR8 records every Lite capability and affected user; PR11/PR12/PR14 decide core/provider/module semantics; PR13 owns migration UI; PR16 requires a qualified product or explicit retirement path |
 | ORD-01 | Ordinary Select-and-Patch, Direct Install, inactive-slot, recovery install, emulator live setup, environment repair and uninstall | Core official Magisk use cases relied on by Kitsune users; v30.7 is the maintained baseline | PR8 parity; PR15 API/device routes; PR16 exact candidate. System Mode success never substitutes for these lanes |
 | ORD-02 | Ordinary built-in Zygisk/DenyList, MagiskSU and representative Zygisk module behavior independent of Kitsune Hide | Maintained official functionality plus historical user expectations | PR11–PR13 preserve provider/core semantics; PR15 runtime; PR16 release regression |
 | ORD-03 | Ordinary module API/lifecycle, safe mode and stock recovery independent of early-mount extensions | Maintained official functionality plus historical module users | PR14 complete lifecycle; PR15 target matrix; PR16 final release evidence |
@@ -1895,6 +1978,10 @@ state for every stable ID below and every additional generated row.
 | `HID-013` | Randomized `/dev` daemon socket and SU-request FIFO endpoints | PR12 |
 | `HID-014` | Enforcing/permissive/disabled-SELinux and Waydroid-style zygote operation | PR12 |
 | `HID-015` | `hidelist`/`sulist`/`denylist` schemas, settings, CLI/provider source of truth, and rollback migration | PR12 |
+| `HID-016` | Published SU injection relocation `/system/bin`→`/apex/com.android.runtime/bin`, `/debug_ramdisk/su` fallback, and compatibility-driven reversion | PR12 with PR15 |
+| `HID-017` | MagiskSU exposure delayed until boot complete | PR12 with PR15 |
+| `HID-018` | Lite product's always-enforced inverse SuList/whitelist and migration to the selected product | PR12 with PR13 and PR16 |
+| `HID-019` | Lite product's log-based process monitoring lifecycle and visibility contract | PR12 with PR15 |
 
 ### Zygisk
 
@@ -1907,6 +1994,7 @@ state for every stable ID below and every additional generated row.
 | `ZYG-005` | Faster revert/unmount path from `7072f9e9` | PR11 |
 | `ZYG-006` | Zygote restart-monitor reliability fix from `be732edb` | PR11 |
 | `ZYG-007` | Built-in removal, external-only direction, and exact provider/Hide/SuList migration contract | PR11 with PR12 |
+| `ZYG-008` | Lite product's explicitly no-Zygisk behavior and migration/retirement impact | PR11 with PR16 |
 
 ### Modules and magic mount
 
@@ -1930,6 +2018,10 @@ state for every stable ID below and every additional generated row.
 | `MOD-016` | Ordinary install/update/disable/remove/rollback, boot scripts, interruption, and safe mode | PR14 |
 | `MOD-017` | Pre-init storage preference, no-`/persist` policy, and cache/metadata/data migration | PR14 |
 | `MOD-018` | `.magisk/block` to `.magisk/device` layout compatibility | PR14 |
+| `MOD-019` | `/apex` peer-group propagation and its namespace/detection behavior | PR14 with PR15 |
+| `MOD-020` | Correct symlink handling distinct from `REMOVE` whiteout character devices, including upgrade from the shipped bug | PR14 |
+| `MOD-021` | Historical module-template ZIP bytes, endpoint, guards, extended APIs and author migration | PR10 with PR14 |
+| `MOD-022` | Lite product's published modules-unsupported contract and user migration | PR14 with PR16 |
 
 `MOD-004` must separately name standard `system`, `vendor`, `product`, and `system_ext`; `odm`,
 `vendor_dlkm`, `odm_dlkm`, `oem`, `apex`, `prism`, and `optics`; and `my_custom`,
@@ -1963,10 +2055,14 @@ closure evidence.
 | `APP-010` | Flash/action orientation-lock behavior | PR13 |
 | `APP-011` | Maintained zh-CN, zh-TW, Vietnamese, Russian, and Turkish fork strings/locales | PR13 |
 | `APP-012` | Historical non-obfuscated manager/stub disposition | PR10 |
+| `APP-013` | libsu `5.3.0` transition, `5.2.2` rollback and custom `DispatcherExecutor` task semantics | PR13 with PR15 |
 | `ID-002` | Fake `29999`/`31000` identity and migration to truthful compatibility fields | PR9 |
 | `SEC-001` | Debug ADB-shell automatic root, confined to a non-publishable lab flavor or retired | PR8 with PR16 |
 | `SEC-002` | Public `TestKey-2024.jks`, runtime signature bypass, and production-signer migration | PR10 with PR16 |
 | `DIST-001` | v31 debug/release manager-and-stub four-APK asset surface and source/tag provenance | PR16 |
+| `DIST-002` | Both observed `v27.2-kitsune-4` source/release incarnations and intervening behavior | PR8 with PR16 |
+| `DIST-003` | Original Full stable/R65/R66 manager-stub channels, assets and upgrade migration | PR8, PR9, PR10, PR13, PR16 |
+| `DIST-004` | Original Lite always-SuList/no-Zygisk/no-modules/log-monitoring product and migration/retirement | PR8, PR11, PR12, PR13, PR14, PR16 |
 
 ### Boot, tooling, and target quirks
 
@@ -1980,7 +2076,7 @@ closure evidence.
 | `BOOT-006` | Sony `init.real` handling removal and resulting legacy-Sony compatibility | PR15 |
 | `DEV-001` | Nox `/sbin` PATH and missing-directory creation | PR7 generic path, PR15 exact target |
 | `DEV-002` | Vivo `do_mount_check` kernel workaround | PR15 |
-| `DEV-003` | Samsung PROCA kernel handling | PR15 |
+| `DEV-003` | Historical Samsung PROCA disable/rename workaround | PR15 |
 
 ### Ordinary Magisk parity not duplicated above
 
@@ -2307,15 +2403,19 @@ stable again before a later release candidate; do not rewrite this historical br
 
 ## PR 7 — System Mode vertical slice on the PR6 stable base
 
-**Implementation status: in progress on `next-system`; not complete or production-qualified. Depends
-on the green PR6 baseline and PR5A's exact writable target/restore contract.** This is the first
-product feature on `next-system`, not the complete historical Kitsune port.
+**Implementation status: active acceptance candidate on `next-system`; it remains unmerged and is
+complete only when the exact candidate passes every host, disposable
+AVD, writable-target install/upgrade/uninstall, and external-restore exit gate below. Depends on the
+green PR6 baseline and PR5A's exact writable target/restore contract.** This is the first product
+feature on `next-system`, not the complete historical Kitsune port.
 
 - Port the dedicated installer, capability contract, persistent launcher/RC, upstream live-setup-derived tmpfs bootstrap, current policy CLI, manifest/transaction, and uninstall.
 - Keep built-in Zygisk and upstream native core intact unless a target-backed failing test requires a narrow hook.
 - On Android 6, retain only JNI method families that Zygisk actually discovered and hooked; child
   cleanup must not re-register newer `nativeSpecializeAppProcess` signatures that old ART does not
-  declare. Gate this narrow v30.7 fix with repeated app-process starts after module tests.
+  declare. Reject non-regular, truncated, and non-ELF Zygisk module libraries before handing them
+  to the platform linker. Gate these narrow v30.7 fixes with repeated app-process starts after
+  malformed-module tests.
 - Close every dependency blocker recorded by PR6 before promotion: use the public upstream CXX
   `1.0.195` tag without an unpushable private gitlink, require fixed `anyhow`, `crypto-common`, and
   `digest` lockfile versions, preserve the sole unpatched RSA advisory only for local boot-image
@@ -2347,6 +2447,10 @@ product feature on `next-system`, not the complete historical Kitsune port.
   guest authorization before the first write, and remove the mapping. A copied/restored guest-side
   authorization, expired UI session, second request, changed boot, or changed host evidence fails
   closed.
+- Hash the complete external recovery tree once per doctor/authorization/handoff phase and reuse
+  only the fd-stable verified evidence inside that phase. Never trade binding for a small untrusted
+  manifest, and never spend the five-minute one-shot lease repeatedly re-reading multi-gigabyte
+  images after the guest requests its nonce.
 - Publish an independent versioned rescue payload and fixed init RC before the first boot-critical
   mutation. It must survive deletion/replacement of the main payload and runtime, recover repeated
   process death in install/upgrade/rollback/uninstall, and be removed RC-first only after the prior
@@ -2399,11 +2503,13 @@ the risk; no AVD or ordinary Magisk lane substitutes for this destructive recove
   selected line. Tag the old implementation after promotion instead of maintaining two permanent
   products.
 - Create `docs/port-ledger.md` with one row for every effective feature at pre-maintenance commit
-  `8e854f378` **and every material user-visible feature shipped in any published Kitsune/Delta tag
-  after the shared official ancestor, including features removed again before `8e854f378`**. Start
+  `8e854f378` **and every material user-visible feature shipped in any published Kitsune/Delta
+  release, including original Full/Lite lines, external compatibility assets, moved/rebuilt tags,
+  and features removed again before `8e854f378`**. Start
   from every stable family and every three-digit ID in the mandatory atomic seed above, then
-  reconcile them against the exact frozen tag allowlist and full commit/path history. A generated
-  audit must fail if an allowlisted tag or material changed path is unaccounted for. Required fields
+  reconcile them against the exact frozen tag/source/archive/metadata/asset seed and full
+  commit/path history. A generated audit must fail if an allowlisted observation, referenced asset,
+  or material changed path is unaccounted for. Required fields
   are stable feature ID, endpoint/tag-only status (`E`, `O`, `N`), historical
   commits/paths, first/last shipped tag, user-visible behavior, upstream overlap, decision state,
   owner PR, evidence links, affected users, and migration/retirement guidance. At PR8 a row may be `inherited-and-tested`,
@@ -2665,8 +2771,9 @@ No release should be called stable until all applicable boxes are checked.
 ## Historical fidelity closure
 
 - [ ] `docs/port-ledger.md` covers every effective feature at `8e854f378`, every material
-  user-visible behavior from every published post-fork Kitsune/Delta tag (including behavior removed
-  before that endpoint), and every material ordinary-Magisk use case with stable ID, exact
+  user-visible behavior from every published Kitsune/Delta release/tag/Full/Lite channel or external
+  compatibility asset (including behavior removed before that endpoint), and every material
+  ordinary-Magisk use case with stable ID, exact
   commits/paths/tags, owner, decision, evidence, user impact, and migration fields.
 - [ ] No row is unowned, vaguely triaged, deferred past PR15, or silently lost because official code was assumed equivalent.
 - [ ] Every PR8 `deferred-to-PR#` row has transitioned to `inherited-and-tested`,

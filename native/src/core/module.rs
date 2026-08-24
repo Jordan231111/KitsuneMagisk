@@ -10,11 +10,11 @@ use base::{
 };
 use nix::fcntl::OFlag;
 use nix::mount::MsFlags;
+use nix::sys::stat::{SFlag, fstat};
 use nix::unistd::UnlinkatFlags;
 use std::collections::BTreeMap;
-use std::os::fd::IntoRawFd;
+use std::os::fd::{AsRawFd, BorrowedFd, IntoRawFd};
 use std::path::{Component, Path};
-use std::ptr;
 use std::sync::atomic::Ordering;
 
 const MAGISK_BIN_INJECT_PARTITIONS: [&Utf8CStr; 4] = [
@@ -686,6 +686,211 @@ fn run_uninstall_script(module_name: &Utf8CStr) {
     exec_script(&script);
 }
 
+fn pread_exact(fd: i32, mut data: &mut [u8], mut offset: libc::off_t) -> bool {
+    while !data.is_empty() {
+        let read = unsafe { libc::pread(fd, data.as_mut_ptr().cast(), data.len(), offset) };
+        if read > 0 {
+            let read = read as usize;
+            let Ok(read_offset) = libc::off_t::try_from(read) else {
+                return false;
+            };
+            let Some(next_offset) = offset.checked_add(read_offset) else {
+                return false;
+            };
+            offset = next_offset;
+            data = &mut data[read..];
+        } else if read < 0 && std::io::Error::last_os_error().raw_os_error() == Some(libc::EINTR) {
+            continue;
+        } else {
+            return false;
+        }
+    }
+    true
+}
+
+fn valid_zygisk_elf(fd: i32, file_size: i64, elf_class: u8, machine: u16) -> bool {
+    let Ok(file_size) = u64::try_from(file_size) else {
+        return false;
+    };
+    let header_size = if elf_class == 1 { 52 } else { 64 };
+    let phdr_size = if elf_class == 1 { 32 } else { 56 };
+    if file_size < header_size {
+        return false;
+    }
+
+    let mut header = [0_u8; 64];
+    if !pread_exact(fd, &mut header[..header_size as usize], 0)
+        || header[..4] != *b"\x7fELF"
+        || header[4] != elf_class
+        || header[5] != 1
+        || header[6] != 1
+        || u16::from_le_bytes([header[16], header[17]]) != 3
+        || u16::from_le_bytes([header[18], header[19]]) != machine
+        || u32::from_le_bytes([header[20], header[21], header[22], header[23]]) != 1
+    {
+        return false;
+    }
+
+    let (phoff, ehsize, phentsize, phnum) = if elf_class == 1 {
+        (
+            u32::from_le_bytes([header[28], header[29], header[30], header[31]]) as u64,
+            u16::from_le_bytes([header[40], header[41]]) as u64,
+            u16::from_le_bytes([header[42], header[43]]) as u64,
+            u16::from_le_bytes([header[44], header[45]]) as u64,
+        )
+    } else {
+        (
+            u64::from_le_bytes([
+                header[32], header[33], header[34], header[35], header[36], header[37], header[38],
+                header[39],
+            ]),
+            u16::from_le_bytes([header[52], header[53]]) as u64,
+            u16::from_le_bytes([header[54], header[55]]) as u64,
+            u16::from_le_bytes([header[56], header[57]]) as u64,
+        )
+    };
+    if ehsize != header_size || phoff < ehsize || phentsize != phdr_size || phnum == 0 {
+        return false;
+    }
+    let Some(phdr_bytes) = phentsize.checked_mul(phnum) else {
+        return false;
+    };
+    // Match the platform linker's bounded program-header allocation.
+    if phdr_bytes > 64 * 1024 {
+        return false;
+    }
+    let Some(phdr_end) = phoff.checked_add(phdr_bytes) else {
+        return false;
+    };
+    if phdr_end > file_size {
+        return false;
+    }
+
+    let mut has_load = false;
+    let mut load_start = u64::MAX;
+    let mut load_end = 0_u64;
+    let mut phdr = [0_u8; 56];
+    for index in 0..phnum {
+        let offset = phoff + index * phentsize;
+        let Ok(offset) = libc::off_t::try_from(offset) else {
+            return false;
+        };
+        if !pread_exact(fd, &mut phdr[..phdr_size as usize], offset) {
+            return false;
+        }
+
+        let ph_type = u32::from_le_bytes([phdr[0], phdr[1], phdr[2], phdr[3]]);
+        let (segment_offset, virtual_address, file_bytes, memory_bytes) = if elf_class == 1 {
+            (
+                u32::from_le_bytes([phdr[4], phdr[5], phdr[6], phdr[7]]) as u64,
+                u32::from_le_bytes([phdr[8], phdr[9], phdr[10], phdr[11]]) as u64,
+                u32::from_le_bytes([phdr[16], phdr[17], phdr[18], phdr[19]]) as u64,
+                u32::from_le_bytes([phdr[20], phdr[21], phdr[22], phdr[23]]) as u64,
+            )
+        } else {
+            (
+                u64::from_le_bytes([
+                    phdr[8], phdr[9], phdr[10], phdr[11], phdr[12], phdr[13], phdr[14], phdr[15],
+                ]),
+                u64::from_le_bytes([
+                    phdr[16], phdr[17], phdr[18], phdr[19], phdr[20], phdr[21], phdr[22], phdr[23],
+                ]),
+                u64::from_le_bytes([
+                    phdr[32], phdr[33], phdr[34], phdr[35], phdr[36], phdr[37], phdr[38], phdr[39],
+                ]),
+                u64::from_le_bytes([
+                    phdr[40], phdr[41], phdr[42], phdr[43], phdr[44], phdr[45], phdr[46], phdr[47],
+                ]),
+            )
+        };
+        let Some(segment_end) = segment_offset.checked_add(file_bytes) else {
+            return false;
+        };
+        if segment_end > file_size {
+            return false;
+        }
+        // PT_LOAD is the only program-header type required here.
+        if ph_type == 1 {
+            let address_limit = if elf_class == 1 {
+                u32::MAX as u64
+            } else {
+                u64::MAX
+            };
+            let Some(file_memory_end) = virtual_address.checked_add(file_bytes) else {
+                return false;
+            };
+            let Some(memory_end) = virtual_address.checked_add(memory_bytes) else {
+                return false;
+            };
+            // Legacy bionic rounds these unchecked values up to a page. Use
+            // the maximum Android ELF page size so every supported runtime is safe.
+            let Some(rounded_memory_end) = memory_end.checked_add(64 * 1024 - 1) else {
+                return false;
+            };
+            if file_bytes > memory_bytes
+                || file_memory_end > address_limit
+                || rounded_memory_end > address_limit
+            {
+                return false;
+            }
+            if file_bytes > 0 {
+                has_load = true;
+                load_start = load_start.min(virtual_address & !(64 * 1024 - 1));
+                load_end = load_end.max(rounded_memory_end & !(64 * 1024 - 1));
+            }
+        }
+    }
+    has_load && load_end > load_start
+}
+
+fn valid_zygisk_fd(fd: i32, elf_class: u8, machine: u16) -> bool {
+    let source = unsafe { BorrowedFd::borrow_raw(fd) };
+    let Ok(attr) = fstat(source).log() else {
+        return false;
+    };
+    SFlag::from_bits_truncate(attr.st_mode as libc::mode_t) == SFlag::S_IFREG
+        && valid_zygisk_elf(fd, attr.st_size, elf_class, machine)
+}
+
+fn copy_module_to_memfd(memfd: i32, fd: i32, elf_class: u8, machine: u16) -> bool {
+    let source = unsafe { BorrowedFd::borrow_raw(fd) };
+    let Ok(source_attr) = fstat(source).log() else {
+        return false;
+    };
+    if source_attr.st_size <= 0 {
+        return false;
+    }
+    #[cfg(target_pointer_width = "32")]
+    let Ok(source_size) = libc::off_t::try_from(source_attr.st_size) else {
+        return false;
+    };
+    #[cfg(target_pointer_width = "64")]
+    let source_size = source_attr.st_size;
+
+    let mut offset: libc::off_t = 0;
+    while offset < source_size {
+        let remaining = (source_size - offset) as u64;
+        let count = remaining.min(usize::MAX as u64) as usize;
+        let sent = unsafe { libc::sendfile(memfd, fd, &mut offset, count) };
+        if sent > 0 {
+            continue;
+        }
+        if sent < 0 && std::io::Error::last_os_error().raw_os_error() == Some(libc::EINTR) {
+            continue;
+        }
+        return false;
+    }
+
+    let destination = unsafe { BorrowedFd::borrow_raw(memfd) };
+    let Ok(destination_attr) = fstat(destination).log() else {
+        return false;
+    };
+    destination_attr.st_size == source_attr.st_size
+        && valid_zygisk_elf(memfd, destination_attr.st_size, elf_class, machine)
+        && unsafe { libc::lseek(fd, 0, libc::SEEK_SET) } == 0
+        && unsafe { libc::lseek(memfd, 0, libc::SEEK_SET) } == 0
+}
+
 pub fn remove_modules() {
     for_each_module(|e| {
         let dir = e.open_as_dir()?;
@@ -731,35 +936,46 @@ fn collect_modules(zygisk_enabled: bool, open_zygisk: bool) -> Vec<ModuleInfo> {
                 return Ok(());
             }
 
-            fn open_fd_safe(dir: &Directory, name: &Utf8CStr) -> i32 {
-                dir.open_as_file_at(name, OFlag::O_RDONLY | OFlag::O_CLOEXEC, 0)
+            fn open_fd_safe(dir: &Directory, name: &Utf8CStr, elf_class: u8, machine: u16) -> i32 {
+                let Ok(fd) = dir
+                    .open_as_file_at(
+                        name,
+                        OFlag::O_RDONLY | OFlag::O_CLOEXEC | OFlag::O_NONBLOCK,
+                        0,
+                    )
                     .log()
-                    .map(IntoRawFd::into_raw_fd)
-                    .unwrap_or(-1)
+                else {
+                    return -1;
+                };
+                if !valid_zygisk_fd(fd.as_raw_fd(), elf_class, machine) {
+                    warn!("{name}: invalid Zygisk ELF");
+                    return -1;
+                }
+                fd.into_raw_fd()
             }
 
             if open_zygisk && is_zygisk {
                 #[cfg(target_arch = "arm")]
                 {
-                    z32 = open_fd_safe(&dir, cstr!("zygisk/armeabi-v7a.so"));
+                    z32 = open_fd_safe(&dir, cstr!("zygisk/armeabi-v7a.so"), 1, 40);
                 }
                 #[cfg(target_arch = "aarch64")]
                 {
-                    z32 = open_fd_safe(&dir, cstr!("zygisk/armeabi-v7a.so"));
-                    z64 = open_fd_safe(&dir, cstr!("zygisk/arm64-v8a.so"));
+                    z32 = open_fd_safe(&dir, cstr!("zygisk/armeabi-v7a.so"), 1, 40);
+                    z64 = open_fd_safe(&dir, cstr!("zygisk/arm64-v8a.so"), 2, 183);
                 }
                 #[cfg(target_arch = "x86")]
                 {
-                    z32 = open_fd_safe(&dir, cstr!("zygisk/x86.so"));
+                    z32 = open_fd_safe(&dir, cstr!("zygisk/x86.so"), 1, 3);
                 }
                 #[cfg(target_arch = "x86_64")]
                 {
-                    z32 = open_fd_safe(&dir, cstr!("zygisk/x86.so"));
-                    z64 = open_fd_safe(&dir, cstr!("zygisk/x86_64.so"));
+                    z32 = open_fd_safe(&dir, cstr!("zygisk/x86.so"), 1, 3);
+                    z64 = open_fd_safe(&dir, cstr!("zygisk/x86_64.so"), 2, 62);
                 }
                 #[cfg(target_arch = "riscv64")]
                 {
-                    z64 = open_fd_safe(&dir, cstr!("zygisk/riscv64.so"));
+                    z64 = open_fd_safe(&dir, cstr!("zygisk/riscv64.so"), 2, 243);
                 }
                 dir.unlink_at(cstr!("zygisk/unloaded"), UnlinkatFlags::NoRemoveDir)
                     .ok();
@@ -782,7 +998,7 @@ fn collect_modules(zygisk_enabled: bool, open_zygisk: bool) -> Vec<ModuleInfo> {
 
     if zygisk_enabled && open_zygisk {
         let mut use_memfd = true;
-        let mut convert_to_memfd = |fd: i32| -> i32 {
+        let mut convert_to_memfd = |fd: i32, elf_class: u8, machine: u16| -> i32 {
             if fd < 0 {
                 return fd;
             }
@@ -795,24 +1011,65 @@ fn collect_modules(zygisk_enabled: bool, open_zygisk: bool) -> Vec<ModuleInfo> {
                     ) as i32
                 };
                 if memfd >= 0 {
-                    unsafe {
-                        if libc::sendfile(memfd, fd, ptr::null_mut(), i32::MAX as usize) < 0 {
-                            libc::close(memfd);
-                        } else {
+                    if copy_module_to_memfd(memfd, fd, elf_class, machine) {
+                        unsafe {
                             libc::close(fd);
-                            return memfd;
                         }
+                        return memfd;
+                    } else {
+                        unsafe {
+                            libc::close(memfd);
+                        }
+                        // Some kernels/filesystems reject sendfile to a memfd. Preserve
+                        // compatibility only if the exact source FD is still valid.
+                        use_memfd = false;
+                        if valid_zygisk_fd(fd, elf_class, machine) {
+                            return fd;
+                        }
+                        unsafe {
+                            libc::close(fd);
+                        }
+                        warn!("Zygisk module changed while preparing memfd");
+                        return -1;
                     }
                 }
                 // Some error occurred, don't try again
                 use_memfd = false;
             }
-            fd
+            if valid_zygisk_fd(fd, elf_class, machine) {
+                fd
+            } else {
+                unsafe {
+                    libc::close(fd);
+                }
+                warn!("Zygisk module changed before use");
+                -1
+            }
         };
 
         modules.iter_mut().for_each(|m| {
-            m.z32 = convert_to_memfd(m.z32);
-            m.z64 = convert_to_memfd(m.z64);
+            #[cfg(target_arch = "arm")]
+            {
+                m.z32 = convert_to_memfd(m.z32, 1, 40);
+            }
+            #[cfg(target_arch = "aarch64")]
+            {
+                m.z32 = convert_to_memfd(m.z32, 1, 40);
+                m.z64 = convert_to_memfd(m.z64, 2, 183);
+            }
+            #[cfg(target_arch = "x86")]
+            {
+                m.z32 = convert_to_memfd(m.z32, 1, 3);
+            }
+            #[cfg(target_arch = "x86_64")]
+            {
+                m.z32 = convert_to_memfd(m.z32, 1, 3);
+                m.z64 = convert_to_memfd(m.z64, 2, 62);
+            }
+            #[cfg(target_arch = "riscv64")]
+            {
+                m.z64 = convert_to_memfd(m.z64, 2, 243);
+            }
         });
     }
 

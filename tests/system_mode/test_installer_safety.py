@@ -111,6 +111,87 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             discovery.index("if (!replaced_specialize_app)"),
         )
 
+    def test_zygisk_rejects_malformed_module_libraries_before_dlopen(self) -> None:
+        modules = (
+            ROOT / "native" / "src" / "core" / "module.rs"
+        ).read_text(encoding="utf-8")
+        open_safe = modules[
+            modules.index("fn open_fd_safe") : modules.index(
+                "if open_zygisk && is_zygisk"
+            )
+        ]
+        self.assertIn("OFlag::O_NONBLOCK", open_safe)
+        self.assertIn("valid_zygisk_fd", open_safe)
+        self.assertIn('warn!("{name}: invalid Zygisk ELF")', open_safe)
+        self.assertLess(open_safe.index("valid_zygisk_fd"), open_safe.index("fd.into_raw_fd()"))
+
+        validate = modules[
+            modules.index("fn valid_zygisk_elf") : modules.index(
+                "fn valid_zygisk_fd"
+            )
+        ]
+        self.assertIn('header[..4] != *b"\\x7fELF"', validate)
+        self.assertIn("header[4] != elf_class", validate)
+        self.assertIn("!= machine", validate)
+        self.assertIn("ehsize != header_size", validate)
+        self.assertIn("phentsize != phdr_size", validate)
+        self.assertIn("phdr_end > file_size", validate)
+        self.assertIn("PT_LOAD", validate)
+        self.assertIn("segment_offset.checked_add(file_bytes)", validate)
+        self.assertIn("segment_end > file_size", validate)
+        self.assertIn("file_bytes > memory_bytes", validate)
+        self.assertIn("virtual_address.checked_add(file_bytes)", validate)
+        self.assertIn("virtual_address.checked_add(memory_bytes)", validate)
+        self.assertIn("rounded_memory_end > address_limit", validate)
+
+        validate_fd = modules[
+            modules.index("fn valid_zygisk_fd") : modules.index(
+                "fn copy_module_to_memfd"
+            )
+        ]
+        self.assertIn("fstat(source)", validate_fd)
+        self.assertIn("SFlag::S_IFREG", validate_fd)
+        self.assertIn("valid_zygisk_elf", validate_fd)
+        self.assertLess(validate_fd.index("SFlag::S_IFREG"), validate_fd.index("valid_zygisk_elf"))
+
+        copy = modules[
+            modules.index("fn copy_module_to_memfd") : modules.index(
+                "pub fn remove_modules"
+            )
+        ]
+        self.assertIn("while offset < source_size", copy)
+        self.assertIn("Some(libc::EINTR)", copy)
+        self.assertIn("destination_attr.st_size == source_attr.st_size", copy)
+        self.assertIn("valid_zygisk_elf(memfd", copy)
+        self.assertNotIn("ptr::null_mut()", copy)
+
+        conversion = modules[
+            modules.index("let mut convert_to_memfd") : modules.index(
+                "modules.iter_mut().for_each"
+            )
+        ]
+        self.assertIn("libc::close(memfd)", conversion)
+        self.assertIn("libc::close(fd)", conversion)
+        self.assertIn("valid_zygisk_fd(fd, elf_class, machine)", conversion)
+        self.assertNotIn("libc::lseek(fd", conversion)
+
+        environment = (
+            ROOT / "app" / "core" / "src" / "main" / "java" / "com" /
+            "topjohnwu" / "magisk" / "test" / "Environment.kt"
+        ).read_text(encoding="utf-8")
+        self.assertIn("elfFixtures(truncated = true)", environment)
+        self.assertIn("machineOverride = 0", environment)
+        self.assertIn("zeroRange = true", environment)
+        self.assertIn("addressOverflow = true", environment)
+        self.assertIn('Shell.cmd("mkfifo $library")', environment)
+        self.assertIn('"libzygisk_test.so"', environment)
+        self.assertIn('"${Build.SUPPORTED_ABIS.first()}.so"', environment)
+        sample = (
+            ROOT / "app" / "test" / "src" / "main" / "cpp" /
+            "zygisk_test.cpp"
+        ).read_text(encoding="utf-8")
+        self.assertIn("REGISTER_ZYGISK_MODULE(TestModule)", sample)
+
     def test_ui_requires_root_debug_and_android_7_1_or_newer(self) -> None:
         line = next(
             item for item in self.install_view_model.splitlines()
@@ -148,6 +229,19 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("wget -qO-", lease)
         install = function_body(self.installer, "ks_install")
         self.assertLess(install.index("sm_begin_transaction"), install.index("ks_stage_payload"))
+
+    def test_nonce_handoff_hashes_the_external_backup_once(self) -> None:
+        cli = (
+            ROOT / "tools" / "system_mode" / "kitsune.py"
+        ).read_text(encoding="utf-8")
+        handoff = cli[
+            cli.index("def verify_host_handoff()") :
+            cli.index("with HostLease(")
+        ]
+        self.assertEqual(1, handoff.count("load_qualification_evidence("))
+        self.assertNotIn("evidence_from_record(", handoff)
+        self.assertNotIn("verify_report_qualification(", handoff)
+        self.assertEqual(2, handoff.count("verify_report_qualification_evidence("))
 
     def test_kernel_lock_and_atomic_auth_claim_cover_every_installer_action(self) -> None:
         main = function_body(self.installer, "ks_main")
