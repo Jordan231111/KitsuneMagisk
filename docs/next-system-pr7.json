@@ -74,6 +74,7 @@
   },
   "source_delta": [
     ".gitattributes",
+    ".gitignore",
     ".github/workflows/build.yml",
     ".gitmodules",
     "DEVELOPMENT_ROADMAP.md",

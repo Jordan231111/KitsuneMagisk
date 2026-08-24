@@ -18,6 +18,25 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    def test_instrumentation_variants_use_distinct_output_paths(self):
+        for release, variant in ((False, "debug"), (True, "release")):
+            with self.subTest(variant=variant):
+                fake_args = SimpleNamespace(release=release)
+                target = Path("out") / f"test-{variant}.apk"
+                with (
+                    mock.patch.object(build, "args", fake_args, create=True),
+                    mock.patch.object(build, "header"),
+                    mock.patch.object(
+                        build, "build_apk", return_value=target
+                    ) as build_apk,
+                    mock.patch.object(build, "cp") as copy_apk,
+                ):
+                    build.build_test()
+
+                build_apk.assert_called_once_with(":test", f"test-{variant}.apk")
+                copy_apk.assert_called_once_with(target, Path("out/test.apk"))
+                self.assertEqual(release, fake_args.release)
+
     def test_build_cargo_propagates_offline_failure_status(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -8,6 +8,15 @@ out
 
 # Built binaries
 native/out
+/native/src/external/_xDL/
+/native/src/external/busybox/
+/native/src/external/bzip2/
+/native/src/external/parallel-hashmap/
+/native/src/external/pcre/
+/native/src/external/xz/
+/native/src/external/zlib/
+/native/src/external/zopfli/
+/tools/termux-elf-cleaner/
 
 # Android Studio
 *.iml

@@ -462,7 +462,7 @@ def find_jdk():
     return env
 
 
-def build_apk(module: str):
+def build_apk(module: str, output_name=None):
     ensure_paths()
     env = find_jdk()
     props = args.config.resolve()
@@ -488,7 +488,7 @@ def build_apk(module: str):
 
     apk = f"{paths[-1]}-{build_type}.apk"
     source = Path("app", *paths, "build", "outputs", "apk", build_type, apk)
-    target = config["outdir"] / apk
+    target = config["outdir"] / (output_name or apk)
     mv(source, target)
     return target
 
@@ -524,11 +524,8 @@ def build_test():
     args.release = True
     try:
         header("* Building the test app")
-        source = build_apk(":test")
         variant = "release" if old_release else "debug"
-        target = source.parent / f"test-{variant}.apk"
-        if source != target:
-            mv(source, target)
+        target = build_apk(":test", f"test-{variant}.apk")
         # Keep the historical name for callers that build only one variant.
         cp(target, target.parent / "test.apk")
         header(f"Output: {target}")
