@@ -8,6 +8,7 @@ import unittest
 from unittest import mock
 
 import build
+import tools.next_system_baseline as baseline
 
 from tools.next_system_baseline import (
     BaselineError,
@@ -18,6 +19,51 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    def test_git_source_state_is_checked_and_build_races_remove_artifact(self):
+        commit = "a" * 40
+        clean_output = f"# branch.oid {commit}\n# branch.head next-system\n"
+        clean = subprocess.CompletedProcess(
+            ["git", "status"], 0, clean_output, ""
+        )
+        dirty = subprocess.CompletedProcess(
+            ["git", "status"], 0, clean_output + "1 .M N... 100644 100644 "
+            + f"100644 {commit} {commit} build.py\n", ""
+        )
+        failed = subprocess.CompletedProcess(
+            ["git", "status"], 128, "", "not a repository"
+        )
+        with mock.patch.object(build.subprocess, "run", return_value=clean):
+            self.assertEqual((commit, clean_output), build.git_source_state())
+        with mock.patch.object(build.subprocess, "run", return_value=dirty):
+            self.assertNotEqual((commit, clean_output), build.git_source_state())
+        with mock.patch.object(build.subprocess, "run", return_value=failed):
+            with self.assertRaisesRegex(RuntimeError, "not a repository"):
+                build.git_source_state()
+
+        source = Path("app/apk/build/outputs/apk/debug/apk-debug.apk")
+        target = Path("out/app-debug.apk")
+        with (
+            mock.patch.object(
+                build, "git_source_state", return_value=(commit, "changed")
+            ),
+            mock.patch.object(build, "rm") as remove,
+            mock.patch.object(build, "error", side_effect=SystemExit(1)),
+        ):
+            with self.assertRaises(SystemExit):
+                build.verify_source_state((commit, clean_output), source, target)
+        self.assertEqual([mock.call(source), mock.call(target)], remove.call_args_list)
+
+    def test_artifact_version_is_bound_to_current_head(self):
+        commit = "12345678" + "a" * 32
+        with mock.patch.object(baseline, "run", return_value=f"{commit}\n"):
+            self.assertEqual(
+                "30.7-kitsune-next.12345678",
+                baseline.expected_source_version(Path(".")),
+            )
+        with mock.patch.object(baseline, "run", return_value="not-a-commit\n"):
+            with self.assertRaisesRegex(BaselineError, "current source commit"):
+                baseline.expected_source_version(Path("."))
+
     def test_instrumentation_variants_use_distinct_output_paths(self):
         for release, variant in ((False, "debug"), (True, "release")):
             with self.subTest(variant=variant):
@@ -25,6 +71,7 @@ class NextSystemManifestTest(unittest.TestCase):
                 target = Path("out") / f"test-{variant}.apk"
                 with (
                     mock.patch.object(build, "args", fake_args, create=True),
+                    mock.patch.object(build, "config", {"outdir": Path("out")}),
                     mock.patch.object(build, "header"),
                     mock.patch.object(
                         build, "build_apk", return_value=target
@@ -36,6 +83,35 @@ class NextSystemManifestTest(unittest.TestCase):
                 build_apk.assert_called_once_with(":test", f"test-{variant}.apk")
                 copy_apk.assert_called_once_with(target, Path("out/test.apk"))
                 self.assertEqual(release, fake_args.release)
+
+    def test_manager_build_targets_the_final_output_path(self):
+        for release, variant in ((False, "debug"), (True, "release")):
+            with self.subTest(variant=variant):
+                fake_args = SimpleNamespace(release=release)
+                target = Path("out") / f"app-{variant}.apk"
+                with (
+                    mock.patch.object(build, "args", fake_args, create=True),
+                    mock.patch.object(build, "config", {"outdir": Path("out")}),
+                    mock.patch.object(build, "header"),
+                    mock.patch.object(
+                        build, "build_apk", return_value=target
+                    ) as build_apk,
+                    mock.patch.object(build, "cp"),
+                ):
+                    build.build_app()
+                build_apk.assert_called_once_with(":apk", f"app-{variant}.apk")
+
+    def test_gradle_identity_uses_exact_git_dirty_status(self):
+        plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            '"git", "status", "--porcelain=v1", "--untracked-files=normal"',
+            plugin,
+        )
+        self.assertIn("check(process.waitFor() == 0)", plugin)
+        self.assertIn('findProperty("expectedSourceCommit")', plugin)
+        self.assertNotIn('findProperty("sourceDirty")', plugin)
 
     def test_build_cargo_propagates_offline_failure_status(self):
         with tempfile.TemporaryDirectory() as directory:

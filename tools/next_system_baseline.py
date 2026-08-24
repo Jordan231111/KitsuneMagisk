@@ -233,10 +233,14 @@ def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
             f'const val UPSTREAM_BASE = "{upstream}"',
             'const val VERSION_PREFIX = "30.7-kitsune-next"',
             ".findGitDir(rootFile(\".\"))",
+            '"status", "--porcelain=v1", "--untracked-files=normal"',
+            'findProperty("expectedSourceCommit")',
         ],
         "build.py": [
             'error("Requires Python 3.9+")',
             'f"30.7-kitsune-next.{commit_hash}"',
+            '"Git source state changed while building the APK"',
+            'f"-PexpectedSourceCommit={source_state[0]}"',
         ],
         "native/src/include/consts.hpp": [identity["application_id"]],
         "native/src/include/consts.rs": [identity["application_id"]],
@@ -435,6 +439,7 @@ def inspect_apk(
     aapt: Path,
     apksigner: Path,
     manifest: dict[str, Any],
+    expected_version: str,
 ) -> dict[str, Any]:
     if not apk.is_file():
         raise BaselineError(f"missing {variant} APK: {apk}")
@@ -455,7 +460,7 @@ def inspect_apk(
         raise BaselineError(f"unexpected manager package in {apk}: {package_name}")
     if int(version_code) != identity["version_code"]:
         raise BaselineError(f"unexpected versionCode in {apk}: {version_code}")
-    if not VERSION_PATTERN.fullmatch(version_name):
+    if not VERSION_PATTERN.fullmatch(version_name) or version_name != expected_version:
         raise BaselineError(f"untruthful experimental versionName in {apk}: {version_name}")
     if sdk_match.group(1) != str(manifest["android"]["min_sdk"]):
         raise BaselineError(f"unexpected minSdk in {apk}: {sdk_match.group(1)}")
@@ -583,14 +588,29 @@ def inspect_test_apk(apk: Path, aapt: Path, apksigner: Path, app_id: str) -> dic
     }
 
 
+def expected_source_version(root: Path) -> str:
+    commit = run(("git", "rev-parse", "HEAD"), root).strip()
+    if re.fullmatch(r"[a-f0-9]{40}", commit) is None:
+        raise BaselineError("cannot bind artifacts to the current source commit")
+    return f"30.7-kitsune-next.{commit[:8]}"
+
+
 def verify_artifacts(
+    root: Path,
     outdir: Path,
     manifest: dict[str, Any],
     aapt: Path,
     apksigner: Path,
 ) -> dict[str, Any]:
-    debug = inspect_apk(outdir / "app-debug.apk", "debug", aapt, apksigner, manifest)
-    release = inspect_apk(outdir / "app-release.apk", "release", aapt, apksigner, manifest)
+    expected_version = expected_source_version(root)
+    debug = inspect_apk(
+        outdir / "app-debug.apk", "debug", aapt, apksigner, manifest,
+        expected_version,
+    )
+    release = inspect_apk(
+        outdir / "app-release.apk", "release", aapt, apksigner, manifest,
+        expected_version,
+    )
     test_debug = inspect_test_apk(
         outdir / "test-debug.apk",
         aapt,
@@ -648,7 +668,7 @@ def main() -> int:
         aapt = find_build_tool("aapt", args.aapt)
         apksigner = find_build_tool("apksigner", args.apksigner)
         report["artifacts"] = verify_artifacts(
-            args.artifacts.resolve(), manifest, aapt, apksigner
+            root, args.artifacts.resolve(), manifest, aapt, apksigner
         )
         report["android_tools"] = {
             "aapt": str(aapt),

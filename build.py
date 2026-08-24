@@ -60,6 +60,7 @@ if not sys.version_info >= (3, 9):
     error("Requires Python 3.9+")
 
 cpu_count = multiprocessing.cpu_count()
+repo_root = Path(__file__).resolve().parent
 
 # Common constants
 support_abis = {
@@ -152,6 +153,41 @@ def cmd_out(cmds: list):
         .stdout.strip()
         .decode("utf-8")
     )
+
+
+def git_source_state():
+    proc = subprocess.run(
+        [
+            "git", "status", "--porcelain=v2", "--branch",
+            "--untracked-files=normal",
+        ],
+        cwd=repo_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+        errors="strict",
+        check=False,
+    )
+    if proc.returncode != 0:
+        detail = proc.stderr.strip() or "no diagnostic output"
+        raise RuntimeError(f"Cannot inspect Git source state: {detail}")
+    match = re.search(r"(?m)^# branch\.oid ([a-f0-9]{40})$", proc.stdout)
+    if match is None:
+        raise RuntimeError("Cannot bind Git source state to one commit")
+    return match.group(1), proc.stdout
+
+
+def verify_source_state(expected, source, target):
+    try:
+        actual = git_source_state()
+    except RuntimeError as exc:
+        rm(source)
+        rm(target)
+        error(str(exc))
+    if actual != expected:
+        rm(source)
+        rm(target)
+        error("Git source state changed while building the APK")
 
 
 def llvm_tool(name: str) -> Path:
@@ -466,15 +502,26 @@ def build_apk(module: str, output_name=None):
     ensure_paths()
     env = find_jdk()
     props = args.config.resolve()
+    build_type = "Release" if args.release else "Debug"
+    paths = module.split(":")
+    apk = f"{paths[-1]}-{build_type.lower()}.apk"
+    source = Path("app", *paths, "build", "outputs", "apk", build_type.lower(), apk)
+    target = config["outdir"] / (output_name or apk)
+    rm(source)
+    rm(target)
+    try:
+        source_state = git_source_state()
+    except RuntimeError as exc:
+        error(str(exc))
 
     os.chdir("app")
-    build_type = "Release" if args.release else "Debug"
     proc = execv(
         [
             gradlew,
             f"{module}:assemble{build_type}",
             f"-PconfigPath={props}",
             f"-PabiList={','.join(build_abis.keys())}",
+            f"-PexpectedSourceCommit={source_state[0]}",
         ],
         env=env,
     )
@@ -482,27 +529,15 @@ def build_apk(module: str, output_name=None):
     if proc.returncode != 0:
         error(f"Build {module} failed!")
 
-    build_type = build_type.lower()
-
-    paths = module.split(":")
-
-    apk = f"{paths[-1]}-{build_type}.apk"
-    source = Path("app", *paths, "build", "outputs", "apk", build_type, apk)
-    target = config["outdir"] / (output_name or apk)
+    verify_source_state(source_state, source, target)
     mv(source, target)
     return target
 
 
 def build_app():
     header("* Building the Magisk app")
-    apk = build_apk(":apk")
-
     build_type = "release" if args.release else "debug"
-
-    # Rename apk-variant.apk to app-variant.apk
-    source = apk
-    target = apk.parent / apk.name.replace("apk-", "app-")
-    mv(source, target)
+    target = build_apk(":apk", f"app-{build_type}.apk")
     header(f"Output: {target}")
 
     # Stub building is directly integrated into the main app

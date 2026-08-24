@@ -1,5 +1,4 @@
 
-import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -25,6 +24,17 @@ private var sourceRevision = ""
 private var sourceTreeDirty = true
 private val supportAbis = setOf("armeabi-v7a", "x86", "arm64-v8a", "x86_64", "riscv64")
 private val defaultAbis = setOf("armeabi-v7a", "x86", "arm64-v8a", "x86_64")
+
+private fun gitTreeDirty(root: File): Boolean {
+    val process = ProcessBuilder(
+        "git", "status", "--porcelain=v1", "--untracked-files=normal"
+    ).directory(root).redirectErrorStream(true).start()
+    val output = process.inputStream.bufferedReader().use { it.readText() }
+    check(process.waitFor() == 0) {
+        "Cannot inspect the Git worktree used for build identity: $output"
+    }
+    return output.isNotBlank()
+}
 
 object Config {
     operator fun get(key: String): String? {
@@ -90,7 +100,12 @@ class MagiskPlugin : Plugin<Project> {
                 commitHash = repo.newObjectReader().use {
                     it.abbreviate(refId, 8).name()
                 }
-                sourceTreeDirty = !Git.wrap(repo).status().call().isClean
+                sourceTreeDirty = gitTreeDirty(rootFile("."))
+                findProperty("expectedSourceCommit")?.toString()?.let {
+                    check(it.matches(Regex("^[a-f0-9]{40}$")) && it == sourceRevision) {
+                        "Git HEAD changed before Gradle accepted the build identity"
+                    }
+                }
             }
         check(sourceRevision.matches(Regex("^[a-f0-9]{40}$"))) {
             "Cannot derive the full Git source identity"
