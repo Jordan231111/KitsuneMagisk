@@ -105,6 +105,17 @@ manifest/recovery oracle that PR7 ports rather than reinvents.
   NeoZygisk v2.3, Vector v2.0/API 100, and CorePatch 4.9 then loaded through `system_server`, with
   Vector Manager reporting the expected Kitsune identity. This is module startup/hook evidence, not
   a universal module-support claim.
+- Android 17/API 37 with 16 KiB pages is an explicit local PR7 forward-compatibility gate. The first
+  exact-candidate run reproduced the Android 17 QPR1 `memfd_file` denial, which blocked zygote from
+  module memfds created by `magiskd`. Review of the current upstream Android 17 work also found
+  QPR2's inserted `cgroup_uid` zygote JNI parameters; without their descriptors, v30.7 would
+  correctly take its fail-closed unknown-signature path and skip the affected hooks. PR7 ports
+  official upstream commits
+  `1b9f69b4b8eb424c40afb89e263a45d04fff662f` and
+  `65aa82516f7c8097e05d0db9895e0e839981990e` verbatim and pins both contracts in host regressions.
+  Completion still requires clean debug and release patch/boot/reboot/instrumentation, true
+  16,384-byte page-size proof, high-concurrency MagiskSU stress, and a residue scan on that disposable
+  API 37 image; a compile-only result is not support evidence.
 - Internal MagiskHide removed Magisk/module mounts from a selected app's live mount namespace.
   Canonical `denylist` selection was also observed by NeoZygisk, but its clean namespace left the
   fork's custom `/system/bin` Magisk overlay visible. Full external-provider hide parity therefore

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 
@@ -110,6 +113,71 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             discovery.index("strcmp(method.name, kSpecializeApp)"),
             discovery.index("if (!replaced_specialize_app)"),
         )
+
+    def test_zygisk_memfd_remains_accessible_on_android_17(self) -> None:
+        rules = (
+            ROOT / "native" / "src" / "sepolicy" / "rules.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'allow(["domain"], [proc], ["memfd_file"], '
+            '["getattr", "read", "write", "map", "execute"]);',
+            rules,
+        )
+
+    def test_zygisk_recognizes_android_17_qpr2_cgroup_signatures(self) -> None:
+        source = ROOT / "native" / "src" / "core" / "zygisk"
+        generator_path = source / "gen_jni_hooks.py"
+        generator_bytes = generator_path.read_bytes()
+        generator = generator_bytes.decode("utf-8")
+        generated_path = source / "jni_hooks.hpp"
+        generated_bytes = generated_path.read_bytes()
+        generated = generated_bytes.decode("utf-8")
+        self.assertIn('cgroup_uid = Argument("cgroup_uid", jint, False)', generator)
+        self.assertIn("fas_c = ForkApp(", generator)
+        self.assertIn("spec_c = SpecializeApp(", generator)
+
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            copy = temporary / generator_path.name
+            copy.write_bytes(generator_bytes)
+            subprocess.run(
+                [sys.executable, str(copy)],
+                cwd=temporary,
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            self.assertEqual(
+                generated_bytes,
+                (temporary / "jni_hooks.hpp").read_bytes(),
+            )
+
+        self.assertIn("std::array<JNINativeMethod, 13> fork_app_methods", generated)
+        self.assertIn("std::array<JNINativeMethod, 8> specialize_app_methods", generated)
+        fork = generated[
+            generated.index("// nativeForkAndSpecialize_c") :
+            generated.index("// nativeForkAndSpecialize_samsung_m")
+        ]
+        specialize = generated[
+            generated.index("// nativeSpecializeAppProcess_c") :
+            generated.index("// nativeSpecializeAppProcess_xr_u")
+        ]
+        self.assertIn(
+            '"(III[II[[IILjava/lang/String;Ljava/lang/String;[I[IZ'
+            'Ljava/lang/String;Ljava/lang/String;ZZ[Ljava/lang/String;'
+            '[Ljava/lang/String;ZZZ)I"',
+            fork,
+        )
+        self.assertIn(
+            '"(III[II[[IILjava/lang/String;Ljava/lang/String;Z'
+            'Ljava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;'
+            '[Ljava/lang/String;ZZZ)V"',
+            specialize,
+        )
+        for method in (fork, specialize):
+            self.assertIn("jint uid, jint cgroup_uid, jint gid", method)
+            self.assertIn("env, clazz, uid, cgroup_uid, gid", method)
 
     def test_zygisk_rejects_malformed_module_libraries_before_dlopen(self) -> None:
         modules = (
