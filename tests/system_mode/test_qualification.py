@@ -17,15 +17,17 @@ from unittest import mock
 import uuid
 
 from tools.system_mode.authorization import digest_backup_path
-from tools.system_mode.doctor import ProbeError, classify_report, fixture_report
+from tools.system_mode.doctor import CommandResult, ProbeError, classify_report, fixture_report
 from tools.system_mode.qualification import (
     QUALIFICATION_KEY_ENV,
     IndeterminateLifecycleError,
     _canonical_bytes,
     _checked_command,
     _inventory_digest,
+    _exec_result_payload,
     _remote_database_digest,
     _sqlite_content_digest,
+    _verify_init_exec_probe,
     _recover_from_candidates,
     _remove_verified_qualification_backups,
     _failure_recovery_candidates,
@@ -51,6 +53,39 @@ FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
 
 
 class QualificationTest(unittest.TestCase):
+    def test_domain_probe_waits_for_both_results_and_rejects_invalid_output(self) -> None:
+        nonce = "1" * 32
+        boot = "11111111-1111-1111-1111-111111111111"
+        paths = {"init": "/dev/init.result", "magisk": "/dev/magisk.result"}
+        probe = {"path": "/system/etc/init/probe.rc"}
+        helper = {"path": "/system/etc/init/helper.sh"}
+        evidence = {probe["path"]: probe, helper["path"]: helper}
+        for role, path in paths.items():
+            payload = _exec_result_payload(nonce, role, boot, f"u:r:{role}:s0")
+            evidence[path] = {"path": path, "sha256": hashlib.sha256(payload).hexdigest(),
+                              "size": len(payload), "mode": "0600", "uid": 0, "gid": 0}
+        client = mock.Mock()
+        pending = CommandResult(stdout="", stderr="", returncode=1)
+        ready = CommandResult(stdout=f"{nonce}:{boot}", stderr="", returncode=0)
+        client.shell.side_effect = [pending, ready, ready]
+        with mock.patch("tools.system_mode.qualification._remote_file_evidence", side_effect=lambda _, path: evidence[path]), \
+             mock.patch("tools.system_mode.qualification.time.sleep") as sleep:
+            result = _verify_init_exec_probe(client, probe=probe, helper=helper,
+                                            result_paths=paths, nonce=nonce, boot_id=boot)
+            self.assertEqual(hashlib.sha256(boot.encode()).hexdigest(), result["boot_id_sha256"])
+            sleep.assert_called_once_with(0.25)
+            client.shell.side_effect = None
+            client.shell.return_value = ready
+            evidence[paths["magisk"]]["sha256"] = "0" * 64
+            with self.assertRaisesRegex(ProbeError, "did not execute the magisk domain probe"):
+                _verify_init_exec_probe(client, probe=probe, helper=helper,
+                                        result_paths=paths, nonce=nonce, boot_id=boot)
+        client.shell.return_value = pending
+        with mock.patch("tools.system_mode.qualification.time.monotonic", side_effect=[0, 31]):
+            with self.assertRaisesRegex(ProbeError, "timed out waiting"):
+                _verify_init_exec_probe(client, probe=probe, helper=helper,
+                                        result_paths=paths, nonce=nonce, boot_id=boot)
+
     def test_database_digest_preserves_schema_rows_and_value_types(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-sqlite-content-") as temporary:
             path = Path(temporary) / "magisk.db"

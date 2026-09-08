@@ -543,7 +543,7 @@ def _remote_file_evidence(client: AdbClient, path: str) -> dict[str, Any]:
         f"test -f {quoted} && test ! -L {quoted} && "
         f"sha256sum {quoted} && stat -c '%s\t%a\t%u\t%g' {quoted} && "
         f"(ls -Zd {quoted} 2>/dev/null || true)",
-        "remote file evidence",
+        f"remote file evidence for {path}",
     )
     lines = output.splitlines()
     if len(lines) not in {2, 3}:
@@ -831,6 +831,24 @@ def _verify_init_exec_probe(
     nonce: str,
     boot_id: str,
 ) -> dict[str, Any]:
+    expected_property = f"{nonce}:{boot_id}"
+    checks = " && ".join(
+        f"[ -f {shlex.quote(path)} ] && [ ! -L {shlex.quote(path)} ]"
+        for path in result_paths.values()
+    )
+    deadline = time.monotonic() + 30
+    while True:
+        try:
+            result = client.shell(
+                f"{checks} && getprop {QUALIFICATION_PROPERTY}", root=True, timeout=5,
+            )
+            if result.returncode == 0 and result.stdout.strip() == expected_property:
+                break
+        except ProbeError:
+            pass
+        if time.monotonic() >= deadline:
+            raise ProbeError("timed out waiting for both init domain probe results")
+        time.sleep(0.25)
     if _remote_file_evidence(client, str(probe["path"])) != dict(probe):
         raise ProbeError("init qualification RC did not persist")
     if _remote_file_evidence(client, str(helper["path"])) != dict(helper):
@@ -844,7 +862,6 @@ def _verify_init_exec_probe(
         if evidence["mode"] != "0600" or evidence["uid"] != 0 or evidence["gid"] != 0:
             raise ProbeError(f"{role} domain probe result metadata is invalid")
         results[role] = evidence
-    expected_property = f"{nonce}:{boot_id}"
     result = client.shell(f"getprop {QUALIFICATION_PROPERTY}")
     if result.returncode != 0 or result.stdout.strip() != expected_property:
         raise ProbeError("selected init directory did not freshly execute both domain probes")
@@ -1583,7 +1600,7 @@ def qualify_target(
         f"  magisk) expected='u:r:magisk:s0'; output='{magisk_result_path}' ;;\n"
         "  *) exit 64 ;;\n"
         "esac\n"
-        "domain=\"$(cat /proc/self/attr/current)\"\n"
+        "domain=\"$(cat /proc/$$/attr/current | tr -d '\\000')\"\n"
         "[ \"$domain\" = \"$expected\" ] || exit 65\n"
         "boot_id=\"$(cat /proc/sys/kernel/random/boot_id)\"\n"
         "tmp=\"$output.new\"\n"
@@ -1592,13 +1609,16 @@ def qualify_target(
         f"'{nonce}' \"$role\" \"$boot_id\" \"$domain\" >\"$tmp\"\n"
         "chmod 0600 \"$tmp\"\n"
         "chown 0:0 \"$tmp\"\n"
+        f"setprop {QUALIFICATION_PROPERTY} '{nonce}:'\"$boot_id\"\n"
         "mv -f \"$tmp\" \"$output\"\n"
         "sync\n"
-        f"setprop {QUALIFICATION_PROPERTY} '{nonce}:'\"$boot_id\"\n"
     ).encode("ascii")
     probe = (
         "# Kitsune System Mode qualification schema 1; temporary.\n"
-        "on post-fs-data\n"
+        # The existing root provider may create the Magisk domain during its
+        # own post-fs-data bootstrap. Test execution after that policy exists,
+        # just as the production launcher prepares policy before entering it.
+        "on property:sys.boot_completed=1\n"
         f"    exec u:r:init:s0 0 0 -- /system/bin/sh {helper_path} init\n"
         f"    exec u:r:magisk:s0 0 0 -- /system/bin/sh {helper_path} magisk\n"
     ).encode("ascii")

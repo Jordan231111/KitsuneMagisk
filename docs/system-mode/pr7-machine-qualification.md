@@ -13,7 +13,8 @@ Qualification uses two separate external backups.
 2. It creates unpredictable anchors in both the selected persistent init filesystem and
    `/data/adb`, then creates a temporary challenge backup.
 3. It overwrites both anchors, adds independent markers, and publishes a temporary init RC and
-   helper. Across three distinct cold boots, that RC executes the helper as both `u:r:init:s0`
+   helper. After the existing root provider initializes its policy, across three distinct cold boots,
+   that RC executes the helper as both `u:r:init:s0`
    and `u:r:magisk:s0`. Each result contains the current random boot ID, so replaying a prior
    result cannot pass.
 4. It restores the challenge backup and requires both original anchors, including their exact
@@ -33,7 +34,7 @@ transaction receipts, `/data/adb/magisk`, Magisk databases and journals, modules
 post-fs-data/service scripts, and persistent sepolicy rules. Runtime tmpfs paths and cache logs are
 not recovery artifacts and are not included.
 
-The Magisk SQLite database is compared by its complete schema, typed rows, schema version and
+The Magisk SQLite database is compared by its complete schema, typed rows, user version and
 application ID after SQLite integrity checking. Legacy daemon startup can rewrite identical settings
 while changing SQLite page counters and implicit rowids. Raw database byte hashes, sizes and mtimes
 remain in the sealed record; permissions, ownership and SELinux labels must still match. A live WAL,
