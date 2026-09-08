@@ -26,6 +26,8 @@ SM_SECURE_DIR_METADATA="$TEST_ROOT/secure-dir.env"
 SM_SECURE_DIR_SHA256="$(printf '%064d' 0)"
 SM_MOUNTINFO_FILE="$TEST_ROOT/mountinfo"
 SM_SNAPSHOT_SETTLE_SECONDS=0
+SM_PROC_ROOT="$TEST_ROOT/proc"
+mkdir -p "$SM_PROC_ROOT"
 SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 mkdir -p "$TEST_ROOT/data/adb"
 : >"$SM_MOUNTINFO_FILE"
@@ -541,6 +543,27 @@ RC
                 ln -s "$TEST_ROOT/valid.rc" "$rc"
                 ! sm_find_legacy_policy_sidecar
                 test "$(sm_sha256_file "$policy")" = "$before"
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_rollback_refuses_active_mutable_state_before_any_restore(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-rollback-active-state-") as temp:
+            result = run_harness(
+                r"""
+                SM_ROLLBACK_DIR="$TEST_ROOT/rollback"
+                mkdir -p "$SM_ROLLBACK_DIR"
+                printf saved >"$SM_ROLLBACK_DIR/untouched"
+                sm_update_state() { touch "$TEST_ROOT/state-changed"; }
+                sm_quiesce_magisk() { return 1; }
+                ! sm_restore_snapshot
+                test ! -e "$TEST_ROOT/state-changed"
+                sm_quiesce_magisk() { return 0; }
+                sm_assert_mutable_namespaces_idle() { return 1; }
+                ! sm_restore_snapshot
+                test ! -e "$TEST_ROOT/state-changed"
+                test "$(cat "$SM_ROLLBACK_DIR/untouched")" = saved
                 """,
                 Path(temp),
             )

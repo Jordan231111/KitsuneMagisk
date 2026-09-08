@@ -372,6 +372,13 @@ class Environment : BaseTest {
     }
 
     @Test
+    fun recoverSystemMode() {
+        assertTrue("System Mode recovery failed", runBlocking {
+            MagiskInstaller.SystemModeRecovery(TimberLog, TimberLog).exec()
+        })
+    }
+
+    @Test
     fun setupEnvironment() {
         runBlocking {
             assertTrue(

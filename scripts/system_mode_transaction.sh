@@ -2553,6 +2553,10 @@ sm_prepare_originals() {
 
 sm_restore_snapshot() {
   local label canonical real source failed=0 rollback="$SM_ROLLBACK_DIR"
+  sm_quiesce_magisk && sm_assert_mutable_namespaces_idle || {
+    sm_log "! Mutable Magisk state is still in use; refusing unsafe rollback"
+    return 1
+  }
   sm_update_state ROLLING_BACK || return 1
   for label in magisk_log_bak magisk_log preinit_rule service post_fs_data modules_update modules \
     magisk_db_shm magisk_db_wal magisk_db runtime addon_dir addon_script \

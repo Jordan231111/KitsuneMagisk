@@ -285,8 +285,13 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             self.magisk_installer.index("protected suspend fun directSystem"):
             self.magisk_installer.index("protected suspend fun secondSlot")
         ]
-        self.assertIn('unshare -m', direct)
-        self.assertIn('kitsune_system_install.sh', direct)
+        worker = (ROOT / "app/core/src/main/java/com/topjohnwu/magisk/core/utils/RootUtils.kt").read_text()
+        self.assertIn('runSystemMode("install")', direct)
+        self.assertIn('"unshare", "-m"', worker)
+        self.assertIn('kitsune_system_install.sh', worker)
+        self.assertIn('ProcessBuilder(command)', worker)
+        self.assertIn('Binder.getCallingUid() != applicationInfo.uid', worker)
+        self.assertIn('NonCancellable', worker)
         self.assertIn('BuildConfig.DEBUG', direct)
         self.assertLess(direct.index("BuildConfig.DEBUG"), direct.index("extractFiles"))
 
