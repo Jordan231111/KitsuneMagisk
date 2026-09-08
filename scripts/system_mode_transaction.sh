@@ -1914,6 +1914,18 @@ sm_mutable_path() {
   return 1
 }
 
+sm_process_exited() {
+  local process="$1" record
+  [ -f "$process/stat" ] && [ ! -L "$process/stat" ] || return 1
+  record="$($SM_BB cat "$process/stat" 2>/dev/null)" || return 1
+  case "$record" in "${process##*/} ("*") "*) ;; *) return 1 ;; esac
+  # The comm field can contain spaces and closing parentheses. Only the state
+  # after its final delimiter is kernel evidence that file references are gone.
+  record="${record##*) }"
+  case "$record" in 'Z '*|'X '*|'x '*) return 0 ;; esac
+  return 1
+}
+
 sm_assert_mutable_namespaces_idle() {
   local proc_root="${SM_PROC_ROOT:-/proc}" process pid link target fd flags access mapped maps
   [ -d "$proc_root" ] && [ ! -L "$proc_root" ] || return 1
@@ -1927,12 +1939,12 @@ sm_assert_mutable_namespaces_idle() {
     }
     link="$process/cwd"
     [ -L "$link" ] || {
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid working directory"
       return 1
     }
     target="$($SM_BB readlink "$link" 2>/dev/null)" || {
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid working directory"
       return 1
     }
@@ -1943,13 +1955,13 @@ sm_assert_mutable_namespaces_idle() {
     fi
     if [ ! -d "$process/fd" ] || [ -L "$process/fd" ] ||
        [ ! -r "$process/fd" ] || [ ! -x "$process/fd" ]; then
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid file descriptors"
       return 1
     fi
     if [ ! -d "$process/fdinfo" ] || [ -L "$process/fdinfo" ] ||
        [ ! -r "$process/fdinfo" ] || [ ! -x "$process/fdinfo" ]; then
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid descriptor metadata"
       return 1
     fi
@@ -1984,7 +1996,7 @@ sm_assert_mutable_namespaces_idle() {
     done
     maps="$process/maps"
     if [ ! -f "$maps" ] || [ -L "$maps" ] || [ ! -r "$maps" ]; then
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid memory mappings"
       return 1
     fi
@@ -2009,7 +2021,7 @@ sm_assert_mutable_namespaces_idle() {
         }
       }
     ' "$maps" 2>/dev/null)" || {
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot parse process $pid memory mappings"
       return 1
     }
@@ -3936,6 +3948,16 @@ sm_restore_originals() {
     case "$path" in
       "$SM_RESCUE_RC"|"$SM_RESCUE_DIR") [ "$scope" = rescue ] || continue ;;
       *) [ "$scope" != rescue ] || continue ;;
+    esac
+    # Modules, policy choices and user scripts belong to the user, not the
+    # installation. Restore their snapshot only when rolling back a failed
+    # transaction; successful uninstall must preserve subsequent user changes.
+    case "$path" in
+      /data/adb/magisk.db|/data/adb/magisk.db-wal|/data/adb/magisk.db-shm|\
+      /data/adb/modules|/data/adb/modules_update|/data/adb/post-fs-data.d|\
+      /data/adb/service.d|/data/adb/sepolicy.rule|/cache/magisk.log|/cache/magisk.log.bak)
+        continue
+        ;;
     esac
     real="$(sm_real_path "$path")" || return 1
     if [ "$path" = /system/etc/init/bootanim.rc ]; then
