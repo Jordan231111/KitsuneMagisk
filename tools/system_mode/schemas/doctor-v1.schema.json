@@ -272,7 +272,9 @@
         "exists": {"type": "boolean"},
         "kind": {"enum": ["file", "directory", "missing"]},
         "readable": {"type": "boolean"},
-        "permission_writable": {"type": "boolean"}
+        "permission_writable": {"type": "boolean"},
+        "uid": {"type": ["integer", "null"], "minimum": 0},
+        "mode": {"type": ["string", "null"], "pattern": "^[0-7]{4}$"}
       }
     },
     "policyRecord": {
@@ -286,6 +288,8 @@
         "kind": {"enum": ["file", "directory", "missing"]},
         "readable": {"type": "boolean"},
         "permission_writable": {"type": "boolean"},
+        "uid": {"type": ["integer", "null"], "minimum": 0},
+        "mode": {"type": ["string", "null"], "pattern": "^[0-7]{4}$"},
         "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
         "size": {"type": ["integer", "null"], "minimum": 0}
       }

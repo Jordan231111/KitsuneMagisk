@@ -501,6 +501,51 @@ class SystemModeTransactionTest(unittest.TestCase):
             )
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_live_policy_legacy_launcher_needs_no_persistent_policy_sidecar(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-legacy-live-policy-") as temp:
+            result = run_harness(
+                r"""
+                SM_SYSTEM_DIR=/system/etc/init/magisk
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                is_rootfs() { return 1; }
+                # The host fixture's owner stands in for Android root.
+                sm_legacy_regular_file() {
+                  [ -f "$1" ] && [ ! -L "$1" ] || return 1
+                  sm_reject_unsafe_mode "$(bb stat -c %a "$1")"
+                }
+                rc="$(sm_real_path "$SM_SYSTEM_DIR.rc")"
+                policy="$(sm_real_path /vendor/etc/selinux/precompiled_sepolicy)"
+                mkdir -p "$(dirname "$rc")" "$(dirname "$policy")"
+                printf original-policy >"$policy"
+                before="$(sm_sha256_file "$policy")"
+                cat >"$rc" <<'RC'
+on post-fs-data
+    start logd
+    exec u:r:su:s0 root root -- /system/etc/init/magisk/magiskpolicy --live --magisk
+    exec u:r:su:s0 root root -- /system/etc/init/magisk/magisk64 --auto-selinux --setup-sbin /system/etc/init/magisk /sbin
+    exec u:r:su:s0 root root -- /sbin/magisk --auto-selinux --post-fs-data
+on nonencrypted
+    exec u:r:su:s0 root root -- /sbin/magisk --auto-selinux --service
+RC
+                chmod 0644 "$rc"
+                sm_find_legacy_policy_sidecar
+                test -z "$SM_LEGACY_POLICY_PATH"
+                test "$(sm_sha256_file "$policy")" = "$before"
+                cp "$rc" "$TEST_ROOT/valid.rc"
+                printf '    write /vendor/etc/selinux/precompiled_sepolicy modified\n' >>"$rc"
+                ! sm_find_legacy_policy_sidecar
+                sed 's/--live --magisk/--load \/vendor\/etc\/selinux\/precompiled_sepolicy --save \/vendor\/etc\/selinux\/precompiled_sepolicy --magisk/' \
+                  "$TEST_ROOT/valid.rc" >"$rc"
+                ! sm_find_legacy_policy_sidecar
+                rm "$rc"
+                ln -s "$TEST_ROOT/valid.rc" "$rc"
+                ! sm_find_legacy_policy_sidecar
+                test "$(sm_sha256_file "$policy")" = "$before"
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_legacy_policy_restore_uses_the_recorded_original(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-transaction-policy-restore-") as temp:
             result = run_harness(

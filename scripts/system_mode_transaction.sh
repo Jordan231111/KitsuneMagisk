@@ -2232,6 +2232,34 @@ sm_legacy_rc_signature() {
     "$SM_BB" grep -Fq -- '--post-fs-data' "$path"
 }
 
+sm_legacy_live_policy_rc() {
+  local file="$1"
+  sm_legacy_regular_file "$file" || return 1
+  # This historical launcher changes only the running policy. It never had a
+  # persistent-policy gzip original; require its complete command vocabulary
+  # before treating an absent sidecar as intentional.
+  "$SM_BB" awk '
+    {
+      line=$0
+      gsub(/[[:space:]]+/, " ", line)
+      sub(/^ /, "", line); sub(/ $/, "", line)
+      if (line == "" || line ~ /^#/) next
+      if (line ~ /^on (post-fs-data|nonencrypted|property:vold.decrypt=trigger_restart_framework|property:sys.boot_completed=1|property:init.svc.zygote=(restarting|stopped))$/) next
+      if (line == "start logd" || line == "mkdir /data/adb/magisk 755") next
+      if (line !~ /^exec u:r:(su|magisk|update_engine|init):s0 (root|0) (root|0) -- /) { bad=1; exit }
+      sub(/^exec [^ ]+ [^ ]+ [^ ]+ -- /, "", line)
+      if (line == "/system/etc/init/magisk/magiskpolicy --live --magisk") { policy=1; next }
+      if (line ~ /^\/system\/etc\/init\/magisk\/magisk(32|64)? --auto-selinux --setup-sbin \/system\/etc\/init\/magisk \/(sbin|debug_ramdisk)$/) { setup=1; next }
+      if (line ~ /^\/(sbin|debug_ramdisk)\/magisk --auto-selinux --(post-fs-data|service|boot-complete|zygote-restart)$/) {
+        if (line ~ / --post-fs-data$/) post=1
+        next
+      }
+      bad=1; exit
+    }
+    END { exit bad || !policy || !setup || !post }
+  ' "$file"
+}
+
 sm_find_legacy_policy_sidecar() {
   local canonical real count=0
   SM_LEGACY_POLICY_PATH=
@@ -2262,6 +2290,9 @@ sm_find_legacy_policy_sidecar() {
   done
   [ "$count" = 1 ] && return 0
   if command -v is_rootfs >/dev/null 2>&1 && is_rootfs; then
+    return 0
+  fi
+  if sm_legacy_live_policy_rc "$(sm_real_path "$SM_SYSTEM_DIR.rc")"; then
     return 0
   fi
   sm_log "! Legacy System Mode has no exact restorable policy backup"

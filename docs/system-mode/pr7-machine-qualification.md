@@ -65,11 +65,22 @@ the record unusable.
 - Root-capable ADB, writable persistent `/system`, a supported init directory, and a clean exact
   `next-system` commit.
 
+The init directory must be root-owned, unredirected and not group/world writable. Doctor reports
+its observed UID and mode and applies the same eligibility check as the installer. Prepare an
+ineligible vendor image only with a verified external recovery copy; qualification does not change
+directory ownership. If the legacy manager uses SuList, allow the Next manager in that list and grant
+it root before starting its one-shot install session.
+
 This PR7 generic qualifier intentionally requires the live target policy to already support the
 Magisk domain. That matches the qualified legacy-Kitsune-to-PR7 MuMu upgrade path. A fresh target
 whose root provider lacks `u:r:magisk:s0` fails closed even if the later PR7 launcher could inject
 that domain; widening that flow requires an artifact-fed, adapter-specific policy qualification,
 not an unproven shortcut.
+
+A legacy launcher containing only the recognized live-policy/bootstrap commands does not require a
+persistent-policy gzip sidecar. That migration preserves the existing policy file and removes only
+the owned launcher/payload. A missing sidecar for an unrecognized or persistent-policy-writing
+launcher still blocks migration.
 
 The host verifier requires POSIX `openat`/`O_NOFOLLOW`, process-group, and `/dev/fd` semantics.
 Native reparse-point-safe Windows lifecycle integration belongs to concrete commercial-emulator

@@ -3,8 +3,8 @@
 # KitsuneMagisk Next
 
 This branch is the experimental, maintainable-base rebuild of KitsuneMagisk. It is based directly
-on the audited Magisk v30.7 release and currently contains upstream Magisk behavior plus only the
-identity, build, and test-laboratory changes required for the PR6 baseline.
+on the audited Magisk v30.7 release and contains the PR6 baseline plus the experimental PR7
+Direct-System implementation and qualification tools.
 
 It installs as `io.github.huskydg.magisk.next`, reports a
 `30.7-kitsune-next.<source>` version, and uses the `next-system-experimental` channel identity. It
@@ -14,8 +14,9 @@ to off because this branch does not yet have a project-owned update endpoint.
 ## Important status
 
 - This is an unofficial engineering baseline, not a production release or a daily-phone build.
-- Direct-System/System Mode—the primary purpose of KitsuneMagisk—has deliberately not been ported
-  yet. Its tested vertical slice is the next roadmap unit after this clean base passes.
+- Direct-System/System Mode—the primary purpose of KitsuneMagisk—is available only in debug builds
+  after machine qualification of the exact writable target and its external recovery copy. See
+  [the qualification guide](docs/system-mode/pr7-machine-qualification.md).
 - MagiskHide/SuList, early-mount, and external-Zygisk integration are also not present yet.
 - Normal upstream Select-and-Patch, Direct Install, inactive-slot, recovery, emulator live setup,
   MagiskSU, modules, and built-in Zygisk remain in scope and must stay green.
@@ -33,7 +34,7 @@ then run:
 ```sh
 ./build.py -v all
 ./build.py -vr -c /path/to/external-signing-config.prop all
-python3 tools/next_system_baseline.py --source --artifacts out
+python3 tools/next_system_baseline.py --manifest docs/next-system-pr7.json --source --artifacts out
 ```
 
 A release test build must use an external, disposable or production-controlled signing key. The

@@ -9,6 +9,7 @@ emu_args=
 emu_pid=
 wait_pid=
 owned_avd=
+prior_boot_id=
 
 avd_name="${MAGISK_AVD_NAME:-magisk-test}"
 # Emulator 37.2+ accepts only even console ports in 5554..5584. MuMu uses the
@@ -213,6 +214,10 @@ def run_adb(arguments, capture):
 
 
 while True:
+    # Reconnecting cannot rediscover a transport that ADB has forgotten after
+    # a previous QEMU process exited. Connect the owned listener explicitly.
+    if serial.startswith("127.0.0.1:"):
+        run_adb(["connect", serial], False)
     result = run_adb(["exec-out", "getprop", "sys.boot_completed"], True)
     if result is not None and result[0] == 0:
         if result[1].strip("\r\n") == "1":
@@ -374,7 +379,26 @@ launch_emulator() {
     "$emu" "@$avd_name" $emu_args $image_args >/dev/null 2>&1 &
   fi
   emu_pid=$!
-  wait_emu
+  wait_emu || return $?
+  prior_boot_id=$(python3 - "$avd_name" "$prior_boot_id" <<'PY'
+import os
+import subprocess
+import sys
+import uuid
+
+expected, previous = sys.argv[1:]
+adb = ["adb", "-s", os.environ["ANDROID_SERIAL"], "exec-out"]
+def read(*args):
+    return subprocess.check_output(adb + list(args), text=True, timeout=10).strip("\r\n")
+name = read("getprop", "ro.boot.qemu.avd_name")
+if not name:
+    name = read("getprop", "ro.kernel.qemu.avd_name")
+boot = read("cat", "/proc/sys/kernel/random/boot_id")
+if name != expected or str(uuid.UUID(boot)) != boot or boot == previous:
+    raise SystemExit("New boot identity does not match the owned AVD")
+print(boot)
+PY
+  )
 }
 
 test_emu() {
@@ -402,7 +426,7 @@ test_main() {
 
   validate_emu_port
   emu_args="$emu_args -port $emu_port"
-  export ANDROID_SERIAL="emulator-$emu_port"
+  export ANDROID_SERIAL="127.0.0.1:$((emu_port + 1))"
   setup_emu "$avd_pkg" "$ver" "$ramdisk"
   adb start-server >/dev/null
 
@@ -437,7 +461,7 @@ run_main() {
   eval "$(resolve_vars 'ver avd_pkg ramdisk' "$1" "${2:-}")"
   validate_emu_port
   emu_args="$emu_args -port $emu_port"
-  export ANDROID_SERIAL="emulator-$emu_port"
+  export ANDROID_SERIAL="127.0.0.1:$((emu_port + 1))"
   setup_emu "$avd_pkg" "$ver" "$ramdisk"
   print_title "* Launching $avd_pkg"
   "$emu" "@$avd_name" $emu_args

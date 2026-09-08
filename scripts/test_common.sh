@@ -153,6 +153,10 @@ assert_device_contract() {
 run_setup() {
   local variant=$1
   assert_device_contract
+  # App migration needs a visible, awake device, including on Cuttlefish.
+  adb shell settings put system screen_off_timeout 2147483647
+  adb shell svc power stayon true
+  adb shell input keyevent KEYCODE_WAKEUP
   adb shell 'PATH=$PATH:/debug_ramdisk magisk -v' | tr -d '\r'
 
   # Install the Magisk app

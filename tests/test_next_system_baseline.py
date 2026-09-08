@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from types import SimpleNamespace
@@ -214,6 +215,39 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertIn("wait_process_group_gone", waiter)
         self.assertIn('["shell", "pm", "path", "android"]', waiter)
         self.assertNotIn("adb wait-for-device", waiter)
+
+    def test_avd_waiter_connects_a_forgotten_owned_tcp_transport(self):
+        source = Path("scripts/avd.sh").read_text(encoding="utf-8")
+        waiter = source.split("python3 - <<'PY' &\n", 1)[1].split("\nPY\n", 1)[0]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fake_adb = root / "adb"
+            fake_adb.write_text("""#!/usr/bin/env python3
+import os
+from pathlib import Path
+import sys
+marker = Path(os.environ['CONNECTED_MARKER'])
+args = sys.argv[3:]
+if args == ['connect', '127.0.0.1:5557']:
+    marker.touch()
+    print('connected')
+elif not marker.exists():
+    raise SystemExit(1)
+elif args == ['exec-out', 'getprop', 'sys.boot_completed']:
+    print('1')
+elif args == ['shell', 'pm', 'path', 'android']:
+    print('package:/system/framework/framework-res.apk')
+else:
+    raise SystemExit(1)
+""")
+            fake_adb.chmod(0o700)
+            env = dict(os.environ, ANDROID_SERIAL="127.0.0.1:5557",
+                       CONNECTED_MARKER=str(root / "connected"),
+                       PATH=str(root) + os.pathsep + os.environ["PATH"])
+            result = subprocess.run([sys.executable, "-c", waiter], env=env,
+                                    capture_output=True, text=True, timeout=15)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue((root / "connected").exists())
 
     def test_avd_boot_waiter_reaps_a_hung_adb_process_group(self):
         source = Path("scripts/avd.sh").read_text(encoding="utf-8")

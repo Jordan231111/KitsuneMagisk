@@ -338,7 +338,9 @@ for path in {quoted}; do
   [ -r "$path" ] && readable=true
   [ -w "$path" ] && writable=true
   resolved=$(readlink -f "$path" 2>/dev/null || printf '%s' "$path")
-  printf '%s\\t%s\\t%s\\t%s\\t%s\\n' "$path" "$kind" "$readable" "$writable" "$resolved"
+  uid=$(stat -c %u "$path" 2>/dev/null || printf '?')
+  mode=$(stat -c %a "$path" 2>/dev/null || printf '?')
+  printf '%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' "$path" "$kind" "$readable" "$writable" "$resolved" "$uid" "$mode"
 done
 """.strip()
     result = client.shell(command, root=root)
@@ -347,9 +349,9 @@ done
     records: dict[str, dict[str, Any]] = {}
     for line in result.stdout.splitlines():
         fields = line.split("\t")
-        if len(fields) != 5:
+        if len(fields) != 7:
             continue
-        path, kind, readable, writable, resolved_path = fields
+        path, kind, readable, writable, resolved_path, uid, mode = fields
         records[path] = {
             "path": path,
             "resolved_path": resolved_path or path,
@@ -357,6 +359,8 @@ done
             "kind": kind,
             "readable": readable == "true",
             "permission_writable": writable == "true",
+            "uid": int(uid) if uid.isdigit() else None,
+            "mode": mode.zfill(4) if re.fullmatch(r"[0-7]{3,4}", mode) else None,
         }
     return records
 
@@ -657,17 +661,26 @@ def _selinux_strategy(path_records: Mapping[str, Mapping[str, Any]], enabled: bo
     return "unknown"
 
 
+def _trusted_init_directory(record: Mapping[str, Any]) -> bool:
+    mode = record.get("mode")
+    return (
+        record.get("kind") == "directory"
+        and record.get("readable") is True
+        and record.get("permission_writable") is True
+        and record.get("resolved_path") == record.get("path")
+        and type(record.get("uid")) is int
+        and record["uid"] == 0
+        and isinstance(mode, str)
+        and re.fullmatch(r"[0-7]{4}", mode) is not None
+        and int(mode, 8) & 0o022 == 0
+    )
+
+
 def _select_init_directory(candidates: Iterable[Mapping[str, Any]]) -> str | None:
-    """Select the first usable init directory in contract preference order."""
+    """Select a writable init directory with the installer's ownership rules."""
 
     return next(
-        (
-            str(record["path"])
-            for record in candidates
-            if record.get("kind") == "directory"
-            and record.get("readable")
-            and record.get("permission_writable")
-        ),
+        (str(record["path"]) for record in candidates if _trusted_init_directory(record)),
         None,
     )
 
@@ -1061,7 +1074,7 @@ def classify_report(report: Mapping[str, Any]) -> dict[str, Any]:
         ),
         None,
     )
-    if not selected_init or not selected_record or not selected_record.get("permission_writable"):
+    if not selected_init or not selected_record or not _trusted_init_directory(selected_record):
         reasons.append("INIT_PATH_UNAVAILABLE")
     elif init.get("import_proof") != "proven":
         reasons.append("INIT_IMPORT_UNPROVEN")
@@ -1332,6 +1345,8 @@ def fixture_report(values: Mapping[str, Any]) -> dict[str, Any]:
                 "kind": "directory",
                 "readable": True,
                 "permission_writable": True,
+                "uid": 0,
+                "mode": "0755",
             }
         ],
     )

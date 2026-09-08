@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import base64
+from contextlib import closing
 import hashlib
 import hmac
 import json
@@ -712,7 +713,7 @@ def _sqlite_content_digest(data: bytes) -> str:
             path = Path(temporary) / "magisk.db"
             path.write_bytes(data)
             path.chmod(0o600)
-            with sqlite3.connect(f"{path.as_uri()}?mode=ro&immutable=1", uri=True) as database:
+            with closing(sqlite3.connect(f"{path.as_uri()}?mode=ro&immutable=1", uri=True)) as database:
                 deadline = time.monotonic() + 20
                 database.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
                 database.execute("PRAGMA query_only=ON")

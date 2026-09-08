@@ -115,7 +115,19 @@ class DoctorFixtureTest(unittest.TestCase):
                 "permission_writable": True,
             },
         ]
+        for candidate in candidates:
+            candidate.update(uid=0, mode="0755", resolved_path=candidate["path"])
         self.assertEqual("/system/etc/init/hw", _select_init_directory(candidates))
+
+    def test_init_selection_rejects_unsafe_or_unknown_ownership(self) -> None:
+        fixture = json.loads((FIXTURES / "mumu-writable.json").read_text())
+        for changes in ({"uid": 65534}, {"uid": None}, {"mode": "0775"},
+                        {"mode": None}, {"resolved_path": "/data/local/tmp/init"}):
+            with self.subTest(changes=changes):
+                report = fixture_report(fixture["input"])
+                report["init"]["candidate_directories"][0].update(changes)
+                self.assertIsNone(_select_init_directory(report["init"]["candidate_directories"]))
+                self.assertIn("INIT_PATH_UNAVAILABLE", classify_report(report)["reason_codes"])
 
     def test_validation_rejects_a_stale_assessment(self) -> None:
         fixture = json.loads((FIXTURES / "mumu-writable.json").read_text())
@@ -298,8 +310,15 @@ class ContractTest(unittest.TestCase):
                 record = json.loads(path.read_text())
                 self.assertEqual(1, record["schema_version"])
                 validate_schema_instance(record["doctor"], doctor_schema)
-                validate_report(record["doctor"])
-                self.assertEqual(classify_report(record["doctor"]), record["doctor"]["assessment"])
+                # Archives retain what the old probe actually observed. They
+                # cannot supply ownership evidence added by the live probe.
+                current = classify_report(record["doctor"])
+                if current != record["doctor"]["assessment"]:
+                    with self.assertRaisesRegex(ValueError, "stored assessment"):
+                        validate_report(record["doctor"])
+                    self.assertNotEqual("supported", current["verdict"])
+                else:
+                    validate_report(record["doctor"])
                 if not record["clean_snapshot"]:
                     self.assertNotEqual("supported", record["qualification_status"])
                 if record["qualification_status"] == "supported":
