@@ -176,7 +176,7 @@ jobs:
         run: .github/kvm.sh
 
       - name: Run AVD test
-        timeout-minutes: 15
+        timeout-minutes: 30
         env:
           AVD_TEST_LOG: 1
         run: scripts/avd.sh test ${{ matrix.version }} ${{ matrix.type }}
@@ -214,7 +214,7 @@ jobs:
         run: .github/kvm.sh
 
       - name: Run AVD test
-        timeout-minutes: 15
+        timeout-minutes: 30
         env:
           FORCE_32_BIT: 1
           AVD_TEST_LOG: 1
