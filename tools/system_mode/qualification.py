@@ -12,8 +12,11 @@ from pathlib import Path
 import shlex
 import shutil
 import signal
+import sqlite3
 import stat
 import subprocess
+import sys
+import tempfile
 import time
 from typing import Any, Callable, Mapping
 import uuid
@@ -33,6 +36,7 @@ QUALIFICATION_SCHEMA_VERSION = 1
 QUALIFICATION_PROPERTY = "kitsune.system_mode.qualify"
 MAX_IDENTITY_BYTES = 16 * 1024 * 1024
 MAX_RECORD_BYTES = 4 * 1024 * 1024
+MAX_DATABASE_BYTES = 16 * 1024 * 1024
 QUALIFICATION_KEY_BYTES = 32
 QUALIFICATION_KEY_ENV = "KITSUNE_SYSTEM_MODE_QUALIFICATION_KEY"
 SEAL_ALGORITHM = "HMAC-SHA256"
@@ -686,10 +690,101 @@ def _remote_tree_paths(client: AdbClient, root: str) -> list[str]:
     return sorted(paths)
 
 
+def _sqlite_content_digest(data: bytes) -> str:
+    """Hash database meaning, excluding SQLite's boot-dependent storage layout."""
+
+    if not data.startswith(b"SQLite format 3\0") or len(data) > MAX_DATABASE_BYTES:
+        raise ProbeError("Magisk database is not a bounded SQLite database")
+
+    def value(item: Any) -> list[Any]:
+        if item is None:
+            return ["null"]
+        if isinstance(item, int):
+            return ["integer", str(item)]
+        if isinstance(item, float):
+            return ["real", item.hex()]
+        if isinstance(item, bytes):
+            return ["blob", base64.b64encode(item).decode("ascii")]
+        return ["text", item]
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="kitsune-database-inventory-") as temporary:
+            path = Path(temporary) / "magisk.db"
+            path.write_bytes(data)
+            path.chmod(0o600)
+            with sqlite3.connect(f"{path.as_uri()}?mode=ro&immutable=1", uri=True) as database:
+                deadline = time.monotonic() + 20
+                database.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+                database.execute("PRAGMA query_only=ON")
+                database.execute("PRAGMA trusted_schema=OFF")
+                if database.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
+                    raise ProbeError("Magisk database failed SQLite integrity checking")
+                schema = database.execute(
+                    "SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name"
+                ).fetchall()
+                tables = []
+                for kind, name, _, sql in schema:
+                    if kind != "table":
+                        continue
+                    if sql and "CREATE VIRTUAL TABLE" in sql.upper():
+                        raise ProbeError("Magisk database contains an unsupported virtual table")
+                    quoted = '"' + name.replace('"', '""') + '"'
+                    columns = database.execute(f"PRAGMA table_info({quoted})").fetchall()
+                    # A declared primary key is the row identity for Magisk's
+                    # tables. REPLACE may change their implicit rowids at boot.
+                    # Preserve rowids for any extension table without a key.
+                    selection = "*" if any(column[5] for column in columns) else "rowid,*"
+                    rows = [
+                        [value(item) for item in row]
+                        for row in database.execute(f"SELECT {selection} FROM {quoted}")
+                    ]
+                    rows.sort(key=lambda row: json.dumps(row, ensure_ascii=True, separators=(",", ":")))
+                    tables.append({"name": name, "columns": columns, "rows": rows})
+                content = {
+                    "schema": schema,
+                    "tables": tables,
+                    "user_version": database.execute("PRAGMA user_version").fetchone()[0],
+                    "application_id": database.execute("PRAGMA application_id").fetchone()[0],
+                    "encoding": database.execute("PRAGMA encoding").fetchone()[0],
+                }
+                return _sha256(_canonical_bytes(content))
+    except sqlite3.DatabaseError as exc:
+        raise ProbeError("Magisk database is corrupt or cannot be inventoried") from exc
+
+
+def _remote_database_digest(client: AdbClient, node: Mapping[str, Any]) -> str:
+    path = "/data/adb/magisk.db"
+    # The generic qualifier accepts only a stable, checkpointed database.
+    # Never ignore committed rows that may still reside in a WAL or journal.
+    checks = " && ".join(f"[ ! -e {path}{suffix} ] && [ ! -L {path}{suffix} ]" for suffix in (
+        "-wal", "-shm", "-journal",
+    ))
+    encoded = _root_checked(
+        client,
+        f"set -o pipefail && [ -f {path} ] && [ ! -L {path} ] && {checks} && "
+        f"[ \"$(stat -c %s {path})\" -le {MAX_DATABASE_BYTES} ] && "
+        f"head -c {MAX_DATABASE_BYTES + 1} {path} | base64 | tr -d '\\n\\r'",
+        "stable checkpointed Magisk database capture",
+    )
+    try:
+        data = base64.b64decode(encoded, validate=True)
+    except ValueError as exc:
+        raise ProbeError("Magisk database capture is not canonical base64") from exc
+    if len(data) != node["size"] or _sha256(data) != node["sha256"]:
+        raise ProbeError("Magisk database changed during inventory capture")
+    after = _remote_file_evidence(client, path)
+    if any(after[key] != node[key] for key in after):
+        raise ProbeError("Magisk database metadata changed during inventory capture")
+    _root_checked(client, checks, "checkpointed Magisk database recheck")
+    return _sqlite_content_digest(data)
+
+
 def _boot_critical_inventory(client: AdbClient, selected_init: str) -> list[dict[str, Any]]:
     nodes: dict[str, dict[str, Any]] = {}
     for root in _boot_critical_roots(selected_init):
         root_evidence = _remote_node_evidence(client, root)
+        if root == "/data/adb/magisk.db" and root_evidence["kind"] == "file":
+            root_evidence["sqlite_content_sha256"] = _remote_database_digest(client, root_evidence)
         nodes[root] = root_evidence
         if root_evidence["kind"] != "directory":
             continue
@@ -703,7 +798,18 @@ def _boot_critical_inventory(client: AdbClient, selected_init: str) -> list[dict
 
 
 def _inventory_digest(inventory: list[dict[str, Any]]) -> str:
-    return _sha256(_canonical_bytes({"paths": inventory}))
+    paths = []
+    for node in inventory:
+        node = dict(node)
+        if "sqlite_content_sha256" in node:
+            if node["path"] != "/data/adb/magisk.db" or node["kind"] != "file":
+                raise ValueError("SQLite content evidence is only valid for the Magisk database")
+            # Keep raw bytes/metadata in the sealed record for audit. Compare
+            # logical contents across boots, retaining mode, owner and label.
+            for key in ("sha256", "size", "mtime_epoch"):
+                node.pop(key)
+        paths.append(node)
+    return _sha256(_canonical_bytes({"paths": paths}))
 
 
 def _exec_result_payload(nonce: str, role: str, boot_id: str, domain: str) -> bytes:
@@ -1199,7 +1305,7 @@ def validate_qualification_record(record: Mapping[str, Any]) -> None:
         selected_init,
         record["recovery"]["inventory_sha256_after_restore"],
     )
-    if record["target"]["baseline_inventory"] != record["recovery"]["inventory_after_restore"]:
+    if record["target"]["baseline_inventory_sha256"] != record["recovery"]["inventory_sha256_after_restore"]:
         raise ValueError("external restore did not recover the exact boot-critical inventory")
 
 
@@ -1655,7 +1761,7 @@ def qualify_target(
         # state, and create a separate final backup with zero qualification
         # files or property residue.
         cleanup_live_without_restore()
-        if _boot_critical_inventory(client, selected_init) != baseline_inventory:
+        if _inventory_digest(_boot_critical_inventory(client, selected_init)) != baseline_inventory_sha256:
             raise ProbeError("challenge cleanup did not return boot-critical baseline state")
         clean_report = collect_report(client, QualificationEvidence())
         if stable_target_digest(clean_report) != baseline_digest:
@@ -1671,7 +1777,7 @@ def qualify_target(
         if final_before == challenge_before:
             raise ProbeError("clean backup did not differ from the challenged backup")
         _assert_qualification_absent(client, residue_paths)
-        if _boot_critical_inventory(client, selected_init) != baseline_inventory:
+        if _inventory_digest(_boot_critical_inventory(client, selected_init)) != baseline_inventory_sha256:
             raise ProbeError("clean backup lifecycle changed boot-critical state")
         after_clean_backup = collect_report(client, QualificationEvidence())
         if stable_target_digest(after_clean_backup) != baseline_digest:
@@ -1706,13 +1812,14 @@ def qualify_target(
         if restored_digest != baseline_digest:
             raise ValueError("clean external restore did not return the baseline target contract")
         restored_inventory = _boot_critical_inventory(client, selected_init)
-        if restored_inventory != baseline_inventory:
+        if _inventory_digest(restored_inventory) != baseline_inventory_sha256:
             raise ValueError("clean external restore did not return boot-critical bytes and metadata")
         restored_boot_id_sha256 = _sha256(prior_boot)
         live_dirty = False
         restored = True
         qualification_succeeded = True
     finally:
+        original_error = sys.exc_info()[1]
         cleanup_error: BaseException | None = None
         cleanup_verified = not live_dirty or restored
         if live_dirty and not restored and not lifecycle_indeterminate:
@@ -1727,7 +1834,7 @@ def qualify_target(
             )
 
             def verify_failure_baseline(label: str) -> None:
-                if _boot_critical_inventory(client, selected_init) != baseline_inventory:
+                if _inventory_digest(_boot_critical_inventory(client, selected_init)) != baseline_inventory_sha256:
                     raise ProbeError(f"failure recovery {label} inventory mismatch")
                 recovery_report = collect_report(client, QualificationEvidence())
                 if stable_target_digest(recovery_report) != baseline_digest:
@@ -1774,7 +1881,8 @@ def qualify_target(
             )
         if cleanup_error is not None:
             raise ProbeError(
-                "qualification failed and automatic cleanup could not be verified"
+                "qualification failed and automatic cleanup could not be verified: "
+                f"{original_error}; cleanup: {cleanup_error}"
             ) from cleanup_error
 
     record: dict[str, Any] = {

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import inspect
@@ -9,6 +10,7 @@ import os
 import time
 import shlex
 import signal
+import sqlite3
 import tempfile
 import unittest
 from unittest import mock
@@ -22,6 +24,8 @@ from tools.system_mode.qualification import (
     _canonical_bytes,
     _checked_command,
     _inventory_digest,
+    _remote_database_digest,
+    _sqlite_content_digest,
     _recover_from_candidates,
     _remove_verified_qualification_backups,
     _failure_recovery_candidates,
@@ -47,6 +51,85 @@ FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
 
 
 class QualificationTest(unittest.TestCase):
+    def test_database_digest_preserves_schema_rows_and_value_types(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-sqlite-content-") as temporary:
+            path = Path(temporary) / "magisk.db"
+            with sqlite3.connect(path) as database:
+                database.executescript(
+                    "CREATE TABLE settings(key TEXT PRIMARY KEY, value);"
+                    "CREATE TABLE policies(uid INT PRIMARY KEY, policy INT);"
+                    "INSERT INTO settings VALUES('denylist',0),('zygisk',1);"
+                    "INSERT INTO policies VALUES(2000,2);"
+                    "PRAGMA user_version=12;"
+                )
+                database.execute("INSERT INTO settings VALUES(?,?)", ('quoted"key', b"\0\xff\n"))
+            before = path.read_bytes()
+            expected = _sqlite_content_digest(before)
+            with sqlite3.connect(path) as database:
+                database.execute("REPLACE INTO settings VALUES('denylist',0)")
+            after = path.read_bytes()
+            self.assertNotEqual(hashlib.sha256(before).digest(), hashlib.sha256(after).digest())
+            self.assertEqual(expected, _sqlite_content_digest(after))
+            for statement in (
+                "UPDATE policies SET policy=1 WHERE uid=2000",
+                "DELETE FROM policies",
+                "UPDATE settings SET value='0' WHERE key='denylist'",
+                "PRAGMA user_version=13",
+                "PRAGMA application_id=1",
+                "CREATE TABLE extra(id INTEGER PRIMARY KEY)",
+            ):
+                with self.subTest(statement=statement):
+                    path.write_bytes(before)
+                    with sqlite3.connect(path) as database:
+                        database.execute(statement)
+                    self.assertNotEqual(expected, _sqlite_content_digest(path.read_bytes()))
+            with self.assertRaises(ProbeError):
+                _sqlite_content_digest(before[:100])
+
+    def test_database_capture_requires_stable_bytes_metadata_and_no_journal(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-sqlite-capture-") as temporary:
+            path = Path(temporary) / "magisk.db"
+            with sqlite3.connect(path) as database:
+                database.execute("CREATE TABLE settings(key TEXT PRIMARY KEY, value INT)")
+            data = path.read_bytes()
+            node = {
+                "path": "/data/adb/magisk.db", "kind": "file", "size": len(data),
+                "sha256": hashlib.sha256(data).hexdigest(), "mode": "0600",
+                "uid": 0, "gid": 0, "mtime_epoch": 1, "selinux_context": None,
+            }
+            metadata = {key: val for key, val in node.items() if key not in {"kind", "mtime_epoch"}}
+            encoded = base64.b64encode(data).decode("ascii")
+            with mock.patch("tools.system_mode.qualification._root_checked", side_effect=[encoded, ""]) as root, \
+                 mock.patch("tools.system_mode.qualification._remote_file_evidence", return_value=metadata):
+                self.assertEqual(_sqlite_content_digest(data), _remote_database_digest(object(), node))
+                for suffix in ("-journal", "-wal", "-shm"):
+                    self.assertIn(f"[ ! -e /data/adb/magisk.db{suffix} ]", root.call_args_list[0].args[1])
+                    self.assertIn(f"[ ! -L /data/adb/magisk.db{suffix} ]", root.call_args_list[1].args[1])
+            with mock.patch("tools.system_mode.qualification._root_checked", return_value=encoded), \
+                 mock.patch("tools.system_mode.qualification._remote_file_evidence", return_value=dict(metadata, uid=1)):
+                with self.assertRaisesRegex(ProbeError, "metadata changed"):
+                    _remote_database_digest(object(), node)
+            with mock.patch("tools.system_mode.qualification._root_checked", return_value=encoded):
+                with self.assertRaisesRegex(ProbeError, "changed during inventory"):
+                    _remote_database_digest(object(), dict(node, sha256="0" * 64))
+
+    def test_database_inventory_keeps_permissions_and_other_files_exact(self) -> None:
+        node = {
+            "path": "/data/adb/magisk.db", "kind": "file", "size": 4096,
+            "sha256": "1" * 64, "sqlite_content_sha256": "2" * 64,
+            "mode": "0600", "uid": 0, "gid": 0, "mtime_epoch": 1,
+            "selinux_context": "u:object_r:adb_data_file:s0",
+        }
+        expected = _inventory_digest([node])
+        self.assertEqual(expected, _inventory_digest([dict(node, sha256="3" * 64, size=8192, mtime_epoch=2)]))
+        for key, val in (("mode", "0644"), ("uid", 1), ("gid", 1),
+                         ("selinux_context", None), ("sqlite_content_sha256", "4" * 64)):
+            self.assertNotEqual(expected, _inventory_digest([dict(node, **{key: val})]))
+        with self.assertRaisesRegex(ValueError, "only valid for the Magisk database"):
+            _inventory_digest([dict(node, path="/system/etc/init/magisk.rc")])
+        ordinary = {key: val for key, val in node.items() if key != "sqlite_content_sha256"}
+        self.assertNotEqual(_inventory_digest([ordinary]), _inventory_digest([dict(ordinary, sha256="3" * 64)]))
+
     def tearDown(self) -> None:
         os.environ.pop(QUALIFICATION_KEY_ENV, None)
 

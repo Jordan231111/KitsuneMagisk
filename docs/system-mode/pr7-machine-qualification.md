@@ -33,6 +33,13 @@ transaction receipts, `/data/adb/magisk`, Magisk databases and journals, modules
 post-fs-data/service scripts, and persistent sepolicy rules. Runtime tmpfs paths and cache logs are
 not recovery artifacts and are not included.
 
+The Magisk SQLite database is compared by its complete schema, typed rows, schema version and
+application ID after SQLite integrity checking. Legacy daemon startup can rewrite identical settings
+while changing SQLite page counters and implicit rowids. Raw database byte hashes, sizes and mtimes
+remain in the sealed record; permissions, ownership and SELinux labels must still match. A live WAL,
+shared-memory file or rollback journal blocks the generic qualifier until checkpointed. External disk
+backups retain their exact byte digests; other persistent files retain exact byte and metadata checks.
+
 The record is authenticated with HMAC-SHA256 using a separate owner-only 32-byte host key. The key
 is created and validated before the first guest mutation; it is never embedded in the record.
 Editing or synthesizing JSON, using another key, weakening key permissions, or losing the key makes
