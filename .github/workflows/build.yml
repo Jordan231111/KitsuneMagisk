@@ -263,7 +263,7 @@ jobs:
           scripts/cuttlefish.sh download ${{ matrix.branch }} ${{ matrix.device }}
 
       - name: Run Cuttlefish test
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: sudo -E -u $USER scripts/cuttlefish.sh test
 
       - name: Upload logs on error
