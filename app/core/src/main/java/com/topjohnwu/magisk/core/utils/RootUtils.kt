@@ -5,18 +5,27 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.os.Binder
+import android.os.Build
+import android.os.ParcelFileDescriptor
 import android.system.Os
 import androidx.core.content.getSystemService
 import com.topjohnwu.magisk.core.Const
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.ipc.RootService
 import com.topjohnwu.superuser.nio.FileSystemManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
+import java.io.OutputStream
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
 
 class RootUtils(stub: Any?) : RootService() {
@@ -47,7 +56,65 @@ class RootUtils(stub: Any?) : RootService() {
             override fun getAppProcess(pid: Int) = safe(null) { getAppProcessImpl(pid) }
             override fun getFileSystem(): IBinder = FileSystemManager.getService()
             override fun addSystemlessHosts() = safe(false) { addSystemlessHostsImpl() }
+            override fun runSystemMode(
+                action: String, directory: String, apk: String, output: ParcelFileDescriptor
+            ): Int = ParcelFileDescriptor.AutoCloseOutputStream(output).use { stream ->
+                if (Binder.getCallingUid() != applicationInfo.uid)
+                    return@use -1
+                safe(-1) { runSystemModeImpl(action, directory, apk, stream) }
+            }
+            override fun uninstallSelf() {
+                if (Binder.getCallingUid() == applicationInfo.uid) {
+                    ProcessBuilder("/system/bin/pm", "uninstall", packageName).start()
+                }
+            }
         }
+    }
+
+    @Synchronized
+    private fun runSystemModeImpl(
+        action: String, directory: String, apk: String, output: OutputStream
+    ): Int {
+        if (action !in setOf("install", "uninstall", "recover") ||
+            (action == "install" && !BuildConfig.DEBUG))
+            return -1
+        val dir = File(directory)
+        val allowed = mutableSetOf(File(filesDir.parent, "install").canonicalPath, Const.TMPDIR)
+        if (Build.VERSION.SDK_INT >= 24) {
+            allowed += File(createDeviceProtectedStorageContext().filesDir.parent, "install").canonicalPath
+        }
+        if (!dir.isAbsolute || !dir.isDirectory || dir.canonicalPath !in allowed)
+            return -1
+        val busybox = File(dir, "busybox").path
+        val command = mutableListOf(busybox, "unshare", "-m", busybox, "sh",
+            File(dir, "kitsune_system_install.sh").path, action, dir.path)
+        if (action == "install") {
+            if (!File(apk).isFile) return -1
+            command += apk
+        }
+        // This process already runs as root. A fresh sh child does not depend
+        // on the su session whose daemon the transaction deliberately stops.
+        val process = ProcessBuilder(command).directory(File("/"))
+            .redirectErrorStream(true).apply { environment()["ASH_STANDALONE"] = "1" }.start()
+        process.outputStream.close()
+        var connected = true
+        process.inputStream.use { input ->
+            val buffer = ByteArray(8192)
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                if (connected) {
+                    try {
+                        output.write(buffer, 0, count)
+                        output.flush()
+                    } catch (_: IOException) {
+                        // Losing the UI must not interrupt a durable transaction.
+                        connected = false
+                    }
+                }
+            }
+        }
+        return process.waitFor()
     }
 
     private fun getAppProcessImpl(_pid: Int): ActivityManager.RunningAppProcessInfo? {
@@ -155,6 +222,28 @@ class RootUtils(stub: Any?) : RootService() {
 
         suspend fun addSystemlessHosts() =
             withContext(Dispatchers.IO) { safe(false) { obj?.addSystemlessHosts() ?: false } }
+
+        suspend fun runSystemMode(
+            action: String, directory: String, apk: String, output: (String) -> Unit
+        ): Int? = withContext(NonCancellable + Dispatchers.IO) {
+            coroutineScope {
+                val pipe = ParcelFileDescriptor.createPipe()
+                val reader = async(Dispatchers.IO) {
+                    ParcelFileDescriptor.AutoCloseInputStream(pipe[0]).bufferedReader().useLines {
+                        it.forEach(output)
+                    }
+                }
+                val result = try {
+                    safe<Int?>(null) { obj?.runSystemMode(action, directory, apk, pipe[1]) }
+                } finally {
+                    pipe[1].close()
+                }
+                reader.await()
+                result?.takeIf { it >= 0 }
+            }
+        }
+
+        fun uninstallSelf() = safe(Unit) { obj?.uninstallSelf(); Unit }
 
         private inline fun <T> safe(default: T, block: () -> T): T {
             return try {

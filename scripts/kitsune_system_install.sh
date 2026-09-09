@@ -78,7 +78,10 @@ ks_validate_target() {
     ks_fail "System Mode is not qualified on Android 6/API 23-24; use normal Magisk installation"
     return 1
   }
-  mount --make-rprivate / || { ks_fail "Unable to isolate the installer mount namespace"; return 1; }
+  # Receive the daemon's module unmounts before freezing our private view.
+  # A fully private copy here would retain stale, read-only module overlays.
+  mount --make-rslave / || { ks_fail "Unable to isolate the installer mount namespace"; return 1; }
+  SM_SLAVE_MOUNT_NAMESPACE=true
   return 0
 }
 
@@ -297,8 +300,9 @@ ks_write_rc() {
     printf 'on post-fs-data\n'
     printf '    exec u:r:init:s0 0 0 -- %s/busybox sh %s/kitsune_system_launcher.sh prepare\n' \
       "$SM_ACTIVE_PAYLOAD" "$SM_ACTIVE_PAYLOAD"
-    printf '\n'
-    printf 'on property:%s\n' "$ready"
+    # Property actions can run after init has queued nonencrypted/boot and
+    # started zygote. Finish post-fs-data here, before leaving this boot event.
+    # The wrapper still refuses to run unless prepare published its success.
     printf '    exec u:r:magisk:s0 0 0 -- %s/busybox sh %s/kitsune_system_launcher.sh post-fs-data\n' \
       "$SM_ACTIVE_PAYLOAD" "$SM_ACTIVE_PAYLOAD"
     printf '\n'

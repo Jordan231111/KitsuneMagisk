@@ -1,6 +1,8 @@
 #include <sys/mman.h>
 #include <sys/mount.h>
 #include <sys/resource.h>
+#include <sys/system_properties.h>
+#include <cstdlib>
 #include <dlfcn.h>
 #include <unwind.h>
 #include <span>
@@ -147,6 +149,26 @@ DCL_HOOK_FUNC(static char *, strdup, const char * str) {
     }
     return old_strdup(str);
 }
+
+#if defined(__x86_64__)
+// Older bionic's SSE2 strlcpy can read across an unmapped page when zygote
+// assigns a short process name. AOSP removed that implementation in
+// 592bf711fdf273ff8a61b32e12cd886897922335 (b/78355649). Keep this replacement
+// confined to libandroid_runtime's specialization path on pre-P x86_64.
+DCL_HOOK_FUNC(static size_t, legacy_strlcpy, char *dst, const char *src, size_t size) {
+    size_t length = 0;
+    if (size > 0) {
+        while (length < size - 1 && src[length] != '\0') {
+            dst[length] = src[length];
+            ++length;
+        }
+        dst[length] = '\0';
+    }
+    while (src[length] != '\0')
+        ++length;
+    return length;
+}
+#endif
 
 // Skip actual fork and return cached result if applicable
 DCL_HOOK_FUNC(int, fork) {
@@ -419,6 +441,13 @@ void HookContext::hook_plt() {
     PLT_HOOK_REGISTER(android_runtime_dev, android_runtime_inode, unshare);
     PLT_HOOK_REGISTER(android_runtime_dev, android_runtime_inode, selinux_android_setcontext);
     PLT_HOOK_REGISTER(android_runtime_dev, android_runtime_inode, strdup);
+#if defined(__x86_64__)
+    char sdk_value[PROP_VALUE_MAX]{};
+    __system_property_get("ro.build.version.sdk", sdk_value);
+    const int sdk = atoi(sdk_value);
+    if (sdk > 0 && sdk < 28)
+        PLT_HOOK_REGISTER_SYM(android_runtime_dev, android_runtime_inode, "strlcpy", legacy_strlcpy);
+#endif
     PLT_HOOK_REGISTER_SYM(android_runtime_dev, android_runtime_inode, "__android_log_close", android_log_close);
 
     if (!lsplt::CommitHook())

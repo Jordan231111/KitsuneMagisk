@@ -208,6 +208,8 @@ int su_client_main(int argc, char *argv[]) {
 
     // Connect to client
     owned_fd fd = connect_daemon(RequestCode::SUPERUSER);
+    if (fd < 0)
+        return EXIT_FAILURE;
 
     // Send request
     req.write_to_fd(fd);

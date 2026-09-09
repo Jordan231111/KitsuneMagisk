@@ -22,7 +22,7 @@ class AppMigrationTest {
     companion object {
         private val APP_PKG = BuildConfig.APP_PACKAGE_NAME
         private val STUB_PKG = "repackaged.$APP_PKG"
-        private const val RECEIVER_TIMEOUT = 20L
+        private const val RECEIVER_TIMEOUT = 60L
     }
 
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()

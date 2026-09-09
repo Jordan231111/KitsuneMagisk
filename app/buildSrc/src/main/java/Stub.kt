@@ -182,8 +182,8 @@ private abstract class ManifestUpdater: DefaultTask() {
 
 private fun genStubClasses(outDir: File): Pair<String, String> {
     val classNameGenerator = sequence {
-        fun notJavaKeyword(name: String) = when (name) {
-            "do", "if", "for", "int", "new", "try" -> false
+        fun notJavaKeyword(name: String) = when (name.lowercase()) {
+            "do", "if", "for", "int", "new", "try", "var" -> false
             else -> true
         }
 
@@ -207,7 +207,7 @@ private fun genStubClasses(outDir: File): Pair<String, String> {
             // Check Android 7.0.0 PackageParser#buildClassName
             yield(cls.toString().replaceFirstChar { it.lowercase() })
         }
-    }.distinct().iterator()
+    }.distinctBy { it.lowercase() }.iterator()
 
     fun genClass(type: String, outDir: File): String {
         val clzName = classNameGenerator.next()
@@ -275,6 +275,8 @@ fun Project.setupStubApk() {
             val componentJavaOutDir = layout.buildDirectory
                 .dir("generated/${variantLowered}/components").get().asFile
 
+            // Names change on every configuration; never retain old classes.
+            componentJavaOutDir.deleteRecursively()
             val (factory, app) = genStubClasses(componentJavaOutDir)
 
             val manifestUpdater =

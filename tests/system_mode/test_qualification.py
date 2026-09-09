@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import inspect
@@ -9,19 +10,25 @@ import os
 import time
 import shlex
 import signal
+import sqlite3
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
 import uuid
 
 from tools.system_mode.authorization import digest_backup_path
-from tools.system_mode.doctor import ProbeError, classify_report, fixture_report
+from tools.system_mode.doctor import CommandResult, ProbeError, classify_report, fixture_report
 from tools.system_mode.qualification import (
     QUALIFICATION_KEY_ENV,
     IndeterminateLifecycleError,
     _canonical_bytes,
     _checked_command,
     _inventory_digest,
+    _exec_result_payload,
+    _remote_database_digest,
+    _sqlite_content_digest,
+    _verify_init_exec_probe,
     _recover_from_candidates,
     _remove_verified_qualification_backups,
     _failure_recovery_candidates,
@@ -47,6 +54,118 @@ FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
 
 
 class QualificationTest(unittest.TestCase):
+    def test_domain_probe_waits_for_both_results_and_rejects_invalid_output(self) -> None:
+        nonce = "1" * 32
+        boot = "11111111-1111-1111-1111-111111111111"
+        paths = {"init": "/dev/init.result", "magisk": "/dev/magisk.result"}
+        probe = {"path": "/system/etc/init/probe.rc"}
+        helper = {"path": "/system/etc/init/helper.sh"}
+        evidence = {probe["path"]: probe, helper["path"]: helper}
+        for role, path in paths.items():
+            payload = _exec_result_payload(nonce, role, boot, f"u:r:{role}:s0")
+            evidence[path] = {"path": path, "sha256": hashlib.sha256(payload).hexdigest(),
+                              "size": len(payload), "mode": "0600", "uid": 0, "gid": 0}
+        client = mock.Mock()
+        pending = CommandResult(stdout="", stderr="", returncode=1)
+        ready = CommandResult(stdout=f"{nonce}:{boot}", stderr="", returncode=0)
+        client.shell.side_effect = [pending, ready, ready]
+        with mock.patch("tools.system_mode.qualification._remote_file_evidence", side_effect=lambda _, path: evidence[path]), \
+             mock.patch("tools.system_mode.qualification.time.sleep") as sleep:
+            result = _verify_init_exec_probe(client, probe=probe, helper=helper,
+                                            result_paths=paths, nonce=nonce, boot_id=boot)
+            self.assertEqual(hashlib.sha256(boot.encode()).hexdigest(), result["boot_id_sha256"])
+            sleep.assert_called_once_with(0.25)
+            client.shell.side_effect = None
+            client.shell.return_value = ready
+            evidence[paths["magisk"]]["sha256"] = "0" * 64
+            with self.assertRaisesRegex(ProbeError, "did not execute the magisk domain probe"):
+                _verify_init_exec_probe(client, probe=probe, helper=helper,
+                                        result_paths=paths, nonce=nonce, boot_id=boot)
+        client.shell.return_value = pending
+        with mock.patch("tools.system_mode.qualification.time.monotonic", side_effect=[0, 31]):
+            with self.assertRaisesRegex(ProbeError, "timed out waiting"):
+                _verify_init_exec_probe(client, probe=probe, helper=helper,
+                                        result_paths=paths, nonce=nonce, boot_id=boot)
+
+    def test_database_digest_preserves_schema_rows_and_value_types(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-sqlite-content-") as temporary:
+            path = Path(temporary) / "magisk.db"
+            with sqlite3.connect(path) as database:
+                database.executescript(
+                    "CREATE TABLE settings(key TEXT PRIMARY KEY, value);"
+                    "CREATE TABLE policies(uid INT PRIMARY KEY, policy INT);"
+                    "INSERT INTO settings VALUES('denylist',0),('zygisk',1);"
+                    "INSERT INTO policies VALUES(2000,2);"
+                    "PRAGMA user_version=12;"
+                )
+                database.execute("INSERT INTO settings VALUES(?,?)", ('quoted"key', b"\0\xff\n"))
+            before = path.read_bytes()
+            expected = _sqlite_content_digest(before)
+            with sqlite3.connect(path) as database:
+                database.execute("REPLACE INTO settings VALUES('denylist',0)")
+            after = path.read_bytes()
+            self.assertNotEqual(hashlib.sha256(before).digest(), hashlib.sha256(after).digest())
+            self.assertEqual(expected, _sqlite_content_digest(after))
+            for statement in (
+                "UPDATE policies SET policy=1 WHERE uid=2000",
+                "DELETE FROM policies",
+                "UPDATE settings SET value='0' WHERE key='denylist'",
+                "PRAGMA user_version=13",
+                "PRAGMA application_id=1",
+                "CREATE TABLE extra(id INTEGER PRIMARY KEY)",
+            ):
+                with self.subTest(statement=statement):
+                    path.write_bytes(before)
+                    with sqlite3.connect(path) as database:
+                        database.execute(statement)
+                    self.assertNotEqual(expected, _sqlite_content_digest(path.read_bytes()))
+            with self.assertRaises(ProbeError):
+                _sqlite_content_digest(before[:100])
+
+    def test_database_capture_requires_stable_bytes_metadata_and_no_journal(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-sqlite-capture-") as temporary:
+            path = Path(temporary) / "magisk.db"
+            with sqlite3.connect(path) as database:
+                database.execute("CREATE TABLE settings(key TEXT PRIMARY KEY, value INT)")
+            data = path.read_bytes()
+            node = {
+                "path": "/data/adb/magisk.db", "kind": "file", "size": len(data),
+                "sha256": hashlib.sha256(data).hexdigest(), "mode": "0600",
+                "uid": 0, "gid": 0, "mtime_epoch": 1, "selinux_context": None,
+            }
+            metadata = {key: val for key, val in node.items() if key not in {"kind", "mtime_epoch"}}
+            encoded = base64.b64encode(data).decode("ascii")
+            with mock.patch("tools.system_mode.qualification._root_checked", side_effect=[encoded, ""]) as root, \
+                 mock.patch("tools.system_mode.qualification._remote_file_evidence", return_value=metadata):
+                self.assertEqual(_sqlite_content_digest(data), _remote_database_digest(object(), node))
+                for suffix in ("-journal", "-wal", "-shm"):
+                    self.assertIn(f"[ ! -e /data/adb/magisk.db{suffix} ]", root.call_args_list[0].args[1])
+                    self.assertIn(f"[ ! -L /data/adb/magisk.db{suffix} ]", root.call_args_list[1].args[1])
+            with mock.patch("tools.system_mode.qualification._root_checked", return_value=encoded), \
+                 mock.patch("tools.system_mode.qualification._remote_file_evidence", return_value=dict(metadata, uid=1)):
+                with self.assertRaisesRegex(ProbeError, "metadata changed"):
+                    _remote_database_digest(object(), node)
+            with mock.patch("tools.system_mode.qualification._root_checked", return_value=encoded):
+                with self.assertRaisesRegex(ProbeError, "changed during inventory"):
+                    _remote_database_digest(object(), dict(node, sha256="0" * 64))
+
+    def test_database_inventory_keeps_permissions_and_other_files_exact(self) -> None:
+        node = {
+            "path": "/data/adb/magisk.db", "kind": "file", "size": 4096,
+            "sha256": "1" * 64, "sqlite_content_sha256": "2" * 64,
+            "mode": "0600", "uid": 0, "gid": 0, "mtime_epoch": 1,
+            "selinux_context": "u:object_r:adb_data_file:s0",
+        }
+        expected = _inventory_digest([node])
+        self.assertEqual(expected, _inventory_digest([dict(node, sha256="3" * 64, size=8192, mtime_epoch=2)]))
+        for key, val in (("mode", "0644"), ("uid", 1), ("gid", 1),
+                         ("selinux_context", None), ("sqlite_content_sha256", "4" * 64)):
+            self.assertNotEqual(expected, _inventory_digest([dict(node, **{key: val})]))
+        with self.assertRaisesRegex(ValueError, "only valid for the Magisk database"):
+            _inventory_digest([dict(node, path="/system/etc/init/magisk.rc")])
+        ordinary = {key: val for key, val in node.items() if key != "sqlite_content_sha256"}
+        self.assertNotEqual(_inventory_digest([ordinary]), _inventory_digest([dict(ordinary, sha256="3" * 64)]))
+
     def tearDown(self) -> None:
         os.environ.pop(QUALIFICATION_KEY_ENV, None)
 
@@ -702,6 +821,47 @@ class QualificationTest(unittest.TestCase):
                 time.sleep(0.05)
             else:
                 self.fail("timed-out lifecycle grandchild remained alive")
+
+    def test_lifecycle_cancellation_stops_children_before_recovery(self) -> None:
+        for cancellation in (KeyboardInterrupt, SystemExit):
+            with self.subTest(cancellation=cancellation), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp).resolve()
+                marker = root / "started"
+                wrapper = root / "cancel.sh"
+                wrapper.write_text(
+                    '#!/bin/sh\nsleep 60 &\nprintf started > "$1"\nwait\n',
+                    encoding="ascii",
+                )
+                wrapper.chmod(0o700)
+                command = _checked_command(
+                    f"{shlex.quote(str(wrapper))} {shlex.quote(str(marker))}", "cold boot"
+                )
+                original = subprocess.Popen.communicate
+                processes = []
+
+                def cancel_once(process, *args, **kwargs):
+                    if not processes:
+                        processes.append(process)
+                        deadline = time.monotonic() + 5
+                        while not marker.exists() and time.monotonic() < deadline:
+                            time.sleep(0.01)
+                        self.assertTrue(marker.exists())
+                        raise cancellation()
+                    return original(process, *args, **kwargs)
+
+                try:
+                    with mock.patch.object(subprocess.Popen, "communicate", cancel_once):
+                        with self.assertRaises(cancellation):
+                            _run_host(command, "cold boot", 30)
+                    with self.assertRaises(ProcessLookupError):
+                        os.killpg(processes[0].pid, 0)
+                finally:
+                    for process in processes:
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        process.wait(timeout=5)
 
     def test_lifecycle_refuses_recovery_when_group_death_is_unproven(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-command-indeterminate-") as temp:

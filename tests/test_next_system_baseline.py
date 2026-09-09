@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from types import SimpleNamespace
@@ -23,6 +24,60 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    def test_zygote_name_copy_stops_at_guard_pages(self):
+        source = Path("native/src/core/zygisk/hook.cpp").read_text()
+        start = source.index("DCL_HOOK_FUNC(static size_t, legacy_strlcpy,")
+        end = source.index("\n}\n", start) + 3
+        function = source[start:end]
+        program = """
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
+#include <sys/mman.h>
+#include <unistd.h>
+#define DCL_HOOK_FUNC(ret, name, ...) ret new_##name(__VA_ARGS__)
+""" + function + r"""
+int main() {
+    const size_t page = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+    auto allocate = [page] {
+        auto p = static_cast<char *>(mmap(nullptr, page * 2, PROT_READ | PROT_WRITE,
+                                          MAP_PRIVATE | MAP_ANON, -1, 0));
+        assert(p != MAP_FAILED);
+        assert(mprotect(p + page, page, PROT_NONE) == 0);
+        return p;
+    };
+    char *source = allocate();
+    char *destination = allocate();
+    for (size_t length = 0; length < 256; ++length) {
+        char *src = source + page - length - 1;
+        memset(src, 'x', length);
+        src[length] = '\0';
+        assert(new_legacy_strlcpy(nullptr, src, 0) == length);
+        for (size_t capacity = 1; capacity < 272; ++capacity) {
+            char *dst = destination + page - capacity;
+            memset(dst - 1, '#', capacity + 1);
+            assert(new_legacy_strlcpy(dst, src, capacity) == length);
+            const size_t copied = std::min(length, capacity - 1);
+            for (size_t i = 0; i < copied; ++i) assert(dst[i] == 'x');
+            assert(dst[copied] == '\0');
+            assert(dst[-1] == '#');
+            for (size_t i = copied + 1; i < capacity; ++i) assert(dst[i] == '#');
+        }
+    }
+    assert(munmap(source, page * 2) == 0);
+    assert(munmap(destination, page * 2) == 0);
+}
+"""
+        with tempfile.TemporaryDirectory(prefix="kitsune-strlcpy-guard-") as temporary:
+            root = Path(temporary)
+            cpp = root / "guard.cpp"
+            binary = root / "guard"
+            cpp.write_text(program)
+            subprocess.run(["c++", "-std=c++20", "-O2", str(cpp), "-o", str(binary)],
+                           check=True, capture_output=True, text=True)
+            subprocess.run([str(binary)], check=True, timeout=15)
+
     def test_git_source_state_is_checked_and_build_races_remove_artifact(self):
         commit = "a" * 40
         clean_output = f"# branch.oid {commit}\n# branch.head next-system\n"
@@ -214,6 +269,39 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertIn("wait_process_group_gone", waiter)
         self.assertIn('["shell", "pm", "path", "android"]', waiter)
         self.assertNotIn("adb wait-for-device", waiter)
+
+    def test_avd_waiter_connects_a_forgotten_owned_tcp_transport(self):
+        source = Path("scripts/avd.sh").read_text(encoding="utf-8")
+        waiter = source.split("python3 - <<'PY' &\n", 1)[1].split("\nPY\n", 1)[0]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fake_adb = root / "adb"
+            fake_adb.write_text("""#!/usr/bin/env python3
+import os
+from pathlib import Path
+import sys
+marker = Path(os.environ['CONNECTED_MARKER'])
+args = sys.argv[3:]
+if args == ['connect', '127.0.0.1:5557']:
+    marker.touch()
+    print('connected')
+elif not marker.exists():
+    raise SystemExit(1)
+elif args == ['exec-out', 'getprop', 'sys.boot_completed']:
+    print('1')
+elif args == ['shell', 'pm', 'path', 'android']:
+    print('package:/system/framework/framework-res.apk')
+else:
+    raise SystemExit(1)
+""")
+            fake_adb.chmod(0o700)
+            env = dict(os.environ, ANDROID_SERIAL="127.0.0.1:5557",
+                       CONNECTED_MARKER=str(root / "connected"),
+                       PATH=str(root) + os.pathsep + os.environ["PATH"])
+            result = subprocess.run([sys.executable, "-c", waiter], env=env,
+                                    capture_output=True, text=True, timeout=15)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue((root / "connected").exists())
 
     def test_avd_boot_waiter_reaps_a_hung_adb_process_group(self):
         source = Path("scripts/avd.sh").read_text(encoding="utf-8")

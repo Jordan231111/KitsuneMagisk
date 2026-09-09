@@ -11,6 +11,7 @@ run_delay() {
 # $1 = version string
 # $2 = version code
 env_check() {
+  local receipt=/data/adb/kitsune/system-mode/transaction.env
   for file in busybox magiskboot magiskinit util_functions.sh boot_patch.sh; do
     [ -f "$MAGISKBIN/$file" ] || return 1
   done
@@ -18,7 +19,16 @@ env_check() {
     [ -f "$MAGISKBIN/magiskpolicy" ] || return 1
   fi
   if [ "$2" -ge 25210 ]; then
-    [ -b "$MAGISKTMP/.magisk/device/preinit" ] || [ -b "$MAGISKTMP/.magisk/block/preinit" ] || return 2
+    if [ ! -b "$MAGISKTMP/.magisk/device/preinit" ] && [ ! -b "$MAGISKTMP/.magisk/block/preinit" ]; then
+      # Some qualified System Mode layouts have no eligible pre-init device.
+      # A normal reflash cannot create one; accept only the verified strategy.
+      grep -qxF 'SYSTEMMODE=true' "$MAGISKBIN/config" &&
+        [ -f "$receipt" ] && [ ! -L "$receipt" ] &&
+        grep -qxF 'STATE=BOOT_VERIFIED' "$receipt" &&
+        grep -qxF "RUNTIME_PATH=$MAGISKTMP" "$receipt" &&
+        grep -qxF 'PREINIT_DEVICE_B64=' "$receipt" &&
+        grep -qxF 'PREINIT_DIR_B64=' "$receipt" || return 2
+    fi
   fi
   grep -xqF "MAGISK_VER='$1'" "$MAGISKBIN/util_functions.sh" || return 3
   grep -xqF "MAGISK_VER_CODE=$2" "$MAGISKBIN/util_functions.sh" || return 3

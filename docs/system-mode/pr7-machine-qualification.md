@@ -13,7 +13,8 @@ Qualification uses two separate external backups.
 2. It creates unpredictable anchors in both the selected persistent init filesystem and
    `/data/adb`, then creates a temporary challenge backup.
 3. It overwrites both anchors, adds independent markers, and publishes a temporary init RC and
-   helper. Across three distinct cold boots, that RC executes the helper as both `u:r:init:s0`
+   helper. After the existing root provider initializes its policy, across three distinct cold boots,
+   that RC executes the helper as both `u:r:init:s0`
    and `u:r:magisk:s0`. Each result contains the current random boot ID, so replaying a prior
    result cannot pass.
 4. It restores the challenge backup and requires both original anchors, including their exact
@@ -32,6 +33,13 @@ rescue tree, supported persistent SELinux policy locations and sidecars, addon.d
 transaction receipts, `/data/adb/magisk`, Magisk databases and journals, modules and update trees,
 post-fs-data/service scripts, and persistent sepolicy rules. Runtime tmpfs paths and cache logs are
 not recovery artifacts and are not included.
+
+The Magisk SQLite database is compared by its complete schema, typed rows, user version and
+application ID after SQLite integrity checking. Legacy daemon startup can rewrite identical settings
+while changing SQLite page counters and implicit rowids. Raw database byte hashes, sizes and mtimes
+remain in the sealed record; permissions, ownership and SELinux labels must still match. A live WAL,
+shared-memory file or rollback journal blocks the generic qualifier until checkpointed. External disk
+backups retain their exact byte digests; other persistent files retain exact byte and metadata checks.
 
 The record is authenticated with HMAC-SHA256 using a separate owner-only 32-byte host key. The key
 is created and validated before the first guest mutation; it is never embedded in the record.
@@ -57,11 +65,27 @@ the record unusable.
 - Root-capable ADB, writable persistent `/system`, a supported init directory, and a clean exact
   `next-system` commit.
 
+The init directory must be root-owned, unredirected and not group/world writable. Doctor reports
+its observed UID and mode and applies the same eligibility check as the installer. Prepare an
+ineligible vendor image only with a verified external recovery copy; qualification does not change
+directory ownership. If the legacy manager uses SuList, allow the Next manager in that list and grant
+it root before starting its one-shot install session.
+
+For reinstall qualification, Doctor also recognizes a `BOOT_VERIFIED` versioned PR7 manifest and
+its immutable config when both files have safe ownership and the manifest matches the running
+daemon. Missing, malformed, redirected, unverified, or inconsistent markers remain blocked.
+The installer separately revalidates the complete ownership inventory before an upgrade writes.
+
 This PR7 generic qualifier intentionally requires the live target policy to already support the
 Magisk domain. That matches the qualified legacy-Kitsune-to-PR7 MuMu upgrade path. A fresh target
 whose root provider lacks `u:r:magisk:s0` fails closed even if the later PR7 launcher could inject
 that domain; widening that flow requires an artifact-fed, adapter-specific policy qualification,
 not an unproven shortcut.
+
+A legacy launcher containing only the recognized live-policy/bootstrap commands does not require a
+persistent-policy gzip sidecar. That migration preserves the existing policy file and removes only
+the owned launcher/payload. A missing sidecar for an unrecognized or persistent-policy-writing
+launcher still blocks migration.
 
 The host verifier requires POSIX `openat`/`O_NOFOLLOW`, process-group, and `/dev/fd` semantics.
 Native reparse-point-safe Windows lifecycle integration belongs to concrete commercial-emulator
@@ -129,3 +153,6 @@ smoke, exact uninstall, and another external restore with the final clean commit
 user-owned MuMu instance must never be deleted. If its external recovery artifact is absent,
 destructive System Mode acceptance remains blocked even when the operator asks to proceed without a
 backup.
+
+The completed PR7 prepared-target record is [MuMu qualification, 2026-09-09](mumu-pr7-2026-09-09.md).
+Repeat the gates for a changed runtime or target; that record is not a blanket emulator or phone claim.

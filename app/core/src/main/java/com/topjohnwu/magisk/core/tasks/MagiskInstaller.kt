@@ -107,6 +107,8 @@ abstract class MagiskInstallImpl protected constructor(
 
     private lateinit var installDir: ExtendedFile
     private lateinit var srcBoot: ExtendedFile
+    protected var systemModeOperation = false
+        private set
 
     private val shell = Shell.getShell()
     private val useRootDir = shell.isRoot && Info.noDataExec
@@ -787,16 +789,20 @@ abstract class MagiskInstallImpl protected constructor(
         if (!extractFiles())
             return false
 
-        val busybox = "$installDir/busybox"
-        val installer = "$installDir/kitsune_system_install.sh"
-        val command =
-            "\"$busybox\" unshare -m \"$busybox\" sh \"$installer\" " +
-                "install \"$installDir\" \"$AppApkPath\""
-        return try {
-            command.sh().isSuccess
-        } finally {
-            "rm -rf \"$installDir\"".sh()
+        return runSystemMode("install")
+    }
+
+    private suspend fun runSystemMode(action: String): Boolean {
+        systemModeOperation = true
+        val result = RootUtils.runSystemMode(action, installDir.path, AppApkPath) { console.add(it) }
+        if (result == null) {
+            console.add("! Root worker disconnected; restart once to recover the transaction")
+            console.add("! Installer files have been retained for recovery")
+            return false
         }
+        if (!installDir.deleteRecursively())
+            console.add("! Could not remove the completed installer working directory")
+        return result == 0
     }
 
     protected suspend fun secondSlot() =
@@ -808,6 +814,8 @@ abstract class MagiskInstallImpl protected constructor(
 
     protected fun restore() =
         !rejectOrdinaryInstallOverSystemMode() && findImage() && "restore_imgs $srcBoot".sh().isSuccess
+
+    protected suspend fun recoverSystemMode() = extractFiles() && runSystemMode("recover")
 
     protected suspend fun uninstall(): Boolean {
         val state = systemModeState()
@@ -827,16 +835,7 @@ abstract class MagiskInstallImpl protected constructor(
         if (!extractFiles())
             return false
 
-        val busybox = "$installDir/busybox"
-        val installer = "$installDir/kitsune_system_install.sh"
-        val command =
-            "\"$busybox\" unshare -m \"$busybox\" sh \"$installer\" " +
-                "uninstall \"$installDir\""
-        return try {
-            command.sh().isSuccess
-        } finally {
-            "rm -rf \"$installDir\"".sh()
-        }
+        return runSystemMode("uninstall")
     }
 
     @WorkerThread
@@ -851,7 +850,7 @@ abstract class MagiskInstallImpl protected constructor(
             success
         } finally {
             try {
-                if (!success && ::installDir.isInitialized) {
+                if (!success && ::installDir.isInitialized && !systemModeOperation) {
                     withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
                         Shell.cmd("rm -rf \"$installDir\"").exec()
                     }
@@ -939,6 +938,13 @@ class MagiskInstaller {
         override suspend fun operations() = fixEnv()
     }
 
+    class SystemModeRecovery(
+        console: MutableList<String>,
+        logs: MutableList<String>
+    ) : ConsoleInstaller(console, logs) {
+        override suspend fun operations() = recoverSystemMode()
+    }
+
     class Uninstall(
         console: MutableList<String>,
         logs: MutableList<String>
@@ -949,7 +955,10 @@ class MagiskInstaller {
             val success = super.exec()
             if (success) {
                 UiThreadHandler.handler.postDelayed(3000) {
-                    Shell.cmd("pm uninstall ${context.packageName}").exec()
+                    if (systemModeOperation)
+                        RootUtils.uninstallSelf()
+                    else
+                        Shell.cmd("pm uninstall ${context.packageName}").exec()
                 }
             }
             return success

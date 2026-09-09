@@ -7,4 +7,7 @@ interface IRootUtils {
     android.app.ActivityManager.RunningAppProcessInfo getAppProcess(int pid);
     IBinder getFileSystem();
     boolean addSystemlessHosts();
+    int runSystemMode(String action, String directory, String apk,
+        in android.os.ParcelFileDescriptor output);
+    void uninstallSelf();
 }

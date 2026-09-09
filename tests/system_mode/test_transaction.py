@@ -26,6 +26,8 @@ SM_SECURE_DIR_METADATA="$TEST_ROOT/secure-dir.env"
 SM_SECURE_DIR_SHA256="$(printf '%064d' 0)"
 SM_MOUNTINFO_FILE="$TEST_ROOT/mountinfo"
 SM_SNAPSHOT_SETTLE_SECONDS=0
+SM_PROC_ROOT="$TEST_ROOT/proc"
+mkdir -p "$SM_PROC_ROOT"
 SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 mkdir -p "$TEST_ROOT/data/adb"
 : >"$SM_MOUNTINFO_FILE"
@@ -501,6 +503,72 @@ class SystemModeTransactionTest(unittest.TestCase):
             )
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_live_policy_legacy_launcher_needs_no_persistent_policy_sidecar(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-legacy-live-policy-") as temp:
+            result = run_harness(
+                r"""
+                SM_SYSTEM_DIR=/system/etc/init/magisk
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                is_rootfs() { return 1; }
+                # The host fixture's owner stands in for Android root.
+                sm_legacy_regular_file() {
+                  [ -f "$1" ] && [ ! -L "$1" ] || return 1
+                  sm_reject_unsafe_mode "$(bb stat -c %a "$1")"
+                }
+                rc="$(sm_real_path "$SM_SYSTEM_DIR.rc")"
+                policy="$(sm_real_path /vendor/etc/selinux/precompiled_sepolicy)"
+                mkdir -p "$(dirname "$rc")" "$(dirname "$policy")"
+                printf original-policy >"$policy"
+                before="$(sm_sha256_file "$policy")"
+                cat >"$rc" <<'RC'
+on post-fs-data
+    start logd
+    exec u:r:su:s0 root root -- /system/etc/init/magisk/magiskpolicy --live --magisk
+    exec u:r:su:s0 root root -- /system/etc/init/magisk/magisk64 --auto-selinux --setup-sbin /system/etc/init/magisk /sbin
+    exec u:r:su:s0 root root -- /sbin/magisk --auto-selinux --post-fs-data
+on nonencrypted
+    exec u:r:su:s0 root root -- /sbin/magisk --auto-selinux --service
+RC
+                chmod 0644 "$rc"
+                sm_find_legacy_policy_sidecar
+                test -z "$SM_LEGACY_POLICY_PATH"
+                test "$(sm_sha256_file "$policy")" = "$before"
+                cp "$rc" "$TEST_ROOT/valid.rc"
+                printf '    write /vendor/etc/selinux/precompiled_sepolicy modified\n' >>"$rc"
+                ! sm_find_legacy_policy_sidecar
+                sed 's/--live --magisk/--load \/vendor\/etc\/selinux\/precompiled_sepolicy --save \/vendor\/etc\/selinux\/precompiled_sepolicy --magisk/' \
+                  "$TEST_ROOT/valid.rc" >"$rc"
+                ! sm_find_legacy_policy_sidecar
+                rm "$rc"
+                ln -s "$TEST_ROOT/valid.rc" "$rc"
+                ! sm_find_legacy_policy_sidecar
+                test "$(sm_sha256_file "$policy")" = "$before"
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_rollback_refuses_active_mutable_state_before_any_restore(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-rollback-active-state-") as temp:
+            result = run_harness(
+                r"""
+                SM_ROLLBACK_DIR="$TEST_ROOT/rollback"
+                mkdir -p "$SM_ROLLBACK_DIR"
+                printf saved >"$SM_ROLLBACK_DIR/untouched"
+                sm_update_state() { touch "$TEST_ROOT/state-changed"; }
+                sm_quiesce_magisk() { return 1; }
+                ! sm_restore_snapshot
+                test ! -e "$TEST_ROOT/state-changed"
+                sm_quiesce_magisk() { return 0; }
+                sm_assert_mutable_namespaces_idle() { return 1; }
+                ! sm_restore_snapshot
+                test ! -e "$TEST_ROOT/state-changed"
+                test "$(cat "$SM_ROLLBACK_DIR/untouched")" = saved
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_legacy_policy_restore_uses_the_recorded_original(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-transaction-policy-restore-") as temp:
             result = run_harness(
@@ -909,7 +977,7 @@ class SystemModeTransactionTest(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_repeated_process_death_at_every_uninstall_boundary_is_idempotent(self) -> None:
-        ordinary = (
+        preserved = (
             ("/cache/magisk.log.bak", "magisk_log_bak", "file"),
             ("/cache/magisk.log", "magisk_log", "file"),
             ("/data/adb/sepolicy.rule", "preinit_rule", "file"),
@@ -920,6 +988,8 @@ class SystemModeTransactionTest(unittest.TestCase):
             ("/data/adb/magisk.db-shm", "magisk_db_shm", "file"),
             ("/data/adb/magisk.db-wal", "magisk_db_wal", "file"),
             ("/data/adb/magisk.db", "magisk_db", "file"),
+        )
+        ordinary = (
             ("/system/addon.d/magisk", "addon_dir", "dir"),
             ("/system/addon.d/99-magisk.sh", "addon_script", "file"),
             ("/data/adb/magisk", "runtime", "dir"),
@@ -932,7 +1002,7 @@ class SystemModeTransactionTest(unittest.TestCase):
             ("/system/etc/init/hw/00-kitsune-magisk-rescue.rc", "rescue_rc", "file"),
             ("/system/etc/init/hw/.kitsune-system-mode-rescue", "rescue_dir", "dir"),
         )
-        inventory = ordinary + rescue
+        inventory = preserved + ordinary + rescue
         common = r"""
             SM_STATE_DIR="$TEST_ROOT/state"
             SM_ORIGINAL_FILE="$SM_STATE_DIR/originals.tsv"
@@ -975,6 +1045,9 @@ class SystemModeTransactionTest(unittest.TestCase):
         ordinary_verify = common + "\nsm_restore_originals ordinary\n"
         ordinary_verify += "\n".join(
             f'test ! -e "$(sm_real_path "{path}")"' for path, _, _ in ordinary
+        )
+        ordinary_verify += "\n" + "\n".join(
+            f'test -e "$(sm_real_path "{path}")"' for path, _, _ in preserved
         )
         ordinary_verify += r"""
             test -f "$(sm_real_path "$SM_RESCUE_RC")"
@@ -1766,6 +1839,58 @@ class SystemModeTransactionTest(unittest.TestCase):
             )
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_uninstall_preserves_user_state_after_install_and_upgrade(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-uninstall-user-state-") as temp:
+            result = run_harness(
+                r"""
+                SM_STATE_DIR="$TEST_ROOT/state"
+                SM_ORIGINAL_FILE="$SM_STATE_DIR/originals.tsv"
+                SM_SYSTEM_DIR=/system/etc/init/magisk
+                SM_INIT_PATH=/system/etc/init/magisk.rc
+                SM_POLICY_PATH=
+                SM_POLICY_MUTATED=false
+                sm_configure_rescue_paths
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                sm_destructive_target_safe() { return 0; }
+                sm_assert_owned_restore_target() { return 0; }
+                mkdir -p "$SM_STATE_DIR"
+                : >"$SM_ORIGINAL_FILE"
+                for path in /data/adb/magisk.db /data/adb/magisk.db-wal \
+                    /data/adb/magisk.db-shm /data/adb/modules /data/adb/modules_update \
+                    /data/adb/post-fs-data.d /data/adb/service.d /data/adb/sepolicy.rule \
+                    /cache/magisk.log /cache/magisk.log.bak; do
+                    real="$(sm_real_path "$path")"
+                    label="$(basename "$path")"
+                    mkdir -p "$(dirname "$real")"
+                    case "$path" in
+                        *.d|*/modules|*/modules_update)
+                            mkdir -p "$real"
+                            printf user-created-after-install >"$real/user-file"
+                            ;;
+                        *) printf user-changed-after-install >"$real" ;;
+                    esac
+                    printf '%s\tfalse\t-\t0\t-\t-\t-\t-\toriginal/%s/data\n' \
+                        "$path" "$label" >>"$SM_ORIGINAL_FILE"
+                done
+                before="$(sm_digest_path "$TEST_ROOT/root")"
+                sm_restore_originals ordinary
+                test "$(sm_digest_path "$TEST_ROOT/root")" = "$before"
+
+                # A prior PR5B upgrade may retain an older original snapshot.
+                # Successful uninstall must neither overwrite current policy
+                # nor resurrect user data deleted after that snapshot.
+                mkdir -p "$SM_STATE_DIR/original/modules/data"
+                printf old-module >"$SM_STATE_DIR/original/modules/data/removed-module"
+                digest="$(sm_digest_path "$SM_STATE_DIR/original/modules/data")"
+                printf '/data/adb/modules\ttrue\t%s\t0\t0700\t0\t0\t-\toriginal/modules/data\n' \
+                    "$digest" >"$SM_ORIGINAL_FILE"
+                sm_restore_originals ordinary
+                test "$(sm_digest_path "$TEST_ROOT/root")" = "$before"
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_uninstall_retains_ownership_until_rescue_cleanup_finishes(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-transaction-uninstall-metadata-") as temp:
             result = run_harness(
@@ -2295,6 +2420,39 @@ class SystemModeTransactionTest(unittest.TestCase):
                 status=$?
                 set -e
                 test "$status" = 2
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_snapshot_ignores_exited_processes_but_not_unreadable_live_ones(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-transaction-zombie-") as temp:
+            result = run_harness(
+                r"""
+                SM_PROC_ROOT="$TEST_ROOT/proc"
+                process="$SM_PROC_ROOT/123"
+                mkdir -p "$process/fd" "$process/fdinfo"
+                : >"$process/maps"
+                # MuMu leaves the stopped daemon's shell as a zombie. Its
+                # cwd and descriptors are gone although /proc/PID still exists.
+                printf '123 (sh) Z 1 123 123 0 -1 4227076 0\n' >"$process/stat"
+                sm_assert_mutable_namespaces_idle
+                printf '123 (sh) X 1 123 123 0 -1 4227076 0\n' >"$process/stat"
+                sm_assert_mutable_namespaces_idle
+
+                # Parse after the final closing parenthesis: a process name
+                # may contain spaces and apparent state fields.
+                printf '123 (fake) Z name) S 1 123 123 0 -1 0 0\n' >"$process/stat"
+                ! sm_assert_mutable_namespaces_idle
+                printf '123 (fake) S name) Z 1 123 123 0 -1 0 0\n' >"$process/stat"
+                sm_assert_mutable_namespaces_idle
+                printf '456 (sh) Z 1 123 123 0 -1 0 0\n' >"$process/stat"
+                ! sm_assert_mutable_namespaces_idle
+                rm "$process/stat"
+                ! sm_assert_mutable_namespaces_idle
+                printf '123 (sh) Z 1 123 123 0 -1 0 0\n' >"$TEST_ROOT/redirect"
+                ln -s "$TEST_ROOT/redirect" "$process/stat"
+                ! sm_assert_mutable_namespaces_idle
                 """,
                 Path(temp),
             )

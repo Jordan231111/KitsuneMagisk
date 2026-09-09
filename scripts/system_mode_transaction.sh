@@ -34,6 +34,7 @@ SM_REMOUNT_FILE=$SM_LOCK_ROOT/.kitsune-system-mode-remount-v1.env
 SM_MOUNTS_FILE=/proc/mounts
 SM_AUTHORIZATION_CLAIM=/data/local/tmp/.kitsune-system-mode-recovery-v1.claimed
 SM_LOCK_HELD=false
+SM_SLAVE_MOUNT_NAMESPACE=false
 SM_LOCK_ACTION=
 SM_LOCK_WAIT_ATTEMPTS=300
 SM_LOCK_WAIT_INTERVAL=0.1
@@ -445,6 +446,9 @@ sm_record_persistent_remount() {
 sm_prepare_persistent_mounts() {
   local canonical real mountpoint options seen='' persistent_policy='' failed=0
   sm_require_lock || return 1
+  if [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ]; then
+    sm_quiesce_magisk || return 1
+  fi
   sm_configure_rescue_paths || return 1
   # Load the boot-scoped journal first. It survives process death, while a cold
   # boot both resets mount modes and discards /dev, so it never misclassifies a
@@ -1844,12 +1848,31 @@ sm_magisk_daemon_running() {
   return 1
 }
 
+sm_isolate_installer_mounts() {
+  local target count=0
+  [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ] || return 0
+  "$SM_BB" mount --make-rprivate / || return 1
+  # Earlier PR7 payloads named the worker tmpfs differently from upstream.
+  # Their daemon cannot recognize those module views during --stop. Detach
+  # them only in this installer namespace before reading persistent files.
+  while :; do
+    target="$("$SM_BB" awk '$1 == "magisk-worker" { print $2; exit }' "$SM_MOUNTS_FILE")" || return 1
+    [ -n "$target" ] || break
+    sm_valid_mountpoint "$target" || return 1
+    case "$target" in /|*'\'*) return 1 ;; esac
+    count=$((count + 1))
+    [ "$count" -le 256 ] || return 1
+    "$SM_BB" umount -l "$target" || return 1
+  done
+  SM_SLAVE_MOUNT_NAMESPACE=false
+}
+
 sm_quiesce_magisk() {
   local candidate uid mode stopped=false attempt=0 status
   if sm_magisk_daemon_running; then status=0; else status=$?; fi
   case "$status" in
     0) ;;
-    1) return 0 ;;
+    1) sm_isolate_installer_mounts; return $? ;;
     *) sm_log "! Magisk daemon state cannot be proven"; return 1 ;;
   esac
   sm_log "- Quiescing Magisk before the exact mutable-state snapshot"
@@ -1888,7 +1911,8 @@ sm_quiesce_magisk() {
       *) sm_log "! Magisk daemon state became unreadable after the stop request"; return 1 ;;
     esac
   done
-  sm_failpoint daemon-quiesced
+  sm_failpoint daemon-quiesced || return 1
+  sm_isolate_installer_mounts
 }
 
 sm_assert_magisk_quiesced() {
@@ -1914,6 +1938,18 @@ sm_mutable_path() {
   return 1
 }
 
+sm_process_exited() {
+  local process="$1" record
+  [ -f "$process/stat" ] && [ ! -L "$process/stat" ] || return 1
+  record="$($SM_BB cat "$process/stat" 2>/dev/null)" || return 1
+  case "$record" in "${process##*/} ("*") "*) ;; *) return 1 ;; esac
+  # The comm field can contain spaces and closing parentheses. Only the state
+  # after its final delimiter is kernel evidence that file references are gone.
+  record="${record##*) }"
+  case "$record" in 'Z '*|'X '*|'x '*) return 0 ;; esac
+  return 1
+}
+
 sm_assert_mutable_namespaces_idle() {
   local proc_root="${SM_PROC_ROOT:-/proc}" process pid link target fd flags access mapped maps
   [ -d "$proc_root" ] && [ ! -L "$proc_root" ] || return 1
@@ -1927,12 +1963,12 @@ sm_assert_mutable_namespaces_idle() {
     }
     link="$process/cwd"
     [ -L "$link" ] || {
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid working directory"
       return 1
     }
     target="$($SM_BB readlink "$link" 2>/dev/null)" || {
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid working directory"
       return 1
     }
@@ -1943,13 +1979,13 @@ sm_assert_mutable_namespaces_idle() {
     fi
     if [ ! -d "$process/fd" ] || [ -L "$process/fd" ] ||
        [ ! -r "$process/fd" ] || [ ! -x "$process/fd" ]; then
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid file descriptors"
       return 1
     fi
     if [ ! -d "$process/fdinfo" ] || [ -L "$process/fdinfo" ] ||
        [ ! -r "$process/fdinfo" ] || [ ! -x "$process/fdinfo" ]; then
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid descriptor metadata"
       return 1
     fi
@@ -1984,7 +2020,7 @@ sm_assert_mutable_namespaces_idle() {
     done
     maps="$process/maps"
     if [ ! -f "$maps" ] || [ -L "$maps" ] || [ ! -r "$maps" ]; then
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot inspect process $pid memory mappings"
       return 1
     fi
@@ -2009,7 +2045,7 @@ sm_assert_mutable_namespaces_idle() {
         }
       }
     ' "$maps" 2>/dev/null)" || {
-      [ ! -d "$process" ] && continue
+      if [ ! -d "$process" ] || sm_process_exited "$process"; then continue; fi
       sm_log "! Cannot parse process $pid memory mappings"
       return 1
     }
@@ -2220,6 +2256,34 @@ sm_legacy_rc_signature() {
     "$SM_BB" grep -Fq -- '--post-fs-data' "$path"
 }
 
+sm_legacy_live_policy_rc() {
+  local file="$1"
+  sm_legacy_regular_file "$file" || return 1
+  # This historical launcher changes only the running policy. It never had a
+  # persistent-policy gzip original; require its complete command vocabulary
+  # before treating an absent sidecar as intentional.
+  "$SM_BB" awk '
+    {
+      line=$0
+      gsub(/[[:space:]]+/, " ", line)
+      sub(/^ /, "", line); sub(/ $/, "", line)
+      if (line == "" || line ~ /^#/) next
+      if (line ~ /^on (post-fs-data|nonencrypted|property:vold.decrypt=trigger_restart_framework|property:sys.boot_completed=1|property:init.svc.zygote=(restarting|stopped))$/) next
+      if (line == "start logd" || line == "mkdir /data/adb/magisk 755") next
+      if (line !~ /^exec u:r:(su|magisk|update_engine|init):s0 (root|0) (root|0) -- /) { bad=1; exit }
+      sub(/^exec [^ ]+ [^ ]+ [^ ]+ -- /, "", line)
+      if (line == "/system/etc/init/magisk/magiskpolicy --live --magisk") { policy=1; next }
+      if (line ~ /^\/system\/etc\/init\/magisk\/magisk(32|64)? --auto-selinux --setup-sbin \/system\/etc\/init\/magisk \/(sbin|debug_ramdisk)$/) { setup=1; next }
+      if (line ~ /^\/(sbin|debug_ramdisk)\/magisk --auto-selinux --(post-fs-data|service|boot-complete|zygote-restart)$/) {
+        if (line ~ / --post-fs-data$/) post=1
+        next
+      }
+      bad=1; exit
+    }
+    END { exit bad || !policy || !setup || !post }
+  ' "$file"
+}
+
 sm_find_legacy_policy_sidecar() {
   local canonical real count=0
   SM_LEGACY_POLICY_PATH=
@@ -2250,6 +2314,9 @@ sm_find_legacy_policy_sidecar() {
   done
   [ "$count" = 1 ] && return 0
   if command -v is_rootfs >/dev/null 2>&1 && is_rootfs; then
+    return 0
+  fi
+  if sm_legacy_live_policy_rc "$(sm_real_path "$SM_SYSTEM_DIR.rc")"; then
     return 0
   fi
   sm_log "! Legacy System Mode has no exact restorable policy backup"
@@ -2510,6 +2577,10 @@ sm_prepare_originals() {
 
 sm_restore_snapshot() {
   local label canonical real source failed=0 rollback="$SM_ROLLBACK_DIR"
+  sm_quiesce_magisk && sm_assert_mutable_namespaces_idle || {
+    sm_log "! Mutable Magisk state is still in use; refusing unsafe rollback"
+    return 1
+  }
   sm_update_state ROLLING_BACK || return 1
   for label in magisk_log_bak magisk_log preinit_rule service post_fs_data modules_update modules \
     magisk_db_shm magisk_db_wal magisk_db runtime addon_dir addon_script \
@@ -3814,7 +3885,7 @@ sm_update_manifest_state() {
 }
 
 sm_verify_boot() {
-  local boot_id staged running_code verify_state root_identity root_digest
+  local boot_id staged running_code client_code database_version verify_state root_identity root_digest
   sm_load_transaction || return 1
   case "$SM_STATE" in COMMITTED|BOOT_VERIFIED) ;; *) return 1 ;; esac
   verify_state="$SM_STATE"
@@ -3854,6 +3925,20 @@ sm_verify_boot() {
   running_code="$("$SM_BB" timeout 15 "$SM_RUNTIME_PATH/magisk" -V 9>&- 2>/dev/null)"
   [ "$SM_VERSION_CODE" = 0 ] || [ "$running_code" = "$SM_VERSION_CODE" ] || {
     sm_log "! System Mode daemon version does not match the committed payload"
+    if [ "$verify_state" = COMMITTED ]; then sm_update_state ROLLBACK_REQUIRED; else sm_update_state FAILED; fi
+    return 1
+  }
+  # Root can bypass directory permissions. Also prove an ordinary UID can
+  # reach the socket, without requiring or changing that UID's superuser policy.
+  client_code="$("$SM_BB" timeout 15 "$SM_BB" setuidgid 2000 "$SM_RUNTIME_PATH/magisk" -V 9>&- 2>/dev/null)" || client_code=
+  [ -n "$client_code" ] && [ "$client_code" = "$running_code" ] || {
+    sm_log "! System Mode daemon is inaccessible to an unprivileged client"
+    if [ "$verify_state" = COMMITTED ]; then sm_update_state ROLLBACK_REQUIRED; else sm_update_state FAILED; fi
+    return 1
+  }
+  database_version="$("$SM_BB" timeout 15 "$SM_RUNTIME_PATH/magisk" --sqlite 'PRAGMA user_version' 9>&- 2>/dev/null)" || database_version=
+  [ "$database_version" = user_version=12 ] || {
+    sm_log "! System Mode daemon could not open a supported user database"
     if [ "$verify_state" = COMMITTED ]; then sm_update_state ROLLBACK_REQUIRED; else sm_update_state FAILED; fi
     return 1
   }
@@ -3936,6 +4021,16 @@ sm_restore_originals() {
     case "$path" in
       "$SM_RESCUE_RC"|"$SM_RESCUE_DIR") [ "$scope" = rescue ] || continue ;;
       *) [ "$scope" != rescue ] || continue ;;
+    esac
+    # Modules, policy choices and user scripts belong to the user, not the
+    # installation. Restore their snapshot only when rolling back a failed
+    # transaction; successful uninstall must preserve subsequent user changes.
+    case "$path" in
+      /data/adb/magisk.db|/data/adb/magisk.db-wal|/data/adb/magisk.db-shm|\
+      /data/adb/modules|/data/adb/modules_update|/data/adb/post-fs-data.d|\
+      /data/adb/service.d|/data/adb/sepolicy.rule|/cache/magisk.log|/cache/magisk.log.bak)
+        continue
+        ;;
     esac
     real="$(sm_real_path "$path")" || return 1
     if [ "$path" = /system/etc/init/bootanim.rc ]; then

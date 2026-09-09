@@ -2,7 +2,6 @@ package com.topjohnwu.magisk.test
 
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import androidx.annotation.Keep
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -10,7 +9,10 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.model.su.SuPolicy
+import com.topjohnwu.superuser.ShellUtils.fastCmd
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -56,11 +58,16 @@ class MagiskAppTest : BaseTest {
         val monitor = instrumentation.addMonitor(filter, null, false)
 
         // Try to call su from ADB shell
-        val cmd = if (Build.VERSION.SDK_INT < 24) {
-            // API 23 runs executeShellCommand as root
-            "/system/xbin/su 2000 su -c id"
+        val caller = AutoCloseInputStream(uiAutomation.executeShellCommand("id -u"))
+            .reader().use { it.readText().trim() }
+        assertTrue("Unexpected UiAutomation UID: $caller", caller == "0" || caller == "2000")
+        val su = fastCmd("magisk --path") + "/su"
+        val cmd = if (caller == "0") {
+            // Some vendor images, like API 23, execute automation commands as
+            // root. Drop to shell first so the inner request exercises policy.
+            "$su -s $su 2000 -c id"
         } else {
-            "su -c id"
+            "$su -c id"
         }
         val pfd = uiAutomation.executeShellCommand(cmd)
 
@@ -78,7 +85,15 @@ class MagiskAppTest : BaseTest {
 
         // Check that the database is updated
         runBlocking {
-            val policy = ServiceLocator.policyDB.fetch(2000)
+            // The response FIFO is written before the asynchronous policy update.
+            var observed = ServiceLocator.policyDB.fetch(2000)
+            withTimeoutOrNull(TimeUnit.SECONDS.toMillis(10)) {
+                while (observed?.policy != SuPolicy.ALLOW) {
+                    delay(50)
+                    observed = ServiceLocator.policyDB.fetch(2000)
+                }
+            }
+            val policy = observed
                 ?: throw AssertionError("PolicyDB is invalid")
             assertEquals("Policy for shell is incorrect", SuPolicy.ALLOW, policy.policy)
         }

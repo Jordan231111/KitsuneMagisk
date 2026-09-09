@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import copy
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 from tools.system_mode.doctor import (
     CommandResult,
@@ -10,6 +12,7 @@ from tools.system_mode.doctor import (
     _effective_mount,
     _ext4_features,
     _select_init_directory,
+    _versioned_install_config,
     classify_report,
     fixture_report,
     load_fixture,
@@ -24,6 +27,79 @@ FIXTURES = ROOT / "tools" / "system_mode" / "fixtures"
 SCHEMAS = ROOT / "tools" / "system_mode" / "schemas"
 CONTRACTS = ROOT / "tools" / "system_mode" / "contracts"
 RECORDS = ROOT / "compatibility" / "records"
+
+
+class VersionedInstallProbeTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.uuid = "11111111-1111-4111-8111-111111111111"
+        self.path = "/system/etc/init/magisk/install-manifest.json"
+        self.config = "/system/etc/init/magisk/versions/" + self.uuid + "/config"
+        schema = json.loads((SCHEMAS / "install-manifest-v1.schema.json").read_text())
+        target = {key: "a" * 64 for key in schema["properties"]["target"]["required"]}
+        target.update(authorization_id=self.uuid, api=32, abis=["arm64-v8a"])
+        self.manifest = {
+            "schema_version": 1, "install_id": self.uuid, "state": "BOOT_VERIFIED",
+            "product": {"name": "KitsuneMagisk", "version": "30.7-kitsune-test",
+                        "version_code": 30700, "source_commit": "a" * 40,
+                        "upstream_base": "b" * 40, "artifact_sha256": "c" * 64},
+            "target": target,
+            "strategies": {
+                "init": "/system/etc/init/magisk.rc", "selinux": "disabled:",
+                "policy_mutated": False, "legacy_migration": False,
+                "runtime_tmpfs": "/debug_ramdisk", "preinit_device": None,
+                "preinit_directory": None, "active_payload": self.config.rsplit("/", 1)[0],
+                "rescue_payload": "/system/etc/init/.kitsune-system-mode-rescue/versions/" + self.uuid,
+            },
+            "ownership_inventory_sha256": "a" * 64, "originals_inventory_sha256": "b" * 64,
+            "secure_dir_metadata_sha256": "c" * 64,
+            "mutable_namespaces": schema["properties"]["mutable_namespaces"]["items"]["enum"],
+            "payload": [], "originals": [], "journal": [],
+            "backup": {"external": True, "location": "/external/backup",
+                       "sha256": "d" * 64, "restore_command": "restore backup"},
+        }
+        validate_schema_instance(self.manifest, schema)
+
+    def record(self, path):
+        return {"kind": "file", "readable": True, "resolved_path": path,
+                "uid": 0, "mode": "0600"}
+
+    def probe(self, *, manifest=None, record=None, config_record=None,
+              config="SYSTEMMODE=true\nRECOVERYMODE=false\n", version="30.7-kitsune-test:MAGISK:D"):
+        text = json.dumps(self.manifest) if manifest is None else manifest
+        records = {self.config: config_record or self.record(self.config)}
+        with patch("tools.system_mode.doctor._read_optional",
+                   side_effect=lambda client, path, **kw: text if path == self.path else config), \
+             patch("tools.system_mode.doctor._probe_paths", return_value=records):
+            return _versioned_install_config(
+                object(), self.path, record or self.record(self.path), version, 30700, root=True
+            )
+
+    def test_verified_versioned_config_is_recognized_without_legacy_flat_file(self):
+        self.assertEqual(self.config, self.probe())
+
+    def test_incomplete_malformed_and_mismatched_manifests_remain_blocked(self):
+        for field, value in (("state", "COMMITTED"), ("schema_version", 2)):
+            manifest = copy.deepcopy(self.manifest)
+            manifest[field] = value
+            self.assertIsNone(self.probe(manifest=json.dumps(manifest)))
+        for text in ("{}", "{", json.dumps(self.manifest)[:-1] + ',"state":"BOOT_VERIFIED"}'):
+            self.assertIsNone(self.probe(manifest=text))
+        self.assertIsNone(self.probe(version="other:MAGISK:D"))
+        manifest = copy.deepcopy(self.manifest)
+        manifest["strategies"]["active_payload"] = "/data/local/tmp/../../payload"
+        self.assertIsNone(self.probe(manifest=json.dumps(manifest)))
+
+    def test_redirected_or_writable_markers_and_conflicting_config_are_rejected(self):
+        for field, value in (("uid", 2000), ("mode", "0666"),
+                             ("resolved_path", "/data/local/tmp/fake"), ("kind", "symlink")):
+            record = self.record(self.path)
+            record[field] = value
+            self.assertIsNone(self.probe(record=record))
+            config_record = self.record(self.config)
+            config_record[field] = value
+            self.assertIsNone(self.probe(config_record=config_record))
+        for config in ("", "SYSTEMMODE=false", "SYSTEMMODE=true\nSYSTEMMODE=false"):
+            self.assertIsNone(self.probe(config=config))
 
 
 class DoctorFixtureTest(unittest.TestCase):
@@ -115,7 +191,19 @@ class DoctorFixtureTest(unittest.TestCase):
                 "permission_writable": True,
             },
         ]
+        for candidate in candidates:
+            candidate.update(uid=0, mode="0755", resolved_path=candidate["path"])
         self.assertEqual("/system/etc/init/hw", _select_init_directory(candidates))
+
+    def test_init_selection_rejects_unsafe_or_unknown_ownership(self) -> None:
+        fixture = json.loads((FIXTURES / "mumu-writable.json").read_text())
+        for changes in ({"uid": 65534}, {"uid": None}, {"mode": "0775"},
+                        {"mode": None}, {"resolved_path": "/data/local/tmp/init"}):
+            with self.subTest(changes=changes):
+                report = fixture_report(fixture["input"])
+                report["init"]["candidate_directories"][0].update(changes)
+                self.assertIsNone(_select_init_directory(report["init"]["candidate_directories"]))
+                self.assertIn("INIT_PATH_UNAVAILABLE", classify_report(report)["reason_codes"])
 
     def test_validation_rejects_a_stale_assessment(self) -> None:
         fixture = json.loads((FIXTURES / "mumu-writable.json").read_text())
@@ -298,8 +386,15 @@ class ContractTest(unittest.TestCase):
                 record = json.loads(path.read_text())
                 self.assertEqual(1, record["schema_version"])
                 validate_schema_instance(record["doctor"], doctor_schema)
-                validate_report(record["doctor"])
-                self.assertEqual(classify_report(record["doctor"]), record["doctor"]["assessment"])
+                # Archives retain what the old probe actually observed. They
+                # cannot supply ownership evidence added by the live probe.
+                current = classify_report(record["doctor"])
+                if current != record["doctor"]["assessment"]:
+                    with self.assertRaisesRegex(ValueError, "stored assessment"):
+                        validate_report(record["doctor"])
+                    self.assertNotEqual("supported", current["verdict"])
+                else:
+                    validate_report(record["doctor"])
                 if not record["clean_snapshot"]:
                     self.assertNotEqual("supported", record["qualification_status"])
                 if record["qualification_status"] == "supported":

@@ -285,8 +285,13 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             self.magisk_installer.index("protected suspend fun directSystem"):
             self.magisk_installer.index("protected suspend fun secondSlot")
         ]
-        self.assertIn('unshare -m', direct)
-        self.assertIn('kitsune_system_install.sh', direct)
+        worker = (ROOT / "app/core/src/main/java/com/topjohnwu/magisk/core/utils/RootUtils.kt").read_text()
+        self.assertIn('runSystemMode("install")', direct)
+        self.assertIn('"unshare", "-m"', worker)
+        self.assertIn('kitsune_system_install.sh', worker)
+        self.assertIn('ProcessBuilder(command)', worker)
+        self.assertIn('Binder.getCallingUid() != applicationInfo.uid', worker)
+        self.assertIn('NonCancellable', worker)
         self.assertIn('BuildConfig.DEBUG', direct)
         self.assertLess(direct.index("BuildConfig.DEBUG"), direct.index("extractFiles"))
 
@@ -444,6 +449,9 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("kitsune.system_mode.service.phase=1", rc)
         self.assertIn("kitsune.system_mode.service.ready", rc)
         self.assertIn("kitsune.system_mode.boot_complete.ready", rc)
+        first_action = rc[rc.index("printf 'on post-fs-data") : rc.index("printf 'on property:vold.decrypt")]
+        self.assertNotIn("printf 'on property:", first_action)
+        self.assertLess(first_action.index("launcher.sh prepare"), first_action.index("launcher.sh post-fs-data"))
         self.assertLess(rc.index("post-fs-data"), rc.index("vold.decrypt=trigger_restart_framework"))
         self.assertLess(rc.index("vold.decrypt=trigger_restart_framework"), rc.index("launcher.sh service"))
         self.assertLess(rc.index("launcher.sh service"), rc.index("launcher.sh boot-complete"))
@@ -466,6 +474,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("/dev/.kitsune-system-mode-sbin-", self.launcher)
         prepare = function_body(self.launcher, "ksl_prepare_runtime")
         self.assertIn('case "$preinit_result" in 0|1)', prepare)
+        self.assertIn('mount -t tmpfs -o mode=0755 magisk "$target/.magisk/worker"', prepare)
 
     def test_launcher_runtime_setup_is_idempotent_for_one_boot(self) -> None:
         prepare = function_body(self.launcher, "ksl_prepare_runtime")
@@ -473,11 +482,234 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('"$target/magisk" -V', prepare)
         self.assertLess(prepare.index(".kitsune-system-mode-$SM_INSTALL_ID"), prepare.index('case "$target"'))
 
+    def test_socket_directories_remain_traversable_under_init_umask(self) -> None:
+        prepare = function_body(self.launcher, "ksl_prepare_runtime")
+        start = prepare.index('  "$KSL_BB" mkdir -p "$target/.magisk/device"')
+        end = prepare.index('\n  if ! "$KSL_BB" awk', start)
+        for mask in ("022", "077"):
+            with self.subTest(umask=mask), tempfile.TemporaryDirectory() as directory:
+                script = 'umask "$1"; target="$2"; KSL_BB=bb; bb() { command "$@"; };\n'
+                subprocess.run(["sh", "-c", script + prepare[start:end], "sh", mask, directory],
+                               check=True, capture_output=True, text=True)
+                for path in (".magisk", ".magisk/device"):
+                    self.assertEqual(0o711, (Path(directory) / path).stat().st_mode & 0o777)
+
+    def test_boot_verification_rejects_root_only_socket_access(self) -> None:
+        verify = function_body(self.transaction, "sm_verify_boot")
+        for state, denied, database_valid in (
+            ("BOOT_VERIFIED", False, True), ("BOOT_VERIFIED", True, True),
+            ("COMMITTED", True, True), ("COMMITTED", False, False),
+            ("BOOT_VERIFIED", False, False),
+        ):
+            with self.subTest(state=state, denied=denied, database_valid=database_valid), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                executable = root / "magisk"
+                executable.write_text(
+                    '#!/bin/sh\nif [ "$1" = --sqlite ]; then [ "$DATABASE_VALID" = true ] || exit 1; printf "user_version=12\\n"; exit; fi\nif [ "$CLIENT_UID" = 2000 ] && [ "$DENIED" = true ]; then exit 1; fi\nprintf "30700\\n"\n'
+                )
+                executable.chmod(0o755)
+                (root / "su").write_text('#!/bin/sh\nprintf "uid=0(root)\\n"\n')
+                (root / "su").chmod(0o755)
+                script = r'''
+TEST_ROOT="$1"
+SM_RUNTIME_PATH="$1"
+SM_STATE="$2"
+export DENIED="$3"
+export DATABASE_VALID="$4"
+SM_BB=bb
+SM_VERSION_CODE=30700
+SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+bb() {
+  case "$1" in
+    timeout) shift 2; "$@" ;;
+    setuidgid) shift; printf '%s\n' "$1" >>"$TEST_ROOT/clients"; uid="$1"; shift; CLIENT_UID="$uid" "$@" ;;
+    sha256sum) printf '%064d  -\n' 0 ;;
+    *) command "$@" ;;
+  esac
+}
+sm_load_transaction() { :; }
+sm_verify_manifest_copies() { :; }
+sm_verify_owned() { :; }
+sm_cleanup_terminal_rollback() { :; }
+sm_valid_hex() { :; }
+sm_log() { :; }
+sm_update_state() { SM_STATE="$1"; }
+getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
+''' + verify + '\nsm_verify_boot\nresult=$?\nprintf "%s\\n" "$SM_STATE"\nexit "$result"\n'
+                result = subprocess.run(
+                    ["bash", "-c", script, "verify", directory, state, str(denied).lower(), str(database_valid).lower()],
+                    capture_output=True, text=True, timeout=10,
+                )
+                rejected = denied or not database_valid
+                self.assertEqual(1 if rejected else 0, result.returncode, result.stderr)
+                expected = "ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED" if rejected else state
+                self.assertEqual(expected, result.stdout.strip())
+                self.assertEqual("2000\n", (root / "clients").read_text())
+
+    def test_environment_check_accepts_only_verified_no_preinit_layout(self) -> None:
+        functions = (ROOT / "scripts/app_functions.sh").read_text()
+        check = function_body(functions, "env_check")
+        cases = (
+            (True, "BOOT_VERIFIED", "", True, 0),
+            (False, "BOOT_VERIFIED", "", True, 2),
+            (True, "COMMITTED", "", True, 2),
+            (True, "BOOT_VERIFIED", "ZXhwZWN0ZWQ=", True, 2),
+            (True, "BOOT_VERIFIED", "", False, 2),
+        )
+        for system_mode, state, device, runtime_matches, expected in cases:
+            with self.subTest(case=(system_mode, state, device, runtime_matches)), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                runtime = root / "runtime"
+                runtime.mkdir()
+                for name in ("busybox", "magiskboot", "magiskinit", "boot_patch.sh", "magiskpolicy"):
+                    (root / name).touch()
+                (root / "util_functions.sh").write_text("MAGISK_VER='test'\nMAGISK_VER_CODE=30700\n")
+                (root / "config").write_text(f"SYSTEMMODE={str(system_mode).lower()}\n")
+                receipt = root / "receipt"
+                receipt.write_text(
+                    f"STATE={state}\nRUNTIME_PATH={runtime if runtime_matches else '/other'}\n"
+                    f"PREINIT_DEVICE_B64={device}\nPREINIT_DIR_B64=\n"
+                )
+                script = check.replace("/data/adb/kitsune/system-mode/transaction.env", str(receipt))
+                script += '\nMAGISKBIN="$1"; MAGISKTMP="$1/runtime"; env_check test 30700\n'
+                result = subprocess.run(["sh", "-c", script, "env-check", directory],
+                                        capture_output=True, text=True, timeout=10)
+                self.assertEqual(expected, result.returncode, result.stderr)
+
+    def test_su_rejects_a_failed_connection_before_writing_the_request(self) -> None:
+        source = (ROOT / "native/src/core/su/su.cpp").read_text()
+        connect = source.index("owned_fd fd = connect_daemon(RequestCode::SUPERUSER);")
+        write = source.index("req.write_to_fd(fd);", connect)
+        self.assertIn("if (fd < 0)\n        return EXIT_FAILURE;", source[connect:write])
+
+    def test_ram_backed_root_preserves_sbin_without_a_block_device(self) -> None:
+        for filesystem in ("rootfs", "tmpfs", "ext4"):
+            with self.subTest(filesystem=filesystem), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                sbin = root / "sbin"
+                sbin.mkdir()
+                (sbin / "vendor-tool").write_text("original vendor executable\n")
+                (root / "mounts").write_text(f"root / {filesystem} ro 0 0\n")
+                function = function_body(self.launcher, "ksl_mount_sbin")
+                function = function.replace("/sbin", str(sbin))
+                function = function.replace("/dev/", str(root / "dev") + "/")
+                function = function.replace("/proc/mounts", str(root / "mounts"))
+                script = r'''
+KSL_BB=bb
+SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+bb() { command "$@"; }
+sm_remove_tree_safe() { rm -rf "$3"; }
+ksl_mount_tmpfs() { mv "$1" "$1.original" && mkdir "$1"; }
+ksl_root_block() { echo block-lookup >&2; return 1; }
+''' + function + '\nksl_mount_sbin "$1"\n'
+                result = subprocess.run(
+                    ["sh", "-c", script, "sh", str(sbin)],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if filesystem == "ext4":
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("block-lookup", result.stderr)
+                else:
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertNotIn("block-lookup", result.stderr)
+                    self.assertTrue((sbin / "vendor-tool").is_symlink())
+                    self.assertEqual(
+                        "original vendor executable\n",
+                        (sbin / "vendor-tool").read_text(),
+                    )
+
     def test_runtime_selection_never_mounts_through_an_sbin_symlink(self) -> None:
         strategies = function_body(self.transaction, "sm_select_strategies")
         mount_sbin = function_body(self.launcher, "ksl_mount_sbin")
         self.assertIn("[ -L /sbin ]", strategies)
         self.assertIn("[ ! -L /sbin ] || return 1", mount_sbin)
+
+    def test_installer_follows_unmounts_until_daemon_stop_then_isolates(self) -> None:
+        validate = function_body(self.installer, "ks_validate_target")
+        self.assertIn("mount --make-rslave /", validate)
+        self.assertNotIn("mount --make-rprivate /", validate)
+        prepare = function_body(self.transaction, "sm_prepare_persistent_mounts")
+        self.assertLess(prepare.index("sm_quiesce_magisk"), prepare.index("sm_load_remount_journal"))
+        functions = function_body(self.transaction, "sm_isolate_installer_mounts")
+        functions += function_body(self.transaction, "sm_quiesce_magisk")
+        for installer, running, fail_mount in (
+            (True, True, False), (True, False, False),
+            (True, False, True), (False, False, False),
+        ):
+            with self.subTest(installer=installer, running=running, fail_mount=fail_mount), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                if running:
+                    (root / "running").touch()
+                client = root / "magisk"
+                client.write_text('#!/bin/sh\necho stopped >>"$EVENTS"\nrm "$TEST_ROOT/running"\n')
+                client.chmod(0o755)
+                script = r'''
+export TEST_ROOT="$1" EVENTS="$1/events"
+: >"$EVENTS"
+SM_MOUNTS_FILE="$1/mounts"
+: >"$SM_MOUNTS_FILE"
+SM_BB=bb
+SM_SLAVE_MOUNT_NAMESPACE="$2"
+FAIL_MOUNT="$3"
+SM_TRUSTED_STOP_CLIENT="$1/magisk"
+sm_magisk_daemon_running() { [ -e "$TEST_ROOT/running" ]; }
+sm_reject_unsafe_mode() { :; }
+sm_log() { :; }
+sm_failpoint() { echo "$1" >>"$EVENTS"; }
+bb() {
+  case "$1" in
+    stat) case "$3" in %u) echo 0 ;; %a) echo 755 ;; esac ;;
+    mount) echo private >>"$EVENTS"; [ "$FAIL_MOUNT" != true ] ;;
+    *) command "$@" ;;
+  esac
+}
+''' + functions + '\nsm_quiesce_magisk\nresult=$?\necho "$SM_SLAVE_MOUNT_NAMESPACE"\nexit "$result"\n'
+                result = subprocess.run(
+                    ["sh", "-c", script, "namespace", directory, str(installer).lower(), str(fail_mount).lower()],
+                    capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(1 if fail_mount else 0, result.returncode, result.stderr)
+                expected = (["stopped", "daemon-quiesced"] if running else [])
+                if installer:
+                    expected.append("private")
+                self.assertEqual(expected, (root / "events").read_text().splitlines())
+                self.assertEqual(str(fail_mount).lower(), result.stdout.strip())
+
+    def test_init_entrypoints_enable_standalone_in_the_running_shell(self) -> None:
+        for script in (self.launcher, self.rescue, self.verifier):
+            self.assertLess(script.index("set -o standalone"), script.index("sm_configure "))
+            self.assertIn("export ASH_STANDALONE=1", script)
+
+    def test_legacy_worker_views_are_detached_only_after_isolation(self) -> None:
+        isolate = function_body(self.transaction, "sm_isolate_installer_mounts")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "mounts").write_text(
+                "tmpfs /dev tmpfs rw 0 0\nmagisk-worker /system/etc tmpfs ro 0 0\n"
+            )
+            script = r'''
+SM_BB=bb
+SM_SLAVE_MOUNT_NAMESPACE=true
+SM_MOUNTS_FILE="$1/mounts"
+EVENTS="$1/events"
+sm_valid_mountpoint() { [ "$1" = /system/etc ]; }
+bb() {
+  case "$1" in
+    mount) echo private >>"$EVENTS" ;;
+    umount)
+      [ "$2:$3" = '-l:/system/etc' ] || return 1
+      echo detached >>"$EVENTS"
+      printf 'tmpfs /dev tmpfs rw 0 0\n' >"$SM_MOUNTS_FILE"
+      ;;
+    *) command "$@" ;;
+  esac
+}
+''' + isolate + '\nsm_isolate_installer_mounts\n'
+            result = subprocess.run(["sh", "-c", script, "legacy-mount", directory],
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(["private", "detached"], (root / "events").read_text().splitlines())
+            self.assertEqual("tmpfs /dev tmpfs rw 0 0\n", (root / "mounts").read_text())
 
     def test_pending_state_recovers_before_daemon_start(self) -> None:
         case = self.launcher.index('case "$SM_STATE"')

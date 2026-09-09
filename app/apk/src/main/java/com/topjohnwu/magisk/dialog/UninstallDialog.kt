@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.topjohnwu.magisk.arch.NavigationActivity
 import com.topjohnwu.magisk.arch.UIActivity
+import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
@@ -18,10 +19,14 @@ class UninstallDialog : DialogBuilder {
     override fun build(dialog: MagiskDialog) {
         dialog.apply {
             setTitle(R.string.uninstall_magisk_title)
-            setMessage(R.string.uninstall_magisk_msg)
-            setButton(MagiskDialog.ButtonType.POSITIVE) {
-                text = R.string.restore_img
-                onClick { restore(dialog.activity) }
+            setMessage(
+                if (Info.isSystemMode) R.string.system_mode_uninstall_msg else R.string.uninstall_magisk_msg
+            )
+            if (!Info.isSystemMode) {
+                setButton(MagiskDialog.ButtonType.POSITIVE) {
+                    text = R.string.restore_img
+                    onClick { restore(dialog.activity) }
+                }
             }
             setButton(MagiskDialog.ButtonType.NEGATIVE) {
                 text = R.string.complete_uninstall
