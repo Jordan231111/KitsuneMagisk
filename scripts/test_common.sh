@@ -193,6 +193,31 @@ run_tests() {
   am_instrument '.MagiskAppTest' $app
 
   run_root_stress
+  assert_no_native_crashes
+}
+
+assert_no_native_crashes() {
+  python3 - "$ANDROID_SERIAL" <<'PYCODE'
+import re
+import subprocess
+import sys
+
+try:
+    result = subprocess.run(
+        ["adb", "-s", sys.argv[1], "logcat", "-d", "-b", "crash"],
+        capture_output=True, text=True, timeout=15,
+    )
+except (OSError, subprocess.TimeoutExpired) as error:
+    print(f"Cannot inspect native crash log: {error}", file=sys.stderr)
+    raise SystemExit(2)
+if result.returncode:
+    print(result.stderr or result.stdout, file=sys.stderr)
+    raise SystemExit(result.returncode)
+if re.search(r"Fatal signal \d+ \(SIG(?:SEGV|ABRT|BUS|ILL|FPE|TRAP|SYS|STKFLT)\)", result.stdout):
+    print(result.stdout)
+    print("Unexpected native crash during emulator tests", file=sys.stderr)
+    raise SystemExit(1)
+PYCODE
 }
 
 run_root_stress_batch() {

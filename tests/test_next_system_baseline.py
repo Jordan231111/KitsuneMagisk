@@ -502,6 +502,32 @@ while True:
                         pass
                     process.communicate(timeout=2)
 
+    def test_native_crash_gate_rejects_crashes_and_unreadable_logs(self):
+        source = Path("scripts/test_common.sh").read_text()
+        script = source[source.index("assert_no_native_crashes()") : source.index("run_root_stress_batch()")]
+        with tempfile.TemporaryDirectory(prefix="kitsune-crash-gate-") as temporary:
+            root = Path(temporary)
+            adb = root / "adb"
+            adb.write_text("#!/usr/bin/env python3\nimport os, sys\n"
+                           "assert sys.argv[1:] == ['-s', 'pinned-test', 'logcat', '-d', '-b', 'crash']\n"
+                           "print(os.environ['TEST_CRASH_LOG'])\n"
+                           "raise SystemExit(int(os.environ['TEST_ADB_STATUS']))\n")
+            adb.chmod(0o700)
+            for log, adb_status, expected in (
+                ("", 0, 0), ("FATAL EXCEPTION: main", 0, 0),
+                ("Fatal signal 11 (SIGSEGV), code 1", 0, 1),
+                ("Fatal signal 6 (SIGABRT), code -1", 0, 1),
+                ("Fatal signal 31 (SIGSYS), code 1", 0, 1),
+                ("logcat unavailable", 7, 7),
+            ):
+                with self.subTest(log=log):
+                    env = dict(os.environ, PATH=f"{root}:{os.environ['PATH']}",
+                               ANDROID_SERIAL="pinned-test", TEST_CRASH_LOG=log,
+                               TEST_ADB_STATUS=str(adb_status))
+                    result = subprocess.run(["bash", "-c", script + "\nassert_no_native_crashes"],
+                                            env=env, capture_output=True, text=True, timeout=20)
+                    self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
+
     def test_avd_root_stress_is_timeout_bounded_and_checks_orphans(self):
         source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
         self.assertIn("subprocess.TimeoutExpired", source)
