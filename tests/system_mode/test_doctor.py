@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import json
 import copy
+import os
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
 from tools.system_mode.doctor import (
+    AdbClient,
     CommandResult,
     QualificationEvidence,
     _effective_mount,
@@ -27,6 +31,36 @@ FIXTURES = ROOT / "tools" / "system_mode" / "fixtures"
 SCHEMAS = ROOT / "tools" / "system_mode" / "schemas"
 CONTRACTS = ROOT / "tools" / "system_mode" / "contracts"
 RECORDS = ROOT / "compatibility" / "records"
+
+
+class RootTransportTest(unittest.TestCase):
+    def test_root_adb_and_su_preserve_command_and_status(self):
+        with tempfile.TemporaryDirectory() as raw:
+            directory = Path(raw)
+            marker = directory / "su-called"
+            for uid in (0, 2000):
+                with self.subTest(uid=uid):
+                    (directory / "id").write_text(f"#!/bin/sh\nprintf '{uid}\\n'\n")
+                    (directory / "su").write_text(
+                        '#!/bin/sh\n: > "$SU_MARKER"\nshift\nexec sh -c "$1"\n'
+                    )
+                    for name in ("id", "su"):
+                        (directory / name).chmod(0o700)
+                    env = dict(os.environ, PATH=f"{directory}:/usr/bin:/bin", SU_MARKER=str(marker))
+
+                    def execute(*args, **kwargs):
+                        self.assertEqual(args[0], "shell")
+                        result = subprocess.run(
+                            ["sh", "-c", args[1]], env=env, capture_output=True, text=True
+                        )
+                        return CommandResult(result.stdout, result.stderr, result.returncode)
+
+                    client = AdbClient(serial="test")
+                    with patch.object(client, "_command", side_effect=execute):
+                        result = client.shell('printf "%s" "literal \' value"; exit 37', root=True)
+                    self.assertEqual(result.stdout, "literal ' value")
+                    self.assertEqual(result.returncode, 37)
+                    self.assertEqual(marker.exists(), uid != 0)
 
 
 class VersionedInstallProbeTest(unittest.TestCase):

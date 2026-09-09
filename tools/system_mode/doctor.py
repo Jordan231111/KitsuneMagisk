@@ -233,7 +233,11 @@ class AdbClient:
 
     def shell(self, command: str, *, root: bool = False, timeout: int | None = None) -> CommandResult:
         if root:
-            command = f"su -c {shlex.quote(command)}"
+            quoted = shlex.quote(command)
+            command = (
+                'if [ "$(id -u)" = 0 ]; then '
+                f"exec sh -c {quoted}; else exec su -c {quoted}; fi"
+            )
         return self._command("shell", command, timeout=timeout)
 
 
