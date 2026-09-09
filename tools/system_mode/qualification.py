@@ -884,12 +884,10 @@ def _write_probe(
     mode: str = "0644",
     selinux_context: str | None = "u:object_r:system_file:s0",
 ) -> dict[str, Any]:
-    try:
-        payload = content.decode("ascii")
-    except UnicodeDecodeError as exc:
-        raise ValueError("qualification probes must be ASCII") from exc
     quoted = shlex.quote(path)
     parent = shlex.quote(str(Path(path).parent))
+    staged = f"/data/local/tmp/kitsune-system-mode-probe-{uuid.uuid4()}"
+    quoted_staged = shlex.quote(staged)
     label = (
         f"chcon {shlex.quote(selinux_context)} {quoted} 2>/dev/null || true"
         if selinux_context
@@ -897,11 +895,19 @@ def _write_probe(
     )
     command = (
         f"test -d {parent} && test ! -e {quoted} && test ! -L {quoted} && "
-        f"umask 077 && printf %s {shlex.quote(payload)} > {quoted} && "
+        f"test -f {quoted_staged} && test ! -L {quoted_staged} && "
+        f"umask 077 && cat {quoted_staged} > {quoted} && "
         f"chmod {mode} {quoted} && chown 0:0 {quoted} && "
         f"({label}) && sync"
     )
-    _root_checked(client, command, "qualification probe publication")
+    with tempfile.NamedTemporaryFile(prefix="kitsune-system-mode-probe-") as temp:
+        temp.write(content)
+        temp.flush()
+        try:
+            client.push(temp.name, staged)
+            _root_checked(client, command, "qualification probe publication")
+        finally:
+            _root_checked(client, f"rm -f {quoted_staged}", "qualification staging cleanup")
     evidence = _remote_file_evidence(client, path)
     expected = hashlib.sha256(content).hexdigest()
     expected = {

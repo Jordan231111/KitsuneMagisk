@@ -34,6 +34,7 @@ from tools.system_mode.qualification import (
     _remote_database_digest,
     _sqlite_content_digest,
     _verify_init_exec_probe,
+    _write_probe,
     _recover_from_candidates,
     _remove_verified_qualification_backups,
     _failure_recovery_candidates,
@@ -59,6 +60,30 @@ FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
 
 
 class QualificationTest(unittest.TestCase):
+    def test_probe_transfer_preserves_binary_bytes_and_checks_digest(self) -> None:
+        content = bytes(range(256)) * 2048
+        path = "/system/etc/init/test.policy"
+        evidence = {
+            "path": path, "sha256": hashlib.sha256(content).hexdigest(),
+            "size": len(content), "mode": "0755", "uid": 0, "gid": 0,
+        }
+        captured = []
+
+        def push(local, remote):
+            captured.append(Path(local))
+            self.assertEqual(Path(local).read_bytes(), content)
+
+        client = mock.Mock()
+        client.push.side_effect = push
+        with mock.patch("tools.system_mode.qualification._root_checked"), \
+             mock.patch("tools.system_mode.qualification._remote_file_evidence", return_value=evidence):
+            self.assertEqual(_write_probe(client, path, content, mode="0755"), evidence)
+            evidence["sha256"] = "0" * 64
+            with self.assertRaisesRegex(ProbeError, "digest mismatch"):
+                _write_probe(client, path, content, mode="0755")
+        self.assertEqual(len(captured), 2)
+        self.assertTrue(all(not path.exists() for path in captured))
+
     def test_policy_apk_requires_the_clean_source_and_target_abi(self) -> None:
         policy = bytearray(120)
         policy[:6] = b"\x7fELF\x02\x01"
