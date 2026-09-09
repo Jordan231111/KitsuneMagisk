@@ -1,7 +1,8 @@
 # Building and Development
 
 Development uses `next-system`. PR6 established the official v30.7 base and PR7 adds the
-experimental System Mode slice. The next base update is **PR7A: official v31.0 prerelease**, before
+experimental System Mode slice, with its [prepared-MuMu lifecycle qualified](system-mode/mumu-pr7-2026-09-09.md).
+The next base update is **PR7A: official v31.0 prerelease**, before
 PR8 parity; see the [execution checkpoint](../DEVELOPMENT_ROADMAP.md#current-execution-checkpoint--start-here).
 Build/version metadata must describe the actual checked-out base. The v31.0 target is planned work,
 not the identity of an existing PR7 artifact.

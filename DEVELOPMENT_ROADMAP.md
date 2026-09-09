@@ -15,7 +15,8 @@
 > PR6/PR7 v30.7 evidence remains historical evidence for that exact base.
 >
 > Current maintained-base branch: `next-system` at PR6 baseline commit
-> `eab2968c90c3903352a08150ae3dfb57724d6349`; PR7 is the active, unqualified work unit.
+> `eab2968c90c3903352a08150ae3dfb57724d6349`; PR7 passed prepared-MuMu acceptance at
+> `66079ee020bab254dc410642aeec7410d5d5cff0`. **PR7A (official v31.0 prerelease) is next.**
 >
 > Product charter: KitsuneMagisk exists primarily to provide persistent Magisk through **Direct-System/System Mode** on environments where normal boot-image installation is unavailable or impractical—especially commercial Android emulators—and secondarily to provide Kitsune-specific hiding and module behavior.
 >
@@ -62,12 +63,13 @@ execution order.
 | 7 | Roadmap PR5A — one writable-target baseline-versus-hardened lifecycle | **Merged to `kitsune` by GitHub #27** | Preserve the exact MuMu 1.4.46 evidence and experimental/non-release boundary. |
 | 8 | Roadmap PR5B — conditional current-line durable transaction | **Merged to `kitsune` by GitHub #27** | Keep its tests/manifest contract as the behavioral oracle for PR7; do not turn the old core into a second permanent line. |
 | 9 | Roadmap PR6 — pristine official-v30.7 maintained base | **Complete on `next-system` at `eab2968c9`** | Preserve the recorded source/submodule/build identity and ordinary Magisk baseline. |
-| 10 | Roadmap PR7 — System Mode vertical slice | **In progress; not complete or production-qualified** | Finish exact-source machine qualification and one writable commercial-emulator lifecycle before PR7 completion, promotion, or parity claims. A clearly labelled WIP commit may be pushed to `next-system`; it is not completion evidence. |
+| 10 | Roadmap PR7 — System Mode vertical slice | **Complete on the exact prepared MuMu target; experimental** | Preserve the [qualification, upgrade, module, SU, uninstall and restore evidence](docs/system-mode/mumu-pr7-2026-09-09.md). Release/phone/parity claims remain gated. |
 | 11 | Roadmap PR7A — official v31.0 prerelease update | **Next after PR7** | Port the validated System Mode slice to the pinned v31.0 base and repeat its gates before PR8 parity. |
 | 12 | Roadmap PR8–PR16 — parity, remaining historical features, qualification, and release | **Not started** | Close every feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
 
-The active engineering task is **PR7** on `next-system`. PR6 already established the exact v30.7
-baseline. PR5A used only MuMu VM index 0, restored the same byte-verified baseline between
+The next engineering task is **PR7A** on `next-system`: update the qualified PR7 slice to official
+v31.0 prerelease before PR8 parity. PR6 established the exact v30.7 baseline, and
+[PR7 completed its prepared-MuMu lifecycle](docs/system-mode/mumu-pr7-2026-09-09.md). PR5A used only MuMu VM index 0, restored the same byte-verified baseline between
 comparisons, and separated player, ADB, Android, and Magisk failures. PR5B supplies the current-line
 manifest/recovery oracle that PR7 ports rather than reinvents.
 
@@ -216,7 +218,7 @@ The repository history is explicit:
 
 - Commit [`78ff3756`](https://github.com/Jordan231111/KitsuneMagisk/commit/78ff375665d911773fce3bbaae4860a75b249989) changed `magisk.versionCode` from `27002` to `29999`. Its message says: “Pretend to be Magisk 29.9 to bypass validation for some modules.”
 - Commit [`8e854f37`](https://github.com/Jordan231111/KitsuneMagisk/commit/8e854f378ebabe427f02d65615ddee57af5b53d0) changed it again from `29999` to `31000` and added `version=31.0-kitsune`. Its message says the number was changed “to enhance compatibility.”
-- [`gradle.properties`](gradle.properties) currently supplies `magisk.versionCode=31000`.
+- The historical [`gradle.properties`](https://github.com/Jordan231111/KitsuneMagisk/blob/c02320a92e9b4b1e1dc25624f9e3d6db2ad3603e/gradle.properties) supplies `magisk.versionCode=31000`.
 - The previously tracked `config.prop` supplied the user-visible `version=31.0-kitsune` and embedded
   the public historical test-key credentials. PR #26 deletes both tracked files. Configuration-free
   builds now use the source commit identity; release builds require an explicit external config and
@@ -234,7 +236,7 @@ The shipped `v31.0-25fa2159` APK was inspected during this audit. Its actual met
 | Minimum SDK | 23 |
 | Target/compile SDK | 34 / 34 |
 
-The released artifact also had a metadata bug: [`.github/workflows/android.yml`](.github/workflows/android.yml) claimed the short commit hash was “the exact version string the APK reports,” but the tracked `config.prop` overrode the build script’s hash default. That APK reports `31.0-kitsune`, not `25fa2159`. PR #26 removes the tracked override and adds an artifact identity contract, but the final separation of product version, Android upgrade code, compatibility epoch, protocol, channel, and upstream base remains roadmap PR9.
+The released artifact also had a metadata bug: [`.github/workflows/android.yml`](https://github.com/Jordan231111/KitsuneMagisk/blob/c02320a92e9b4b1e1dc25624f9e3d6db2ad3603e/.github/workflows/android.yml) claimed the short commit hash was “the exact version string the APK reports,” but the tracked `config.prop` overrode the build script’s hash default. That APK reports `31.0-kitsune`, not `25fa2159`. PR #26 removes the tracked override and adds an artifact identity contract, but the final separation of product version, Android upgrade code, compatibility epoch, protocol, channel, and upstream base remains roadmap PR9.
 
 ### The correct mental model
 
@@ -518,7 +520,7 @@ Start with current official code, but reuse current Kitsune behavior and fixture
 | Upstream base | Common ancestor is `154121f3` from 2024-02-02 | The apparent `31.0` label hides a two-year architectural gap |
 | Official stable | v30.7, released 2026-02-23 | Official code has Android 16 QPR2, current sepolicy, SU, boot, and Zygisk fixes absent here |
 | Official master | `fd0cb66b`, observed 2026-08-01; 137 commits after v30.7 | Useful fixes exist, but master also contains a large app/UI/build rewrite. Keep it as an observation/backport lane rather than the first forward-port base. |
-| Latest Kitsune CI and local AVD evidence | [PR #26 run 30697832776](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30697832776) passed source, build/JVM, API 23/29/35, and aggregate product gates at pre-final two-commit head `fc10d9242`, including the Android 6 readiness fix. Its paired security run exposed only volatile global RustSec metadata and led to the final semantic-comparison fix. Pre-final artifact head `1cac2135e` passed local official ARM64 API 34/35/36 debug and release patched-ramdisk boots, manager setup/reboot/self-test/root, 32 concurrent `su` calls per artifact, 137-case parser/policy/signing corpus per artifact, byte restoration, and AVD deletion. Final code commit `530f2a3f8` adds no app/native change beyond that product-tested content; it passed the 99-test local host suite and a fresh semantic RustSec check. The earlier [PR4A lab record](docs/system-mode/avd-lab-2026-07-22.md) retains immutable API 35 16 KiB/API 36 negative evidence. | Ordinary Magisk integration is evidenced on hosted x86_64, local ARM64 Android 14–16, and the exact BlueStacks comparison target. The exact two-commit hosted run after the semantic RustSec fix is the mandatory merge record; none of these normal-install lanes substitutes for writable System Mode qualification. |
+| Latest Kitsune CI and local AVD evidence | [PR #26 run 30697832776](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/30697832776) passed source, build/JVM, API 23/29/35, and aggregate product gates at pre-final two-commit head `fc10d9242`, including the Android 6 readiness fix. Its paired security run exposed only volatile global RustSec metadata and led to the final semantic-comparison fix. Pre-final artifact head `1cac2135e` passed local official ARM64 API 34/35/36 debug and release patched-ramdisk boots, manager setup/reboot/self-test/root, 32 concurrent `su` calls per artifact, 137-case parser/policy/signing corpus per artifact, byte restoration, and AVD deletion. Final code commit `530f2a3f8` adds no app/native change beyond that product-tested content; it passed the 99-test local host suite and a fresh semantic RustSec check. The earlier [PR4A lab record](https://github.com/Jordan231111/KitsuneMagisk/blob/c02320a92e9b4b1e1dc25624f9e3d6db2ad3603e/docs/system-mode/avd-lab-2026-07-22.md) retains immutable API 35 16 KiB/API 36 negative evidence. | Ordinary Magisk integration is evidenced on hosted x86_64, local ARM64 Android 14–16, and the exact BlueStacks comparison target. The exact two-commit hosted run after the semantic RustSec fix is the mandatory merge record; none of these normal-install lanes substitutes for writable System Mode qualification. |
 | Local build | The pinned ONDK is installed; canonical debug/minified-release builds and Gradle debug native links pass for ARM64, ARM32, x86_64, and x86 on this Mac. Final testing found that Gradle's `NDK_DEBUG=1` omitted section GC and pulled dead ARMv7 unwind code; `Application.mk` now makes the canonical and Gradle link contracts explicit and the formerly failing ARMv7 path passes. | Preserve the exact toolchain/bootstrap checks so another maintainer can reproduce the result. |
 | Local submodules | All current Kitsune submodules are initialized at their recorded gitlinks. A separate full recursive official-Magisk clone also checked out every current upstream submodule. | Recursive checkout remains a documented prerequisite; PR4B now automates reachability and pin drift. |
 | Tests | PR #26's squashed local candidate passed 99 host tests, JVM tests, zero-error lint, shell/source checks, clean all-ABI debug/release builds, artifact identity/signing checks, same-instance BlueStacks backend comparisons, official Android 14–16 ARM64 lifecycles, and API 35 provider/module/HideList/hidden-manager characterization. PR5A/PR5B expands the host suite to 127 tests, passes exact all-ABI debug/release artifact checks, repeats ordinary debug/release lifecycles on temporary ARM64 API 23 and API 36 AVDs, and completes the exact MuMu evidence described below. | The writable current-line oracle now exists, but it remains debug-only and exact-version experimental. SuList, early-mount, broad module compatibility, enforcing/multi-target System Mode, production identity, and the maintained-base port remain release blockers. Heavy stress stays local; retained CI regressions are bounded and high-yield. |
@@ -2177,7 +2179,7 @@ without falsely claiming a public schema-v13 release.
 
 ## PR 4A — Portable macOS/AVD and multi-target lab
 
-**Implementation status (2026-07-22 UTC): implemented and locally verified. The AVD runner works with macOS Bash 3.2, uses a configurable AVD name/image/port/memory/timeout, refuses to replace a named AVD or trust pre-existing SDK backups, byte-verifies restoration before deleting recovery copies, has bounded shutdown/provider polling, and pins both shell and nested `build.py` ADB calls to one explicit serial so port 16384 or a physical device cannot receive AVD commands. Both Python and Gradle native-build entry points disable ONDK's broken macOS output-sync mode without altering the SDK; explicit section GC also keeps Gradle debug's ARMv7 link equivalent to the canonical build. The final [API 35 ARM64 lab run](docs/system-mode/avd-lab-2026-07-22.md) completed both debug and release patch/boot/manager-setup/reboot/app-test/root flows, byte-restored the stock SDK image, and deleted its AVD. Stock API 35 Play Store ARM64 with 16 KiB pages and API 36/Android 16 Play Store ARM64 with 4 KiB pages both failed closed under EROFS, enforcing AVB/dm-verity, and no bootstrap root.**
+**Implementation status (2026-07-22 UTC): implemented and locally verified. The AVD runner works with macOS Bash 3.2, uses a configurable AVD name/image/port/memory/timeout, refuses to replace a named AVD or trust pre-existing SDK backups, byte-verifies restoration before deleting recovery copies, has bounded shutdown/provider polling, and pins both shell and nested `build.py` ADB calls to one explicit serial so port 16384 or a physical device cannot receive AVD commands. Both Python and Gradle native-build entry points disable ONDK's broken macOS output-sync mode without altering the SDK; explicit section GC also keeps Gradle debug's ARMv7 link equivalent to the canonical build. The final [API 35 ARM64 lab run](https://github.com/Jordan231111/KitsuneMagisk/blob/c02320a92e9b4b1e1dc25624f9e3d6db2ad3603e/docs/system-mode/avd-lab-2026-07-22.md) completed both debug and release patch/boot/manager-setup/reboot/app-test/root flows, byte-restored the stock SDK image, and deleted its AVD. Stock API 35 Play Store ARM64 with 16 KiB pages and API 36/Android 16 Play Store ARM64 with 4 KiB pages both failed closed under EROFS, enforcing AVB/dm-verity, and no bootstrap root.**
 
 - Make the existing runner portable across Linux CI and Apple Silicon macOS without GNU `timeout` or Bash 4-only wait options.
 - Support disposable Android homes, explicit AVD console ports, installed image-type overrides, and reliable stock-image/AVD cleanup.
@@ -2192,7 +2194,7 @@ without falsely claiming a public schema-v13 release.
 **Implementation status (2026-07-31 UTC): merged as [GitHub #24](https://github.com/Jordan231111/KitsuneMagisk/pull/24); complete on the frozen `f943ecdd` baseline.** The
 reproducible outputs, three finding dispositions, all-ABI build gates, MuMu/disposable-AVD parser
 records, and normal debug/release AVD lifecycle evidence are described in
-[`docs/security-lab.md`](docs/security-lab.md). Coverage-guided ASan/Rust fuzzing, the remaining
+[`docs/security-lab.md`](https://github.com/Jordan231111/KitsuneMagisk/blob/c02320a92e9b4b1e1dc25624f9e3d6db2ad3603e/docs/security-lab.md). Coverage-guided ASan/Rust fuzzing, the remaining
 failure-boundary matrix, ARM32/x86 runtime corpora, System Mode mutation, and physical-device
 recovery deliberately remain open rather than being inferred from UBSan/property tests or emulator
 builds.
@@ -2418,11 +2420,11 @@ stable again before a later release candidate; do not rewrite this historical br
 
 ## PR 7 — System Mode vertical slice on the PR6 stable base
 
-**Implementation status: active acceptance candidate on `next-system`; it remains unmerged and is
-complete only when the exact candidate passes every host, disposable
-AVD, writable-target install/upgrade/uninstall, and external-restore exit gate below. Depends on the
-green PR6 baseline and PR5A's exact writable target/restore contract.** This is the first product
-feature on `next-system`, not the complete historical Kitsune port.
+**Implementation status: completed for the exact prepared MuMu 1.4.46 target at runtime commit
+`66079ee0`; [acceptance evidence](docs/system-mode/mumu-pr7-2026-09-09.md) records the host/AVD gates,
+qualified install/upgrade, both Zygisk provider profiles, SU, exact uninstall and verified restore.**
+System Mode remains debug-only and experimental. This is the first product feature on `next-system`,
+not the complete historical Kitsune port. PR7A updates the official base before PR8 parity.
 
 - Port the dedicated installer, capability contract, persistent launcher/RC, upstream live-setup-derived tmpfs bootstrap, current policy CLI, manifest/transaction, and uninstall.
 - Keep built-in Zygisk and upstream native core intact unless a target-backed failing test requires a narrow hook.
@@ -2866,8 +2868,9 @@ in the detail:
   infrastructure; commercial-emulator mutation remains manually controlled and snapshot-backed.
 - **Done — PR6:** `next-system` is the pristine, minimally branded official-v30.7 maintained base at
   `eab2968c9`, with its baseline record and ordinary Magisk gates preserved.
-- **Active — PR7:** finish and exact-source qualify only the System Mode vertical slice using
-  maintained live-setup, policy, module, and runtime primitives. It is not the complete Kitsune port.
+- **Done — PR7:** the exact prepared-MuMu System Mode lifecycle passed, including qualified upgrade,
+  both provider/module profiles, SU, exact uninstall and external restore. Keep the
+  [runtime-specific evidence and limits](docs/system-mode/mumu-pr7-2026-09-09.md); this is not the complete Kitsune port.
 - **Open next — PR7A:** update the maintained base to official v31.0 prerelease (or an explicitly
   re-pinned newer prerelease), port the System Mode UI, and repeat the inherited gates.
 - **Open — PR8:** run identical snapshots against current and next implementations and select the

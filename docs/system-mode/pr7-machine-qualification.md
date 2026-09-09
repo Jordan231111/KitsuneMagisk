@@ -153,3 +153,6 @@ smoke, exact uninstall, and another external restore with the final clean commit
 user-owned MuMu instance must never be deleted. If its external recovery artifact is absent,
 destructive System Mode acceptance remains blocked even when the operator asks to proceed without a
 backup.
+
+The completed PR7 prepared-target record is [MuMu qualification, 2026-09-09](mumu-pr7-2026-09-09.md).
+Repeat the gates for a changed runtime or target; that record is not a blanket emulator or phone claim.
