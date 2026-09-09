@@ -18,7 +18,13 @@
 > `eab2968c90c3903352a08150ae3dfb57724d6349`; PR7 passed prepared-MuMu acceptance at
 > `66079ee020bab254dc410642aeec7410d5d5cff0`. **PR7A (official v31.0 prerelease) is in progress.**
 >
-> Product charter: KitsuneMagisk exists primarily to provide persistent Magisk through **Direct-System/System Mode** on environments where normal boot-image installation is unavailable or impractical—especially commercial Android emulators—and secondarily to provide Kitsune-specific hiding and module behavior.
+> Product charter: KitsuneMagisk provides reliable Magisk root on real phones and emulators while
+> preserving useful Kitsune-specific early mounting, hiding/SuList, provider, and module capabilities.
+> Choose the installation route from the actual boot layout and recovery evidence: use the ordinary
+> boot-image route where supported, and managed System Mode on qualified writable targets.
+> Preserve useful behavior, replace outdated mechanisms with tested improvements, and retire a
+> feature only with concrete evidence and affected-user guidance. PR7A updates the foundation;
+> complete Kitsune replacement and release readiness still require the remaining parity/device gates.
 >
 > Pre-maintenance fidelity boundary rechecked on 2026-08-01: the last commit before Jordan's work is
 > `8e854f378ebabe427f02d65615ddee57af5b53d0`; its latest shared official ancestor is
@@ -1374,7 +1380,11 @@ repair; it does not turn live HideList behavior into a one-time action.
 
 ## P1.5 Port early-mount as a versioned module API — L
 
-Kitsune currently supports global and per-module `early-mount.d`, early files, and init RC injection through `native/src/init`, `native/src/core/module.cpp`, constants, and `scripts/util_functions.sh`.
+The historical Kitsune implementation supports global and per-module early mounting, early files,
+and init RC injection through `native/src/init`, `native/src/core/module.cpp`, constants, and
+`scripts/util_functions.sh`. Official v31.0 pre-init storage and ordinary post-fs-data module mounting
+are not equivalent to that API. Preserve this useful capability as a required release-parity item;
+begin its design and timing/recovery fixtures with PR8, with implementation ownership in PR14.
 
 ### TODO
 
@@ -1414,7 +1424,8 @@ Kitsune currently supports global and per-module `early-mount.d`, early files, a
 
 ## P1.7 Modernize the Android manager from the upstream app base — XL
 
-Current app stack is compile/target SDK 34, Java 17, AGP 8.5.1, Gradle 8.9, libsu 5.2.2, Retrofit 2.9, Room 2.6.1, and older AndroidX components. Upstream v30.7 uses compile SDK 36.1, target 36, Java 21, AGP 9.0.1, Gradle 9.3, Kotlin 2.3, libsu 6, Retrofit 3, Room 2.8, and a modularized app layout.
+The historical `kitsune` app stack is compile/target SDK 34, Java 17, AGP 8.5.1, Gradle 8.9, libsu 5.2.2, Retrofit 2.9, Room 2.6.1, and older AndroidX components. Upstream v30.7 uses compile SDK 36.1, target 36, Java 21, AGP 9.0.1, Gradle 9.3, Kotlin 2.3, libsu 6, Retrofit 3, Room 2.8, and a modularized app layout. PR7A now inherits the actual v31.0 Compose app and current build stack;
+use that maintained base for remaining app work.
 
 ### TODO
 
@@ -2553,6 +2564,11 @@ ordinary-route gates. Compare against the updated v31.0-or-newer maintained base
 - Compare ordinary Magisk paths as well as System Mode so a newer System Mode port cannot silently
   regress Select-and-Patch, Direct Install, inactive-slot, recovery, modules, MagiskSU, or safe-mode
   recovery.
+- Evaluate improvements beyond historical parity with an owner PR and measurable acceptance
+  criteria: earlier module fault isolation/recovery (PR14–PR15), provider-conflict and per-app
+  namespace diagnostics (PR11–PR13), and boot-layout/OTA-aware installation guidance (PR13–PR15).
+  Land candidates only when they improve demonstrated compatibility, reliability, or recovery;
+  new ideas must not displace required historical capabilities or imply universal root concealment.
 - Publish the exact keep/port/retire disposition for every privileged fork delta needed by the
   selected line. Tag the old implementation after promotion instead of maintaining two permanent
   products.
@@ -2674,6 +2690,8 @@ lifecycle.**
 - Port the documented global/per-module early-mount API, including the historical `initrc.d`
   injection use case, behind a versioned capability contract.
 - Add safe mode, ordering, collision, ownership/context, timeout, and boot-path tests.
+- Prove early visibility with a fixture read before post-fs-data, including a read-only/EROFS layout.
+  Overlay timing must be verified separately from filesystem writability and normal module mounting.
 - Implement or explicitly retire `boot-completed.sh` with deterministic ordering, bounded execution,
   logging, disable/remove behavior, and safe-mode recovery.
 - Define module `sepolicy.rule` live/pre-init refresh across install, update, disable, remove, reboot,
@@ -2681,7 +2699,7 @@ lifecycle.**
 - Port a capability-advertised safe subset of the historical `MODDIR/root` partition API, covering
   standard partitions plus every retained `odm`, `*_dlkm`, `oem`, `apex`, prism/optics, and `my_*`
   target. Unsupported targets must fail or be ignored predictably and be documented by name.
-- Compare v30.7's Rust magic mount with historical shared-tmpfs, binary-injection, systemless-hosts,
+- Compare the selected v31.0-or-newer Rust magic mount with historical shared-tmpfs, binary-injection, systemless-hosts,
   `.replace`, whiteout/deletion, and `action.sh` behavior; close every material regression.
 - Qualify the complete ordinary module lifecycle—install, enable, disable, update, remove, rollback,
   action execution, interrupted update, and safe-mode/remove-modules recovery—rather than proving

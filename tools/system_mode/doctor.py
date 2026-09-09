@@ -366,7 +366,7 @@ done
             "readable": readable == "true",
             "permission_writable": writable == "true",
             "uid": int(uid) if uid.isdigit() else None,
-            "mode": mode.zfill(4) if re.fullmatch(r"[0-7]{3,4}", mode) else None,
+            "mode": mode.zfill(4) if re.fullmatch(r"[0-7]{1,4}", mode) else None,
         }
     return records
 

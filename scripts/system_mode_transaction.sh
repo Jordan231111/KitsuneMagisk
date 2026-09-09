@@ -2039,10 +2039,12 @@ sm_original_record() {
     "$SM_BB" cp -a "$source" "$destination/data" || return 1
     sm_fsync_tree "$destination/data" || return 1
     digest="$(sm_digest_path "$destination/data")" || return 1
-    if [ -f "$destination/data" ]; then size="$($SM_BB stat -c %s "$destination/data")"; fi
-    mode="0$($SM_BB stat -c %a "$metadata")"
-    uid="$($SM_BB stat -c %u "$metadata")"
-    gid="$($SM_BB stat -c %g "$metadata")"
+    if [ -f "$destination/data" ]; then
+      size="$($SM_BB stat -c %s "$destination/data")" || return 1
+    fi
+    mode="0$($SM_BB stat -c %a "$metadata")" || return 1
+    uid="$($SM_BB stat -c %u "$metadata")" || return 1
+    gid="$($SM_BB stat -c %g "$metadata")" || return 1
     context="$(sm_context "$metadata")"
     [ -n "$context" ] || context=-
   else
@@ -2229,7 +2231,7 @@ sm_prepare_originals() {
   sm_original_record "$SM_RESCUE_DIR" rescue_dir /dev/null false || return 1
   sm_atomic_publish "$SM_ORIGINAL_FILE.new" "$SM_ORIGINAL_FILE" original-inventory || return 1
   sm_fsync_tree "$SM_STATE_DIR/original" || return 1
-  return 0
+  sm_validate_originals
 }
 
 sm_restore_snapshot() {
@@ -3437,8 +3439,9 @@ sm_validate_originals() {
       true)
         sm_valid_hex "$digest" 64 || return 1
         case "$size" in *[!0-9]*|'') return 1 ;; esac
-        case "$mode" in 0[0-7][0-7][0-7]|0[0-7][0-7][0-7][0-7]) ;; *) return 1 ;; esac
-        case "$uid:$gid" in *[!0-9:]*) return 1 ;; esac
+        case "$mode" in 0[0-7]|0[0-7][0-7]|0[0-7][0-7][0-7]|0[0-7][0-7][0-7][0-7]) ;; *) return 1 ;; esac
+        case "$uid" in ''|*[!0-9]*) return 1 ;; esac
+        case "$gid" in ''|*[!0-9]*) return 1 ;; esac
         [ ! -f "$container/absent" ] && [ ! -L "$container/absent" ] || return 1
         sm_path_present "$source" || return 1
         [ "$(sm_digest_path "$source")" = "$digest" ] || return 1

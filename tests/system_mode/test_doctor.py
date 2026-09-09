@@ -15,6 +15,7 @@ from tools.system_mode.doctor import (
     QualificationEvidence,
     _effective_mount,
     _ext4_features,
+    _probe_paths,
     _select_init_directory,
     _versioned_install_config,
     classify_report,
@@ -34,6 +35,16 @@ RECORDS = ROOT / "compatibility" / "records"
 
 
 class RootTransportTest(unittest.TestCase):
+    def test_probe_reports_zero_and_special_permission_bits(self):
+        client = AdbClient(serial="test")
+        path = "/data/adb/magisk.db"
+        for raw, expected in (("0", "0000"), ("70", "0070"), ("755", "0755"),
+                              ("4755", "4755"), ("888", None), ("10000", None)):
+            with self.subTest(mode=raw), patch.object(client, "shell", return_value=CommandResult(
+                f"{path}\tfile\ttrue\tfalse\t{path}\t0\t{raw}", "", 0
+            )):
+                self.assertEqual(expected, _probe_paths(client, (path,), root=True)[path]["mode"])
+
     def test_root_adb_and_su_preserve_command_and_status(self):
         with tempfile.TemporaryDirectory() as raw:
             directory = Path(raw)

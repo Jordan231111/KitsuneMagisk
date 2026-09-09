@@ -426,6 +426,23 @@ class SystemModeTransactionTest(unittest.TestCase):
                 } >"$SM_ORIGINAL_FILE"
                 sm_validate_originals
 
+                # Root can read a mode-000 database. Use a readable copy plus
+                # its original metadata so this also runs as an unprivileged host.
+                printf saved-db >"$TEST_ROOT/database-copy"
+                : >"$TEST_ROOT/database-metadata"
+                chmod 000 "$TEST_ROOT/database-metadata"
+                awk -F '\t' '$1 != "/data/adb/magisk.db"' "$SM_ORIGINAL_FILE" >"$SM_ORIGINAL_FILE.new"
+                rm "$SM_STATE_DIR/original/magisk_db/absent"
+                sm_original_record /data/adb/magisk.db magisk_db "$TEST_ROOT/database-copy" true \
+                  "$TEST_ROOT/database-metadata"
+                mv "$SM_ORIGINAL_FILE.new" "$SM_ORIGINAL_FILE"
+                test "$(awk -F '\t' '$1 == "/data/adb/magisk.db" {print $5}' "$SM_ORIGINAL_FILE")" = 00
+                sm_validate_originals
+                printf changed >"$SM_STATE_DIR/original/magisk_db/data"
+                ! sm_validate_originals
+                cp "$TEST_ROOT/database-copy" "$SM_STATE_DIR/original/magisk_db/data"
+                sm_validate_originals
+
                 rm "$SM_STATE_DIR/original/runtime/absent"
                 ! sm_validate_originals
                 printf absent >"$SM_STATE_DIR/original/runtime/absent"

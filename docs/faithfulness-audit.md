@@ -17,11 +17,13 @@ Kitsune remains recognizably faithful to its intended product. The hardening wor
 several accidental security and reliability divergences, but the old core must still be treated as
 a reference/candidate implementation rather than a modern stable release.
 
-The faithful product is not “System Mode instead of Magisk.” It is the complete Magisk-derived root
-and systemless-customization platform, with persistent Direct-System/System Mode as Kitsune's
-release-defining addition and MagiskHide/SuList/emulator compatibility as important secondary
-differences. Ordinary boot-image installation, superuser policy, modules, MagiskBoot, recovery, and
-safe removal remain first-class responsibilities.
+The faithful product is the complete Magisk-derived root and systemless-customization platform.
+Early/pre-init module mounting, MagiskHide/SuList, provider flexibility, and commercial-emulator
+compatibility are core Kitsune capabilities. Persistent System Mode is one installation route;
+ordinary boot-image installation, superuser policy, modules, MagiskBoot, recovery, and safe removal
+remain first-class responsibilities. The current charter and release-parity requirements are in
+[the development roadmap](../DEVELOPMENT_ROADMAP.md); the historical audit measurements below
+remain evidence for their recorded commits.
 
 PR3 and PR4 did not redirect either installation path. PR3 characterizes System Mode. PR4 contains
 broken inherited update behavior and preserves Hide/DenyList/SuList data. PR4A hardens the local
@@ -69,7 +71,7 @@ false assurance of treating commit-message reading as runtime qualification.
 
 | Purpose | Historical/current evidence | Faithful maintenance rule |
 |---|---|---|
-| Persistent Direct-System/System Mode | `05289fb5` introduced the manager, recovery, native, init, policy, persistence, and uninstall slice; later changes added partition, `/sbin`, OTA, and emulator-specific behavior. | It is the primary Kitsune differentiator and release gate. Preserve behavior, make mutation transactional, and qualify exact writable targets. |
+| Persistent Direct-System/System Mode | `05289fb5` introduced the manager, recovery, native, init, policy, persistence, and uninstall slice; later changes added partition, `/sbin`, OTA, and emulator-specific behavior. | It is a Kitsune installation capability and a release gate for advertised writable targets. Preserve behavior, make mutation transactional, and qualify exact targets. |
 | Ordinary Magisk installation | The repository began as Magisk and retains file patch, direct boot-image install, inactive-slot, recovery, and emulator live-setup routes. | System Mode must complement, never replace or silently intercept, normal `boot`/`init_boot`/`vendor_boot` workflows. |
 | Superuser management | Magisk daemon/SU policy, prompts, database, namespaces, logging, multiuser behavior, and manager remain present. | Correct authorization and revocation outrank hiding tricks. Debug shell auto-grant must remain debug-only. |
 | Systemless customization and tools | Modules, magic mount, boot stages, BusyBox, `resetprop`, `magiskboot`, `magiskpolicy`, safe mode, systemless deletion, action scripts, and addon/update behavior are inherited or extended. | Prefer current official implementations; keep Kitsune extensions only with versioned contracts and lifecycle tests. |
@@ -103,7 +105,7 @@ compatibility conclusion, not a claim that an untested physical device is safe t
 | Divergence | Classification | Assessment and required disposition |
 |---|---|---|
 | Direct-System/System Mode | Intentional product extension | Faithful and essential. The old mutation model is not safe enough for a new stable release; keep the behavior and replace the transaction/recovery mechanics. |
-| MagiskHide/SuList extensions | Intentional product extension | Faithful secondary purpose. PR4 fixes the data migration gap; PR12 must define CLI/database/namespace/provider semantics and test them across users and SELinux modes. |
+| MagiskHide/SuList extensions | Intentional product extension | Core Kitsune capability. PR4 fixes the data migration gap; PR12 must define CLI/database/namespace/provider semantics and test them across users and SELinux modes. |
 | Built-in Zygisk removal (`2ef8f002`) | Intentional but architecturally unresolved | It reflects a later external-provider direction, but diverges from both original Magisk capability and current official maintenance. Do not copy the deletion into `next-system`; retain official Zygisk through parity and decide later. |
 | Package signature enforcement disabled (`c12fca79`) | Accidental security regression, fixed in the hardening worktree | Release builds now use `ENFORCE_SIGNATURE=(!MAGISK_DEBUG)` and retain certificate-bound normal/hidden-manager recovery. The existing isolated BlueStacks test instance proved rejection of a differently signed manager and trusted-stub recovery. Debug relaxation remains explicit. Production identity rotation is still a blocker because the historical release key was public. |
 | Pointer-only `hidelist` → `denylist` selection (`25fa2159`) | Accidental upgrade defect around a reasonable compatibility direction | The hardening migration conservatively unions rows, keeps legacy/SuList state, makes a verified v12 backup, and tests interruption while deliberately retaining `user_version=12`. A completion marker distinguishes the migrated state, and the abandoned local v13 state is normalized back to v12. Runtime provider semantics remain PR12 work. |
@@ -128,8 +130,8 @@ port would make failures impossible to attribute.
 5. Treat detection behavior as a measured compatibility layer. Remove tricks whose repeatable benefit
    does not justify their boot, performance, or security risk.
 
-This order protects both purposes: System Mode becomes maintainable, while Kitsune's secondary
-hiding behavior is preserved as an explicit, testable feature instead of an opaque patch stack.
+This order keeps System Mode maintainable and preserves Kitsune hiding as an explicit, tested
+capability. Early mounting and the remaining module features likewise require their own parity evidence.
 
 ## Dependencies, upstream updates, and Android support
 
