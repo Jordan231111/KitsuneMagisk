@@ -172,37 +172,6 @@ int DbStatement::bind_text(int index, rust::Str val) {
 
 #define sql_chk_log(fn, ...) sql_chk_log_ret(nullptr, fn, __VA_ARGS__)
 
-static bool is_legacy_v13_db(sqlite3 *db) {
-    // The short-lived Kitsune v13 build only added this completed migration
-    // marker to the v12 layout. Keep every table and row, including SuList.
-    constexpr char columns[] = R"sql(
-SELECT uid, policy, until, logging, notification FROM policies LIMIT 0;
-SELECT key, value FROM settings LIMIT 0;
-SELECT key, value FROM strings LIMIT 0;
-SELECT package_name, process FROM denylist LIMIT 0;
-SELECT package_name, process FROM hidelist LIMIT 0;
-SELECT package_name, process FROM sulist LIMIT 0;
-)sql";
-    if (sql_exec_impl(db, columns) != SQLITE_OK)
-        return false;
-    constexpr char marker[] = R"sql(
-SELECT COUNT(*) FROM hide_migration_v13
-WHERE id=1 AND strategy='union-preserve-legacy'
-AND source_hidelist_rows>=0 AND source_denylist_rows>=0
-AND source_sulist_rows>=0 AND overlap_rows>=0
-AND migrated_rows>=0 AND malformed_hidelist_rows>=0
-AND sulist_enabled IN (0,1)
-AND source_hidelist_rows=malformed_hidelist_rows+overlap_rows+migrated_rows
-AND overlap_rows<=source_denylist_rows
-AND (SELECT COUNT(*) FROM hide_migration_v13)=1;
-)sql";
-    int valid = 0;
-    auto callback = [](void *valid, auto, const DbValues &values) {
-        *static_cast<int *>(valid) = values.get_int(0);
-    };
-    return sql_exec_impl(db, marker, nullptr, nullptr, callback, &valid) == SQLITE_OK && valid == 1;
-}
-
 sqlite3 *open_and_init_db() {
     if (!load_sqlite()) {
         LOGE("sqlite3: Cannot load libsqlite.so\n");
@@ -224,16 +193,6 @@ sqlite3 *open_and_init_db() {
         *static_cast<int *>(ver) = values.get_int(0);
     };
     sql_chk_log(sql_exec_impl, db.get(), "PRAGMA user_version", nullptr, nullptr, ver_cb, &ver);
-    if (ver == 13) {
-        sql_chk_log(sql_exec_impl, db.get(), "BEGIN IMMEDIATE");
-        if (!is_legacy_v13_db(db.get())) {
-            LOGE("sqlite3: Unrecognized Kitsune v13 database; preserving user data\n");
-            return nullptr;
-        }
-        sql_chk_log(sql_exec_impl, db.get(), "PRAGMA user_version=" DB_VERSION_STR);
-        sql_chk_log(sql_exec_impl, db.get(), "COMMIT");
-        ver = DB_VERSION;
-    }
     if (ver > DB_VERSION) {
         // A newer schema requires its owning version; never erase user policy.
         LOGE("sqlite3: Downgrading database is not supported\n");

@@ -38,12 +38,6 @@ SM_SLAVE_MOUNT_NAMESPACE=false
 SM_LOCK_ACTION=
 SM_LOCK_WAIT_ATTEMPTS=300
 SM_LOCK_WAIT_INTERVAL=0.1
-SM_PR5B_RECEIPT=false
-SM_PR5B_MIGRATED=false
-SM_PR5B_VALIDATED_RECEIPT_SHA256=
-SM_PR5B_VALIDATED_MANIFEST_SHA256=
-SM_PR5B_VALIDATED_OWNERSHIP_SHA256=
-SM_PR5B_VALIDATED_ORIGINALS_SHA256=
 SM_TAB="$(printf '\t')"
 SM_SYSTEM_PAYLOAD_PREFIX=/system/etc/init/magisk/versions
 SM_RESCUE_DIR=
@@ -186,8 +180,8 @@ sm_configure_rescue_paths() {
 sm_get() {
   local key="$1" file="$2"
   [ -f "$file" ] || return 1
-  # Missing optional keys are represented by an empty value for compatibility
-  # with pre-PR7 development receipts. Duplicate keys are never ambiguous:
+  # Missing keys return an empty value; the receipt validator checks required
+  # fields. Duplicate keys are never ambiguous:
   # accepting the first value would let a damaged receipt validate one value
   # and use another in a different parser.
   "$SM_BB" awk -v prefix="$key=" '
@@ -243,8 +237,7 @@ sm_validate_state_storage() {
     "$SM_ORIGINAL_FILE" "$SM_JOURNAL_FILE" "$SM_BOOT_PROOF" "$SM_SECURE_DIR_METADATA" \
     "$SM_SETUP_MARKER" "$SM_SETUP_MARKER.new" \
     "$SM_ROLLBACK_TERMINAL" "$SM_ROLLBACK_TERMINAL.new" \
-    "$SM_PRIOR_TRANSACTION" "$SM_PRIOR_TRANSACTION.new" \
-    "$SM_STATE_DIR/.pr5b-transaction.env.new"; do
+    "$SM_PRIOR_TRANSACTION" "$SM_PRIOR_TRANSACTION.new"; do
     sm_path_present "$path" || continue
     [ -f "$path" ] && [ ! -L "$path" ] || {
       sm_log "! Unsafe System Mode state file: $path"
@@ -1143,7 +1136,7 @@ sm_write_transaction() {
 }
 
 sm_load_transaction() {
-  local migration_marker zero
+  local zero
   sm_validate_state_storage || return 1
   [ -f "$SM_TRANSACTION_FILE" ] || return 1
   [ "$(sm_get SCHEMA_VERSION "$SM_TRANSACTION_FILE")" = "$SM_SCHEMA_VERSION" ] || return 1
@@ -1192,68 +1185,14 @@ sm_load_transaction() {
   SM_BOOT_ATTEMPT_ID="$(sm_get BOOT_ATTEMPT_ID "$SM_TRANSACTION_FILE")"
   SM_ROLLBACK_DIR="$(sm_get ROLLBACK_DIR "$SM_TRANSACTION_FILE")"
   SM_STAGING_PATH="$(sm_get STAGING_PATH "$SM_TRANSACTION_FILE")"
-  migration_marker="$(sm_get MIGRATED_FROM_PR5B "$SM_TRANSACTION_FILE")"
-  SM_PR5B_RECEIPT=false
-  SM_PR5B_MIGRATED=false
-  case "$migration_marker" in
-    '')
-      if [ -z "$SM_MANIFEST_SHA256" ] && [ -z "$SM_OWNERSHIP_SHA256" ] &&
-         [ -z "$SM_SERIAL_SHA256" ] && [ -z "$SM_AUTHORIZATION_ID" ] &&
-         [ -z "$SM_TARGET_CONTRACT_SHA256" ] && [ -z "$SM_AUTH_BOOT_ID_SHA256" ] &&
-         [ -z "$SM_PROBE_SHA256" ] && [ -z "$SM_QUALIFICATION_SHA256" ] &&
-         [ -z "$SM_INSTANCE_IDENTITY_SHA256" ] && [ -z "$SM_ACTIVE_PAYLOAD" ] &&
-         [ -z "$SM_RESCUE_PAYLOAD" ] && [ -z "$SM_POLICY_MUTATED" ] &&
-         [ -z "$SM_LEGACY_MIGRATION" ] && [ -z "$SM_VERSION_CODE" ]; then
-        SM_PR5B_RECEIPT=true
-      elif [ -z "$SM_MANIFEST_SHA256" ] || [ -z "$SM_OWNERSHIP_SHA256" ]; then
-        sm_log "! System Mode receipt is missing one of its integrity digests"
-        return 1
-      fi
-      ;;
-    true)
-      [ -n "$SM_MANIFEST_SHA256" ] && [ -n "$SM_OWNERSHIP_SHA256" ] &&
-        [ -n "$SM_ORIGINALS_SHA256" ] && [ -n "$SM_SECURE_DIR_SHA256" ] &&
-        [ -z "$SM_SERIAL_SHA256" ] && [ -z "$SM_AUTHORIZATION_ID" ] &&
-        [ -z "$SM_TARGET_CONTRACT_SHA256" ] && [ -z "$SM_AUTH_BOOT_ID_SHA256" ] &&
-        [ -z "$SM_PROBE_SHA256" ] && [ -z "$SM_QUALIFICATION_SHA256" ] &&
-        [ -z "$SM_INSTANCE_IDENTITY_SHA256" ] && [ -z "$SM_ACTIVE_PAYLOAD" ] &&
-        [ -z "$SM_RESCUE_PAYLOAD" ] && [ -z "$SM_POLICY_MUTATED" ] &&
-        [ -z "$SM_LEGACY_MIGRATION" ] && [ -z "$SM_VERSION_CODE" ] || return 1
-      SM_PR5B_MIGRATED=true
-      ;;
-    *) return 1 ;;
-  esac
-  zero="$(printf '%064d' 0)"
-  # PR5B receipts predate versioned payloads and the live-policy-only flag.
-  # They remain valid upgrade inputs; every new transaction writes all fields.
-  [ -n "$SM_ACTIVE_PAYLOAD" ] || SM_ACTIVE_PAYLOAD="$SM_SYSTEM_DIR"
-  [ -n "$SM_RESCUE_PAYLOAD" ] || SM_RESCUE_PAYLOAD="$SM_RESCUE_PAYLOAD_PREFIX/$SM_TRANSACTION_ID"
-  [ -n "$SM_SERIAL_SHA256" ] || SM_SERIAL_SHA256="$zero"
-  # Pre-PR7 development receipts did not bind ownership.tsv independently.
-  # Load their shape so interrupted development transactions can recover, but
-  # exact upgrade/uninstall validation rejects this zero sentinel. Every PR7
-  # commit writes and validates a nonzero ownership digest.
-  [ -n "$SM_MANIFEST_SHA256" ] || SM_MANIFEST_SHA256="$zero"
-  [ -n "$SM_OWNERSHIP_SHA256" ] || SM_OWNERSHIP_SHA256="$zero"
-  [ -n "$SM_ORIGINALS_SHA256" ] || SM_ORIGINALS_SHA256="$zero"
-  [ -n "$SM_SECURE_DIR_SHA256" ] || SM_SECURE_DIR_SHA256="$zero"
-  [ -n "$SM_POLICY_MUTATED" ] || {
-    if [ -n "$SM_POLICY_PATH" ]; then SM_POLICY_MUTATED=true; else SM_POLICY_MUTATED=false; fi
-  }
-  [ -n "$SM_LEGACY_MIGRATION" ] || SM_LEGACY_MIGRATION=false
-  [ -n "$SM_VERSION_CODE" ] || SM_VERSION_CODE=0
-  [ -n "$SM_AUTHORIZATION_ID" ] || SM_AUTHORIZATION_ID="$SM_INSTALL_ID"
-  [ -n "$SM_TARGET_CONTRACT_SHA256" ] || SM_TARGET_CONTRACT_SHA256="$SM_REPORT_SHA256"
-  [ -n "$SM_AUTH_BOOT_ID_SHA256" ] || SM_AUTH_BOOT_ID_SHA256="$SM_FINGERPRINT_SHA256"
-  [ -n "$SM_PROBE_SHA256" ] || SM_PROBE_SHA256="$SM_REPORT_SHA256"
-  [ -n "$SM_QUALIFICATION_SHA256" ] || SM_QUALIFICATION_SHA256="$zero"
-  [ -n "$SM_INSTANCE_IDENTITY_SHA256" ] || SM_INSTANCE_IDENTITY_SHA256="$zero"
-  if [ "$SM_PR5B_RECEIPT" = true ] || [ "$SM_PR5B_MIGRATED" = true ]; then
-    [ "$SM_STATE" = BOOT_VERIFIED ] || {
-      sm_log "! Only a boot-verified PR5B receipt can be migrated safely"
-      return 1
-    }
+  # Only the current versioned format is supported. Old layouts must be
+  # removed with their own installer; never infer ownership from missing fields.
+  if [ "$SM_POLICY_MUTATED" != false ] || [ "$SM_LEGACY_MIGRATION" != false ] ||
+     [ -z "$SM_ACTIVE_PAYLOAD" ] || [ -z "$SM_RESCUE_PAYLOAD" ]; then
+    sm_log "! Unsupported System Mode installation; uninstall with its original manager before a clean install"
+    return 1
   fi
+  zero="$(printf '%064d' 0)"
   sm_valid_uuid "$SM_INSTALL_ID" && sm_valid_uuid "$SM_TRANSACTION_ID" || return 1
   sm_valid_uuid "$SM_AUTHORIZATION_ID" || return 1
   case "$SM_STATE" in UNINSTALLED|PREFLIGHTED|STAGED|COMMITTED|BOOT_VERIFIED|ROLLBACK_REQUIRED|ROLLING_BACK|FAILED) ;; *) return 1 ;; esac
@@ -1261,7 +1200,6 @@ sm_load_transaction() {
   case "$SM_INIT_PATH" in /system/etc/init/magisk.rc|/system/etc/init/hw/magisk.rc) ;; *) return 1 ;; esac
   case "$SM_RUNTIME_PATH" in /sbin|/debug_ramdisk) ;; *) return 1 ;; esac
   case "$SM_ACTIVE_PAYLOAD" in
-    "$SM_SYSTEM_DIR") ;;
     "$SM_SYSTEM_PAYLOAD_PREFIX"/*)
       sm_valid_uuid "${SM_ACTIVE_PAYLOAD##*/}" || return 1
       ;;
@@ -1302,7 +1240,7 @@ sm_load_transaction() {
   [ -z "$SM_BOOT_ATTEMPT_ID" ] || sm_valid_uuid "$SM_BOOT_ATTEMPT_ID" || return 1
   case "$SM_STATE" in
     COMMITTED|BOOT_VERIFIED|UNINSTALLED)
-      [ "$SM_MANIFEST_SHA256" != "$zero" ] || [ "$SM_PR5B_RECEIPT" = true ] || return 1
+      [ "$SM_MANIFEST_SHA256" != "$zero" ] || return 1
       ;;
   esac
   sm_validate_live_target
@@ -1643,9 +1581,6 @@ sm_cleanup_staging() {
     "$SM_STATE_DIR/.install-manifest.state-new" \
     "$SM_STATE_DIR/.boot-verified.env.new" \
     "$SM_STATE_DIR/.secure-dir.env.new" \
-    "$SM_STATE_DIR/.policy.original" \
-    "$SM_STATE_DIR/.bootanim.original" \
-    "$SM_STATE_DIR/.pr5b-transaction.env.new" \
     "$SM_ORIGINAL_FILE.new" "$SM_OWNERSHIP_FILE.new" "$SM_JOURNAL_FILE.new" \
     "$SM_STATE_DIR/.journal-removals.new"; do
     "$SM_BB" rm -f "$path" "$path.kitsune-short" || failed=1
@@ -2116,13 +2051,6 @@ sm_original_record() {
   sm_fsync_tree "$destination" || return 1
 }
 
-sm_decompress_original() {
-  local compressed="$1" destination="$2"
-  "$SM_BB" gzip -cdf "$compressed" >"$destination" || return 1
-  "$SM_BB" chmod --reference="${compressed%.gz}" "$destination" 2>/dev/null || "$SM_BB" chmod 0644 "$destination"
-  "$SM_BB" chown --reference="${compressed%.gz}" "$destination" 2>/dev/null || "$SM_BB" chown 0:0 "$destination"
-}
-
 sm_prepare_secure_dir_metadata() {
   local staged="$SM_STATE_DIR/.secure-dir.env.new" uid gid mode context secure
   if [ -f "$SM_SECURE_DIR_METADATA" ]; then
@@ -2215,217 +2143,6 @@ sm_restore_secure_dir_metadata() {
   sm_fsync "$secure"
 }
 
-sm_legacy_exact_setting() {
-  local file="$1" key="$2" expected="$3"
-  [ -f "$file" ] && [ ! -L "$file" ] || return 1
-  "$SM_BB" awk -v prefix="$key=" -v expected="$expected" '
-    index($0, prefix) == 1 {
-      count++
-      value = substr($0, length(prefix) + 1)
-    }
-    END { exit !(count == 1 && value == expected) }
-  ' "$file"
-}
-
-sm_validate_legacy_directory() {
-  local path="$1" uid mode unsupported
-  [ -d "$path" ] && [ ! -L "$path" ] || return 1
-  uid="$($SM_BB stat -c %u "$path")" || return 1
-  mode="$($SM_BB stat -c %a "$path")" || return 1
-  [ "$uid" = 0 ] && sm_reject_unsafe_mode "$mode" || return 1
-  unsupported="$(
-    cd "$path" || exit 1
-    "$SM_BB" find . -mindepth 1 ! -type f ! -type d -print | "$SM_BB" head -n 1
-  )" || return 1
-  [ -z "$unsupported" ]
-}
-
-sm_legacy_regular_file() {
-  local path="$1" uid mode
-  [ -f "$path" ] && [ ! -L "$path" ] || return 1
-  uid="$($SM_BB stat -c %u "$path")" || return 1
-  mode="$($SM_BB stat -c %a "$path")" || return 1
-  [ "$uid" = 0 ] && sm_reject_unsafe_mode "$mode"
-}
-
-sm_legacy_rc_signature() {
-  local path="$1"
-  sm_legacy_regular_file "$path" || return 1
-  "$SM_BB" grep -Fq '/system/etc/init/magisk' "$path" &&
-    "$SM_BB" grep -Fq -- '--setup-sbin' "$path" &&
-    "$SM_BB" grep -Fq -- '--post-fs-data' "$path"
-}
-
-sm_legacy_live_policy_rc() {
-  local file="$1"
-  sm_legacy_regular_file "$file" || return 1
-  # This historical launcher changes only the running policy. It never had a
-  # persistent-policy gzip original; require its complete command vocabulary
-  # before treating an absent sidecar as intentional.
-  "$SM_BB" awk '
-    {
-      line=$0
-      gsub(/[[:space:]]+/, " ", line)
-      sub(/^ /, "", line); sub(/ $/, "", line)
-      if (line == "" || line ~ /^#/) next
-      if (line ~ /^on (post-fs-data|nonencrypted|property:vold.decrypt=trigger_restart_framework|property:sys.boot_completed=1|property:init.svc.zygote=(restarting|stopped))$/) next
-      if (line == "start logd" || line == "mkdir /data/adb/magisk 755") next
-      if (line !~ /^exec u:r:(su|magisk|update_engine|init):s0 (root|0) (root|0) -- /) { bad=1; exit }
-      sub(/^exec [^ ]+ [^ ]+ [^ ]+ -- /, "", line)
-      if (line == "/system/etc/init/magisk/magiskpolicy --live --magisk") { policy=1; next }
-      if (line ~ /^\/system\/etc\/init\/magisk\/magisk(32|64)? --auto-selinux --setup-sbin \/system\/etc\/init\/magisk \/(sbin|debug_ramdisk)$/) { setup=1; next }
-      if (line ~ /^\/(sbin|debug_ramdisk)\/magisk --auto-selinux --(post-fs-data|service|boot-complete|zygote-restart)$/) {
-        if (line ~ / --post-fs-data$/) post=1
-        next
-      }
-      bad=1; exit
-    }
-    END { exit bad || !policy || !setup || !post }
-  ' "$file"
-}
-
-sm_find_legacy_policy_sidecar() {
-  local canonical real count=0
-  SM_LEGACY_POLICY_PATH=
-  # Historical Kitsune selected from this exact ordered set before writing a
-  # gzip stock backup beside the persistently patched policy. Do not infer the
-  # legacy target from the current kernel's preferred policy source: both can
-  # exist, and restoring the wrong file would corrupt exact uninstall.
-  for canonical in \
-    /vendor/etc/selinux/precompiled_sepolicy \
-    /odm/etc/selinux/precompiled_sepolicy \
-    /system/etc/selinux/precompiled_sepolicy \
-    /system_root/sepolicy \
-    /system_root/sepolicy_debug \
-    /system_root/sepolicy.unlocked; do
-    real="$(sm_real_path "$canonical")" || return 1
-    sm_path_present "$real.gz" || continue
-    count=$((count + 1))
-    [ "$count" = 1 ] || {
-      sm_log "! Legacy System Mode has ambiguous policy backup sidecars"
-      return 1
-    }
-    if ! sm_legacy_regular_file "$real" || ! sm_legacy_regular_file "$real.gz" ||
-       ! "$SM_BB" gzip -t "$real.gz"; then
-      sm_log "! Legacy System Mode policy backup is unsafe or corrupt"
-      return 1
-    fi
-    SM_LEGACY_POLICY_PATH="$canonical"
-  done
-  [ "$count" = 1 ] && return 0
-  if command -v is_rootfs >/dev/null 2>&1 && is_rootfs; then
-    return 0
-  fi
-  if sm_legacy_live_policy_rc "$(sm_real_path "$SM_SYSTEM_DIR.rc")"; then
-    return 0
-  fi
-  sm_log "! Legacy System Mode has no exact restorable policy backup"
-  return 1
-}
-
-sm_validate_legacy_footprint() {
-  local payload config legacy_rc selected_init bootanim bootanim_gz runtime addon_script addon_dir
-  local payload_policy payload_init runtime_policy runtime_init candidate found_binary=false
-  payload="$(sm_real_path "$SM_SYSTEM_DIR")" || return 1
-  config="$payload/config"
-  legacy_rc="$(sm_real_path "$SM_SYSTEM_DIR.rc")" || return 1
-  selected_init="$(sm_real_path "$SM_INIT_PATH")" || return 1
-  bootanim="$(sm_real_path /system/etc/init/bootanim.rc)" || return 1
-  bootanim_gz="$bootanim.gz"
-  runtime=/data/adb/magisk
-  addon_script="$(sm_real_path /system/addon.d/99-magisk.sh)" || return 1
-  addon_dir="$(sm_real_path /system/addon.d/magisk)" || return 1
-
-  sm_validate_legacy_directory "$payload" || {
-    sm_log "! Legacy System Mode payload is not a safe owned directory"
-    return 1
-  }
-  sm_legacy_exact_setting "$config" SYSTEMMODE true || {
-    sm_log "! Legacy System Mode config is missing one exact SYSTEMMODE=true marker"
-    return 1
-  }
-  sm_legacy_exact_setting "$config" RECOVERYMODE false || {
-    sm_log "! Legacy System Mode config is missing one exact RECOVERYMODE=false marker"
-    return 1
-  }
-  payload_policy="$payload/magiskpolicy"
-  payload_init="$payload/magiskinit"
-  if ! sm_legacy_regular_file "$payload_policy" || ! sm_legacy_regular_file "$payload_init"; then
-    sm_log "! Legacy System Mode payload is missing its policy or init binary"
-    return 1
-  fi
-  if [ -n "${SM_LEGACY_POLICY_PATH:-}" ]; then
-    [ "$SM_POLICY_PATH" = "$SM_LEGACY_POLICY_PATH" ] || return 1
-  fi
-  for candidate in magisk magisk32 magisk64; do
-    if sm_legacy_regular_file "$payload/$candidate"; then
-      found_binary=true
-      break
-    fi
-  done
-  [ "$found_binary" = true ] || {
-    sm_log "! Legacy System Mode payload has no recognizable Magisk binary"
-    return 1
-  }
-
-  if sm_path_present "$legacy_rc"; then
-    sm_legacy_rc_signature "$legacy_rc" || {
-      sm_log "! Refusing an unrecognized legacy System Mode init RC"
-      return 1
-    }
-  elif sm_legacy_rc_signature "$bootanim"; then
-    if ! sm_legacy_regular_file "$bootanim_gz" || ! "$SM_BB" gzip -t "$bootanim_gz"; then
-      sm_log "! Legacy bootanim injection has no valid stock gzip sidecar"
-      return 1
-    fi
-  else
-    sm_log "! Legacy System Mode has no recognizable init launcher"
-    return 1
-  fi
-  if [ -f "$bootanim_gz" ] || [ -L "$bootanim_gz" ]; then
-    if ! sm_legacy_regular_file "$bootanim_gz" || ! "$SM_BB" gzip -t "$bootanim_gz"; then
-      sm_log "! Legacy bootanim sidecar is unsafe or corrupt"
-      return 1
-    fi
-  fi
-  if [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ] && sm_path_present "$selected_init"; then
-    sm_log "! Refusing to absorb an unrelated selected init RC"
-    return 1
-  fi
-
-  if sm_path_present "$runtime"; then
-    sm_validate_legacy_directory "$runtime" || {
-      sm_log "! Legacy Magisk runtime is not a safe owned directory"
-      return 1
-    }
-    runtime_policy="$runtime/magiskpolicy"
-    runtime_init="$runtime/magiskinit"
-    if ! sm_legacy_regular_file "$runtime_policy" || ! sm_legacy_regular_file "$runtime_init"; then
-      sm_log "! Legacy Magisk runtime is incomplete"
-      return 1
-    fi
-    [ "$(sm_sha256_file "$runtime_policy")" = "$(sm_sha256_file "$payload_policy")" ] &&
-      [ "$(sm_sha256_file "$runtime_init")" = "$(sm_sha256_file "$payload_init")" ] || {
-        sm_log "! Legacy runtime does not match the persistent System Mode payload"
-        return 1
-      }
-  fi
-
-  if sm_path_present "$addon_script"; then
-    if ! sm_legacy_regular_file "$addon_script" ||
-       ! sm_legacy_exact_setting "$addon_script" SYSTEMINSTALL true ||
-       ! "$SM_BB" grep -Fq '/system/etc/init/magisk' "$addon_script"; then
-      sm_log "! Refusing an unrecognized legacy addon.d script"
-      return 1
-    fi
-  fi
-  if sm_path_present "$addon_dir"; then
-    sm_log "! Refusing an unowned legacy addon.d payload directory"
-    return 1
-  fi
-  return 0
-}
-
 sm_append_current_original() {
   local canonical="$1" label="$2" real
   real="$(sm_real_path "$canonical")" || return 1
@@ -2436,21 +2153,50 @@ sm_append_current_original() {
   fi
 }
 
-sm_extend_pr5b_originals() {
-  local label container
-  [ "${SM_PR5B_MIGRATED:-false}" = true ] || return 1
-  sm_validate_pr5b_originals || return 1
-  sm_quiesce_magisk || return 1
-  sm_assert_mutable_namespaces_idle || return 1
-  "$SM_BB" cp -a "$SM_ORIGINAL_FILE" "$SM_ORIGINAL_FILE.new" || return 1
-  for label in magisk_db magisk_db_wal magisk_db_shm modules modules_update \
-    post_fs_data service preinit_rule magisk_log magisk_log_bak rescue_rc rescue_dir; do
-    container="$SM_STATE_DIR/original/$label"
-    if sm_path_present "$container"; then
-      [ -d "$container" ] && [ ! -L "$container" ] || return 1
-      "$SM_BB" rm -rf "$container" || return 1
+sm_check_clean_install() {
+  local path real
+  for path in "$SM_SYSTEM_DIR" "$SM_SYSTEM_DIR.rc" "$SM_INIT_PATH" \
+    "$SM_RESCUE_RC" "$SM_RESCUE_DIR" /data/adb/magisk \
+    /system/addon.d/99-magisk.sh /system/addon.d/magisk \
+    /system/etc/init/bootanim.rc.gz; do
+    real="$(sm_real_path "$path")" || return 1
+    if sm_path_present "$real"; then
+      sm_log "! Existing installation at $path; uninstall it with its original manager before a clean install"
+      return 1
     fi
   done
+  real="$(sm_real_path /system/etc/init/bootanim.rc)" || return 1
+  if [ -f "$real" ] && "$SM_BB" grep -Eq '/system/etc/init/magisk|--setup-sbin' "$real"; then
+    sm_log "! Old System Mode bootanim injection requires removal with its original manager"
+    return 1
+  fi
+  for path in /vendor/etc/selinux/precompiled_sepolicy /odm/etc/selinux/precompiled_sepolicy \
+    /system/etc/selinux/precompiled_sepolicy /system_root/sepolicy \
+    /system_root/sepolicy_debug /system_root/sepolicy.unlocked; do
+    ! sm_path_present "$(sm_real_path "$path.gz")" || {
+      sm_log "! Old System Mode policy backup requires removal with its original manager"
+      return 1
+    }
+  done
+}
+
+sm_prepare_originals() {
+  local policy_real bootanim_real
+  sm_configure_rescue_paths || return 1
+  if [ -f "$SM_ORIGINAL_FILE" ]; then
+    [ -f "$SM_MANIFEST_COPY" ] || { sm_log "! Original backups exist without an install manifest"; return 1; }
+    sm_validate_originals && sm_validate_secure_dir_metadata
+    return
+  fi
+  sm_check_clean_install || return 1
+  "$SM_BB" mkdir -p "$SM_STATE_DIR/original" || return 1
+  : >"$SM_ORIGINAL_FILE.new" || return 1
+  sm_original_record "$SM_SYSTEM_DIR" payload /dev/null false || return 1
+  if [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ]; then
+    sm_original_record "$SM_SYSTEM_DIR.rc" legacy_rc /dev/null false || return 1
+  fi
+  sm_original_record "$SM_INIT_PATH" init_rc /dev/null false || return 1
+  sm_original_record /data/adb/magisk runtime /dev/null false || return 1
   sm_append_current_original /data/adb/magisk.db magisk_db || return 1
   sm_append_current_original /data/adb/magisk.db-wal magisk_db_wal || return 1
   sm_append_current_original /data/adb/magisk.db-shm magisk_db_shm || return 1
@@ -2461,106 +2207,15 @@ sm_extend_pr5b_originals() {
   sm_append_current_original /data/adb/sepolicy.rule preinit_rule || return 1
   sm_append_current_original /cache/magisk.log magisk_log || return 1
   sm_append_current_original /cache/magisk.log.bak magisk_log_bak || return 1
-  for container in "$SM_RESCUE_RC" "$SM_RESCUE_DIR"; do
-    ! sm_path_present "$(sm_real_path "$container")" || {
-      sm_log "! Refusing to absorb a pre-existing PR7 rescue path during PR5B migration"
-      return 1
-    }
-  done
-  sm_original_record "$SM_RESCUE_RC" rescue_rc /dev/null false || return 1
-  sm_original_record "$SM_RESCUE_DIR" rescue_dir /dev/null false || return 1
-  sm_assert_magisk_quiesced || return 1
-  sm_assert_mutable_namespaces_idle || return 1
-  sm_atomic_publish "$SM_ORIGINAL_FILE.new" "$SM_ORIGINAL_FILE" pr5b-originals-extended || return 1
-  sm_fsync_tree "$SM_STATE_DIR/original" || return 1
-  SM_ORIGINALS_SHA256="$(sm_sha256_file "$SM_ORIGINAL_FILE")" || return 1
-  SM_PR5B_MIGRATED=false
-  sm_validate_originals
-}
-
-sm_prepare_originals() {
-  local config_real init_real policy_real policy_gz bootanim_real bootanim_gz temp legacy=false conflict
-  sm_configure_rescue_paths || return 1
-  if [ -f "$SM_ORIGINAL_FILE" ]; then
-    [ -f "$SM_MANIFEST_COPY" ] || { sm_log "! Original backups exist without an install manifest"; return 1; }
-    if [ "${SM_PR5B_MIGRATED:-false}" = true ]; then
-      sm_extend_pr5b_originals
-      return
-    fi
-    sm_validate_originals && sm_validate_secure_dir_metadata && return 0
-    sm_log "! Existing development receipt predates the complete mutable-state contract; restore externally before upgrading"
-    return 1
-  fi
-  config_real="$(sm_real_path "$SM_SYSTEM_DIR/config")" || return 1
-  sm_legacy_exact_setting "$config_real" SYSTEMMODE true && legacy=true
-  for conflict in "$SM_RESCUE_RC" "$SM_RESCUE_DIR"; do
-    if sm_path_present "$(sm_real_path "$conflict")"; then
-      sm_log "! Refusing to absorb unowned rescue path $conflict"
-      return 1
-    fi
-  done
-  if sm_path_present "$(sm_real_path "$SM_SYSTEM_DIR")" && [ "$legacy" != true ]; then
-    sm_log "! Refusing to replace an unowned System Mode payload path"
-    return 1
-  fi
-  if [ "$legacy" = true ]; then
-    sm_validate_legacy_footprint || return 1
-  fi
-  if [ "$legacy" != true ]; then
-    for conflict in /data/adb/magisk /data/adb/magisk.db /data/adb/magisk.db-wal \
-      /data/adb/magisk.db-shm /data/adb/modules /data/adb/modules_update \
-      /data/adb/post-fs-data.d /data/adb/service.d /data/adb/sepolicy.rule \
-      /cache/magisk.log /cache/magisk.log.bak \
-      /system/addon.d/99-magisk.sh /system/addon.d/magisk \
-      "$SM_SYSTEM_DIR.rc" "$SM_INIT_PATH"; do
-      if sm_path_present "$(sm_real_path "$conflict")"; then
-        sm_log "! Refusing to replace unowned path $conflict"
-        return 1
-      fi
-    done
-  fi
-  "$SM_BB" mkdir -p "$SM_STATE_DIR/original" || return 1
-  : >"$SM_ORIGINAL_FILE.new" || return 1
-  sm_original_record "$SM_SYSTEM_DIR" payload /dev/null false || return 1
-  if [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ]; then
-    sm_original_record "$SM_SYSTEM_DIR.rc" legacy_rc /dev/null false || return 1
-  fi
-  init_real="$(sm_real_path "$SM_INIT_PATH")" || return 1
-  sm_original_record "$SM_INIT_PATH" init_rc /dev/null false || return 1
-  sm_original_record /data/adb/magisk runtime /dev/null false || return 1
-  sm_original_record /data/adb/magisk.db magisk_db /dev/null false || return 1
-  sm_original_record /data/adb/magisk.db-wal magisk_db_wal /dev/null false || return 1
-  sm_original_record /data/adb/magisk.db-shm magisk_db_shm /dev/null false || return 1
-  sm_original_record /data/adb/modules modules /dev/null false || return 1
-  sm_original_record /data/adb/modules_update modules_update /dev/null false || return 1
-  sm_original_record /data/adb/post-fs-data.d post_fs_data /dev/null false || return 1
-  sm_original_record /data/adb/service.d service /dev/null false || return 1
-  sm_original_record /data/adb/sepolicy.rule preinit_rule /dev/null false || return 1
-  sm_original_record /cache/magisk.log magisk_log /dev/null false || return 1
-  sm_original_record /cache/magisk.log.bak magisk_log_bak /dev/null false || return 1
   sm_original_record /system/addon.d/99-magisk.sh addon_script /dev/null false || return 1
   sm_original_record /system/addon.d/magisk addon_dir /dev/null false || return 1
 
   if [ -n "$SM_POLICY_PATH" ]; then
     policy_real="$(sm_real_path "$SM_POLICY_PATH")" || return 1
-    policy_gz="$policy_real.gz"
-    if [ "$legacy" = true ] && [ -f "$policy_gz" ]; then
-      temp="$SM_STATE_DIR/.policy.original"
-      sm_decompress_original "$policy_gz" "$temp" || return 1
-      sm_original_record "$SM_POLICY_PATH" policy "$temp" true "$policy_real" || return 1
-      "$SM_BB" rm -f "$temp"
-    else
-      sm_original_record "$SM_POLICY_PATH" policy "$policy_real" true || return 1
-    fi
+    sm_original_record "$SM_POLICY_PATH" policy "$policy_real" true || return 1
   fi
   bootanim_real="$(sm_real_path /system/etc/init/bootanim.rc)" || return 1
-  bootanim_gz="$bootanim_real.gz"
-  if [ "$legacy" = true ] && [ -f "$bootanim_gz" ]; then
-    temp="$SM_STATE_DIR/.bootanim.original"
-    sm_decompress_original "$bootanim_gz" "$temp" || return 1
-    sm_original_record /system/etc/init/bootanim.rc bootanim "$temp" true "$bootanim_real" || return 1
-    "$SM_BB" rm -f "$temp"
-  elif sm_path_present "$bootanim_real"; then
+  if sm_path_present "$bootanim_real"; then
     sm_original_record /system/etc/init/bootanim.rc bootanim "$bootanim_real" true || return 1
   else
     sm_original_record /system/etc/init/bootanim.rc bootanim /dev/null false || return 1
@@ -2888,238 +2543,6 @@ sm_recover_pending() {
   esac
 }
 
-sm_validate_pr5b_originals() {
-  local path existed digest size mode uid gid context backup label source container actual real
-  local seen='|'
-  [ -f "$SM_ORIGINAL_FILE" ] && [ ! -L "$SM_ORIGINAL_FILE" ] || return 1
-  "$SM_BB" awk -F '\t' 'NF != 9 || seen[$1]++ { invalid=1 } END { exit invalid || NR == 0 }' \
-    "$SM_ORIGINAL_FILE" || return 1
-  while IFS="$SM_TAB" read -r path existed digest size mode uid gid context backup; do
-    [ -n "$path" ] || continue
-    if [ "$path" = "$SM_SYSTEM_DIR" ]; then label=payload
-    elif [ "$path" = "$SM_INIT_PATH" ]; then label=init_rc
-    elif [ "$path" = "$SM_SYSTEM_DIR.rc" ]; then label=legacy_rc
-    elif [ -n "$SM_POLICY_PATH" ] && [ "$path" = "$SM_POLICY_PATH" ]; then label=policy
-    elif [ "$path" = /system/etc/init/bootanim.rc ]; then label=bootanim
-    elif [ "$path" = /data/adb/magisk ]; then label=runtime
-    elif [ "$path" = /system/addon.d/99-magisk.sh ]; then label=addon_script
-    elif [ "$path" = /system/addon.d/magisk ]; then label=addon_dir
-    else return 1
-    fi
-    case "$seen" in *"|$label|"*) return 1 ;; esac
-    seen="$seen$label|"
-    [ "$backup" = "original/$label/data" ] || return 1
-    [ "$context" = - ] || sm_valid_single_line "$context" || return 1
-    source="$SM_STATE_DIR/$backup"
-    container="${source%/data}"
-    [ -d "$container" ] && [ ! -L "$container" ] || return 1
-    case "$existed" in
-      true)
-        sm_valid_hex "$digest" 64 || return 1
-        case "$size" in *[!0-9]*|'') return 1 ;; esac
-        case "$mode" in 0[0-7][0-7][0-7]|0[0-7][0-7][0-7][0-7]) ;; *) return 1 ;; esac
-        case "$uid:$gid" in *[!0-9:]*) return 1 ;; esac
-        [ ! -f "$container/absent" ] && [ ! -L "$container/absent" ] || return 1
-        sm_path_present "$source" && [ "$(sm_digest_path "$source")" = "$digest" ] || return 1
-        ;;
-      false)
-        [ "$digest:$size:$mode:$uid:$gid:$context" = '-:0:-:-:-:-' ] || return 1
-        [ -f "$container/absent" ] && [ ! -L "$container/absent" ] &&
-          [ "$("$SM_BB" cat "$container/absent")" = absent ] || return 1
-        ! sm_path_present "$source" || return 1
-        ;;
-      *) return 1 ;;
-    esac
-    if [ "$path" = /system/etc/init/bootanim.rc ]; then
-      real="$(sm_real_path "$path")" || return 1
-      if [ "$existed" = true ]; then
-        sm_path_present "$real" && [ "$(sm_digest_path "$real")" = "$digest" ] || return 1
-      else
-        ! sm_path_present "$real" || return 1
-      fi
-    fi
-  done <"$SM_ORIGINAL_FILE"
-  for label in payload init_rc bootanim runtime addon_script addon_dir; do
-    case "$seen" in *"|$label|"*) ;; *) return 1 ;; esac
-  done
-  if [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ]; then
-    case "$seen" in *'|legacy_rc|'*) ;; *) return 1 ;; esac
-  fi
-  if [ -n "$SM_POLICY_PATH" ]; then
-    case "$seen" in *'|policy|'*) ;; *) return 1 ;; esac
-  fi
-  return 0
-}
-
-sm_validate_pr5b_journal() {
-  [ -f "$SM_JOURNAL_FILE" ] && [ ! -L "$SM_JOURNAL_FILE" ] || return 1
-  "$SM_BB" awk -F '\t' '
-    function hex64(value) { return value ~ /^[a-f0-9]+$/ && length(value) == 64 }
-    NF != 7 || $1 != NR || $2 != "publish" ||
-      ($3 != "create" && $3 != "replace") ||
-      ($5 != "-" && !hex64($5)) || !hex64($6) || $7 != "true" || seen[$4]++ {
-      invalid=1
-    }
-    END { exit invalid || NR == 0 }
-  ' "$SM_JOURNAL_FILE" || return 1
-  while IFS="$SM_TAB" read -r sequence boundary operation path before after committed; do
-    sm_owned_path_allowed "$path" || return 1
-    "$SM_BB" awk -F '\t' -v path="$path" -v digest="$after" '
-      $1 == path && $2 == digest { count++ }
-      END { exit count != 1 }
-    ' "$SM_OWNERSHIP_FILE" || return 1
-  done <"$SM_JOURNAL_FILE"
-  "$SM_BB" awk -F '\t' '
-    NR == FNR { journal[$4]++; next }
-    !journal[$1] { missing=1 }
-    END { exit missing }
-  ' "$SM_JOURNAL_FILE" "$SM_OWNERSHIP_FILE"
-}
-
-sm_generate_pr5b_manifest_projection() {
-  local output="$1" first path digest size mode uid gid context kind
-  local existed backup sequence boundary operation before after committed abi old_ifs
-  (umask 077; set -C; {
-    printf '{\n'
-    printf '  "schema_version": 1,\n'
-    printf '  "install_id": "%s",\n' "$(sm_json_escape "$SM_INSTALL_ID")"
-    printf '  "state": "%s",\n' "$SM_STATE"
-    printf '  "product": {"name": "KitsuneMagisk", "version": "%s", "source_commit": "%s", "upstream_base": "%s", "artifact_sha256": "%s"},\n' \
-      "$(sm_json_escape "$SM_PRODUCT_VERSION")" "$SM_SOURCE_COMMIT" "$SM_UPSTREAM_BASE" "$SM_ARTIFACT_SHA256"
-    printf '  "target": {"adapter_id": "%s", "fingerprint_sha256": "%s", "api": %s, "abis": [' \
-      "$(sm_json_escape "$SM_ADAPTER_ID")" "$SM_FINGERPRINT_SHA256" "$SM_TARGET_API"
-    first=true
-    old_ifs="$IFS"; IFS=,
-    for abi in $SM_TARGET_ABIS; do
-      [ "$first" = true ] || printf ', '
-      printf '"%s"' "$(sm_json_escape "$abi")"
-      first=false
-    done
-    IFS="$old_ifs"
-    printf ']},\n'
-    printf '  "strategies": {"init": "%s", "selinux": "%s:%s", "runtime_tmpfs": "%s"},\n' \
-      "$(sm_json_escape "$SM_INIT_PATH")" "$(sm_json_escape "$SM_SELINUX_STRATEGY")" \
-      "$(sm_json_escape "$SM_POLICY_SOURCE")" "$(sm_json_escape "$SM_RUNTIME_PATH")"
-    printf '  "payload": [\n'
-    first=true
-    while IFS="$SM_TAB" read -r path digest size mode uid gid context kind; do
-      [ -n "$path" ] || continue
-      [ "$first" = true ] || printf ',\n'
-      printf '    {"path": "%s", "sha256": "%s", "size": %s, "mode": "%s", "uid": %s, "gid": %s, "selinux_context": ' \
-        "$(sm_json_escape "$path")" "$digest" "$size" "$mode" "$uid" "$gid"
-      sm_json_value_or_null "$context"
-      printf '}'
-      first=false
-    done <"$SM_OWNERSHIP_FILE"
-    printf '\n  ],\n'
-    printf '  "originals": [\n'
-    first=true
-    while IFS="$SM_TAB" read -r path existed digest size mode uid gid context backup; do
-      [ -n "$path" ] || continue
-      [ "$first" = true ] || printf ',\n'
-      printf '    {"path": "%s", "sha256": ' "$(sm_json_escape "$path")"
-      sm_json_value_or_null "$digest"
-      printf ', "size": %s, "mode": ' "$size"
-      sm_json_value_or_null "$mode"
-      printf ', "uid": '
-      if [ "$uid" = - ]; then printf 'null'; else printf '%s' "$uid"; fi
-      printf ', "gid": '
-      if [ "$gid" = - ]; then printf 'null'; else printf '%s' "$gid"; fi
-      printf ', "selinux_context": '
-      sm_json_value_or_null "$context"
-      printf ', "existed": %s, "backup_path": ' "$existed"
-      if [ "$existed" = true ]; then
-        printf '"%s/%s"' "$SM_STATE_DIR" "$(sm_json_escape "$backup")"
-      else
-        printf 'null'
-      fi
-      printf '}'
-      first=false
-    done <"$SM_ORIGINAL_FILE"
-    printf '\n  ],\n'
-    printf '  "backup": {"external": true, "location": "%s", "sha256": "%s", "restore_command": "%s"},\n' \
-      "$(sm_json_escape "$SM_BACKUP_LOCATION")" "$SM_BACKUP_SHA256" "$(sm_json_escape "$SM_RESTORE_COMMAND")"
-    printf '  "journal": [\n'
-    first=true
-    while IFS="$SM_TAB" read -r sequence boundary operation path before after committed; do
-      [ -n "$sequence" ] || continue
-      [ "$first" = true ] || printf ',\n'
-      printf '    {"sequence": %s, "boundary": "%s", "operation": "%s", "target": "%s", "before_sha256": ' \
-        "$sequence" "$(sm_json_escape "$boundary")" "$operation" "$(sm_json_escape "$path")"
-      sm_json_value_or_null "$before"
-      printf ', "after_sha256": '
-      sm_json_value_or_null "$after"
-      printf ', "committed": %s}' "$committed"
-      first=false
-    done <"$SM_JOURNAL_FILE"
-    printf '\n  ]\n}\n'
-  } >"$output")
-}
-
-sm_validate_pr5b_installed_state() {
-  local manifest_real projection expected
-  sm_require_lock || return 1
-  [ "$SM_PR5B_RECEIPT" = true ] && [ "$SM_STATE" = BOOT_VERIFIED ] || return 1
-  manifest_real="$(sm_real_path "$SM_SYSTEM_DIR/install-manifest.json")" || return 1
-  [ -f "$manifest_real" ] && [ ! -L "$manifest_real" ] &&
-    [ -f "$SM_MANIFEST_COPY" ] && [ ! -L "$SM_MANIFEST_COPY" ] || return 1
-  sm_validate_ownership_rows || return 1
-  sm_verify_owned_entries || return 1
-  sm_assert_no_unowned_files || return 1
-  sm_validate_pr5b_originals || return 1
-  sm_validate_pr5b_journal || return 1
-  sm_validate_secure_dir_base || return 1
-  projection="$SM_LOCK_ROOT/.kitsune-pr5b-manifest-$SM_TRANSACTION_ID.$$.json"
-  ! sm_path_present "$projection" || return 1
-  sm_generate_pr5b_manifest_projection "$projection" || return 1
-  expected="$(sm_sha256_file "$projection")" || { "$SM_BB" rm -f "$projection"; return 1; }
-  if [ "$(sm_sha256_file "$manifest_real")" != "$expected" ] ||
-     [ "$(sm_sha256_file "$SM_MANIFEST_COPY")" != "$expected" ]; then
-    "$SM_BB" rm -f "$projection"
-    sm_log "! PR5B manifest does not match its canonical receipt projection"
-    return 1
-  fi
-  "$SM_BB" rm -f "$projection" || return 1
-  SM_PR5B_VALIDATED_RECEIPT_SHA256="$(sm_sha256_file "$SM_TRANSACTION_FILE")" || return 1
-  SM_PR5B_VALIDATED_MANIFEST_SHA256="$expected"
-  SM_PR5B_VALIDATED_OWNERSHIP_SHA256="$(sm_sha256_file "$SM_OWNERSHIP_FILE")" || return 1
-  SM_PR5B_VALIDATED_ORIGINALS_SHA256="$(sm_sha256_file "$SM_ORIGINAL_FILE")" || return 1
-}
-
-sm_migrate_pr5b_receipt() {
-  local staged="$SM_STATE_DIR/.pr5b-transaction.env.new"
-  sm_require_lock || return 1
-  [ "$SM_PR5B_RECEIPT" = true ] || return 1
-  [ "$(sm_sha256_file "$SM_TRANSACTION_FILE")" = "$SM_PR5B_VALIDATED_RECEIPT_SHA256" ] || return 1
-  [ "$(sm_sha256_file "$SM_MANIFEST_COPY")" = "$SM_PR5B_VALIDATED_MANIFEST_SHA256" ] || return 1
-  [ "$(sm_sha256_file "$(sm_real_path "$SM_SYSTEM_DIR/install-manifest.json")")" = "$SM_PR5B_VALIDATED_MANIFEST_SHA256" ] || return 1
-  [ "$(sm_sha256_file "$SM_OWNERSHIP_FILE")" = "$SM_PR5B_VALIDATED_OWNERSHIP_SHA256" ] || return 1
-  [ "$(sm_sha256_file "$SM_ORIGINAL_FILE")" = "$SM_PR5B_VALIDATED_ORIGINALS_SHA256" ] || return 1
-  sm_validate_ownership_rows && sm_verify_owned_entries && sm_assert_no_unowned_files &&
-    sm_validate_pr5b_originals && sm_validate_pr5b_journal || return 1
-  sm_prepare_secure_dir_metadata || return 1
-  SM_MANIFEST_SHA256="$SM_PR5B_VALIDATED_MANIFEST_SHA256"
-  SM_OWNERSHIP_SHA256="$SM_PR5B_VALIDATED_OWNERSHIP_SHA256"
-  SM_ORIGINALS_SHA256="$SM_PR5B_VALIDATED_ORIGINALS_SHA256"
-  SM_SECURE_DIR_SHA256="$(sm_sha256_file "$SM_SECURE_DIR_METADATA")" || return 1
-  if sm_path_present "$staged"; then
-    sm_marker_file_safe "$staged" || return 1
-    "$SM_BB" rm -f "$staged" || return 1
-  fi
-  (umask 077; {
-    "$SM_BB" cat "$SM_TRANSACTION_FILE"
-    printf 'MIGRATED_FROM_PR5B=true\n'
-    printf 'MANIFEST_SHA256=%s\n' "$SM_MANIFEST_SHA256"
-    printf 'OWNERSHIP_SHA256=%s\n' "$SM_OWNERSHIP_SHA256"
-    printf 'ORIGINALS_SHA256=%s\n' "$SM_ORIGINALS_SHA256"
-    printf 'SECURE_DIR_SHA256=%s\n' "$SM_SECURE_DIR_SHA256"
-  } >"$staged") || return 1
-  "$SM_BB" chmod 0600 "$staged" || return 1
-  sm_atomic_publish "$staged" "$SM_TRANSACTION_FILE" pr5b-integrity-migrated || return 1
-  SM_PR5B_RECEIPT=false
-  SM_PR5B_MIGRATED=true
-}
-
 sm_register_boot_attempt() {
   local current_boot
   sm_load_transaction || return 1
@@ -3152,11 +2575,7 @@ sm_validate_installed_state() {
     sm_log "! Existing System Mode roots contain unowned files"
     return 1
   }
-  if [ "${SM_PR5B_MIGRATED:-false}" = true ]; then
-    sm_validate_pr5b_originals
-  else
-    sm_validate_originals
-  fi || {
+  sm_validate_originals || {
     sm_log "! Existing System Mode original backup changed"
     return 1
   }
@@ -3184,11 +2603,7 @@ sm_verify_manifest_copies() {
     }
   zero="$(printf '%064d' 0)"
   if [ "${SM_OWNERSHIP_SHA256:-$zero}" != "$zero" ]; then
-    if [ "${SM_PR5B_MIGRATED:-false}" = true ]; then
-      # The one-time migration authenticates the old canonical payload array
-      # against ownership.tsv before binding both digests in the receipt.
-      :
-    elif ! "$SM_BB" grep -Fq \
+    if ! "$SM_BB" grep -Fq \
          "\"ownership_inventory_sha256\": \"$SM_OWNERSHIP_SHA256\"" "$manifest_real" ||
        ! "$SM_BB" grep -Fq \
          "\"ownership_inventory_sha256\": \"$SM_OWNERSHIP_SHA256\"" "$SM_MANIFEST_COPY"; then
@@ -3199,8 +2614,8 @@ sm_verify_manifest_copies() {
 }
 
 sm_begin_transaction() {
-  local upgrading=false pr5b_upgrade=false legacy_migration=false legacy_policy_mutated=false config_real init_real
-  local prior_adapter prior_init prior_policy prior_policy_source prior_runtime prior_selinux prior_policy_mutated
+  local upgrading=false init_real
+  local prior_adapter prior_init prior_policy prior_policy_source prior_runtime prior_selinux
   local prior_preinit_device prior_preinit_dir prior_active_payload
   local requested_source_commit="${KITSUNE_SOURCE_COMMIT:-}"
   local requested_upstream_base="${KITSUNE_UPSTREAM_BASE:-}"
@@ -3213,7 +2628,6 @@ sm_begin_transaction() {
   [ "${#requested_upstream_base}" -eq 40 ] || { sm_log "! Invalid upstream identity"; return 1; }
   case "$requested_version_code" in *[!0-9]*|'') sm_log "! Missing product version code"; return 1 ;; esac
   SM_STATE=
-  SM_LEGACY_POLICY_PATH=
   sm_recover_setup_marker || return 1
   sm_complete_rollback_terminal || return 1
   sm_validate_state_storage || return 1
@@ -3225,13 +2639,7 @@ sm_begin_transaction() {
     SM_STATE=
   fi
   if [ "${SM_STATE:-}" = BOOT_VERIFIED ]; then
-    if [ "${SM_PR5B_RECEIPT:-false}" = true ]; then
-      sm_validate_pr5b_installed_state || {
-        sm_log "! PR5B receipt migration validation failed; use its verified external restore or uninstall with the PR5B manager"
-        return 1
-      }
-      pr5b_upgrade=true
-    elif ! sm_validate_installed_state; then
+    if ! sm_validate_installed_state; then
       sm_log "! Refusing to upgrade a modified System Mode installation"
       return 1
     fi
@@ -3242,19 +2650,12 @@ sm_begin_transaction() {
     prior_policy_source="$SM_POLICY_SOURCE"
     prior_runtime="$SM_RUNTIME_PATH"
     prior_selinux="$SM_SELINUX_STRATEGY"
-    prior_policy_mutated="$SM_POLICY_MUTATED"
     prior_preinit_device="$SM_PREINIT_DEVICE"
     prior_preinit_dir="$SM_PREINIT_DIR"
     prior_active_payload="$SM_ACTIVE_PAYLOAD"
   fi
   sm_validate_authorization || return 1
   sm_select_strategies || return 1
-  if [ "$upgrading" = true ] && [ "$prior_policy_mutated" = true ]; then
-    # The current policy source is still validated independently, while this
-    # retained path identifies the historical persistent file exact uninstall
-    # remains obliged to restore.
-    SM_POLICY_PATH="$prior_policy"
-  fi
   if [ "$upgrading" = true ] &&
      { [ "$SM_ADAPTER_ID" != "$prior_adapter" ] || [ "$SM_INIT_PATH" != "$prior_init" ] ||
        [ "$SM_POLICY_PATH" != "$prior_policy" ] || [ "$SM_POLICY_SOURCE" != "$prior_policy_source" ] ||
@@ -3263,19 +2664,8 @@ sm_begin_transaction() {
     sm_log "! Refusing to change System Mode adapter or boot strategy during upgrade"
     return 1
   fi
-  # Pre-transaction Kitsune stored the stock policy beside its rewritten
-  # policy as *.gz. Recognize that exact migration marker so the new rollback
-  # snapshot includes the currently installed policy before we restore stock.
   if [ "$upgrading" != true ]; then
-    config_real="$(sm_real_path "$SM_SYSTEM_DIR/config")" || return 1
-    if sm_legacy_exact_setting "$config_real" SYSTEMMODE true; then
-      legacy_migration=true
-      sm_find_legacy_policy_sidecar || return 1
-      if [ -n "$SM_LEGACY_POLICY_PATH" ]; then
-        SM_POLICY_PATH="$SM_LEGACY_POLICY_PATH"
-        legacy_policy_mutated=true
-      fi
-    fi
+    sm_check_clean_install || return 1
   fi
   # Recovery loads the prior receipt into these globals. Reapply the identity
   # of the artifact being installed only after the prior state is validated.
@@ -3283,27 +2673,11 @@ sm_begin_transaction() {
   SM_UPSTREAM_BASE="$requested_upstream_base"
   SM_PRODUCT_VERSION="$requested_product_version"
   SM_VERSION_CODE="$requested_version_code"
-  # The v30.7 launcher applies maintained Magisk rules to the live policy on
-  # every boot. Persistent policy files are parsed and validated but are not
-  # rewritten. A PR5B upgrade retains ownership of its already-patched policy
-  # until exact uninstall restores the original.
-  if { [ "$upgrading" = true ] && [ "$prior_policy_mutated" = true ]; } ||
-     [ "$legacy_policy_mutated" = true ]; then
-    SM_POLICY_MUTATED=true
-  else
-    SM_POLICY_MUTATED=false
-  fi
-  SM_LEGACY_MIGRATION="$legacy_migration"
+  # Preserve these v1 fields without supporting persistent policy mutation.
+  SM_POLICY_MUTATED=false
+  SM_LEGACY_MIGRATION=false
   if [ "$upgrading" = true ]; then
     SM_TRUSTED_STOP_CLIENT="$prior_active_payload/magisk"
-  elif [ "$legacy_migration" = true ]; then
-    SM_TRUSTED_STOP_CLIENT=
-    for config_real in "$SM_SYSTEM_DIR/magisk" "$SM_SYSTEM_DIR/magisk64" "$SM_SYSTEM_DIR/magisk32"; do
-      if [ -f "$config_real" ] && [ ! -L "$config_real" ] && [ -x "$config_real" ]; then
-        SM_TRUSTED_STOP_CLIENT="$config_real"
-        break
-      fi
-    done
   else
     SM_TRUSTED_STOP_CLIENT=
   fi
@@ -3321,16 +2695,6 @@ sm_begin_transaction() {
   # consume the authorization before the first write probe.
   sm_validate_host_lease || return 1
   sm_consume_authorization || return 1
-  if [ "$pr5b_upgrade" = true ]; then
-    sm_migrate_pr5b_receipt || {
-      sm_log "! PR5B receipt integrity binding failed; no boot payload was changed"
-      return 1
-    }
-    sm_validate_installed_state || {
-      sm_log "! Migrated PR5B receipt did not pass current integrity validation"
-      return 1
-    }
-  fi
   init_real="$(sm_real_path "$SM_AUTH_INIT_DIRECTORY")" || return 1
   sm_probe_writable_directory "$init_real" || {
     sm_log "! Authorized init directory is not durably writable"
@@ -3389,7 +2753,7 @@ sm_begin_transaction() {
   sm_prepare_originals || return 1
   SM_ORIGINALS_SHA256="$(sm_sha256_file "$SM_ORIGINAL_FILE")" || return 1
   SM_SECURE_DIR_SHA256="$(sm_sha256_file "$SM_SECURE_DIR_METADATA")" || return 1
-  # Bind a newly created or one-time migrated original inventory before any
+  # Bind a original inventory before any
   # boot-critical mutation. PREFLIGHT recovery remains able to restore the
   # prior metadata snapshot if power is lost on this publication boundary.
   sm_write_transaction || return 1
@@ -3401,52 +2765,6 @@ sm_begin_transaction() {
   sm_initialize_journal || return 1
   sm_update_state STAGED || return 1
   sm_failpoint staged
-}
-
-sm_restore_legacy_bootanim() {
-  local target compressed staged
-  [ "$SM_LEGACY_MIGRATION" = true ] || return 0
-  target="$(sm_real_path /system/etc/init/bootanim.rc)" || return 1
-  compressed="$target.gz"
-  if [ ! -f "$compressed" ]; then
-    if [ -f "$target" ] && "$SM_BB" grep -Eq 'magiskpolicy|--post-fs-data|--setup-sbin' "$target"; then
-      sm_log "! Legacy bootanim.rc injection has no restorable stock sidecar"
-      return 1
-    fi
-    return 0
-  fi
-  staged="$target.kitsune-stock-new"
-  "$SM_BB" gzip -cdf "$compressed" >"$staged" || return 1
-  "$SM_BB" chmod --reference="$target" "$staged" 2>/dev/null || "$SM_BB" chmod 0644 "$staged"
-  "$SM_BB" chown --reference="$target" "$staged" 2>/dev/null || "$SM_BB" chown 0:0 "$staged"
-  chcon --reference="$target" "$staged" 2>/dev/null || true
-  sm_atomic_publish "$staged" "$target" legacy-init-restored || return 1
-}
-
-sm_restore_legacy_policy() {
-  local path existed digest size mode uid gid context backup real source staged actual
-  [ "$SM_POLICY_MUTATED" = true ] || return 0
-  [ -n "$SM_POLICY_PATH" ] || return 0
-  [ -f "$SM_ORIGINAL_FILE" ] || return 1
-  while IFS="$SM_TAB" read -r path existed digest size mode uid gid context backup; do
-    [ "$path" = "$SM_POLICY_PATH" ] || continue
-    [ "$existed" = true ] || return 1
-    source="$SM_STATE_DIR/$backup"
-    sm_path_present "$source" || return 1
-    [ "$(sm_digest_path "$source")" = "$digest" ] || return 1
-    real="$(sm_real_path "$SM_POLICY_PATH")" || return 1
-    staged="$real.kitsune-original-new"
-    "$SM_BB" cp -a "$source" "$staged" || return 1
-    "$SM_BB" chmod "${mode#0}" "$staged" || return 1
-    "$SM_BB" chown "$uid:$gid" "$staged" || return 1
-    [ "$context" = - ] || chcon "$context" "$staged" 2>/dev/null || return 1
-    actual="$(sm_digest_path "$staged")"
-    [ "$actual" = "$digest" ] || { "$SM_BB" rm -f "$staged"; return 1; }
-    sm_atomic_publish "$staged" "$real" legacy-policy-restored || return 1
-    sm_log "- Restored the recorded stock policy before live-policy activation"
-    return 0
-  done <"$SM_ORIGINAL_FILE"
-  return 1
 }
 
 sm_add_owned_file() {
@@ -3551,13 +2869,6 @@ sm_journal_plan_path() {
 
 sm_initialize_journal() {
   : >"$SM_JOURNAL_FILE.new" || return 1
-  [ "$SM_POLICY_MUTATED" != true ] || \
-    sm_journal_plan_path legacy-policy-restored replace "$SM_POLICY_PATH" || return 1
-  [ "$SM_LEGACY_MIGRATION" != true ] || \
-    sm_journal_plan_path legacy-init-restored replace /system/etc/init/bootanim.rc || return 1
-  if [ "$SM_LEGACY_MIGRATION" = true ] && [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ]; then
-    sm_journal_plan_path legacy-rc-removed remove "$SM_SYSTEM_DIR.rc" || return 1
-  fi
   if [ -n "${SM_RESCUE_PAYLOAD:-}" ]; then
     sm_journal_plan_path rescue-version-published create "$SM_RESCUE_PAYLOAD" || return 1
     sm_journal_plan_path rescue-init-published auto "$SM_RESCUE_RC" || return 1
@@ -3567,14 +2878,6 @@ sm_initialize_journal() {
   sm_journal_plan_path init-published auto "$SM_INIT_PATH" || return 1
   sm_journal_plan_path superseded-payload-removed auto "$SM_SYSTEM_DIR" || return 1
   sm_journal_plan_path runtime-published auto /data/adb/magisk || return 1
-  sm_journal_plan_path legacy-addon-removed remove /system/addon.d/99-magisk.sh || return 1
-  sm_journal_plan_path legacy-addon-removed remove /system/addon.d/magisk || return 1
-  [ "$SM_LEGACY_MIGRATION" != true ] || \
-    sm_journal_plan_path legacy-sidecar-removed remove /system/etc/init/bootanim.rc.gz || return 1
-  if [ "$SM_LEGACY_MIGRATION" = true ] &&
-     [ "$SM_POLICY_MUTATED" = true ] && [ -n "$SM_POLICY_PATH" ]; then
-    sm_journal_plan_path legacy-sidecar-removed remove "$SM_POLICY_PATH.gz" || return 1
-  fi
   sm_journal_plan_path manifest-published auto "$SM_SYSTEM_DIR/install-manifest.json" || return 1
   sm_atomic_publish "$SM_JOURNAL_FILE.new" "$SM_JOURNAL_FILE" journal-plan-published
 }
@@ -3681,11 +2984,6 @@ sm_generate_journal() {
   local manifest="$SM_SYSTEM_DIR/install-manifest.json"
   : >"$SM_JOURNAL_FILE.new" || return 1
 
-  [ "$SM_POLICY_MUTATED" != true ] || sm_journal_path_delta legacy-policy-restored "$SM_POLICY_PATH" || return 1
-  [ "$SM_LEGACY_MIGRATION" != true ] || sm_journal_path_delta legacy-init-restored /system/etc/init/bootanim.rc || return 1
-  if [ "$SM_LEGACY_MIGRATION" = true ] && [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ]; then
-    sm_journal_path_delta legacy-rc-removed "$SM_SYSTEM_DIR.rc" || return 1
-  fi
   if [ -n "${SM_RESCUE_PAYLOAD:-}" ]; then
     sm_journal_owned "$SM_RESCUE_PAYLOAD" rescue-version-published || return 1
     sm_journal_owned "$SM_RESCUE_RC" rescue-init-published || return 1
@@ -3696,13 +2994,6 @@ sm_generate_journal() {
   sm_journal_removed_tree payload "$SM_SYSTEM_DIR" superseded-payload-removed || return 1
   sm_journal_owned /data/adb/magisk runtime-published || return 1
   sm_journal_removed_tree runtime /data/adb/magisk runtime-published || return 1
-  sm_journal_path_delta legacy-addon-removed /system/addon.d/99-magisk.sh || return 1
-  sm_journal_path_delta legacy-addon-removed /system/addon.d/magisk || return 1
-  [ "$SM_LEGACY_MIGRATION" != true ] || sm_journal_path_delta legacy-sidecar-removed /system/etc/init/bootanim.rc.gz || return 1
-  if [ "$SM_LEGACY_MIGRATION" = true ] &&
-     [ "$SM_POLICY_MUTATED" = true ] && [ -n "$SM_POLICY_PATH" ]; then
-    sm_journal_path_delta legacy-sidecar-removed "$SM_POLICY_PATH.gz" || return 1
-  fi
 
   # Any future owned path not covered by the ordered roots above must still be
   # represented instead of silently falling out of the manifest journal.
@@ -3819,24 +3110,6 @@ sm_generate_manifest() {
   } >"$output" || return 1
   "$SM_BB" grep -q '"schema_version": 1' "$output" && "$SM_BB" grep -q '"state": "COMMITTED"' "$output" || return 1
   sm_fsync "$output" || return 1
-}
-
-sm_remove_legacy_sidecars() {
-  local path real paths=
-  if [ "$SM_LEGACY_MIGRATION" = true ]; then
-    paths=/system/etc/init/bootanim.rc.gz
-    if [ "$SM_POLICY_MUTATED" = true ] && [ -n "$SM_POLICY_PATH" ]; then
-      paths="$paths $SM_POLICY_PATH.gz"
-    fi
-  fi
-  for path in $paths; do
-    real="$(sm_real_path "$path")" || return 1
-    if sm_path_present "$real"; then
-      "$SM_BB" rm -f "$real" || return 1
-      sm_fsync "$(sm_parent "$real")" || return 1
-      sm_failpoint "remove-sidecar:$path" || return 1
-    fi
-  done
 }
 
 sm_commit_transaction() {

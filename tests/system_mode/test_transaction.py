@@ -258,6 +258,38 @@ def run_harness(body: str, root: Path) -> subprocess.CompletedProcess[str]:
 
 
 class SystemModeTransactionTest(unittest.TestCase):
+    def test_clean_install_keeps_user_data_and_refuses_old_boot_paths(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-clean-install-") as temp:
+            result = run_harness(
+                r"""
+                SM_SYSTEM_DIR=/system/etc/init/magisk
+                SM_INIT_PATH=/system/etc/init/magisk.rc
+                sm_configure_rescue_paths
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                mkdir -p "$TEST_ROOT/root/data/adb/modules/personal"
+                printf user-policy >"$TEST_ROOT/root/data/adb/magisk.db"
+                printf module >"$TEST_ROOT/root/data/adb/modules/personal/module.prop"
+                sm_check_clean_install
+                for path in /system/etc/init/magisk/config /system/etc/init/magisk.rc \
+                  /system/etc/init/bootanim.rc.gz /system/addon.d/99-magisk.sh \
+                  /vendor/etc/selinux/precompiled_sepolicy.gz; do
+                  target="$(sm_real_path "$path")"
+                  mkdir -p "$(dirname "$target")"
+                  printf old-install >"$target"
+                  before="$(sm_digest_path "$TEST_ROOT/root")"
+                  ! sm_check_clean_install
+                  test "$(sm_digest_path "$TEST_ROOT/root")" = "$before"
+                  rm "$target"
+                  if [ "$path" = /system/etc/init/magisk/config ]; then rmdir "$(dirname "$target")"; fi
+                done
+                sm_check_clean_install
+                test "$(cat "$TEST_ROOT/root/data/adb/magisk.db")" = user-policy
+                test "$(cat "$TEST_ROOT/root/data/adb/modules/personal/module.prop")" = module
+                """,
+                Path(temp),
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_fresh_preflight_rollback_removes_only_its_empty_state_containers(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-transaction-fresh-preflight-") as temp:
             result = run_harness(
@@ -476,8 +508,6 @@ class SystemModeTransactionTest(unittest.TestCase):
                   $SM_STATE_DIR/.install-manifest.state-new
                   $SM_STATE_DIR/.boot-verified.env.new
                   $SM_STATE_DIR/.secure-dir.env.new
-                  $SM_STATE_DIR/.policy.original
-                  $SM_STATE_DIR/.bootanim.original
                   $SM_ORIGINAL_FILE.new
                   $SM_OWNERSHIP_FILE.new
                   $SM_JOURNAL_FILE.new
@@ -503,51 +533,6 @@ class SystemModeTransactionTest(unittest.TestCase):
             )
         self.assertEqual(0, result.returncode, result.stderr)
 
-    def test_live_policy_legacy_launcher_needs_no_persistent_policy_sidecar(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="kitsune-legacy-live-policy-") as temp:
-            result = run_harness(
-                r"""
-                SM_SYSTEM_DIR=/system/etc/init/magisk
-                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
-                is_rootfs() { return 1; }
-                # The host fixture's owner stands in for Android root.
-                sm_legacy_regular_file() {
-                  [ -f "$1" ] && [ ! -L "$1" ] || return 1
-                  sm_reject_unsafe_mode "$(bb stat -c %a "$1")"
-                }
-                rc="$(sm_real_path "$SM_SYSTEM_DIR.rc")"
-                policy="$(sm_real_path /vendor/etc/selinux/precompiled_sepolicy)"
-                mkdir -p "$(dirname "$rc")" "$(dirname "$policy")"
-                printf original-policy >"$policy"
-                before="$(sm_sha256_file "$policy")"
-                cat >"$rc" <<'RC'
-on post-fs-data
-    start logd
-    exec u:r:su:s0 root root -- /system/etc/init/magisk/magiskpolicy --live --magisk
-    exec u:r:su:s0 root root -- /system/etc/init/magisk/magisk64 --auto-selinux --setup-sbin /system/etc/init/magisk /sbin
-    exec u:r:su:s0 root root -- /sbin/magisk --auto-selinux --post-fs-data
-on nonencrypted
-    exec u:r:su:s0 root root -- /sbin/magisk --auto-selinux --service
-RC
-                chmod 0644 "$rc"
-                sm_find_legacy_policy_sidecar
-                test -z "$SM_LEGACY_POLICY_PATH"
-                test "$(sm_sha256_file "$policy")" = "$before"
-                cp "$rc" "$TEST_ROOT/valid.rc"
-                printf '    write /vendor/etc/selinux/precompiled_sepolicy modified\n' >>"$rc"
-                ! sm_find_legacy_policy_sidecar
-                sed 's/--live --magisk/--load \/vendor\/etc\/selinux\/precompiled_sepolicy --save \/vendor\/etc\/selinux\/precompiled_sepolicy --magisk/' \
-                  "$TEST_ROOT/valid.rc" >"$rc"
-                ! sm_find_legacy_policy_sidecar
-                rm "$rc"
-                ln -s "$TEST_ROOT/valid.rc" "$rc"
-                ! sm_find_legacy_policy_sidecar
-                test "$(sm_sha256_file "$policy")" = "$before"
-                """,
-                Path(temp),
-            )
-        self.assertEqual(0, result.returncode, result.stderr)
-
     def test_rollback_refuses_active_mutable_state_before_any_restore(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-rollback-active-state-") as temp:
             result = run_harness(
@@ -564,36 +549,6 @@ RC
                 ! sm_restore_snapshot
                 test ! -e "$TEST_ROOT/state-changed"
                 test "$(cat "$SM_ROLLBACK_DIR/untouched")" = saved
-                """,
-                Path(temp),
-            )
-        self.assertEqual(0, result.returncode, result.stderr)
-
-    def test_legacy_policy_restore_uses_the_recorded_original(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="kitsune-transaction-policy-restore-") as temp:
-            result = run_harness(
-                r"""
-                SM_STATE_DIR="$TEST_ROOT/state"
-                SM_ORIGINAL_FILE="$SM_STATE_DIR/originals.tsv"
-                SM_POLICY_MUTATED=true
-                SM_LEGACY_MIGRATION=false
-                SM_POLICY_PATH=/vendor/etc/selinux/precompiled_sepolicy
-                policy="$TEST_ROOT/root$SM_POLICY_PATH"
-                original="$SM_STATE_DIR/original/policy/data"
-                mkdir -p "$(dirname "$policy")" "$(dirname "$original")"
-                printf patched-policy >"$policy"
-                printf stock-policy >"$original"
-                digest="$(sm_digest_path "$original")"
-                owner_uid="$(id -u)"
-                owner_gid="$(id -g)"
-                printf '%s\ttrue\t%s\t12\t0644\t%s\t%s\t-\toriginal/policy/data\n' \
-                  "$SM_POLICY_PATH" "$digest" "$owner_uid" "$owner_gid" >"$SM_ORIGINAL_FILE"
-                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
-                sm_atomic_publish() { mv "$1" "$2"; }
-
-                sm_restore_legacy_policy
-                test "$(cat "$policy")" = stock-policy
-                test "$(sm_digest_path "$policy")" = "$digest"
                 """,
                 Path(temp),
             )
@@ -667,6 +622,13 @@ RC
                   printf 'BACKUP_SHA256=%064d\n' 0
                   printf 'MANIFEST_SHA256=%064d\n' 1
                   printf 'OWNERSHIP_SHA256=%064d\n' 2
+                  for key in SERIAL_SHA256 TARGET_CONTRACT_SHA256 AUTH_BOOT_ID_SHA256 PROBE_SHA256 QUALIFICATION_SHA256 INSTANCE_IDENTITY_SHA256 ORIGINALS_SHA256 SECURE_DIR_SHA256; do
+                    printf '%s=%064d\n' "$key" 3
+                  done
+                  printf 'AUTHORIZATION_ID=%s\n' "$install_id"
+                  printf 'ACTIVE_PAYLOAD=/system/etc/init/magisk/versions/%s\n' "$transaction_id"
+                  printf 'RESCUE_PAYLOAD=/system/etc/init/.kitsune-system-mode-rescue/versions/%s\n' "$transaction_id"
+                  printf 'POLICY_MUTATED=false\nLEGACY_MIGRATION=false\nVERSION_CODE=31000\n'
                   printf 'ADAPTER_ID_B64=%s\n' "$(b64 mumu-1.4.46)"
                   printf 'TARGET_ABIS_B64=%s\n' "$(b64 arm64-v8a)"
                   printf 'SNAPSHOT_ID_B64=%s\n' "$(b64 snapshot)"
@@ -687,6 +649,19 @@ RC
                 } >"$SM_TRANSACTION_FILE"
 
                 sm_load_transaction
+
+                cp "$SM_TRANSACTION_FILE" "$SM_TRANSACTION_FILE.current"
+                for field in ACTIVE_PAYLOAD RESCUE_PAYLOAD SERIAL_SHA256 OWNERSHIP_SHA256 QUALIFICATION_SHA256; do
+                  sed "/^$field=/d" "$SM_TRANSACTION_FILE.current" >"$SM_TRANSACTION_FILE"
+                  before="$(sm_sha256_file "$SM_TRANSACTION_FILE")"
+                  ! sm_load_transaction
+                  test "$(sm_sha256_file "$SM_TRANSACTION_FILE")" = "$before"
+                done
+                for field in POLICY_MUTATED LEGACY_MIGRATION; do
+                  sed "s/^$field=false/$field=true/" "$SM_TRANSACTION_FILE.current" >"$SM_TRANSACTION_FILE"
+                  ! sm_load_transaction
+                done
+                cp "$SM_TRANSACTION_FILE.current" "$SM_TRANSACTION_FILE"
 
                 sed 's#ROLLBACK_DIR=.*#ROLLBACK_DIR=/data/adb/kitsune/system-mode/rollback/../escaped#' \
                   "$SM_TRANSACTION_FILE" >"$SM_TRANSACTION_FILE.bad"
@@ -1406,126 +1381,6 @@ RC
                 mv "$payload" "$payload.real"
                 ln -s payload.real "$payload"
                 ! sm_verify_owned
-                """,
-                Path(temp),
-            )
-        self.assertEqual(0, result.returncode, result.stderr)
-
-    def test_pr5b_receipt_is_canonically_validated_and_migrated_once(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="kitsune-transaction-pr5b-migration-") as temp:
-            result = run_harness(
-                r"""
-                test_use_host_lock_storage
-                SM_LOCK_HELD=true
-                SM_LOCK_ACTION=installer-install
-                SM_STATE_DIR="$TEST_ROOT/state"
-                SM_TRANSACTION_FILE="$SM_STATE_DIR/transaction.env"
-                SM_MANIFEST_COPY="$SM_STATE_DIR/install-manifest.json"
-                SM_OWNERSHIP_FILE="$SM_STATE_DIR/ownership.tsv"
-                SM_ORIGINAL_FILE="$SM_STATE_DIR/originals.tsv"
-                SM_JOURNAL_FILE="$SM_STATE_DIR/journal.tsv"
-                SM_BOOT_PROOF="$SM_STATE_DIR/boot-verified.env"
-                SM_SECURE_DIR_METADATA="$SM_STATE_DIR/secure-dir.env"
-                SM_SYSTEM_DIR=/system/etc/init/magisk
-                SM_INIT_PATH=/system/etc/init/magisk.rc
-                SM_MIRROR=/
-                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
-                sm_validate_state_storage() { return 0; }
-                sm_validate_secure_dir_base() { return 0; }
-                sm_prepare_secure_dir_metadata() {
-                  {
-                    printf 'SCHEMA_VERSION=1\nPATH=/data/adb\nUID=0\nGID=0\nMODE=700\n'
-                    printf 'CONTEXT_B64=LQ==\n'
-                  } >"$SM_SECURE_DIR_METADATA"
-                  chmod 0600 "$SM_SECURE_DIR_METADATA"
-                  SM_SECURE_DIR_SHA256="$(sm_sha256_file "$SM_SECURE_DIR_METADATA")"
-                }
-                getprop() {
-                  case "$1" in
-                    ro.build.fingerprint) printf 'pr5b/fingerprint\n' ;;
-                    ro.build.version.sdk) printf '32\n' ;;
-                    ro.product.cpu.abilist) printf 'arm64-v8a\n' ;;
-                    ro.product.cpu.abi) printf 'arm64-v8a\n' ;;
-                  esac
-                }
-                mkdir -p "$SM_STATE_DIR/original" "$TEST_ROOT/root$SM_SYSTEM_DIR"
-                printf payload >"$TEST_ROOT/root$SM_SYSTEM_DIR/magisk"
-                chmod 0755 "$TEST_ROOT/root$SM_SYSTEM_DIR/magisk"
-                fingerprint="$(printf 'pr5b/fingerprint' | bb sha256sum | awk '{print $1}')"
-                digest="$(sm_sha256_file "$TEST_ROOT/root$SM_SYSTEM_DIR/magisk")"
-                mode="0$(bb stat -c %a "$TEST_ROOT/root$SM_SYSTEM_DIR/magisk")"
-                uid="$(bb stat -c %u "$TEST_ROOT/root$SM_SYSTEM_DIR/magisk")"
-                gid="$(bb stat -c %g "$TEST_ROOT/root$SM_SYSTEM_DIR/magisk")"
-                printf '%s\t%s\t7\t%s\t%s\t%s\t-\tfile\n' \
-                  "$SM_SYSTEM_DIR/magisk" "$digest" "$mode" "$uid" "$gid" >"$SM_OWNERSHIP_FILE"
-                chmod 0600 "$SM_OWNERSHIP_FILE"
-                for spec in \
-                  "$SM_SYSTEM_DIR:payload" "$SM_INIT_PATH:init_rc" \
-                  "/system/etc/init/bootanim.rc:bootanim" "/data/adb/magisk:runtime" \
-                  "/system/addon.d/99-magisk.sh:addon_script" "/system/addon.d/magisk:addon_dir"; do
-                  path="${spec%%:*}"; label="${spec##*:}"
-                  mkdir -p "$SM_STATE_DIR/original/$label"
-                  printf absent >"$SM_STATE_DIR/original/$label/absent"
-                  printf '%s\tfalse\t-\t0\t-\t-\t-\t-\toriginal/%s/data\n' \
-                    "$path" "$label" >>"$SM_ORIGINAL_FILE"
-                done
-                chmod 0600 "$SM_ORIGINAL_FILE"
-                printf '1\tpublish\tcreate\t%s\t-\t%s\ttrue\n' \
-                  "$SM_SYSTEM_DIR/magisk" "$digest" >"$SM_JOURNAL_FILE"
-                chmod 0600 "$SM_JOURNAL_FILE"
-                {
-                  printf 'SCHEMA_VERSION=1\n'
-                  printf 'INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\n'
-                  printf 'TRANSACTION_ID=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\n'
-                  printf 'STATE=BOOT_VERIFIED\nPRIOR_STATE=UNINSTALLED\n'
-                  printf 'FINGERPRINT_SHA256=%s\nTARGET_API=32\n' "$fingerprint"
-                  printf 'REPORT_SHA256=%064d\nBACKUP_SHA256=%064d\n' 1 2
-                  printf 'ADAPTER_ID_B64=bXVtdQ==\nTARGET_ABIS_B64=YXJtNjQtdjhh\n'
-                  printf 'SNAPSHOT_ID_B64=c25hcHNob3Q=\nBACKUP_LOCATION_B64=L2JhY2t1cA==\n'
-                  printf 'RESTORE_COMMAND_B64=L2Jpbi9yZXN0b3Jl\n'
-                  printf 'INIT_PATH=%s\nPOLICY_PATH=\nPOLICY_SOURCE=\nRUNTIME_PATH=/sbin\n' "$SM_INIT_PATH"
-                  printf 'SELINUX_STRATEGY=disabled\nSOURCE_COMMIT=%040d\nUPSTREAM_BASE=%040d\n' 3 4
-                  printf 'ARTIFACT_SHA256=%064d\nPRODUCT_VERSION_B64=cHI1Yg==\n' 5
-                  printf 'COMMIT_BOOT_ID=11111111-1111-4111-8111-111111111111\n'
-                  printf 'ROLLBACK_DIR=%s/rollback/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\n' "$SM_STATE_DIR"
-                  printf 'STAGING_PATH=/system/etc/init/.magisk.kitsune-stage-bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\n'
-                } >"$SM_TRANSACTION_FILE"
-                chmod 0600 "$SM_TRANSACTION_FILE"
-
-                sm_load_transaction
-                test "$SM_PR5B_RECEIPT:$SM_PR5B_MIGRATED" = true:false
-                projection="$TEST_ROOT/pr5b-manifest.json"
-                sm_generate_pr5b_manifest_projection "$projection"
-                cp "$projection" "$TEST_ROOT/root$SM_SYSTEM_DIR/install-manifest.json"
-                cp "$projection" "$SM_MANIFEST_COPY"
-                chmod 0600 "$SM_MANIFEST_COPY"
-                sm_validate_pr5b_installed_state
-
-                printf tamper >>"$SM_OWNERSHIP_FILE"
-                ! sm_validate_pr5b_installed_state
-                sed '$d' "$SM_OWNERSHIP_FILE" >"$SM_OWNERSHIP_FILE.restored"
-                mv "$SM_OWNERSHIP_FILE.restored" "$SM_OWNERSHIP_FILE"
-                sm_validate_pr5b_installed_state
-                printf tamper >>"$SM_MANIFEST_COPY"
-                ! sm_validate_pr5b_installed_state
-                cp "$projection" "$SM_MANIFEST_COPY"
-                sm_validate_pr5b_installed_state
-
-                sm_migrate_pr5b_receipt
-                grep -qx 'MIGRATED_FROM_PR5B=true' "$SM_TRANSACTION_FILE"
-                grep -Eq '^MANIFEST_SHA256=[a-f0-9]{64}$' "$SM_TRANSACTION_FILE"
-                grep -Eq '^OWNERSHIP_SHA256=[a-f0-9]{64}$' "$SM_TRANSACTION_FILE"
-                sm_load_transaction
-                test "$SM_PR5B_RECEIPT:$SM_PR5B_MIGRATED" = false:true
-                sm_validate_installed_state
-                sm_quiesce_magisk() { return 0; }
-                sm_assert_mutable_namespaces_idle() { return 0; }
-                sm_assert_magisk_quiesced() { return 0; }
-                sm_extend_pr5b_originals
-                test "$SM_PR5B_MIGRATED" = false
-                sm_validate_originals
-                grep -q 'original/magisk_db/data$' "$SM_ORIGINAL_FILE"
-                grep -q 'original/rescue_dir/data$' "$SM_ORIGINAL_FILE"
                 """,
                 Path(temp),
             )

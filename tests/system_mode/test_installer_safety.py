@@ -50,7 +50,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         cls.magisk_installer = MAGISK_INSTALLER.read_text(encoding="utf-8")
         cls.install_view_model = INSTALL_VIEW_MODEL.read_text(encoding="utf-8")
 
-    def test_system_mode_is_a_dedicated_v30_7_installer(self) -> None:
+    def test_system_mode_is_a_dedicated_installer(self) -> None:
         self.assertIn("kitsune_system_install.sh", self.setup)
         self.assertIn("kitsune_system_launcher.sh", self.setup)
         self.assertIn("kitsune_system_rescue.sh", self.setup)
@@ -392,8 +392,6 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
 
     def test_version_is_complete_before_init_switches_to_it(self) -> None:
         install = function_body(self.installer, "ks_install")
-        restore_policy = install.index("sm_restore_legacy_policy")
-        restore_bootanim = install.index("sm_restore_legacy_bootanim")
         publish_version = install.index("ks_publish_version")
         publish_rc = install.index("ks_publish_rc")
         prune_old = install.index("ks_remove_superseded_payload")
@@ -402,9 +400,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         rescue_payload = install.index("ks_publish_rescue_payload")
         rescue_rc = install.index("ks_publish_rescue_rc")
         self.assertLess(rescue_payload, rescue_rc)
-        self.assertLess(rescue_rc, restore_policy)
-        self.assertLess(restore_policy, restore_bootanim)
-        self.assertLess(restore_bootanim, publish_version)
+        self.assertLess(rescue_rc, publish_version)
         self.assertLess(publish_version, publish_rc)
         self.assertLess(publish_rc, prune_old)
         self.assertLess(prune_old, runtime)
@@ -417,23 +413,9 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('sm_sha256_file "$stage/magisk.apk"', stage)
         self.assertIn("SM_ARTIFACT_SHA256", stage)
 
-    def test_legacy_startup_sidecars_are_removed_only_inside_the_transaction(self) -> None:
-        install = function_body(self.installer, "ks_install")
-        remove_sidecars = install.index("sm_remove_legacy_sidecars")
-        commit = install.index("sm_commit_transaction")
-        self.assertLess(remove_sidecars, commit)
-        policy_restore = function_body(self.transaction, "sm_restore_legacy_policy")
-        self.assertIn("SM_ORIGINAL_FILE", policy_restore)
-        self.assertIn("sm_digest_path", policy_restore)
-        self.assertIn("sm_atomic_publish", policy_restore)
+    def test_clean_install_check_precedes_authorization_consumption(self) -> None:
         begin = function_body(self.transaction, "sm_begin_transaction")
-        self.assertIn("legacy_policy_mutated", begin)
-        self.assertIn("legacy_migration", begin)
-        sidecar = function_body(self.transaction, "sm_find_legacy_policy_sidecar")
-        self.assertIn("/vendor/etc/selinux/precompiled_sepolicy", sidecar)
-        self.assertIn('sm_path_present "$real.gz"', sidecar)
-        self.assertIn('gzip -t "$real.gz"', sidecar)
-        self.assertIn("ks_remove_legacy_rc", install)
+        self.assertLess(begin.index("sm_check_clean_install"), begin.index("sm_consume_authorization"))
 
     def test_rc_has_one_launcher_and_boot_stage_order(self) -> None:
         rc = function_body(self.installer, "ks_write_rc")
@@ -784,7 +766,7 @@ bb() {
         install = function_body(self.installer, "ks_install")
         rescue_payload = install.index("ks_publish_rescue_payload")
         rescue_rc = install.index("ks_publish_rescue_rc")
-        first_destructive = install.index("sm_restore_legacy_policy")
+        first_destructive = install.index("ks_publish_version")
         self.assertLess(rescue_payload, rescue_rc)
         self.assertLess(rescue_rc, first_destructive)
         self.assertIn("PREFLIGHTED|STAGED|ROLLBACK_REQUIRED|ROLLING_BACK", self.rescue)
