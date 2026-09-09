@@ -24,6 +24,30 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == "linux", "Requires Linux proc cmdline")
+    def test_busybox_handoff_preserves_arguments_and_status(self):
+        source = Path("scripts/util_functions.sh").read_text()
+        start = source.index("  export ASH_STANDALONE=1", source.index("ensure_bb()"))
+        end = source.index("\n}", start)
+        with tempfile.TemporaryDirectory(prefix="kitsune-arguments-") as temporary:
+            root = Path(temporary)
+            # Bash implements the NUL-delimited read used by BusyBox ash.
+            busybox = root / "busybox"
+            busybox.write_text('#!/bin/sh\nshift\nexec /bin/bash "$@"\n')
+            busybox.chmod(0o755)
+            script = root / "script one's test.sh"
+            script.write_text(
+                'bb=$KITSUNE_TEST_BB\nif [ "${ASH_STANDALONE:-}" != 1 ]; then\n'
+                + source[start:end] + '\nfi\nprintf "%s\\0" "$@"\nexit 37\n'
+            )
+            arguments = ["one space", "one's quote", 'double"quote', "back\\slash",
+                         "", "line\nend", "*wildcard*", "--option", "$(literal)"]
+            env = os.environ | {"KITSUNE_TEST_BB": str(busybox), "ASH_STANDALONE": ""}
+            result = subprocess.run(["sh", str(script), *arguments], env=env,
+                                    capture_output=True, timeout=10)
+            self.assertEqual(result.returncode, 37, result.stderr)
+            self.assertEqual(result.stdout, b"\0".join(a.encode() for a in arguments) + b"\0")
+
     def test_futility_checkout_preserves_binary_bytes(self):
         path = "tools/futility"
         raw = subprocess.check_output(["git", "hash-object", "--no-filters", path])

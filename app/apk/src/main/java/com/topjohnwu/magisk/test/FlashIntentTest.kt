@@ -35,7 +35,7 @@ class FlashIntentTest : BaseTest {
             val component = MainActivity::class.java.cmp(appContext.packageName).flattenToString()
             // Use an external caller; launching from the background target app
             // is delayed or blocked after earlier tests press Home.
-            val command = "am start -W --user 0 -n '$component' -a ${FlashUtils.INTENT_FLASH} " +
+            val command = "am start -W --user 0 -n $component -a ${FlashUtils.INTENT_FLASH} " +
                 "--es ${FlashUtils.EXTRA_FLASH_ACTION} ${Const.Value.FLASH_ZIP} " +
                 "--es ${FlashUtils.EXTRA_FLASH_URI} file:///data/local/tmp/$name"
             val output = AutoCloseInputStream(uiAutomation.executeShellCommand(command))

@@ -45,12 +45,12 @@ data class ModuleItem(
         showNotice = zygiskUnloaded ||
             (Info.isZygiskEnabled && isRiru) ||
             (!Info.isZygiskEnabled && isZygisk)
-        showAction = module.hasAction && !showNotice
+        showAction = module.hasAction && !zygiskUnloaded && !(Info.isZygiskEnabled && isRiru)
         noticeText =
             when {
                 zygiskUnloaded -> CoreR.string.zygisk_module_unloaded.asText()
                 isRiru -> CoreR.string.suspend_text_riru.asText(CoreR.string.zygisk.asText())
-                else -> CoreR.string.suspend_text_zygisk.asText(CoreR.string.zygisk.asText())
+                else -> CoreR.string.zygisk_external_notice.asText()
             }
     }
 }

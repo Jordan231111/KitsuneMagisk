@@ -103,7 +103,7 @@ impl SuAppContext<'_> {
         let user = to_user_id(self.info.eval_uid);
         let user = user.to_string();
 
-        if use_provider {
+        if use_provider && cstr!("/system/framework/content.jar").exists() {
             let provider = format!("content://{}.provider", self.info.mgr_pkg);
             let mut cmd = Command::new("/system/bin/app_process");
             cmd.args([
@@ -125,6 +125,7 @@ impl SuAppContext<'_> {
             cmd.env("CLASSPATH", "/system/framework/content.jar");
 
             if let Ok(output) = cmd.output()
+                && output.status.success()
                 && !output.stderr.contains(b"Error")
                 && !output.stdout.contains(b"Error")
             {

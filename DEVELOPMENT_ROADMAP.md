@@ -186,15 +186,16 @@ mistaken for the current tree.
 
 ## Product identity: every purpose, in priority order
 
-KitsuneMagisk is a Magisk distribution with one primary differentiator, not an unrelated rooting tool. The project should preserve these purposes without letting lower-priority work obscure the product gate:
+KitsuneMagisk combines current Magisk rooting with useful Kitsune capabilities. Installation correctness and recovery underpin every route; early mounting, hiding/SuList, provider flexibility, and emulator compatibility each need their own parity evidence:
 
 | Priority | Purpose | Faithful scope |
 |---|---|---|
-| P0 | Persistent Direct-System/System Mode | Install and recover a Magisk-compatible root runtime on authorized emulators or controlled images where patching `boot`, `init_boot`, or `vendor_boot` is unavailable or impractical. This is the release-defining Kitsune feature. |
+| P1 | Persistent Direct-System/System Mode | Install and recover a Magisk-compatible root runtime on authorized emulators or controlled images where patching `boot`, `init_boot`, or `vendor_boot` is unavailable or impractical. This is a core Kitsune capability for layouts that need it. |
 | P0 | Safe root lifecycle and recovery | Preflight, install, cold boot, upgrade, reinstall, uninstall, rollback, snapshot/stock restore, and truthful compatibility records. A root path that cannot be recovered is not supported. |
-| P1 | Normal Magisk installation continuity | Keep upstream boot/init/vendor-boot patching for unlocked or otherwise controlled real devices and official AVDs. System Mode complements this path; it does not replace it. |
+| P0 | Normal Magisk installation continuity | Keep upstream boot/init/vendor-boot patching for unlocked or otherwise controlled real devices and official AVDs. System Mode complements this path; it does not replace it. |
 | P1 | Superuser policy | Provide the daemon, prompt/policy database, multiuser and mount-namespace behavior, logging, revoke/timeout behavior, and a usable manager. |
 | P1 | Systemless customization platform | Preserve modules, magic mount, boot-stage scripts, BusyBox, `resetprop`, `magiskboot`, `magiskpolicy`, safe mode, OTA/addon survival where qualified, and clean removal. |
+| P1 | Early/pre-init module mounting | Preserve the useful global/per-module timing contract, with boot-order, read-only/EROFS overlay, collision and recovery tests. Official pre-init storage is not equivalent feature parity. PR8 starts design and fixtures; PR14 owns implementation. |
 | P1 | Kitsune privacy and compatibility behavior | Maintain measured MagiskHide/DenyList/SuList semantics, hidden-manager recovery, SELinux-disabled compatibility, and a versioned external-Zygisk boundary. This is not a promise to bypass every detector or attestation service. |
 | P1 | Broad emulator/device adapters | Support ARM64, ARM32, x86_64, and x86 through capability-driven in-guest or host-image adapters and exact runtime evidence. An all-ABI build is necessary but is never itself a support claim. |
 | P1 | Maintainer and security-research platform | Make upstream changes auditable and enable local fuzzing, crash analysis, vulnerability discovery, privilege-path and bootstrap-path research, hardening, and regression derivation on disposable project lab targets. Findings feed tests, fixes, and install/bootstrap adapters on this fork; optional upstream notes are not a gate. |
@@ -283,9 +284,13 @@ This gives two different “fastest” answers:
 
 The recommendation is therefore neither “rewrite everything” nor “keep patching the old core forever.” It preserves working product knowledge while creating a measured exit from the two-year upstream gap.
 
-## Final-pass strategy: System Mode is the primary product
+## Final-pass strategy: qualify System Mode within the full Kitsune product
 
 ### Direct answer to the branch question
+
+This section records the PR6 branch decision at v30.7. PR7A advances that maintained base to
+v31.0 prerelease. Porting System Mode first is an engineering sequence; the full feature ledger
+and the product priorities above govern release readiness.
 
 No: given the clarified goal, it would be too confident to claim that a new upstream-based branch is automatically faster. The current branch is almost certainly faster for producing the next **working** System Mode canary because the feature already exists there. The v30.7 branch is likely faster for reaching a maintainable multi-year architecture because it starts with hundreds of platform fixes already integrated. The hybrid plan lets measured results decide instead of betting the project on either assumption.
 
@@ -1073,7 +1078,7 @@ Do not repair the old dependency graph package by package. Re-run the audit on t
 
 ## P0.6 Make System Mode non-destructive and testable — XL
 
-The detailed audit, adapter tiers, and architecture are in “Final-pass strategy: System Mode is the primary product.” The minimum release-blocking slice is:
+The detailed audit, adapter tiers, and architecture are in “Final-pass strategy: qualify System Mode within the full Kitsune product.” The minimum release-blocking slice is:
 
 - [x] Stop calling the current System Mode stable; PR #26 additionally makes the app action and backend release-inaccessible until named writable targets pass.
 - [x] Add `kitsune system-mode doctor --json`, reason-coded capability records, and pre-mutation rejection for the tested immutable/read-only layouts.
@@ -1483,11 +1488,11 @@ The observed official `master` is now `fd0cb66b6b41af41564e692f39db57f21cf378ad`
 ancestor remains `154121f3`. The frozen PR4B baseline `f943ecdd` has 178 fork-only commits versus
 858 stable-only or 995 observed-master-only commits in the regenerated ledger. Final code commit
 `530f2a3f8` has 185 fork-only commits versus the same ancestor; this roadmap-only reconciliation
-adds one documentation commit, producing the pending count of 186. Stable remains the sensible
-port base.
-Master remains an observation lane because it adds extensive post-v30.7 app/build architecture
-changes. PR4B turns the original one-time clone audit into a reproducible ledger and targeted
-fuzz/sanitizer jobs.
+adds one documentation commit, producing the pending count of 186. At that audit, stable remained
+the sensible port base. Master was an observation lane because it added extensive post-v30.7
+app/build architecture changes; PR7A now inherits the actual v31.0 prerelease and Compose app.
+PR4B turns the original one-time clone audit into a reproducible ledger and targeted fuzz/sanitizer
+jobs.
 
 **PR4B implementation status (merged as GitHub #24):** the deterministic ledger resolves the
 official latest release, inventories the frozen-fork deltas and every security-sensitive
@@ -1896,7 +1901,7 @@ status. PR16 must close all three classes.
 | SYS-01 | Persistent Direct-System/System Mode install, init bootstrap, runtime tmpfs, policy setup, upgrade, recovery, exact uninstall | `05289fb5`, manager and native/bootstrap scripts; official v30.7 has reusable live-setup/policy primitives but no persistent equivalent | PR7 ports the transactional vertical slice; PR8 parity; PR15 target breadth; PR16 final evidence |
 | SYS-02 | Recovery/ZIP System Mode entry and legacy `systemmagisk` filename activation | Historical `SYSTEMMODE`, `systemmagisk`, and recovery scripts; ordinary official recovery ZIP is not persistent Direct-System | PR7 permanently removes implicit filename privilege; PR15 adds an explicitly named, signed, recovery-native adapter or records `retired-with-evidence` and migration |
 | SYS-03 | System Mode survival through custom-ROM OTA and `addon.d` | Historical `99-magisk.sh`, `/system/addon.d/magisk`; official addon flow is boot-image-oriented | PR7 makes no claim and transactionally owns legacy residue; PR15 runs a real changed-image/OTA cycle with reauthorization or retires it |
-| SYS-04 | Legacy System Mode layouts, sidecars, activation/config formats, and migration without losing existing installs | Historical unmanifested payloads, policy `.gz`, old RC/addon/config layouts | PR7 owns exact detection, migration snapshot, rollback and removal; PR8 compares released/current/next; PR16 requires upgrade evidence |
+| SYS-04 | Legacy System Mode layouts, sidecars and activation/config formats | Historical unmanifested payloads, policy `.gz`, old RC/addon/config layouts | PR7A retires automatic legacy conversion: detect unsupported boot paths and require clean installation. Preserve current-format upgrades and data-safe schema rejection; PR8 records affected-user clean-install guidance and PR16 proves latest-forward upgrades. |
 | SYS-05 | Writable-emulator runtime variations including `/sbin`, `/debug_ramdisk`, enforcing/permissive/disabled policy formats and root handoff | Nox fixes `dfb66f0a`/`065953d2`, historical emulator bootstrap | PR7 keeps capability-based safe selection only; PR15 qualifies each exact advertised tuple and rejects brand-level inference |
 | SYS-06 | Historical API 23–24 System Mode availability and user-facing claim despite the absence of an independently qualified persistent launcher | Historical UI and installer eligibility allowed this route; ordinary API 23 Magisk is a separate supported use case | PR7 disables the unsafe route; PR15 either qualifies a dedicated launcher or publishes the retirement/migration; PR16 verifies ordinary API 23 remains intact |
 | HID-01 | Classic MagiskHide process selection and hiding, independently usable without SuList | `native/src/core/deny`, manager Hide UI/CLI; official v30.7 DenyList is not semantically identical | PR12 core/DB/CLI/namespace port or evidence-backed retirement of each behavior; PR13 UI; PR15 runtime matrix |
@@ -2142,7 +2147,7 @@ This is the developer execution order. Use the relevant parts of P0/P1/P2 as det
 **Implementation status (2026-07-21): merged as [#22](https://github.com/Jordan231111/KitsuneMagisk/pull/22) (`b6c098d44`).**
 
 - Add an active README/status, this roadmap, and the current support statement.
-- State that persistent System Mode is the primary product and that support is version/capability-specific, not “all emulators” by assertion.
+- State the complete Kitsune purpose and qualify each install route and capability by exact version and target; do not assert support for “all emulators”.
 - Disable automatic stable publication from every `kitsune` push.
 - Mark the current release experimental and add debug-root, broken-updater, and denylist-migration warnings.
 - No runtime behavior changes.
@@ -2773,7 +2778,7 @@ are optional post-release enhancements, not deferred historical compatibility wo
 
 Experimental detection tweaks and unrelated UI redesign may remain optional P3 research, but all
 historically shipped hiding, module, authentication, compatibility, and lifecycle behaviors must be
-closed by PR16. System Mode is the first product port and the central release gate, not the whole product.
+closed by PR16. System Mode is the first completed port slice; early mounting, hiding/SuList, ordinary rooting and the remaining feature ledger are independent release gates.
 
 ---
 

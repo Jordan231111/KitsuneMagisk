@@ -36,8 +36,8 @@ comparison behavior for the forward port.
 The current branch is nevertheless far behind official Magisk in Android boot/init/SELinux/SU and
 Zygisk work. Updating scattered dependencies or merging hundreds of commits into it would not
 honestly solve that problem. The maintainable route remains a behavior-driven System Mode
-forward-port onto the latest audited official stable base, currently v30.7, followed by explicit
-Hide/SuList, Zygisk, module API, and device-qualification PRs.
+forward-port onto an audited official base (v30.7 at this historical audit; v31.0 prerelease
+in PR7A), followed by explicit Hide/SuList, Zygisk, module API, and device-qualification PRs.
 
 ## What was reviewed
 
@@ -75,6 +75,7 @@ false assurance of treating commit-message reading as runtime qualification.
 | Ordinary Magisk installation | The repository began as Magisk and retains file patch, direct boot-image install, inactive-slot, recovery, and emulator live-setup routes. | System Mode must complement, never replace or silently intercept, normal `boot`/`init_boot`/`vendor_boot` workflows. |
 | Superuser management | Magisk daemon/SU policy, prompts, database, namespaces, logging, multiuser behavior, and manager remain present. | Correct authorization and revocation outrank hiding tricks. Debug shell auto-grant must remain debug-only. |
 | Systemless customization and tools | Modules, magic mount, boot stages, BusyBox, `resetprop`, `magiskboot`, `magiskpolicy`, safe mode, systemless deletion, action scripts, and addon/update behavior are inherited or extended. | Prefer current official implementations; keep Kitsune extensions only with versioned contracts and lifecycle tests. |
+| Early/pre-init mounting | `3dcfaf9f` and historical init/module scripts mount selected module content before the normal module stage. | Preserve useful timing semantics with read-only/EROFS overlay and recovery evidence. Official pre-init storage alone does not replace this API; PR8 starts its design and PR14 implements it. |
 | MagiskHide, DenyList, and SuList | `92c0777e` is a large Kitsune-only hiding/SuList change; later commits added module hiding, SELinux-disabled behavior, package/socket changes, and table selection changes. | Preserve measured semantics and existing data, but do not promise universal detection or attestation bypass. Test namespace and provider behavior, not UI labels alone. |
 | Zygisk compatibility | The fork carried GrapheneOS fixes, then `2ef8f002` removed built-in Zygisk in favor of external providers. Official Magisk still includes and actively maintains built-in Zygisk. | Keep official built-in Zygisk during the System Mode forward-port. Decide built-in, external, or dual-provider architecture only through PR11's ADR and provider/version tests. |
 | Emulator and unusual-layout support | Direct-System, writable-partition discovery, Nox `/sbin`, SELinux-disabled, GrapheneOS, and partition-expansion commits show repeated compatibility intent. | Capability and recovery evidence—not a brand name or successful compilation—defines support. Keep ARM64, ARM32, x86_64, and x86 evidence separate. |
