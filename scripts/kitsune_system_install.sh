@@ -78,7 +78,10 @@ ks_validate_target() {
     ks_fail "System Mode is not qualified on Android 6/API 23-24; use normal Magisk installation"
     return 1
   }
-  mount --make-rprivate / || { ks_fail "Unable to isolate the installer mount namespace"; return 1; }
+  # Receive the daemon's module unmounts before freezing our private view.
+  # A fully private copy here would retain stale, read-only module overlays.
+  mount --make-rslave / || { ks_fail "Unable to isolate the installer mount namespace"; return 1; }
+  SM_SLAVE_MOUNT_NAMESPACE=true
   return 0
 }
 

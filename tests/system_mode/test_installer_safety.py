@@ -623,6 +623,55 @@ ksl_root_block() { echo block-lookup >&2; return 1; }
         self.assertIn("[ -L /sbin ]", strategies)
         self.assertIn("[ ! -L /sbin ] || return 1", mount_sbin)
 
+    def test_installer_follows_unmounts_until_daemon_stop_then_isolates(self) -> None:
+        validate = function_body(self.installer, "ks_validate_target")
+        self.assertIn("mount --make-rslave /", validate)
+        self.assertNotIn("mount --make-rprivate /", validate)
+        prepare = function_body(self.transaction, "sm_prepare_persistent_mounts")
+        self.assertLess(prepare.index("sm_quiesce_magisk"), prepare.index("sm_load_remount_journal"))
+        functions = function_body(self.transaction, "sm_isolate_installer_mounts")
+        functions += function_body(self.transaction, "sm_quiesce_magisk")
+        for installer, running, fail_mount in (
+            (True, True, False), (True, False, False),
+            (True, False, True), (False, False, False),
+        ):
+            with self.subTest(installer=installer, running=running, fail_mount=fail_mount), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                if running:
+                    (root / "running").touch()
+                client = root / "magisk"
+                client.write_text('#!/bin/sh\necho stopped >>"$EVENTS"\nrm "$TEST_ROOT/running"\n')
+                client.chmod(0o755)
+                script = r'''
+export TEST_ROOT="$1" EVENTS="$1/events"
+: >"$EVENTS"
+SM_BB=bb
+SM_SLAVE_MOUNT_NAMESPACE="$2"
+FAIL_MOUNT="$3"
+SM_TRUSTED_STOP_CLIENT="$1/magisk"
+sm_magisk_daemon_running() { [ -e "$TEST_ROOT/running" ]; }
+sm_reject_unsafe_mode() { :; }
+sm_log() { :; }
+sm_failpoint() { echo "$1" >>"$EVENTS"; }
+bb() {
+  case "$1" in
+    stat) case "$3" in %u) echo 0 ;; %a) echo 755 ;; esac ;;
+    mount) echo private >>"$EVENTS"; [ "$FAIL_MOUNT" != true ] ;;
+    *) command "$@" ;;
+  esac
+}
+''' + functions + '\nsm_quiesce_magisk\nresult=$?\necho "$SM_SLAVE_MOUNT_NAMESPACE"\nexit "$result"\n'
+                result = subprocess.run(
+                    ["sh", "-c", script, "namespace", directory, str(installer).lower(), str(fail_mount).lower()],
+                    capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(1 if fail_mount else 0, result.returncode, result.stderr)
+                expected = (["stopped", "daemon-quiesced"] if running else [])
+                if installer:
+                    expected.append("private")
+                self.assertEqual(expected, (root / "events").read_text().splitlines())
+                self.assertEqual(str(fail_mount).lower(), result.stdout.strip())
+
     def test_init_entrypoints_enable_standalone_in_the_running_shell(self) -> None:
         for script in (self.launcher, self.rescue, self.verifier):
             self.assertLess(script.index("set -o standalone"), script.index("sm_configure "))

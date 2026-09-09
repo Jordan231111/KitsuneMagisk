@@ -44,6 +44,7 @@
     <string name="direct_install_system_mode" translatable="false">System Mode (qualified writable targets only)</string>
     <string name="system_mode_warning" translatable="false">System Mode directly changes persistent system and init files. Continue only after the host doctor has authorized this exact target with persistent-write, init-import, and verified external-recovery evidence. An incompatible install can prevent Android from booting.</string>
     <string name="system_mode_unavailable" translatable="false">System Mode requires vendor bootstrap root or an existing System Mode installation. Use normal Magisk installation for an ordinary Magisk-rooted device.</string>
+    <string name="system_mode_uninstall_msg" translatable="false">Remove this System Mode installation and restore its recorded system files. User modules, root policies, and scripts are kept. A previous root installation may remain. Restart the device after completion.</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
     <string name="install_inactive_slot_msg">Your device will be FORCED to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
     <string name="setup_title">Additional setup</string>

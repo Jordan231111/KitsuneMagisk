@@ -34,6 +34,7 @@ SM_REMOUNT_FILE=$SM_LOCK_ROOT/.kitsune-system-mode-remount-v1.env
 SM_MOUNTS_FILE=/proc/mounts
 SM_AUTHORIZATION_CLAIM=/data/local/tmp/.kitsune-system-mode-recovery-v1.claimed
 SM_LOCK_HELD=false
+SM_SLAVE_MOUNT_NAMESPACE=false
 SM_LOCK_ACTION=
 SM_LOCK_WAIT_ATTEMPTS=300
 SM_LOCK_WAIT_INTERVAL=0.1
@@ -445,6 +446,9 @@ sm_record_persistent_remount() {
 sm_prepare_persistent_mounts() {
   local canonical real mountpoint options seen='' persistent_policy='' failed=0
   sm_require_lock || return 1
+  if [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ]; then
+    sm_quiesce_magisk || return 1
+  fi
   sm_configure_rescue_paths || return 1
   # Load the boot-scoped journal first. It survives process death, while a cold
   # boot both resets mount modes and discards /dev, so it never misclassifies a
@@ -1844,12 +1848,18 @@ sm_magisk_daemon_running() {
   return 1
 }
 
+sm_isolate_installer_mounts() {
+  [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ] || return 0
+  "$SM_BB" mount --make-rprivate / || return 1
+  SM_SLAVE_MOUNT_NAMESPACE=false
+}
+
 sm_quiesce_magisk() {
   local candidate uid mode stopped=false attempt=0 status
   if sm_magisk_daemon_running; then status=0; else status=$?; fi
   case "$status" in
     0) ;;
-    1) return 0 ;;
+    1) sm_isolate_installer_mounts; return $? ;;
     *) sm_log "! Magisk daemon state cannot be proven"; return 1 ;;
   esac
   sm_log "- Quiescing Magisk before the exact mutable-state snapshot"
@@ -1888,7 +1898,8 @@ sm_quiesce_magisk() {
       *) sm_log "! Magisk daemon state became unreadable after the stop request"; return 1 ;;
     esac
   done
-  sm_failpoint daemon-quiesced
+  sm_failpoint daemon-quiesced || return 1
+  sm_isolate_installer_mounts
 }
 
 sm_assert_magisk_quiesced() {
