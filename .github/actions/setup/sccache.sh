@@ -6,8 +6,7 @@ set -euo pipefail
 # $2=install_dir
 # $3=exe
 install_from_gh() {
-  local ver
-  ver=$(curl -fsSL --retry 3 --retry-all-errors 'https://api.github.com/repos/mozilla/sccache/releases/latest' | jq -er .tag_name)
+  local ver=v0.17.0
   local url="https://github.com/mozilla/sccache/releases/download/${ver}/sccache-${ver}-$1.tar.gz"
   local dest="$2/$3"
   curl -fL --retry 3 --retry-all-errors "$url" | tar xz -O --wildcards "*/$3" > "$dest.tmp"
