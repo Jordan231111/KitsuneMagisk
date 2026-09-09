@@ -1,6 +1,6 @@
 # KitsuneMagisk development roadmap
 
-> Roadmap last reconciled: 2026-08-24 UTC
+> Roadmap last reconciled: 2026-09-09 UTC
 >
 > Post-PR2 audit snapshot (not the fidelity boundary): `kitsune` at
 > `cf149fcf734539f6077cd6b349d9ffc2496c56ca`
@@ -9,7 +9,10 @@
 >
 > Hardening range recorded here: [GitHub PR #26](https://github.com/Jordan231111/KitsuneMagisk/pull/26), branch `codex/production-hardening`, final code commit `530f2a3f8` before this roadmap-only reconciliation
 >
-> Upstream rechecked: official stable `v30.7` at `e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac`; observed `master` at `fd0cb66b6b41af41564e692f39db57f21cf378ad`
+> Upstream rechecked 2026-09-09: official stable remains `v30.7`; the next development target is
+> **official `v31.0` prerelease**, tag commit `96221b69fae9910b1c0c75c2f92a4ebb2c2dc698`, released
+> 2026-09-04. PR7A updates the maintained base immediately after PR7; do not wait for a stable label.
+> PR6/PR7 v30.7 evidence remains historical evidence for that exact base.
 >
 > Current maintained-base branch: `next-system` at PR6 baseline commit
 > `eab2968c90c3903352a08150ae3dfb57724d6349`; PR7 is the active, unqualified work unit.
@@ -48,7 +51,7 @@ This section is the authoritative answer to “where am I now?” The detailed P
 below remain the source of acceptance criteria; their historical audit statements are not a second
 execution order.
 
-| Order | Work unit | State on 2026-08-01 | Required next decision or exit |
+| Order | Work unit | State on 2026-09-09 | Required next decision or exit |
 |---:|---|---|---|
 | 1 | Roadmap PR1 / GitHub #22 — product charter and release freeze | **Merged** | Preserve the product charter and experimental-release boundary. |
 | 2 | Roadmap PR2 / GitHub #23 — CI product gate | **Merged** | Keep pull-request build/test publication gates green. |
@@ -60,7 +63,8 @@ execution order.
 | 8 | Roadmap PR5B — conditional current-line durable transaction | **Merged to `kitsune` by GitHub #27** | Keep its tests/manifest contract as the behavioral oracle for PR7; do not turn the old core into a second permanent line. |
 | 9 | Roadmap PR6 — pristine official-v30.7 maintained base | **Complete on `next-system` at `eab2968c9`** | Preserve the recorded source/submodule/build identity and ordinary Magisk baseline. |
 | 10 | Roadmap PR7 — System Mode vertical slice | **In progress; not complete or production-qualified** | Finish exact-source machine qualification and one writable commercial-emulator lifecycle before PR7 completion, promotion, or parity claims. A clearly labelled WIP commit may be pushed to `next-system`; it is not completion evidence. |
-| 11 | Roadmap PR8–PR16 — parity, remaining historical features, qualification, and release | **Not started** | Close every feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
+| 11 | Roadmap PR7A — official v31.0 prerelease update | **Next after PR7** | Port the validated System Mode slice to the pinned v31.0 base and repeat its gates before PR8 parity. |
+| 12 | Roadmap PR8–PR16 — parity, remaining historical features, qualification, and release | **Not started** | Close every feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
 
 The active engineering task is **PR7** on `next-system`. PR6 already established the exact v30.7
 baseline. PR5A used only MuMu VM index 0, restored the same byte-verified baseline between
@@ -2500,9 +2504,39 @@ module/root smoke, uninstall, and byte/digest-verified external restore on the e
 commit. A missing or stale external backup blocks completion even when the user is willing to accept
 the risk; no AVD or ordinary Magisk lane substitutes for this destructive recovery gate.
 
+## PR 7A — Update the maintained base to official v31.0 prerelease
+
+**Implementation status: next after PR7, before PR8.** Target official
+[`v31.0`](https://github.com/topjohnwu/Magisk/releases/tag/v31.0), commit
+`96221b69fae9910b1c0c75c2f92a4ebb2c2dc698`. Keeping up with official prereleases is an explicit
+development priority; the production release freeze and qualification requirements still apply.
+
+- Preserve the exact PR6/PR7 v30.7 records, then record the new upstream commit, submodules,
+  dependency audit and source/artifact identity. Never relabel a v30.7 build as v31.0.
+- Carry the tested System Mode transaction, bootstrap, root-service transport, recovery and
+  uninstall behavior onto v31.0. Adapt its explicit install/recovery UI to the new Compose app;
+  preserve the SU consent and hidden-manager contracts rather than retaining a second manager UI.
+- Inherit the official boot-image, policy, resetprop, Android 17 Zygisk and lazy-zygote fixes.
+  Re-evaluate every local native workaround against this base and retain only demonstrated gaps.
+- Keep built-in Zygisk until PR11 decides the provider architecture. Repeat the pinned
+  Vector/CorePatch/HMA-OSS matrix with built-in Zygisk and with built-in disabled plus the tested
+  ReZygisk provider; module loading alone does not establish Hide/SuList semantics.
+- v31.0 still declares minSdk 23. Keep ordinary Android 6 support while the selected upstream
+  supports it; retire it only with a verified upstream floor change and explicit user guidance.
+  System Mode on API 23–24 remains unavailable without its separate persistence qualification.
+- Run all-ABI debug/release builds, signer/source/dependency/lint gates, ordinary Android 6 through
+  current/preview lanes including real 16 KiB pages, and the complete qualified MuMu install,
+  cold-boot, reinstall, module/SU, uninstall and external-recovery lifecycle on the new artifact.
+  Recheck the current upstream prerelease before implementation and record any superseding target
+  explicitly, keeping the same gates.
+
+**Exit:** the pinned v31.0-or-newer prerelease base passes the inherited PR7 lifecycle and ordinary
+Magisk gates. Physical-phone support and historical Kitsune feature parity remain PR8–PR16 work.
+
 ## PR 8 — Branch parity decision
 
-**Implementation status: not started. Depends on PR7 completing at least one writable target.**
+**Implementation status: not started. Depends on PR7 and PR7A completing the writable-target and
+ordinary-route gates. Compare against the updated v31.0-or-newer maintained base.**
 
 - Run current and next artifacts on identical snapshots across the complete initial System Mode matrix.
 - Publish the results, remaining gaps, fork-delta comparison, and selected release line.
@@ -2834,6 +2868,8 @@ in the detail:
   `eab2968c9`, with its baseline record and ordinary Magisk gates preserved.
 - **Active — PR7:** finish and exact-source qualify only the System Mode vertical slice using
   maintained live-setup, policy, module, and runtime primitives. It is not the complete Kitsune port.
+- **Open next — PR7A:** update the maintained base to official v31.0 prerelease (or an explicitly
+  re-pinned newer prerelease), port the System Mode UI, and repeat the inherited gates.
 - **Open — PR8:** run identical snapshots against current and next implementations and select the
   future main line only at the parity gate.
 - **Open — PR9/PR10/P0.7:** separate truthful version/protocol/capability fields, create one simple
@@ -2850,6 +2886,7 @@ These actions produce far more user value and risk reduction than merging the cu
 ## Evidence and primary references
 
 - [Official Magisk source](https://github.com/topjohnwu/Magisk)
+- [Official Magisk v31.0 prerelease](https://github.com/topjohnwu/Magisk/releases/tag/v31.0)
 - [Official Magisk v30.7 release](https://github.com/topjohnwu/Magisk/releases/tag/v30.7)
 - [Official v30.7 live emulator setup used as the System Mode bootstrap reference](https://github.com/topjohnwu/Magisk/blob/v30.7/scripts/live_setup.sh)
 - [Official v30.7 `magiskpolicy` load/save/live CLI](https://github.com/topjohnwu/Magisk/blob/v30.7/native/src/sepolicy/cli.rs)

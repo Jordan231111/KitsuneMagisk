@@ -1,5 +1,16 @@
 # Building and Development
 
+Development uses `next-system`. PR6 established the official v30.7 base and PR7 adds the
+experimental System Mode slice. The next base update is **PR7A: official v31.0 prerelease**, before
+PR8 parity; see the [execution checkpoint](../DEVELOPMENT_ROADMAP.md#current-execution-checkpoint--start-here).
+Build/version metadata must describe the actual checked-out base. The v31.0 target is planned work,
+not the identity of an existing PR7 artifact.
+
+For MuMu System Mode testing, follow the [machine qualification guide](system-mode/pr7-machine-qualification.md).
+Use the verified instance's ADB port and fully close/reopen MuMu for cold boots; do not use
+`adb reboot` or delete the user's VM. Keep external recovery evidence even when the user elects to
+leave the tested build installed.
+
 ## Setup Environment
 
 - Supported platforms:
@@ -21,8 +32,8 @@
 - Set environment variable `ANDROID_HOME` to the Android SDK folder. This path can be found in Android Studio settings.
 - Setup JDK:
   - The recommended option is to set environment variable `ANDROID_STUDIO` to the path where your Android Studio is installed. The build script will automatically find and use the bundled JDK.
-  - You can also setup JDK 17 yourself, but this guide will not cover the instructions.
-- Clone sources: `git clone --recurse-submodules https://github.com/topjohnwu/Magisk.git`
+  - You can also setup JDK 21 yourself, but this guide will not cover the instructions.
+- Clone sources: `git clone --recurse-submodules --branch next-system https://github.com/Jordan231111/KitsuneMagisk.git`
 - Run `./build.py ndk` to let the script download and install NDK for you
 
 ## Building
@@ -75,6 +86,6 @@ rustup +nightly component add rust-src clippy
 ## Signing and Distribution
 
 - In release builds, the certificate of the key signing the Magisk APK will be used by Magisk's root daemon as a reference to reject and forcefully uninstall any non-matching Magisk apps to protect users from malicious and unverified Magisk APKs.
-- To do any development on Magisk itself, switch to an **official debug build and reinstall Magisk** to turn off the signature check.
+- To do any development on Magisk itself, install a **matching Kitsune debug manager and daemon** to turn off the signature check.
 - To distribute your own Magisk builds signed with your own keys, set your signing configs in `config.prop`.
 - Check [Google's Documentation](https://developer.android.com/studio/publish/app-signing.html#generate-key) for more details on generating your own key.

@@ -72,7 +72,8 @@ open class FlashZip(
             Timber.e(e)
             false
         } finally {
-            Shell.cmd("cd /", "rm -rf $installDir ${Const.TMPDIR}").submit()
+            // Finish cleanup before the next install reuses these paths.
+            Shell.cmd("cd /", "rm -rf $installDir ${Const.TMPDIR}").exec()
         }
     }
 }
