@@ -42,6 +42,7 @@ ksr_reboot() {
 "$KSR_BB_SOURCE" cp "$KSR_BB_SOURCE" "$KSR_BB" || exit 1
 "$KSR_BB_SOURCE" chmod 0700 "$KSR_BB" || exit 1
 export ASH_STANDALONE=1
+set -o standalone || exit 1
 # shellcheck disable=SC1090
 . "$KSR_TRANSACTION" || ksr_exit 1
 sm_configure "$KSR_PAYLOAD" / /system/etc/init/magisk "$KSR_BB" || ksr_exit 1

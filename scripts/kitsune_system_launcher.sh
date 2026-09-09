@@ -39,6 +39,7 @@ ksl_exit() {
 
 [ -x "$KSL_BB" ] && [ -f "$KSL_TRANSACTION" ] || exit 1
 export ASH_STANDALONE=1
+set -o standalone || exit 1
 # shellcheck disable=SC1090
 . "$KSL_TRANSACTION" || exit 1
 sm_configure "$KSL_PAYLOAD" / "$KSL_SYSTEM_DIR" "$KSL_BB" || ksl_exit 1

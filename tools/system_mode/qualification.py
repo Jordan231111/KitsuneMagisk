@@ -474,7 +474,7 @@ def _run_host(
                 raise ProbeError(
                     f"{purpose} command exited with live process-group descendants"
                 )
-        except subprocess.TimeoutExpired as exc:
+        except (subprocess.TimeoutExpired, KeyboardInterrupt, SystemExit) as exc:
             if process is not None:
                 try:
                     os.killpg(process.pid, signal.SIGTERM)
@@ -497,8 +497,10 @@ def _run_host(
                     pass
                 if not _wait_process_group_gone(process.pid):
                     raise IndeterminateLifecycleError(
-                        f"{purpose} timed out and its process group could not be proven stopped"
+                        f"{purpose} was interrupted and its process group could not be proven stopped"
                     ) from exc
+            if not isinstance(exc, subprocess.TimeoutExpired):
+                raise
             raise ProbeError(
                 f"{purpose} command timed out after its entire process group was stopped"
             ) from exc

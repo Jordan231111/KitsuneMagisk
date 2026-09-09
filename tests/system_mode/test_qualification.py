@@ -11,6 +11,7 @@ import time
 import shlex
 import signal
 import sqlite3
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -820,6 +821,47 @@ class QualificationTest(unittest.TestCase):
                 time.sleep(0.05)
             else:
                 self.fail("timed-out lifecycle grandchild remained alive")
+
+    def test_lifecycle_cancellation_stops_children_before_recovery(self) -> None:
+        for cancellation in (KeyboardInterrupt, SystemExit):
+            with self.subTest(cancellation=cancellation), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp).resolve()
+                marker = root / "started"
+                wrapper = root / "cancel.sh"
+                wrapper.write_text(
+                    '#!/bin/sh\nsleep 60 &\nprintf started > "$1"\nwait\n',
+                    encoding="ascii",
+                )
+                wrapper.chmod(0o700)
+                command = _checked_command(
+                    f"{shlex.quote(str(wrapper))} {shlex.quote(str(marker))}", "cold boot"
+                )
+                original = subprocess.Popen.communicate
+                processes = []
+
+                def cancel_once(process, *args, **kwargs):
+                    if not processes:
+                        processes.append(process)
+                        deadline = time.monotonic() + 5
+                        while not marker.exists() and time.monotonic() < deadline:
+                            time.sleep(0.01)
+                        self.assertTrue(marker.exists())
+                        raise cancellation()
+                    return original(process, *args, **kwargs)
+
+                try:
+                    with mock.patch.object(subprocess.Popen, "communicate", cancel_once):
+                        with self.assertRaises(cancellation):
+                            _run_host(command, "cold boot", 30)
+                    with self.assertRaises(ProcessLookupError):
+                        os.killpg(processes[0].pid, 0)
+                finally:
+                    for process in processes:
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        process.wait(timeout=5)
 
     def test_lifecycle_refuses_recovery_when_group_death_is_unproven(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-command-indeterminate-") as temp:

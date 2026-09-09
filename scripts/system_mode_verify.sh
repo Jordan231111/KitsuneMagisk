@@ -40,6 +40,8 @@ smv_reboot() {
 "$SMV_SOURCE_BB" chmod 0700 "$SMV_TMP" || exit 1
 "$SMV_SOURCE_BB" cp "$SMV_SOURCE_BB" "$SMV_BB" || exit 1
 "$SMV_SOURCE_BB" chmod 0700 "$SMV_BB" || exit 1
+export ASH_STANDALONE=1
+set -o standalone || exit 1
 # shellcheck disable=SC1090
 . "$SMV_SOURCE" || smv_exit 1
 sm_configure "$SMV_PAYLOAD" / "$SMV_SYSTEM_DIR" "$SMV_BB" || smv_exit 1

@@ -520,6 +520,11 @@ ksl_root_block() { echo block-lookup >&2; return 1; }
         self.assertIn("[ -L /sbin ]", strategies)
         self.assertIn("[ ! -L /sbin ] || return 1", mount_sbin)
 
+    def test_init_entrypoints_enable_standalone_in_the_running_shell(self) -> None:
+        for script in (self.launcher, self.rescue, self.verifier):
+            self.assertLess(script.index("set -o standalone"), script.index("sm_configure "))
+            self.assertIn("export ASH_STANDALONE=1", script)
+
     def test_pending_state_recovers_before_daemon_start(self) -> None:
         case = self.launcher.index('case "$SM_STATE"')
         recover = self.launcher.index("ksl_recover_pending", case)
