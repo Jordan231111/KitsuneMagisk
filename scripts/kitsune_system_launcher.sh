@@ -388,7 +388,7 @@ ksl_prepare_runtime() {
   # directories so ordinary app UIDs can reach the daemon's authenticated IPC.
   "$KSL_BB" chmod 0711 "$target/.magisk" "$target/.magisk/device" || return 1
   if ! "$KSL_BB" awk -v target="$target/.magisk/worker" '$2 == target { found=1 } END { exit !found }' /proc/mounts; then
-    mount -t tmpfs -o mode=0755 magisk-worker "$target/.magisk/worker" || return 1
+    mount -t tmpfs -o mode=0755 magisk "$target/.magisk/worker" || return 1
     if ! ksl_record_runtime_mount "$target/.magisk/worker"; then
       ksl_unmount_one "$target/.magisk/worker" || true
       return 1

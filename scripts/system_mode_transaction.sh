@@ -1849,8 +1849,21 @@ sm_magisk_daemon_running() {
 }
 
 sm_isolate_installer_mounts() {
+  local target count=0
   [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ] || return 0
   "$SM_BB" mount --make-rprivate / || return 1
+  # Earlier PR7 payloads named the worker tmpfs differently from upstream.
+  # Their daemon cannot recognize those module views during --stop. Detach
+  # them only in this installer namespace before reading persistent files.
+  while :; do
+    target="$("$SM_BB" awk '$1 == "magisk-worker" { print $2; exit }' "$SM_MOUNTS_FILE")" || return 1
+    [ -n "$target" ] || break
+    sm_valid_mountpoint "$target" || return 1
+    case "$target" in /|*'\'*) return 1 ;; esac
+    count=$((count + 1))
+    [ "$count" -le 256 ] || return 1
+    "$SM_BB" umount -l "$target" || return 1
+  done
   SM_SLAVE_MOUNT_NAMESPACE=false
 }
 

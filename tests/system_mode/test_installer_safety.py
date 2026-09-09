@@ -474,6 +474,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("/dev/.kitsune-system-mode-sbin-", self.launcher)
         prepare = function_body(self.launcher, "ksl_prepare_runtime")
         self.assertIn('case "$preinit_result" in 0|1)', prepare)
+        self.assertIn('mount -t tmpfs -o mode=0755 magisk "$target/.magisk/worker"', prepare)
 
     def test_launcher_runtime_setup_is_idempotent_for_one_boot(self) -> None:
         prepare = function_body(self.launcher, "ksl_prepare_runtime")
@@ -645,6 +646,8 @@ ksl_root_block() { echo block-lookup >&2; return 1; }
                 script = r'''
 export TEST_ROOT="$1" EVENTS="$1/events"
 : >"$EVENTS"
+SM_MOUNTS_FILE="$1/mounts"
+: >"$SM_MOUNTS_FILE"
 SM_BB=bb
 SM_SLAVE_MOUNT_NAMESPACE="$2"
 FAIL_MOUNT="$3"
@@ -676,6 +679,37 @@ bb() {
         for script in (self.launcher, self.rescue, self.verifier):
             self.assertLess(script.index("set -o standalone"), script.index("sm_configure "))
             self.assertIn("export ASH_STANDALONE=1", script)
+
+    def test_legacy_worker_views_are_detached_only_after_isolation(self) -> None:
+        isolate = function_body(self.transaction, "sm_isolate_installer_mounts")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "mounts").write_text(
+                "tmpfs /dev tmpfs rw 0 0\nmagisk-worker /system/etc tmpfs ro 0 0\n"
+            )
+            script = r'''
+SM_BB=bb
+SM_SLAVE_MOUNT_NAMESPACE=true
+SM_MOUNTS_FILE="$1/mounts"
+EVENTS="$1/events"
+sm_valid_mountpoint() { [ "$1" = /system/etc ]; }
+bb() {
+  case "$1" in
+    mount) echo private >>"$EVENTS" ;;
+    umount)
+      [ "$2:$3" = '-l:/system/etc' ] || return 1
+      echo detached >>"$EVENTS"
+      printf 'tmpfs /dev tmpfs rw 0 0\n' >"$SM_MOUNTS_FILE"
+      ;;
+    *) command "$@" ;;
+  esac
+}
+''' + isolate + '\nsm_isolate_installer_mounts\n'
+            result = subprocess.run(["sh", "-c", script, "legacy-mount", directory],
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(["private", "detached"], (root / "events").read_text().splitlines())
+            self.assertEqual("tmpfs /dev tmpfs rw 0 0\n", (root / "mounts").read_text())
 
     def test_pending_state_recovers_before_daemon_start(self) -> None:
         case = self.launcher.index('case "$SM_STATE"')
