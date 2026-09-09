@@ -24,6 +24,60 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    def test_zygote_name_copy_stops_at_guard_pages(self):
+        source = Path("native/src/core/zygisk/hook.cpp").read_text()
+        start = source.index("DCL_HOOK_FUNC(static size_t, strlcpy,")
+        end = source.index("\n}\n", start) + 3
+        function = source[start:end]
+        program = """
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
+#include <sys/mman.h>
+#include <unistd.h>
+#define DCL_HOOK_FUNC(ret, name, ...) ret new_##name(__VA_ARGS__)
+""" + function + r"""
+int main() {
+    const size_t page = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+    auto allocate = [page] {
+        auto p = static_cast<char *>(mmap(nullptr, page * 2, PROT_READ | PROT_WRITE,
+                                          MAP_PRIVATE | MAP_ANON, -1, 0));
+        assert(p != MAP_FAILED);
+        assert(mprotect(p + page, page, PROT_NONE) == 0);
+        return p;
+    };
+    char *source = allocate();
+    char *destination = allocate();
+    for (size_t length = 0; length < 256; ++length) {
+        char *src = source + page - length - 1;
+        memset(src, 'x', length);
+        src[length] = '\0';
+        assert(new_strlcpy(nullptr, src, 0) == length);
+        for (size_t capacity = 1; capacity < 272; ++capacity) {
+            char *dst = destination + page - capacity;
+            memset(dst - 1, '#', capacity + 1);
+            assert(new_strlcpy(dst, src, capacity) == length);
+            const size_t copied = std::min(length, capacity - 1);
+            for (size_t i = 0; i < copied; ++i) assert(dst[i] == 'x');
+            assert(dst[copied] == '\0');
+            assert(dst[-1] == '#');
+            for (size_t i = copied + 1; i < capacity; ++i) assert(dst[i] == '#');
+        }
+    }
+    assert(munmap(source, page * 2) == 0);
+    assert(munmap(destination, page * 2) == 0);
+}
+"""
+        with tempfile.TemporaryDirectory(prefix="kitsune-strlcpy-guard-") as temporary:
+            root = Path(temporary)
+            cpp = root / "guard.cpp"
+            binary = root / "guard"
+            cpp.write_text(program)
+            subprocess.run(["c++", "-std=c++20", "-O2", str(cpp), "-o", str(binary)],
+                           check=True, capture_output=True, text=True)
+            subprocess.run([str(binary)], check=True, timeout=15)
+
     def test_git_source_state_is_checked_and_build_races_remove_artifact(self):
         commit = "a" * 40
         clean_output = f"# branch.oid {commit}\n# branch.head next-system\n"
