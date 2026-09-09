@@ -10,7 +10,9 @@ import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.model.su.SuPolicy
 import com.topjohnwu.superuser.ShellUtils.fastCmd
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -83,7 +85,15 @@ class MagiskAppTest : BaseTest {
 
         // Check that the database is updated
         runBlocking {
-            val policy = ServiceLocator.policyDB.fetch(2000)
+            // The response FIFO is written before the asynchronous policy update.
+            var observed = ServiceLocator.policyDB.fetch(2000)
+            withTimeoutOrNull(TimeUnit.SECONDS.toMillis(10)) {
+                while (observed?.policy != SuPolicy.ALLOW) {
+                    delay(50)
+                    observed = ServiceLocator.policyDB.fetch(2000)
+                }
+            }
+            val policy = observed
                 ?: throw AssertionError("PolicyDB is invalid")
             assertEquals("Policy for shell is incorrect", SuPolicy.ALLOW, policy.policy)
         }

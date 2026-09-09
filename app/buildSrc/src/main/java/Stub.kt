@@ -182,8 +182,8 @@ private abstract class ManifestUpdater: DefaultTask() {
 
 private fun genStubClasses(outDir: File): Pair<String, String> {
     val classNameGenerator = sequence {
-        fun notJavaKeyword(name: String) = when (name) {
-            "do", "if", "for", "int", "new", "try" -> false
+        fun notJavaKeyword(name: String) = when (name.lowercase()) {
+            "do", "if", "for", "int", "new", "try", "var" -> false
             else -> true
         }
 
