@@ -108,6 +108,23 @@ class VersionedInstallProbeTest(unittest.TestCase):
                 object(), self.path, record or self.record(self.path), version, 30700, root=True
             )
 
+    def test_original_permissions_accept_zero_and_special_bits(self):
+        original = {
+            "path": "/data/adb/magisk.db", "sha256": "a" * 64, "size": 1,
+            "mode": "00", "uid": 0, "gid": 0, "selinux_context": None,
+            "existed": True,
+            "backup_path": "/data/adb/kitsune/system-mode/original/magisk_db",
+        }
+        self.manifest["originals"] = [original]
+        for mode in ("00", "0000", "0600", "04755"):
+            with self.subTest(mode=mode):
+                original["mode"] = mode
+                self.assertEqual(self.config, self.probe())
+        for mode in ("", "-1", "0x644", "0899", "077777"):
+            with self.subTest(invalid_mode=mode):
+                original["mode"] = mode
+                self.assertIsNone(self.probe())
+
     def test_verified_versioned_config_is_recognized_without_legacy_flat_file(self):
         self.assertEqual(self.config, self.probe())
 
