@@ -490,8 +490,9 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
                     mkdir "$3/original"
                     : > "$3/originals.tsv"
                 '''
-                subprocess.run(["sh", "-c", script, "sh", mask, str(TRANSACTION), directory],
-                               check=True, capture_output=True, text=True)
+                result = subprocess.run(["bash", "-c", script, "bash", mask, str(TRANSACTION), directory],
+                                        capture_output=True, text=True)
+                self.assertEqual(0, result.returncode, result.stderr)
                 root = Path(directory)
                 self.assertEqual(0o700, (root / "original").stat().st_mode & 0o777)
                 self.assertEqual(0o600, (root / "originals.tsv").stat().st_mode & 0o777)
