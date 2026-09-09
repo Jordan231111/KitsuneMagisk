@@ -90,6 +90,7 @@
     "libbootctl.so"
   ],
   "source_delta": [
+    ".gitattributes",
     ".github/actions/setup/sccache.sh",
     ".github/workflows/build.yml",
     ".gitignore",

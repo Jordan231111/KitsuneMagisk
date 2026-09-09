@@ -24,6 +24,13 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    def test_futility_checkout_preserves_binary_bytes(self):
+        path = "tools/futility"
+        raw = subprocess.check_output(["git", "hash-object", "--no-filters", path])
+        normalized = subprocess.check_output(["git", "hash-object", f"--path={path}", path])
+        self.assertEqual(raw, normalized)
+        self.assertEqual(raw, subprocess.check_output(["git", "rev-parse", f"HEAD:{path}"]))
+
     def test_zygote_name_copy_stops_at_guard_pages(self):
         source = Path("native/src/core/zygisk/hook.cpp").read_text()
         start = source.index("DCL_HOOK_FUNC(static size_t, legacy_strlcpy,")

@@ -1,6 +1,6 @@
-# PR7 machine qualification and one-shot installation
+# System Mode machine qualification and one-shot installation
 
-PR7 System Mode is unavailable from release builds and fails closed in debug builds until one exact
+System Mode is unavailable from release builds and fails closed in debug builds until one exact
 target has a current, host-sealed qualification record. Typed boot counts, a backup filename,
 historical notes, consent to proceed without recovery, and hand-authored JSON are not evidence.
 
@@ -68,24 +68,25 @@ the record unusable.
 The init directory must be root-owned, unredirected and not group/world writable. Doctor reports
 its observed UID and mode and applies the same eligibility check as the installer. Prepare an
 ineligible vendor image only with a verified external recovery copy; qualification does not change
-directory ownership. If the legacy manager uses SuList, allow the Next manager in that list and grant
-it root before starting its one-shot install session.
+directory ownership. Grant the Next manager bootstrap root before starting its one-shot install
+session.
 
 For reinstall qualification, Doctor also recognizes a `BOOT_VERIFIED` versioned PR7 manifest and
 its immutable config when both files have safe ownership and the manifest matches the running
 daemon. Missing, malformed, redirected, unverified, or inconsistent markers remain blocked.
 The installer separately revalidates the complete ownership inventory before an upgrade writes.
 
-This PR7 generic qualifier intentionally requires the live target policy to already support the
-Magisk domain. That matches the qualified legacy-Kitsune-to-PR7 MuMu upgrade path. A fresh target
-whose root provider lacks `u:r:magisk:s0` fails closed even if the later PR7 launcher could inject
-that domain; widening that flow requires an artifact-fed, adapter-specific policy qualification,
-not an unproven shortcut.
+For a clean installation, pass the exact candidate APK with `--artifact`. The qualifier verifies its
+clean source identity and target ABI, stages its `magiskpolicy` only after creating the challenge
+backup, and executes its live-policy bootstrap from init before testing the Magisk domain. Failed
+loads or changed binary bytes cannot produce the init proof. The temporary policy file is removed
+with the other probes; the final backup contains none of them. Authorization must use the same APK
+whose policy was qualified. Current System Mode targets may use their already qualified policy
+without `--artifact`.
 
-A legacy launcher containing only the recognized live-policy/bootstrap commands does not require a
-persistent-policy gzip sidecar. That migration preserves the existing policy file and removes only
-the owned launcher/payload. A missing sidecar for an unrecognized or persistent-policy-writing
-launcher still blocks migration.
+Automatic conversion of old init layouts, policy gzip backups, bootanim injection, and early
+receipts was retired in PR7A. Remove those installations using their original manager before a
+clean install. Current-format upgrades and recovery remain supported.
 
 The host verifier requires POSIX `openat`/`O_NOFOLLOW`, process-group, and `/dev/fd` semantics.
 Native reparse-point-safe Windows lifecycle integration belongs to concrete commercial-emulator
@@ -97,6 +98,7 @@ Store the record and seal key outside the repository:
 
 ```sh
 python3 tools/system_mode/kitsune.py system-mode qualify \
+  --artifact /absolute/path/app-debug.apk \
   --connect 16384 \
   --output /absolute/external/path/pr7-qualification.json \
   --backup-location /absolute/external/path/new-vm0-clean-baseline \
