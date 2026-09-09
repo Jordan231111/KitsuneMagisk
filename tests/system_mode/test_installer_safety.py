@@ -479,6 +479,23 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
                 for path in (".magisk", ".magisk/device"):
                     self.assertEqual(0o711, (Path(directory) / path).stat().st_mode & 0o777)
 
+    def test_transaction_state_does_not_inherit_a_permissive_umask(self) -> None:
+        for mask in ("000", "022", "077"):
+            with self.subTest(umask=mask), tempfile.TemporaryDirectory() as directory:
+                script = r'''
+                    set -eu
+                    umask "$1"
+                    . "$2"
+                    sm_configure "$3" / /system/etc/init/magisk /bin/sh
+                    mkdir "$3/original"
+                    : > "$3/originals.tsv"
+                '''
+                subprocess.run(["sh", "-c", script, "sh", mask, str(TRANSACTION), directory],
+                               check=True, capture_output=True, text=True)
+                root = Path(directory)
+                self.assertEqual(0o700, (root / "original").stat().st_mode & 0o777)
+                self.assertEqual(0o600, (root / "originals.tsv").stat().st_mode & 0o777)
+
     def test_boot_verification_rejects_root_only_socket_access(self) -> None:
         verify = function_body(self.transaction, "sm_verify_boot")
         for state, denied, database_valid in (

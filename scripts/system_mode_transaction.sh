@@ -53,6 +53,8 @@ sm_log() {
 }
 
 sm_configure() {
+  # Recovery state must stay private even when root adbd uses umask 000.
+  umask 077 || return 1
   SM_INSTALL_DIR="$1"
   SM_MIRROR="${2:-/}"
   SM_SYSTEM_DIR="${3:-/system/etc/init/magisk}"
