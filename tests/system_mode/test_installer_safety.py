@@ -478,6 +478,70 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('"$target/magisk" -V', prepare)
         self.assertLess(prepare.index(".kitsune-system-mode-$SM_INSTALL_ID"), prepare.index('case "$target"'))
 
+    def test_socket_directories_remain_traversable_under_init_umask(self) -> None:
+        prepare = function_body(self.launcher, "ksl_prepare_runtime")
+        start = prepare.index('  "$KSL_BB" mkdir -p "$target/.magisk/device"')
+        end = prepare.index('\n  if ! "$KSL_BB" awk', start)
+        for mask in ("022", "077"):
+            with self.subTest(umask=mask), tempfile.TemporaryDirectory() as directory:
+                script = 'umask "$1"; target="$2"; KSL_BB=bb; bb() { command "$@"; };\n'
+                subprocess.run(["sh", "-c", script + prepare[start:end], "sh", mask, directory],
+                               check=True, capture_output=True, text=True)
+                for path in (".magisk", ".magisk/device"):
+                    self.assertEqual(0o711, (Path(directory) / path).stat().st_mode & 0o777)
+
+    def test_boot_verification_rejects_root_only_socket_access(self) -> None:
+        verify = function_body(self.transaction, "sm_verify_boot")
+        for state, denied in (("BOOT_VERIFIED", False), ("BOOT_VERIFIED", True), ("COMMITTED", True)):
+            with self.subTest(state=state, denied=denied), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                executable = root / "magisk"
+                executable.write_text(
+                    '#!/bin/sh\nif [ "$CLIENT_UID" = 2000 ] && [ "$DENIED" = true ]; then exit 1; fi\nprintf "30700\\n"\n'
+                )
+                executable.chmod(0o755)
+                (root / "su").write_text('#!/bin/sh\nprintf "uid=0(root)\\n"\n')
+                (root / "su").chmod(0o755)
+                script = r'''
+TEST_ROOT="$1"
+SM_RUNTIME_PATH="$1"
+SM_STATE="$2"
+export DENIED="$3"
+SM_BB=bb
+SM_VERSION_CODE=30700
+SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+bb() {
+  case "$1" in
+    timeout) shift 2; "$@" ;;
+    setuidgid) shift; printf '%s\n' "$1" >>"$TEST_ROOT/clients"; uid="$1"; shift; CLIENT_UID="$uid" "$@" ;;
+    sha256sum) printf '%064d  -\n' 0 ;;
+    *) command "$@" ;;
+  esac
+}
+sm_load_transaction() { :; }
+sm_verify_manifest_copies() { :; }
+sm_verify_owned() { :; }
+sm_cleanup_terminal_rollback() { :; }
+sm_valid_hex() { :; }
+sm_log() { :; }
+sm_update_state() { SM_STATE="$1"; }
+getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
+''' + verify + '\nsm_verify_boot\nresult=$?\nprintf "%s\\n" "$SM_STATE"\nexit "$result"\n'
+                result = subprocess.run(
+                    ["bash", "-c", script, "verify", directory, state, str(denied).lower()],
+                    capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(1 if denied else 0, result.returncode, result.stderr)
+                expected = "ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED" if denied else state
+                self.assertEqual(expected, result.stdout.strip())
+                self.assertEqual("2000\n", (root / "clients").read_text())
+
+    def test_su_rejects_a_failed_connection_before_writing_the_request(self) -> None:
+        source = (ROOT / "native/src/core/su/su.cpp").read_text()
+        connect = source.index("owned_fd fd = connect_daemon(RequestCode::SUPERUSER);")
+        write = source.index("req.write_to_fd(fd);", connect)
+        self.assertIn("if (fd < 0)\n        return EXIT_FAILURE;", source[connect:write])
+
     def test_ram_backed_root_preserves_sbin_without_a_block_device(self) -> None:
         for filesystem in ("rootfs", "tmpfs", "ext4"):
             with self.subTest(filesystem=filesystem), tempfile.TemporaryDirectory() as directory:

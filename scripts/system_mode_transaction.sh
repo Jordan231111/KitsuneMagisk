@@ -3861,7 +3861,7 @@ sm_update_manifest_state() {
 }
 
 sm_verify_boot() {
-  local boot_id staged running_code verify_state root_identity root_digest
+  local boot_id staged running_code client_code verify_state root_identity root_digest
   sm_load_transaction || return 1
   case "$SM_STATE" in COMMITTED|BOOT_VERIFIED) ;; *) return 1 ;; esac
   verify_state="$SM_STATE"
@@ -3901,6 +3901,14 @@ sm_verify_boot() {
   running_code="$("$SM_BB" timeout 15 "$SM_RUNTIME_PATH/magisk" -V 9>&- 2>/dev/null)"
   [ "$SM_VERSION_CODE" = 0 ] || [ "$running_code" = "$SM_VERSION_CODE" ] || {
     sm_log "! System Mode daemon version does not match the committed payload"
+    if [ "$verify_state" = COMMITTED ]; then sm_update_state ROLLBACK_REQUIRED; else sm_update_state FAILED; fi
+    return 1
+  }
+  # Root can bypass directory permissions. Also prove an ordinary UID can
+  # reach the socket, without requiring or changing that UID's superuser policy.
+  client_code="$("$SM_BB" timeout 15 "$SM_BB" setuidgid 2000 "$SM_RUNTIME_PATH/magisk" -V 9>&- 2>/dev/null)" || client_code=
+  [ -n "$client_code" ] && [ "$client_code" = "$running_code" ] || {
+    sm_log "! System Mode daemon is inaccessible to an unprivileged client"
     if [ "$verify_state" = COMMITTED ]; then sm_update_state ROLLBACK_REQUIRED; else sm_update_state FAILED; fi
     return 1
   }

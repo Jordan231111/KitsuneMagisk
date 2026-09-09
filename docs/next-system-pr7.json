@@ -131,6 +131,7 @@
     "native/src/core/logging.rs",
     "native/src/core/module.rs",
     "native/src/core/su/daemon.rs",
+    "native/src/core/su/su.cpp",
     "native/src/core/zygisk/gen_jni_hooks.py",
     "native/src/core/zygisk/hook.cpp",
     "native/src/core/zygisk/jni_hooks.hpp",

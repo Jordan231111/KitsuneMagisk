@@ -384,6 +384,9 @@ ksl_prepare_runtime() {
   "$KSL_BB" ln -sf ./magisk "$target/resetprop" || return 1
   "$KSL_BB" ln -sf ./magiskpolicy "$target/supolicy" || return 1
   "$KSL_BB" mkdir -p "$target/.magisk/device" "$target/.magisk/worker" || return 1
+  # init can start us with umask 077. Match magiskinit's traversable socket
+  # directories so ordinary app UIDs can reach the daemon's authenticated IPC.
+  "$KSL_BB" chmod 0711 "$target/.magisk" "$target/.magisk/device" || return 1
   if ! "$KSL_BB" awk -v target="$target/.magisk/worker" '$2 == target { found=1 } END { exit !found }' /proc/mounts; then
     mount -t tmpfs -o mode=0755 magisk-worker "$target/.magisk/worker" || return 1
     if ! ksl_record_runtime_mount "$target/.magisk/worker"; then
