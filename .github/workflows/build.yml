@@ -52,7 +52,7 @@ jobs:
 
   build:
     name: Build Magisk artifacts
-    runs-on: macos-15
+    runs-on: macos-26
     needs: [host-contract, security-audit]
     strategy:
       fail-fast: false
@@ -71,7 +71,7 @@ jobs:
       - name: Verify next-system source baseline
         run: >-
           python tools/next_system_baseline.py
-          --manifest docs/next-system-pr7.json --source
+          --manifest docs/next-system-pr7a.json --source
 
       - name: Create disposable release signer
         shell: bash
@@ -97,14 +97,18 @@ jobs:
       - name: Build debug
         run: ./build.py -v all
 
+      - name: Lint the app and its dependencies
+        working-directory: app
+        run: ../scripts/env.py ./gradlew :apk:lintDebug :shared:lintDebug :stub:lintDebug
+
       - name: Verify next-system artifacts
         run: >-
           python tools/next_system_baseline.py
-          --manifest docs/next-system-pr7.json --source --artifacts out
+          --manifest docs/next-system-pr7a.json --source --artifacts out
           --report out/next-system-baseline-report.json
 
       - name: Stop gradle daemon
-        run: ./app/gradlew --stop
+        run: scripts/env.py ./app/gradlew --stop
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6

@@ -9,6 +9,7 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.model.su.SuPolicy
+import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.superuser.ShellUtils.fastCmd
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -34,6 +35,13 @@ class MagiskAppTest : BaseTest {
     @Test
     fun testZygisk() {
         assertTrue("Zygisk should be enabled", Info.isZygiskEnabled)
+    }
+
+    @Test
+    fun testSuNotifications() {
+        // Exercise both notifications on every API, including pre-O builders.
+        Notifications.suNotification(true, "Kitsune test")
+        Notifications.suNotification(false, "Kitsune test")
     }
 
     @Test

@@ -991,14 +991,14 @@ sm_detect_preinit() {
 sm_select_preinit_strategy() {
   local binary="$1" uid mode
   sm_detect_preinit "$binary" || {
-    sm_log "! Unable to resolve the exact v30.7 pre-init storage target"
+    sm_log "! Unable to resolve the exact Magisk pre-init storage target"
     return 1
   }
   SM_PREINIT_DEVICE="$SM_DETECTED_PREINIT_DEVICE"
   SM_PREINIT_DIR="$SM_DETECTED_PREINIT_DIR"
   [ -n "$SM_PREINIT_DEVICE" ] || return 0
   [ "$SM_PREINIT_DIR" = /data/adb ] || {
-    sm_log "! PR7 permits pre-init storage only in the transaction-owned /data/adb root"
+    sm_log "! System Mode permits pre-init storage only in the transaction-owned /data/adb root"
     return 1
   }
   [ -d /data/adb ] && [ ! -L /data/adb ] || return 1

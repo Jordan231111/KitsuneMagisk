@@ -101,13 +101,15 @@ object Info {
             Config.denyList = fastCmdResult(shell, "magisk --denylist status")
             hasMagiskState = versionCode > 0 || fastCmdResult(
                 shell,
-                "[ -e /data/adb/magisk ] || [ -L /data/adb/magisk ] || " +
-                    "[ -e /data/adb/magisk.db ] || [ -L /data/adb/magisk.db ]"
+                "[ -e /data/adb/magisk ] || [ -L /data/adb/magisk ]"
             )
             isSystemMode = fastCmdResult(
                 shell,
                 "grep -qx 'SYSTEMMODE=true' /system/etc/init/magisk/config 2>/dev/null || " +
-                    "grep -qx 'SYSTEMMODE=true' /data/adb/magisk/config 2>/dev/null"
+                    "grep -qx 'SYSTEMMODE=true' /data/adb/magisk/config 2>/dev/null || " +
+                    "[ -f /data/adb/kitsune/system-mode/transaction.env ] || " +
+                    "[ -f /data/adb/.kitsune-system-mode-setup-v1.env ] || " +
+                    "[ -f /data/adb/.kitsune-system-mode-rollback-v1.env ]"
             )
         }
 

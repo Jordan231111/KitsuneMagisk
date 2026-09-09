@@ -5,6 +5,8 @@
 #include <bitset>
 #include <rust/cxx.h>
 
+enum class FileFormat : uint8_t;
+
 /******************
  * Special Headers
  *****************/
@@ -41,15 +43,6 @@ struct blob_hdr {
     uint32_t version;       /* 0x00000001 */
 } __attribute__((packed));
 
-struct zimage_hdr {
-    uint32_t code[9];
-    uint32_t magic;      /* zImage magic */
-    uint32_t start;      /* absolute load/run zImage address */
-    uint32_t end;        /* zImage end address */
-    uint32_t endian;     /* endianness flag */
-    // There could be more fields, but we don't care
-} __attribute__((packed));
-
 /**************
  * AVB Headers
  **************/
@@ -67,6 +60,34 @@ struct AvbFooter {
     uint64_t vbmeta_offset;
     uint64_t vbmeta_size;
     uint8_t reserved[28];
+} __attribute__((packed));
+
+// https://android.googlesource.com/platform/external/avb/+/refs/heads/android11-release/libavb/avb_descriptor.h
+enum AvbDescriptorTag : uint64_t {
+    AVB_DESCRIPTOR_TAG_PROPERTY        = 0,
+    AVB_DESCRIPTOR_TAG_HASHTREE        = 1,
+    AVB_DESCRIPTOR_TAG_HASH            = 2,
+    AVB_DESCRIPTOR_TAG_KERNEL_CMDLINE  = 3,
+    AVB_DESCRIPTOR_TAG_CHAIN_PARTITION = 4,
+};
+
+struct AvbDescriptor {
+    uint64_t tag;
+    uint64_t num_bytes_following;  // size of descriptor body (excludes this header); should always be a multiple of 8.
+} __attribute__((packed));
+
+// https://android.googlesource.com/platform/external/avb/+/refs/heads/android11-release/libavb/avb_hash_descriptor.h
+// for AvbDescriptor.tag == AVB_DESCRIPTOR_TAG_HASH
+struct AvbHashDescriptor {
+    AvbDescriptor header;
+    uint64_t image_size;
+    uint8_t hash_algorithm[32];
+    uint32_t partition_name_len;
+    uint32_t salt_len;
+    uint32_t digest_len;
+    uint32_t flags;
+    uint8_t reserved[60];
+    // followed by: partition_name, salt, digest (variable length)
 } __attribute__((packed));
 
 // https://android.googlesource.com/platform/external/avb/+/refs/heads/android11-release/libavb/avb_vbmeta_image.h
@@ -92,7 +113,47 @@ struct AvbVBMetaImageHeader {
     uint32_t rollback_index_location;
     uint8_t release_string[AVB_RELEASE_STRING_SIZE];
     uint8_t reserved[80];
+
+    struct AvbDescriptorRange descriptors();
 } __attribute__((packed));
+
+struct AvbDescriptorIterator {
+    AvbDescriptor *ptr;
+    AvbDescriptor &operator*() const { return *ptr; }
+    AvbDescriptor *operator->() const { return ptr; }
+    bool operator!=(const AvbDescriptorIterator &o) const {
+        if(ptr == nullptr) return false;
+        return ptr != o.ptr;
+    }
+    AvbDescriptorIterator &operator++() {
+        if (ptr->num_bytes_following % 8 != 0) {
+            // This is an error, a malformed image.
+            // https://android.googlesource.com/platform/external/avb/+/refs/heads/android11-release/libavb/avb_descriptor.h#60
+            // > For padding, |num_bytes_following| is always a multiple of 8.
+            // we can't signal an error easily, but we can stop the iteration.
+            ptr = nullptr;
+            return *this;
+        }
+        ptr = reinterpret_cast<AvbDescriptor *>(
+            reinterpret_cast<uint8_t *>(ptr) + sizeof(AvbDescriptor) + __builtin_bswap64(ptr->num_bytes_following));
+        return *this;
+    }
+};
+
+struct AvbDescriptorRange {
+    AvbDescriptor *first, *last;
+    AvbDescriptorIterator begin() const { return {first}; }
+    AvbDescriptorIterator end()   const { return {last}; }
+};
+
+inline AvbDescriptorRange AvbVBMetaImageHeader::descriptors() {
+    auto *base = reinterpret_cast<const uint8_t *>(this) + sizeof(AvbVBMetaImageHeader);
+    base += __builtin_bswap64(authentication_data_block_size);
+    base += __builtin_bswap64(descriptors_offset);
+    auto *first = reinterpret_cast<AvbDescriptor *>(const_cast<uint8_t *>(base));
+    auto *last  = reinterpret_cast<AvbDescriptor *>(const_cast<uint8_t *>(base) + __builtin_bswap64(descriptors_size));
+    return {first, last};
+}
 
 /*********************
  * Boot Image Headers
@@ -610,6 +671,8 @@ enum {
     BOOT_FLAGS_MAX
 };
 
+struct ZImage;
+
 struct boot_img {
     // Memory map of the whole image
     const mmap_data map;
@@ -645,19 +708,7 @@ struct boot_img {
     const mtk_hdr *k_hdr = nullptr;
     const mtk_hdr *r_hdr = nullptr;
 
-    // The pointers/values after parse_image
-    // +---------------+
-    // | z_info.hdr    | z_info.hdr_sz
-    // +---------------+
-    // | kernel        | hdr->kernel_size()
-    // +---------------+
-    // | z_info.tail   |
-    // +---------------+
-    struct {
-        const zimage_hdr *hdr = nullptr;
-        uint32_t hdr_sz = 0;
-        byte_view tail{};
-    } z_info;
+    std::unique_ptr<ZImage> z_info;
 
     // AVB structs
     const AvbFooter *avb_footer = nullptr;
@@ -681,7 +732,6 @@ struct boot_img {
     ~boot_img();
 
     bool parse_image(const uint8_t *addr, FileFormat type);
-    void parse_zimage();
     const uint8_t *parse_hdr(const uint8_t *addr, FileFormat type);
     std::span<const vendor_ramdisk_table_entry_v4> vendor_ramdisk_tbl() const;
 

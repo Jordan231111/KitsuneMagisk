@@ -56,8 +56,10 @@ object Const {
     object Value {
         const val FLASH_ZIP = "flash"
         const val PATCH_FILE = "patch"
+        const val DOWNLOAD = "download"
         const val FLASH_MAGISK = "magisk"
         const val FLASH_SYSTEM_MODE = "system_mode"
+        const val RECOVER_SYSTEM_MODE = "system_mode_recover"
         const val FLASH_INACTIVE_SLOT = "slot"
         const val UNINSTALL = "uninstall"
     }

@@ -2,7 +2,7 @@
 # shellcheck shell=busybox
 # shellcheck disable=SC1091,SC2153,SC3043
 
-# KitsuneMagisk Direct-System installer for the maintained v30.7 base.
+# KitsuneMagisk Direct-System installer for the maintained Magisk base.
 #
 # This entry point is intentionally separate from Magisk's boot-image flows.
 # It is executed in a private mount namespace by the manager and delegates all
@@ -97,13 +97,13 @@ ks_validate_policy() {
       [ -n "$policy" ] || { ks_fail "The authorized SELinux source is missing"; return 1; }
       [ -f "$policy" ] || { ks_fail "The authorized SELinux source is unavailable"; return 1; }
       "$KS_INSTALL_DIR/magiskpolicy" --load "$policy" --save "$output" --magisk || {
-        ks_fail "The next-boot SELinux policy cannot be parsed with v30.7 magiskpolicy"
+        ks_fail "The next-boot SELinux policy cannot be parsed with the included magiskpolicy"
         return 1
       }
       ;;
     split)
       "$KS_INSTALL_DIR/magiskpolicy" --load-split --save "$output" --magisk || {
-        ks_fail "The split SELinux policy cannot be compiled with v30.7 magiskpolicy"
+        ks_fail "The split SELinux policy cannot be compiled with the included magiskpolicy"
         return 1
       }
       ;;

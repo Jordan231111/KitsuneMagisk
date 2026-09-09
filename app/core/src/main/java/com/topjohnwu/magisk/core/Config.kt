@@ -3,6 +3,7 @@ package com.topjohnwu.magisk.core
 import android.os.Bundle
 import androidx.core.content.edit
 import com.topjohnwu.magisk.core.di.ServiceLocator
+import com.topjohnwu.magisk.core.model.ColorMode
 import com.topjohnwu.magisk.core.repository.DBConfig
 import com.topjohnwu.magisk.core.repository.PreferenceConfig
 import com.topjohnwu.magisk.core.utils.LocaleSetting
@@ -13,6 +14,7 @@ object Config : PreferenceConfig, DBConfig {
     override val stringDB get() = ServiceLocator.stringDB
     override val settingsDB get() = ServiceLocator.settingsDB
     override val context get() = ServiceLocator.deContext
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override val coroutineScope get() = GlobalScope
 
     object Key {
@@ -38,6 +40,7 @@ object Config : PreferenceConfig, DBConfig {
         const val CUSTOM_CHANNEL = "custom_channel"
         const val LOCALE = "locale"
         const val DARK_THEME = "dark_theme_extended"
+        const val COLOR_MODE = "color_mode"
         const val DOWNLOAD_DIR = "download_dir"
         const val SAFETY = "safety_notice"
         const val THEME_ORDINAL = "theme_ordinal"
@@ -86,6 +89,7 @@ object Config : PreferenceConfig, DBConfig {
         // su notification
         const val NO_NOTIFICATION = 0
         const val NOTIFICATION_TOAST = 1
+        const val NOTIFICATION_STATUS_BAR = 2
 
         // su auto response
         const val SU_PROMPT = 0
@@ -107,6 +111,7 @@ object Config : PreferenceConfig, DBConfig {
     var safetyNotice by preference(Key.SAFETY, true)
     var darkTheme by preference(Key.DARK_THEME, -1)
     var themeOrdinal by preference(Key.THEME_ORDINAL, 0)
+    var colorMode by preference(Key.COLOR_MODE, ColorMode.MONET_SYSTEM.value)
 
     // PR6 has no project-owned release endpoint. Keep upstream channels available
     // for explicit development use, but never opt an experimental install in.
@@ -114,6 +119,11 @@ object Config : PreferenceConfig, DBConfig {
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
     var updateChannel by preference(Key.RELEASE_CHANNEL, Value.DEFAULT_CHANNEL)
+    val updateChannelIndex get() = when (updateChannel) {
+        Value.DEFAULT_CHANNEL ->
+            if (BuildConfig.DEBUG) Value.DEBUG_CHANNEL else Value.STABLE_CHANNEL
+        else -> updateChannel
+    }
     var customChannelUrl by preference(Key.CUSTOM_CHANNEL, "")
     var downloadDir by preference(Key.DOWNLOAD_DIR, "")
     var randName by preference(Key.RAND_NAME, true)

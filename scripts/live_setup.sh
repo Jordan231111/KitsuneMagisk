@@ -132,6 +132,7 @@ mkdir /data/adb/post-fs-data.d 2>/dev/null
 mkdir /data/adb/service.d 2>/dev/null
 
 for file in magisk magisk32 magiskpolicy stub.apk; do
+  if [ ! -e $file ]; then continue; fi
   chmod 755 ./$file
   cp -af ./$file $MAGISKTMP/$file
   cp -af ./$file $MAGISKBIN/$file
@@ -149,6 +150,8 @@ mkdir -p $MAGISKTMP/.magisk/worker
 mount_tmpfs $MAGISKTMP/.magisk/worker
 mount --make-private $MAGISKTMP/.magisk/worker
 touch $MAGISKTMP/.magisk/config
+# Create a marker file to understand it is a live setup
+touch $MAGISKTMP/.magisk/live
 
 export MAGISKTMP
 MAKEDEV=1 $MAGISKTMP/magisk --preinit-device 2>&1

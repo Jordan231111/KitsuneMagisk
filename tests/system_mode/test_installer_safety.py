@@ -13,8 +13,8 @@ LAUNCHER = ROOT / "scripts" / "kitsune_system_launcher.sh"
 RESCUE = ROOT / "scripts" / "kitsune_system_rescue.sh"
 TRANSACTION = ROOT / "scripts" / "system_mode_transaction.sh"
 VERIFIER = ROOT / "scripts" / "system_mode_verify.sh"
-SETUP = ROOT / "app" / "buildSrc" / "src" / "main" / "java" / "Setup.kt"
-PLUGIN = ROOT / "app" / "buildSrc" / "src" / "main" / "java" / "Plugin.kt"
+SETUP = ROOT / "app" / "build-logic" / "src" / "main" / "java" / "Setup.kt"
+PLUGIN = ROOT / "app" / "build-logic" / "src" / "main" / "java" / "Plugin.kt"
 MAGISK_INSTALLER = (
     ROOT / "app" / "core" / "src" / "main" / "java" / "com" /
     "topjohnwu" / "magisk" / "core" / "tasks" / "MagiskInstaller.kt"
@@ -132,7 +132,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         generated_path = source / "jni_hooks.hpp"
         generated_bytes = generated_path.read_bytes()
         generated = generated_bytes.decode("utf-8")
-        self.assertIn('cgroup_uid = Argument("cgroup_uid", jint, False)', generator)
+        self.assertIn('cgroup_uid = Argument("cgroup_uid", jint)', generator)
         self.assertIn("fas_c = ForkApp(", generator)
         self.assertIn("spec_c = SpecializeApp(", generator)
 
@@ -278,7 +278,10 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("BuildConfig.DEBUG", line)
         self.assertIn("isRooted", line)
         self.assertIn("SDK_INT >= 25", line)
-        self.assertIn("SystemModeWarningDialog", self.install_view_model)
+        self.assertIn("showSystemModeWarning = true", self.install_view_model)
+        dialog = (ROOT / "app/apk/src/main/java/com/topjohnwu/magisk/ui/install/InstallDialog.kt").read_text()
+        self.assertIn("systemModeDialog.awaitConfirm", dialog)
+        self.assertIn("result == ConfirmResult.Confirmed", dialog)
 
     def test_manager_uses_a_private_mount_namespace(self) -> None:
         direct = self.magisk_installer[

@@ -619,7 +619,7 @@ raise SystemExit(2)
         self.assertIn('"stub_payloads_and_signers_match": True', source)
 
     def test_gradle_identity_uses_exact_git_dirty_status(self):
-        plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(
+        plugin = Path("app/build-logic/src/main/java/Plugin.kt").read_text(
             encoding="utf-8"
         )
         self.assertIn(
@@ -649,14 +649,14 @@ raise SystemExit(2)
                         ),
                         create=True,
                     ),
-                    mock.patch.object(build, "ensure_paths"),
+                    mock.patch.object(build, "ensure_cargo"),
                     mock.patch.object(
                         build, "llvm_tool", return_value=Path("/ondk/bin/clang")
                     ),
                     mock.patch.object(
                         build, "rust_sysroot", Path("/ondk/rust"), create=True
                     ),
-                    mock.patch.object(build, "execv", return_value=failure) as execv,
+                    mock.patch.object(build.subprocess, "run", return_value=failure) as execute,
                 ):
                     with self.assertRaises(SystemExit) as raised:
                         build.cargo_cli()
@@ -664,7 +664,7 @@ raise SystemExit(2)
                 os.chdir(original_cwd)
 
             self.assertEqual(raised.exception.code, 37)
-            self.assertEqual(execv.call_args.args[0], ["cargo", "metadata", "--offline"])
+            self.assertEqual(execute.call_args.args[0], ["cargo", "metadata", "--offline"])
 
     def test_manifest_extension_deep_merges_maps_and_replaces_lists(self):
         with tempfile.TemporaryDirectory() as directory:

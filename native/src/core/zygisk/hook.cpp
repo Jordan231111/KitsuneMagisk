@@ -105,6 +105,11 @@ struct HookContext : JniHookDefinitions {
     const NativeBridgeRuntimeCallbacks *runtime_callbacks = nullptr;
     void *self_handle = nullptr;
     bool should_unmap = false;
+    // Guards against hooking the zygote JNI methods more than once. On lazy-native-bridge
+    // devices both the post_native_bridge_load path and the strdup("ZygoteInit") trigger can
+    // fire; a second pass corrupts the JNI registration (nulls fnPtrs) and unregisters
+    // nativeForkSystemServer -> UnsatisfiedLinkError -> zygote dies.
+    bool jni_hooked = false;
 
     void hook_plt();
     void hook_unloader();
@@ -144,7 +149,11 @@ ret (*old_##func)(__VA_ARGS__);       \
 ret new_##func(__VA_ARGS__)
 
 DCL_HOOK_FUNC(static char *, strdup, const char * str) {
-    if (strcmp(kZygoteInit, str) == 0) {
+    // The runtime hands the "com.android.internal.os.ZygoteInit" class name to strdup at the correct
+    // point (after the Zygote natives are (re)registered, before ZygoteInit#main forks), which is when
+    // hook_zygote_jni() must arm. Match as a substring (rather than exact) so a wrapped/prefixed name
+    // still triggers — harmless on standard devices, and it is what fires reliably on Meta Quest.
+    if (str && strstr(str, kZygoteInit)) {
         g_hook->hook_zygote_jni();
     }
     return old_strdup(str);
@@ -400,6 +409,11 @@ void HookContext::post_native_bridge_load(void *handle) {
         arg.load_native_bridge(nb.c_str() + len, arg.callbacks);
     }
     runtime_callbacks = arg.callbacks;
+    // NOTE: do NOT hook the zygote JNI methods here. The native bridge loads before the runtime
+    // finishes registering (and later re-registers) the Zygote natives, so a hook installed now is
+    // overwritten by the runtime and never takes effect. The strdup("com.android.internal.os.ZygoteInit")
+    // PLT hook fires at the correct time (after registration, before ZygoteInit#main forks), and it
+    // does fire on Meta Quest too, so let it arm hook_zygote_jni().
 }
 
 // -----------------------------------------------------------------
@@ -561,6 +575,10 @@ void HookContext::hook_jni_methods(JNIEnv *env, const char *clz, JNIMethods meth
 }
 
 void HookContext::hook_zygote_jni() {
+    // Idempotent: only replace the zygote JNI methods once per process.
+    if (jni_hooked) {
+        return;
+    }
     using method_sig = jint(*)(JavaVM **, jsize, jsize *);
     auto get_created_vms = reinterpret_cast<method_sig>(
             dlsym(RTLD_DEFAULT, "JNI_GetCreatedJavaVMs"));
@@ -593,7 +611,13 @@ void HookContext::hook_zygote_jni() {
     res = vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
     if (res != JNI_OK || env == nullptr) {
         ZLOGW("JNIEnv not found\n");
+        return;
     }
+
+    // Contain every JNI local reference we create (FindClass, ExceptionOccurred, ...) in an
+    // explicit frame. Depending on the exact caller/timing this may run outside a managed JNI
+    // transition, and leaking locals trips ART's "non-empty local reference table" check -> abort.
+    bool local_frame = env->PushLocalFrame(64) == JNI_OK;
 
     JNINativeMethod missing_method{};
     bool replaced_fork_app = false;
@@ -644,6 +668,13 @@ void HookContext::hook_zygote_jni() {
         if (!replaced_fork_server)
             ranges::for_each(fork_server_methods, [](auto &m) { m.fnPtr = nullptr; });
     }
+    // An older or partition zygote may not implement every method family.
+    // Arm the guard after replacing its discovered methods without error.
+    if (missing_method.name == nullptr &&
+        (replaced_fork_app || replaced_specialize_app || replaced_fork_server)) {
+        jni_hooked = true;
+    }
+    if (local_frame) env->PopLocalFrame(nullptr);
 }
 
 void HookContext::restore_zygote_hook(JNIEnv *env) {

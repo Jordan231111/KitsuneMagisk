@@ -16,7 +16,7 @@
 >
 > Current maintained-base branch: `next-system` at PR6 baseline commit
 > `eab2968c90c3903352a08150ae3dfb57724d6349`; PR7 passed prepared-MuMu acceptance at
-> `66079ee020bab254dc410642aeec7410d5d5cff0`. **PR7A (official v31.0 prerelease) is next.**
+> `66079ee020bab254dc410642aeec7410d5d5cff0`. **PR7A (official v31.0 prerelease) is in progress.**
 >
 > Product charter: KitsuneMagisk exists primarily to provide persistent Magisk through **Direct-System/System Mode** on environments where normal boot-image installation is unavailable or impractical—especially commercial Android emulators—and secondarily to provide Kitsune-specific hiding and module behavior.
 >
@@ -64,10 +64,10 @@ execution order.
 | 8 | Roadmap PR5B — conditional current-line durable transaction | **Merged to `kitsune` by GitHub #27** | Keep its tests/manifest contract as the behavioral oracle for PR7; do not turn the old core into a second permanent line. |
 | 9 | Roadmap PR6 — pristine official-v30.7 maintained base | **Complete on `next-system` at `eab2968c9`** | Preserve the recorded source/submodule/build identity and ordinary Magisk baseline. |
 | 10 | Roadmap PR7 — System Mode vertical slice | **Complete on the exact prepared MuMu target; experimental** | Preserve the [qualification, upgrade, module, SU, uninstall and restore evidence](docs/system-mode/mumu-pr7-2026-09-09.md). Release/phone/parity claims remain gated. |
-| 11 | Roadmap PR7A — official v31.0 prerelease update | **Next after PR7** | Port the validated System Mode slice to the pinned v31.0 base and repeat its gates before PR8 parity. |
+| 11 | Roadmap PR7A — official v31.0 prerelease update | **In progress** | Port the validated System Mode slice to the pinned v31.0 base and repeat its gates before PR8 parity. |
 | 12 | Roadmap PR8–PR16 — parity, remaining historical features, qualification, and release | **Not started** | Close every feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
 
-The next engineering task is **PR7A** on `next-system`: update the qualified PR7 slice to official
+The current engineering task is **PR7A** on `next-system`: update the qualified PR7 slice to official
 v31.0 prerelease before PR8 parity. PR6 established the exact v30.7 baseline, and
 [PR7 completed its prepared-MuMu lifecycle](docs/system-mode/mumu-pr7-2026-09-09.md). PR5A used only MuMu VM index 0, restored the same byte-verified baseline between
 comparisons, and separated player, ADB, Android, and Magisk failures. PR5B supplies the current-line
@@ -210,9 +210,11 @@ Non-goals are equally important. Kitsune does not advertise root for arbitrary l
 - Hiding and Zygisk are important product features, but root correctness and recoverability remain
   independent gates. No provider/UI label is accepted as proof of namespace behavior.
 
-## Direct answer: why Kitsune says 31.0 when official Magisk is 30.7
+## Historical version inflation on the old Kitsune line
 
-Yes: the number was deliberately raised to force compatibility checks to pass. It does **not** mean this codebase contains a newer Magisk core than official Magisk.
+The historical Kitsune number was deliberately raised to force compatibility checks to pass; it
+did not represent a v31 core. PR7A instead uses the actual official v31.0 prerelease base. The
+release metadata below describes the old Kitsune artifacts, not the maintained branch.
 
 The repository history is explicit:
 
@@ -223,7 +225,7 @@ The repository history is explicit:
   the public historical test-key credentials. PR #26 deletes both tracked files. Configuration-free
   builds now use the source commit identity; release builds require an explicit external config and
   keystore.
-- [`build.py`](build.py) uses the same `versionCode` in the Android APK and the native `MAGISK_VER_CODE`, so one inflated value currently serves two unrelated purposes: Android upgrade ordering and Magisk/module compatibility signaling.
+- [`build.py`](build.py) uses the same `versionCode` in the Android APK and the native `MAGISK_VER_CODE`, so one inflated value served two unrelated purposes: Android upgrade ordering and Magisk/module compatibility signaling.
 - The official stable release is [Magisk v30.7](https://github.com/topjohnwu/Magisk/releases/tag/v30.7), with `versionCode=30700`.
 
 The shipped `v31.0-25fa2159` APK was inspected during this audit. Its actual metadata is:
@@ -2508,13 +2510,18 @@ the risk; no AVD or ordinary Magisk lane substitutes for this destructive recove
 
 ## PR 7A — Update the maintained base to official v31.0 prerelease
 
-**Implementation status: next after PR7, before PR8.** Target official
+**Implementation status: in progress after PR7, before PR8.** Target official
 [`v31.0`](https://github.com/topjohnwu/Magisk/releases/tag/v31.0), commit
 `96221b69fae9910b1c0c75c2f92a4ebb2c2dc698`. Keeping up with official prereleases is an explicit
 development priority; the production release freeze and qualification requirements still apply.
 
 - Preserve the exact PR6/PR7 v30.7 records, then record the new upstream commit, submodules,
   dependency audit and source/artifact identity. Never relabel a v30.7 build as v31.0.
+- Support clean installs and upgrades of the current versioned installation format. Retire automatic
+  conversion of old Kitsune init layouts, policy gzip/bootanim injection, early development receipts,
+  and the short-lived database v13 adapter. Keep unsupported-schema rejection without deleting data,
+  upstream database upgrades, interrupted-install recovery, and manifest-owned uninstall. Historical
+  PR5/PR7 migration records remain evidence for those commits, not requirements for new converters.
 - Carry the tested System Mode transaction, bootstrap, root-service transport, recovery and
   uninstall behavior onto v31.0. Adapt its explicit install/recovery UI to the new Compose app;
   preserve the SU consent and hidden-manager contracts rather than retaining a second manager UI.

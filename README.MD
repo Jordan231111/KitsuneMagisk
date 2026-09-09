@@ -3,11 +3,11 @@
 # KitsuneMagisk Next
 
 This branch is the experimental, maintainable-base rebuild of KitsuneMagisk. It is based directly
-on the audited Magisk v30.7 release and contains the PR6 baseline plus the experimental PR7
-Direct-System implementation and qualification tools.
+on official Magisk v31.0 prerelease and carries the experimental Direct-System implementation
+and qualification tools. PR7A qualification is in progress; see the [roadmap](DEVELOPMENT_ROADMAP.md).
 
 It installs as `io.github.huskydg.magisk.next`, reports a
-`30.7-kitsune-next.<source>` version, and uses the `next-system-experimental` channel identity. It
+`31.0-kitsune-next.<source>` version, and uses the `next-system-experimental` channel identity. It
 does not replace official Magisk or the existing Kitsune manager. Automatic update checks default
 to off because this branch does not yet have a project-owned update endpoint.
 
@@ -23,8 +23,8 @@ to off because this branch does not yet have a project-owned update endpoint.
 
 The exact upstream commit, submodule pins, toolchain, advisories, reviewed source delta, and local
 qualification evidence are recorded in
-[`docs/next-system-baseline.md`](docs/next-system-baseline.md). The machine-readable contract is
-[`docs/next-system-baseline.json`](docs/next-system-baseline.json).
+[`docs/next-system-baseline.md`](docs/next-system-baseline.md). The current machine-readable contract is
+[`docs/next-system-pr7a.json`](docs/next-system-pr7a.json).
 
 ## Building
 
@@ -34,7 +34,7 @@ then run:
 ```sh
 ./build.py -v all
 ./build.py -vr -c /path/to/external-signing-config.prop all
-python3 tools/next_system_baseline.py --manifest docs/next-system-pr7.json --source --artifacts out
+python3 tools/next_system_baseline.py --manifest docs/next-system-pr7a.json --source --artifacts out
 ```
 
 A release test build must use an external, disposable or production-controlled signing key. The

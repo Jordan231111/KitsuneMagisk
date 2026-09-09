@@ -16,9 +16,11 @@
     <string name="loading">Loading…</string>
     <string name="update">Update</string>
     <string name="not_available">N/A</string>
+    <string name="not_installed">Not Installed</string>
     <string name="hide">Hide</string>
     <string name="home_package">Package</string>
     <string name="home_app_title">App</string>
+    <string name="reinstall">Reinstall</string>
     <string name="home_notice_content">Download Magisk ONLY from the official GitHub page. Files from unknown sources can be malicious!</string>
     <string name="home_support_title">Support Us</string>
     <string name="home_follow_title">Follow Us</string>
@@ -44,12 +46,17 @@
     <string name="direct_install_system_mode" translatable="false">System Mode (qualified writable targets only)</string>
     <string name="system_mode_warning" translatable="false">System Mode directly changes persistent system and init files. Continue only after the host doctor has authorized this exact target with persistent-write, init-import, and verified external-recovery evidence. An incompatible install can prevent Android from booting.</string>
     <string name="system_mode_unavailable" translatable="false">System Mode requires vendor bootstrap root or an existing System Mode installation. Use normal Magisk installation for an ordinary Magisk-rooted device.</string>
-    <string name="system_mode_uninstall_msg" translatable="false">Remove this System Mode installation and restore its recorded system files. User modules, root policies, and scripts are kept. A previous root installation may remain. Restart the device after completion.</string>
+    <string name="system_mode_uninstall_msg" translatable="false">Remove this System Mode installation. User modules, root policies, and scripts are kept. Restart the device after completion.</string>
+    <string name="system_mode_recovery" translatable="false">Recover System Mode</string>
+    <string name="system_mode_recovery_msg" translatable="false">Recover an interrupted System Mode installation using its saved transaction. Restart the device after completion.</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
     <string name="install_inactive_slot_msg">Your device will be FORCED to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
     <string name="setup_title">Additional setup</string>
     <string name="select_patch_file">Select and patch a file</string>
     <string name="patch_file_msg">Select a raw image (*.img) or an ODIN tarfile (*.tar) or a payload.bin (*.bin)</string>
+    <string name="download_patch_file">Download and patch a file</string>
+    <string name="download_dialog_title">Enter image URL</string>
+    <string name="download_dialog_msg">Full OTA image or factory image</string>
     <string name="reboot_delay_toast">Rebooting in 5 seconds…</string>
     <string name="flash_screen_title">Installation</string>
 
@@ -78,7 +85,9 @@
     <string name="su_revoke_title">Revoke?</string>
     <string name="su_revoke_msg">Confirm to revoke %1$s Superuser rights</string>
     <string name="toast">Toast</string>
+    <string name="notification">Notification</string>
     <string name="none">None</string>
+    <string name="back">Back</string>
     <string name="superuser_toggle_notification">Notifications</string>
     <string name="superuser_toggle_revoke">Revoke</string>
     <string name="superuser_policy_none">No apps have asked for Superuser permission yet.</string>
@@ -87,18 +96,26 @@
     <string name="log_data_none">You\'re log-free. Try using your root apps more.</string>
     <string name="log_data_magisk_none">Magisk logs are empty, that\'s weird.</string>
     <string name="menuSaveLog">Save log</string>
-    <string name="menuClearLog">Clear log now</string>
+    <string name="menuClearLog">Clear log</string>
     <string name="logs_cleared">Log successfully cleared</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">Target UID: %1$d</string>
     <string name="target_pid">Target PID: %s</string>
     <string name="selinux_context">SELinux context: %s</string>
     <string name="supp_group">Supplementary group: %s</string>
+    <string name="granted">Granted</string>
+    <string name="denied">Denied</string>
 
     <!--MagiskHide-->
     <string name="show_system_app">Show system apps</string>
-    <string name="show_os_app">Show OS apps</string>
+    <string name="show_os_app">Show core apps</string>
     <string name="hide_filter_hint">Filter by name</string>
+    <string name="sort_by_name">Sort by name</string>
+    <string name="sort_by_package_name">Sort by package name</string>
+    <string name="sort_by_install_time">Sort by install time</string>
+    <string name="sort_by_update_time">Sort by update time</string>
+    <string name="sort_reverse">Reverse order</string>
+    <string name="menu_sort">Sort</string>
     <string name="hide_search">Search</string>
 
     <!--Module-->
@@ -179,6 +196,13 @@
     <string name="settings_su_restrict_title">Restrict root capabilities</string>
     <string name="settings_su_restrict_summary">Will restrict new Superuser apps by default. Warning: this will break most apps. Don\'t enable it unless you know what you\'re doing.</string>
     <string name="settings_customization">Customization</string>
+    <string name="settings_color_mode">Color mode</string>
+    <string name="color_mode_system">System</string>
+    <string name="color_mode_light">Light</string>
+    <string name="color_mode_dark">Dark</string>
+    <string name="color_mode_monet_system">Monet (System)</string>
+    <string name="color_mode_monet_light">Monet (Light)</string>
+    <string name="color_mode_monet_dark">Monet (Dark)</string>
     <string name="setting_add_shortcut_summary">Add a pretty shortcut to the home screen in case the name and icon are difficult to recognize after hiding the app</string>
     <string name="settings_doh_title">DNS over HTTPS</string>
     <string name="settings_doh_description">Workaround DNS poisoning in some nations</string>
@@ -203,23 +227,26 @@
     <string name="update_channel">Magisk updates</string>
     <string name="progress_channel">Progress notifications</string>
     <string name="updated_channel">Update complete</string>
+    <string name="su_notification_channel">Superuser Notifications</string>
     <string name="download_complete">Download complete</string>
     <string name="download_file_error">Error downloading file</string>
     <string name="magisk_update_title">Magisk update available!</string>
     <string name="updated_title">Magisk updated</string>
     <string name="updated_text">Tap to open app</string>
+    <string name="su_notification_granted_title">Superuser Granted</string>
+    <string name="su_notification_denied_title">Superuser Denied</string>
 
     <!--Toasts, Dialogs-->
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
     <string name="repo_install_title">Install %1$s %2$s(%3$d)</string>
     <string name="download">Download</string>
     <string name="reboot">Reboot</string>
     <string name="close">Close</string>
     <string name="release_notes">Release notes</string>
-    <string name="flashing">Flashing…</string>
-    <string name="running">Running…</string>
-    <string name="done">Done!</string>
+    <string name="flashing">Flashing…</string>    <string name="done">Done!</string>
     <string name="done_action">Done running action of %1$s</string>
     <string name="failure">Failed!</string>
     <string name="hide_app_title">Hiding the Magisk app…</string>
@@ -250,5 +277,4 @@
     <string name="app_not_found">No app found to handle this action</string>
     <string name="reboot_apply_change">Reboot to apply changes</string>
     <string name="restore_app_confirmation">This will restore the hidden app back to the original app. Do you really want to do this?</string>
-
 </resources>

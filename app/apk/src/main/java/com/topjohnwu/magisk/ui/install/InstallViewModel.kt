@@ -2,75 +2,51 @@ package com.topjohnwu.magisk.ui.install
 
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
-import android.os.Parcelable
-import android.text.Spanned
-import android.text.SpannedString
 import android.widget.Toast
-import androidx.databinding.Bindable
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.topjohnwu.magisk.BR
-import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.BuildConfig.APP_VERSION_CODE
-import com.topjohnwu.magisk.core.Config
+import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.base.ContentResultCallback
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.repository.NetworkService
 import com.topjohnwu.magisk.core.tasks.SystemModeConsent
-import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.dialog.SecondSlotWarningDialog
-import com.topjohnwu.magisk.dialog.SystemModeWarningDialog
-import com.topjohnwu.magisk.events.GetContentEvent
-import com.topjohnwu.magisk.ui.flash.FlashFragment
-import io.noties.markwon.Markwon
+import com.topjohnwu.magisk.ui.navigation.Route
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.parcelize.Parcelize
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import com.topjohnwu.magisk.core.R as CoreR
 
-class InstallViewModel(svc: NetworkService, markwon: Markwon) : BaseViewModel() {
+class InstallViewModel(svc: NetworkService) : BaseViewModel() {
+
+    enum class Method { NONE, PATCH, DIRECT, INACTIVE_SLOT, DOWNLOAD, SYSTEM_MODE, SYSTEM_MODE_RECOVERY }
+
+    data class UiState(
+        val method: Method = Method.NONE,
+        val notes: String = "",
+        val patchUri: Uri? = null,
+        val requestFilePicker: Boolean = false,
+        val showSecondSlotWarning: Boolean = false,
+        val showDownloadDialog: Boolean = false,
+        val showSystemModeWarning: Boolean = false,
+    )
 
     val isRooted get() = Info.isRooted
     val skipOptions = Info.isEmulator || (Info.isSAR && !Info.isFDE && Info.ramdisk)
-    val noSecondSlot = !isRooted || !Info.isAB || Info.isEmulator
-    val allowSystemMode = BuildConfig.DEBUG && isRooted && Build.VERSION.SDK_INT >= 25 &&
+    val noSecondSlot = !isRooted || !Info.isAB || Info.isEmulator || Info.isSystemMode
+    val allowSystemMode get() = BuildConfig.DEBUG && isRooted && Build.VERSION.SDK_INT >= 25 &&
         (!Info.hasMagiskState || Info.isSystemMode)
 
-    @get:Bindable
-    var step = if (skipOptions) 1 else 0
-        set(value) = set(value, field, { field = it }, BR.step)
-
-    private var methodId = -1
-
-    @get:Bindable
-    var method
-        get() = methodId
-        set(value) = set(value, methodId, { methodId = it }, BR.method) {
-            when (it) {
-                R.id.method_patch -> {
-                    GetContentEvent("*/*", UriCallback()).publish()
-                }
-                R.id.method_inactive_slot -> {
-                    SecondSlotWarningDialog().show()
-                }
-            }
-        }
-
-    val data: LiveData<Uri?> get() = uri
-
-    @get:Bindable
-    var notes: Spanned = SpannedString("")
-        set(value) = set(value, field, { field = it }, BR.notes)
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -85,78 +61,91 @@ class InstallViewModel(svc: NetworkService, markwon: Markwon) : BaseViewModel() 
                         note
                     }
                 }
-                val spanned = markwon.toMarkdown(noteText)
-                withContext(Dispatchers.Main) {
-                    notes = spanned
-                }
+                _uiState.update { it.copy(notes = noteText) }
             } catch (e: IOException) {
                 Timber.e(e)
             }
         }
     }
 
-    fun install() {
+    fun selectMethod(method: Method) {
+        _uiState.update { it.copy(method = method) }
         when (method) {
-            R.id.method_patch -> FlashFragment.patch(data.value!!).navigate(true)
-            R.id.method_direct -> FlashFragment.flash(false).navigate(true)
-            R.id.method_inactive_slot -> FlashFragment.flash(true).navigate(true)
-            R.id.method_system_mode -> {
+            Method.PATCH -> {
+                AppContext.toast(CoreR.string.patch_file_msg, Toast.LENGTH_LONG)
+                _uiState.update { it.copy(requestFilePicker = true) }
+            }
+            Method.INACTIVE_SLOT -> {
+                _uiState.update { it.copy(showSecondSlotWarning = true) }
+            }
+            Method.DOWNLOAD -> {
+                _uiState.update { it.copy(showDownloadDialog = true) }
+            }
+            Method.SYSTEM_MODE, Method.SYSTEM_MODE_RECOVERY -> {
+                _uiState.update { it.copy(showSystemModeWarning = true) }
+            }
+            else -> {}
+        }
+    }
+
+    fun onFilePickerConsumed() {
+        _uiState.update { it.copy(requestFilePicker = false) }
+    }
+
+    fun onSecondSlotWarningConsumed() {
+        _uiState.update { it.copy(showSecondSlotWarning = false) }
+    }
+
+    fun onDownloadDialogConsumed() {
+        _uiState.update { it.copy(showDownloadDialog = false) }
+    }
+
+    fun onSystemModeWarningConsumed() {
+        _uiState.update { it.copy(showSystemModeWarning = false) }
+    }
+
+    fun onPatchFileSelected(uri: Uri) {
+        _uiState.update { it.copy(patchUri = uri) }
+        if (_uiState.value.method == Method.PATCH) {
+            install()
+        }
+    }
+
+    fun onDownloadUrlSelected(uri: Uri) {
+        _uiState.update { it.copy(patchUri = uri) }
+        if (_uiState.value.method == Method.DOWNLOAD) {
+            install()
+        }
+    }
+
+    fun install() {
+        when (_uiState.value.method) {
+            Method.PATCH -> navigateTo(Route.Flash(
+                action = Const.Value.PATCH_FILE,
+                additionalData = _uiState.value.patchUri!!.toString()
+            ))
+            Method.DOWNLOAD -> navigateTo(Route.Flash(
+                action = Const.Value.DOWNLOAD,
+                additionalData = _uiState.value.patchUri!!.toString()
+            ))
+            Method.DIRECT -> navigateTo(Route.Flash(
+                action = Const.Value.FLASH_MAGISK
+            ))
+            Method.INACTIVE_SLOT -> navigateTo(Route.Flash(
+                action = Const.Value.FLASH_INACTIVE_SLOT
+            ))
+            Method.SYSTEM_MODE, Method.SYSTEM_MODE_RECOVERY -> {
                 if (!allowSystemMode) {
-                    AppContext.toast(CoreR.string.system_mode_unavailable, Toast.LENGTH_LONG)
+                    showSnackbar(CoreR.string.system_mode_unavailable)
                     return
                 }
-                SystemModeWarningDialog {
-                    FlashFragment.systemMode(SystemModeConsent.issue()).navigate(true)
-                }.show()
+                navigateTo(if (_uiState.value.method == Method.SYSTEM_MODE) {
+                    Route.Flash(Const.Value.FLASH_SYSTEM_MODE, SystemModeConsent.issue())
+                } else {
+                    Route.Flash(Const.Value.RECOVER_SYSTEM_MODE)
+                })
             }
-            else -> error("Unknown value")
+            else -> error("Unknown method")
         }
-    }
-
-    override fun onSaveState(state: Bundle) {
-        state.putParcelable(
-            INSTALL_STATE_KEY, InstallState(
-                methodId,
-                step,
-                Config.keepVerity,
-                Config.keepEnc,
-                Config.recovery
-            )
-        )
-    }
-
-    override fun onRestoreState(state: Bundle) {
-        state.getParcelable<InstallState>(INSTALL_STATE_KEY)?.let {
-            methodId = it.method
-            step = it.step
-            Config.keepVerity = it.keepVerity
-            Config.keepEnc = it.keepEnc
-            Config.recovery = it.recovery
-        }
-    }
-
-    @Parcelize
-    class UriCallback : ContentResultCallback {
-        override fun onActivityLaunch() {
-            AppContext.toast(CoreR.string.patch_file_msg, Toast.LENGTH_LONG)
-        }
-
-        override fun onActivityResult(result: Uri) {
-            uri.value = result
-        }
-    }
-
-    @Parcelize
-    class InstallState(
-        val method: Int,
-        val step: Int,
-        val keepVerity: Boolean,
-        val keepEnc: Boolean,
-        val recovery: Boolean,
-    ) : Parcelable
-
-    companion object {
-        private const val INSTALL_STATE_KEY = "install_state"
-        private val uri = MutableLiveData<Uri?>()
     }
 }
