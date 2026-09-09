@@ -283,8 +283,8 @@ ksl_mount_sbin() {
   [ ! -L /sbin ] || return 1
   KSL_SBIN_BACKING="$backing"
   KSL_SBIN_SYSROOT="$sysroot"
-  if "$KSL_BB" awk '$2 == "/" && $3 == "rootfs" { found=1 } END { exit !found }' /proc/mounts; then
-    # Preserve legacy rootfs /sbin on boot-scoped /dev. Avoid rewriting /root
+  if "$KSL_BB" awk '$2 == "/" && ($3 == "rootfs" || $3 == "tmpfs") { found=1 } END { exit !found }' /proc/mounts; then
+    # Preserve RAM-backed /sbin on boot-scoped /dev. Avoid rewriting /root
     # or changing the root mount mode merely to create a backing directory.
     sm_remove_tree_safe "Boot backing cleanup target" "$backing" "$backing" || return 1
     "$KSL_BB" mkdir -p "$backing" || return 1

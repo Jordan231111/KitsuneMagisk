@@ -478,6 +478,42 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('"$target/magisk" -V', prepare)
         self.assertLess(prepare.index(".kitsune-system-mode-$SM_INSTALL_ID"), prepare.index('case "$target"'))
 
+    def test_ram_backed_root_preserves_sbin_without_a_block_device(self) -> None:
+        for filesystem in ("rootfs", "tmpfs", "ext4"):
+            with self.subTest(filesystem=filesystem), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                sbin = root / "sbin"
+                sbin.mkdir()
+                (sbin / "vendor-tool").write_text("original vendor executable\n")
+                (root / "mounts").write_text(f"root / {filesystem} ro 0 0\n")
+                function = function_body(self.launcher, "ksl_mount_sbin")
+                function = function.replace("/sbin", str(sbin))
+                function = function.replace("/dev/", str(root / "dev") + "/")
+                function = function.replace("/proc/mounts", str(root / "mounts"))
+                script = r'''
+KSL_BB=bb
+SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+bb() { command "$@"; }
+sm_remove_tree_safe() { rm -rf "$3"; }
+ksl_mount_tmpfs() { mv "$1" "$1.original" && mkdir "$1"; }
+ksl_root_block() { echo block-lookup >&2; return 1; }
+''' + function + '\nksl_mount_sbin "$1"\n'
+                result = subprocess.run(
+                    ["sh", "-c", script, "sh", str(sbin)],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if filesystem == "ext4":
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("block-lookup", result.stderr)
+                else:
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertNotIn("block-lookup", result.stderr)
+                    self.assertTrue((sbin / "vendor-tool").is_symlink())
+                    self.assertEqual(
+                        "original vendor executable\n",
+                        (sbin / "vendor-tool").read_text(),
+                    )
+
     def test_runtime_selection_never_mounts_through_an_sbin_symlink(self) -> None:
         strategies = function_body(self.transaction, "sm_select_strategies")
         mount_sbin = function_body(self.launcher, "ksl_mount_sbin")

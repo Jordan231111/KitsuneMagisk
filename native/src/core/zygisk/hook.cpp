@@ -155,7 +155,7 @@ DCL_HOOK_FUNC(static char *, strdup, const char * str) {
 // assigns a short process name. AOSP removed that implementation in
 // 592bf711fdf273ff8a61b32e12cd886897922335 (b/78355649). Keep this replacement
 // confined to libandroid_runtime's specialization path on pre-P x86_64.
-DCL_HOOK_FUNC(static size_t, strlcpy, char *dst, const char *src, size_t size) {
+DCL_HOOK_FUNC(static size_t, legacy_strlcpy, char *dst, const char *src, size_t size) {
     size_t length = 0;
     if (size > 0) {
         while (length < size - 1 && src[length] != '\0') {
@@ -446,7 +446,7 @@ void HookContext::hook_plt() {
     __system_property_get("ro.build.version.sdk", sdk_value);
     const int sdk = atoi(sdk_value);
     if (sdk > 0 && sdk < 28)
-        PLT_HOOK_REGISTER(android_runtime_dev, android_runtime_inode, strlcpy);
+        PLT_HOOK_REGISTER_SYM(android_runtime_dev, android_runtime_inode, "strlcpy", legacy_strlcpy);
 #endif
     PLT_HOOK_REGISTER_SYM(android_runtime_dev, android_runtime_inode, "__android_log_close", android_log_close);
 

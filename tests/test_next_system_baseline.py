@@ -26,7 +26,7 @@ from tools.next_system_baseline import (
 class NextSystemManifestTest(unittest.TestCase):
     def test_zygote_name_copy_stops_at_guard_pages(self):
         source = Path("native/src/core/zygisk/hook.cpp").read_text()
-        start = source.index("DCL_HOOK_FUNC(static size_t, strlcpy,")
+        start = source.index("DCL_HOOK_FUNC(static size_t, legacy_strlcpy,")
         end = source.index("\n}\n", start) + 3
         function = source[start:end]
         program = """
@@ -53,11 +53,11 @@ int main() {
         char *src = source + page - length - 1;
         memset(src, 'x', length);
         src[length] = '\0';
-        assert(new_strlcpy(nullptr, src, 0) == length);
+        assert(new_legacy_strlcpy(nullptr, src, 0) == length);
         for (size_t capacity = 1; capacity < 272; ++capacity) {
             char *dst = destination + page - capacity;
             memset(dst - 1, '#', capacity + 1);
-            assert(new_strlcpy(dst, src, capacity) == length);
+            assert(new_legacy_strlcpy(dst, src, capacity) == length);
             const size_t copied = std::min(length, capacity - 1);
             for (size_t i = 0; i < copied; ++i) assert(dst[i] == 'x');
             assert(dst[copied] == '\0');
