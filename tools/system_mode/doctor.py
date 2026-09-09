@@ -19,6 +19,8 @@ import shlex
 import subprocess
 from typing import Any, Iterable, Mapping, Sequence
 
+from .schema_validation import validate_schema_instance
+
 
 CONTRACT_VERSION = 1
 PROBE_VERSION = "1.0.0"
@@ -699,6 +701,70 @@ def _avb_state(props: Mapping[str, str]) -> str:
     return "unknown"
 
 
+def _versioned_install_config(
+    client: AdbClient,
+    manifest_path: str,
+    manifest_record: Mapping[str, Any],
+    version: str | None,
+    version_code: int | None,
+    *,
+    root: bool,
+) -> str | None:
+    """Recognize the immutable PR7 config; mutation still validates full ownership."""
+
+    def trusted_file(record: Mapping[str, Any], path: str) -> bool:
+        mode = record.get("mode")
+        return (
+            record.get("kind") == "file"
+            and record.get("readable") is True
+            and record.get("resolved_path") == path
+            and type(record.get("uid")) is int
+            and record["uid"] == 0
+            and isinstance(mode, str)
+            and re.fullmatch(r"[0-7]{4}", mode) is not None
+            and int(mode, 8) & 0o022 == 0
+        )
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate manifest field")
+            result[key] = value
+        return result
+
+    if not trusted_file(manifest_record, manifest_path):
+        return None
+    text = _read_optional(client, manifest_path, root=root)
+    if not text:
+        return None
+    try:
+        manifest = json.loads(text, object_pairs_hook=unique_object)
+        schema = json.loads(Path(__file__).with_name("schemas").joinpath(
+            "install-manifest-v1.schema.json"
+        ).read_text())
+        validate_schema_instance(manifest, schema)
+    except ValueError:
+        return None
+    product = manifest["product"]
+    if (
+        manifest["state"] != "BOOT_VERIFIED"
+        or product["version_code"] != version_code
+        or version not in (
+            product["version"] + ":MAGISK:D", product["version"] + ":MAGISK:R"
+        )
+    ):
+        return None
+    path = manifest["strategies"]["active_payload"] + "/config"
+    record = _probe_paths(client, (path,), root=root).get(path, {})
+    if not trusted_file(record, path):
+        return None
+    config = _read_optional(client, path, root=root) or ""
+    values = [line.partition("=")[2] for line in config.splitlines()
+              if line.startswith("SYSTEMMODE=")]
+    return path if values == ["true"] else None
+
+
 def collect_report(
     client: AdbClient,
     evidence: QualificationEvidence | None = None,
@@ -812,6 +878,15 @@ def collect_report(
         (path for path in MANIFEST_CANDIDATES if path_records.get(path, {}).get("exists")),
         None,
     )
+    config_path = INSTALL_CONFIG if config_present else None
+    if not system_mode and manifest_path:
+        versioned_config = _versioned_install_config(
+            client, manifest_path, path_records[manifest_path],
+            magisk_version, magisk_version_code, root=use_root,
+        )
+        if versioned_config:
+            config_path = versioned_config
+            system_mode = True
     active_magisk = bool(magisk_version or magisk_version_code is not None)
     ordinary_magisk = active_magisk and not system_mode
     existing_detected = bool(config_present or manifest_path or active_magisk)
@@ -988,7 +1063,7 @@ def collect_report(
             "active_magisk": active_magisk,
             "ordinary_magisk": ordinary_magisk,
             "system_mode": system_mode,
-            "config_path": INSTALL_CONFIG if config_present else None,
+            "config_path": config_path,
             "manifest_path": manifest_path,
             "manifest_present": manifest_path is not None,
         },

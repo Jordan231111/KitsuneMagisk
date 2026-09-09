@@ -71,6 +71,11 @@ ineligible vendor image only with a verified external recovery copy; qualificati
 directory ownership. If the legacy manager uses SuList, allow the Next manager in that list and grant
 it root before starting its one-shot install session.
 
+For reinstall qualification, Doctor also recognizes a `BOOT_VERIFIED` versioned PR7 manifest and
+its immutable config when both files have safe ownership and the manifest matches the running
+daemon. Missing, malformed, redirected, unverified, or inconsistent markers remain blocked.
+The installer separately revalidates the complete ownership inventory before an upgrade writes.
+
 This PR7 generic qualifier intentionally requires the live target policy to already support the
 Magisk domain. That matches the qualified legacy-Kitsune-to-PR7 MuMu upgrade path. A fresh target
 whose root provider lacks `u:r:magisk:s0` fails closed even if the later PR7 launcher could inject
