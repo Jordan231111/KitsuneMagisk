@@ -5,10 +5,10 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import androidx.core.content.getSystemService
-import androidx.core.graphics.drawable.toIcon
 import androidx.core.os.postDelayed
 import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.R
@@ -57,10 +57,10 @@ object Notifications {
             val pending = PendingIntent.getActivity(this, 0, selfLaunchIntent(), flag)
             val builder = if (SDK_INT >= Build.VERSION_CODES.O) {
                 Notification.Builder(this, UPDATED_CHANNEL)
-                    .setSmallIcon(getBitmap(R.drawable.ic_magisk_outline).toIcon())
+                    .setSmallIcon(Icon.createWithBitmap(getBitmap(R.drawable.ic_magisk_outline)))
             } else {
                 Notification.Builder(this).setPriority(Notification.PRIORITY_HIGH)
-                    .setSmallIcon(R.drawable.ic_magisk_outline)
+                    .setSmallIcon(Icon.createWithBitmap(getBitmap(R.drawable.ic_magisk_outline)))
             }
                 .setContentIntent(pending)
                 .setContentTitle(getText(R.string.updated_title))
@@ -76,10 +76,10 @@ object Notifications {
             val bitmap = getBitmap(R.drawable.ic_magisk_outline)
             val builder = if (SDK_INT >= Build.VERSION_CODES.O) {
                 Notification.Builder(this, UPDATE_CHANNEL)
-                    .setSmallIcon(bitmap.toIcon())
+                    .setSmallIcon(Icon.createWithBitmap(bitmap))
             } else {
                 Notification.Builder(this)
-                    .setSmallIcon(R.drawable.ic_magisk_outline)
+                    .setSmallIcon(Icon.createWithBitmap(bitmap))
             }
                 .setLargeIcon(bitmap)
                 .setContentTitle(getString(R.string.magisk_update_title))
@@ -124,10 +124,10 @@ object Notifications {
             )
             val builder = if (SDK_INT >= Build.VERSION_CODES.O) {
                 Notification.Builder(this, SU_CHANNEL)
-                    .setSmallIcon(getBitmap(R.drawable.ic_magisk_outline).toIcon())
+                    .setSmallIcon(Icon.createWithBitmap(getBitmap(R.drawable.ic_magisk_outline)))
             } else {
                 Notification.Builder(this).setPriority(Notification.PRIORITY_HIGH)
-                    .setSmallIcon(R.drawable.ic_magisk_outline)
+                    .setSmallIcon(Icon.createWithBitmap(getBitmap(R.drawable.ic_magisk_outline)))
             }
                 .setContentIntent(pending)
                 .setContentTitle(title)

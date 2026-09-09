@@ -145,7 +145,7 @@ object AppMigration {
                 // Write apk changes
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
                 val keys = Keygen()
-                SignApk.sign(keys.cert, keys.key, jar, out)
+                SignApk.sign(keys.cert, keys.key, jar, out, context.cacheDir)
                 return true
             }
         } catch (e: Exception) {
@@ -171,7 +171,7 @@ object AppMigration {
                 // Write apk changes
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
                 val keys = Keygen()
-                out.outputStream().use { SignApk.sign(keys.cert, keys.key, jar, it) }
+                out.outputStream().use { SignApk.sign(keys.cert, keys.key, jar, it, out.parentFile) }
                 return true
             }
         } catch (e: Exception) {

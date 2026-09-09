@@ -328,7 +328,7 @@ resolve_vars() {
   else
     memory=8192
   fi
-  emu_args="$emu_args_base -memory $memory"
+  emu_args="$emu_args_base -memory $memory -partition-size 2048"
 
   local avd_pkg="system-images;android-$ver;$type;$arch"
   local sys_img_dir="$ANDROID_HOME/system-images/android-$ver/$type/$arch"

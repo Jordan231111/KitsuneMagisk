@@ -36,6 +36,8 @@ android {
 dependencies {
     implementation(project(":core"))
     coreLibraryDesugaring(libs.jdk.libs)
+    compileOnly(libs.test.junit)
+    compileOnly(libs.test.uiautomator)
 
     // Compose
     implementation(libs.compose.ui)
