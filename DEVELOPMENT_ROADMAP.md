@@ -1167,7 +1167,7 @@ This is the first product feature on `next-system`, and the last gate before dec
 - At least LDPlayer, MuMu, and Nox representative builds meet the full parity gate.
 - BlueStacks has either a reproducible adapter or an honest, reason-coded unsupported result.
 - The port has no unexplained custom changes to Magisk init/sepolicy/module core.
-- Future stable Magisk rebases can rerun the same System Mode suite without rewriting it.
+- Future stable and prerelease Magisk rebases can rerun the same System Mode suite without rewriting it.
 
 ## P1.3 Decide the Zygisk architecture explicitly — L
 
@@ -2578,13 +2578,14 @@ foundations.**
 - Add product, app upgrade, upstream base, compatibility, protocol, commit, and channel fields.
 - Add metadata consistency tests and truthful tags.
 - Define the upgrade rule from inherited Android `versionCode=31000`, the module-facing compatibility
-  epoch, app/daemon protocol compatibility, and capability discovery without pretending the core is
-  official Magisk 31.
+  epoch, app/daemon protocol compatibility, and capability discovery without claiming an upstream
+  base the source does not contain.
 - Generate one build-info source consumed by Kotlin, native code, shell, CI, release metadata, and
   diagnostics; include upstream base, full fork commit, dirty-state policy, channel, and signer
   certificate digest where applicable.
 
-**Exit:** no field or release text claims Magisk 31 source.
+**Exit:** every field and release text identifies the actual selected upstream base; compatibility
+numbers never imply a different source version.
 
 ## PR 10 — Project-owned update service and stub
 
