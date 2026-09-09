@@ -17,8 +17,9 @@ avd_name="${MAGISK_AVD_NAME:-magisk-test}"
 # valid pair while still allowing callers to select another isolated port.
 emu_port="${MAGISK_AVD_PORT:-5556}"
 test_dir="${MAGISK_TEST_DIR:-.}"
-debug_image="$test_dir/magisk_debug.img"
-release_image="$test_dir/magisk_release.img"
+image_dir=
+debug_image=
+release_image=
 kernel_log="${AVD_KERNEL_LOG:-$test_dir/kernel.log}"
 logcat_log="${AVD_LOGCAT_LOG:-$test_dir/logcat.log}"
 
@@ -64,7 +65,10 @@ stop_emulator() {
 
 cleanup() {
   stop_emulator
-  rm -f "$debug_image" "$release_image"
+  if [ -n "$image_dir" ]; then
+    rm -rf "$image_dir"
+    image_dir=
+  fi
   if [ -n "$owned_avd" ]; then
     "$avd" delete avd -n "$avd_name" >/dev/null 2>&1 || true
     owned_avd=
@@ -432,6 +436,15 @@ test_main() {
 
   print_title "* Launching $avd_pkg"
   launch_emulator ""
+
+  # The emulator resolves modem profiles beside the selected ramdisk.
+  # Preserve that SDK layout without writing into the shared system image.
+  image_dir=$(mktemp -d "$test_dir/.magisk-ramdisk.XXXXXX")
+  debug_image="$image_dir/magisk_debug.img"
+  release_image="$image_dir/magisk_release.img"
+  if [ -d "${ramdisk%/*}/data" ]; then
+    ln -s "${ramdisk%/*}/data" "$image_dir/data"
+  fi
 
   local build=(./build.py)
   if [ -n "${MAGISK_BUILD_CONFIG:-}" ]; then
