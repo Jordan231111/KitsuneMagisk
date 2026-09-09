@@ -178,13 +178,13 @@ run_tests() {
   local stub="repackaged.$pkg/com.topjohnwu.magisk.test.AppTestRunner"
 
   # Run app tests
-  am_instrument '.MagiskAppTest,.AdditionalTest,.TerminalTest' $app
+  am_instrument '.MagiskAppTest,.AdditionalTest,.TerminalTest,.FlashIntentTest' $app
 
   # Test app hiding
   am_instrument '.AppMigrationTest#testAppHide' $self
 
   # Make sure it still works
-  am_instrument '.MagiskAppTest' $stub
+  am_instrument '.MagiskAppTest,.FlashIntentTest' $stub
 
   # Test app restore
   am_instrument '.AppMigrationTest#testAppRestore' $self

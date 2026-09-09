@@ -99,6 +99,7 @@
     "README.MD",
     "app/apk/build.gradle.kts",
     "app/apk/src/main/java/com/topjohnwu/magisk/terminal/TerminalProcess.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/test/FlashIntentTest.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/test/TerminalTest.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/MainActivity.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/flash/FlashScreen.kt",

@@ -44,6 +44,7 @@ import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.wrap
+import com.topjohnwu.magisk.ui.component.ConfirmResult
 import com.topjohnwu.magisk.ui.component.rememberConfirmDialog
 import com.topjohnwu.magisk.ui.deny.DenyListScreen
 import com.topjohnwu.magisk.ui.deny.DenyListViewModel
@@ -216,6 +217,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
 
     @Composable
     private fun HandleFlashIntent(navigator: Navigator) {
+        val confirmation = rememberConfirmDialog()
         val intentVersion by intentState.collectAsStateWithLifecycle()
         LaunchedEffect(intentVersion) {
             val currentIntent = intent ?: return@LaunchedEffect
@@ -225,10 +227,20 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
             }
             if (currentIntent.action == FlashUtils.INTENT_FLASH) {
                 val action = currentIntent.getStringExtra(FlashUtils.EXTRA_FLASH_ACTION)
-                    ?: return@LaunchedEffect
-                val uri = currentIntent.getStringExtra(FlashUtils.EXTRA_FLASH_URI)
-                navigator.push(Route.Flash(action, uri))
+                val uri = currentIntent.getStringExtra(FlashUtils.EXTRA_FLASH_URI)?.toUri()
                 currentIntent.action = null
+                // This launcher is exported. An incoming intent is not consent
+                // to run a root operation, even when it came from a notification.
+                if (action != Const.Value.FLASH_ZIP || uri == null ||
+                    (uri.scheme != "file" && uri.scheme != "content"))
+                    return@LaunchedEffect
+                val result = confirmation.awaitConfirm(
+                    title = getString(CoreR.string.confirm_install_title),
+                    content = getString(CoreR.string.confirm_install, uri.lastPathSegment ?: "module.zip"),
+                )
+                if (result == ConfirmResult.Confirmed) {
+                    navigator.push(Route.Flash(Const.Value.FLASH_ZIP, uri.toString()))
+                }
             }
         }
     }
