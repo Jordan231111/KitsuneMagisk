@@ -214,20 +214,7 @@ abstract class MagiskInstallImpl protected constructor(
             }
 
             // Extract scripts
-            for (script in listOf(
-                "util_functions.sh",
-                "boot_patch.sh",
-                "addon.d.sh",
-                "app_functions.sh",
-                "uninstaller.sh",
-                "module_installer.sh",
-                "kitsune_system_install.sh",
-                "kitsune_system_launcher.sh",
-                "kitsune_system_rescue.sh",
-                "system_mode_transaction.sh",
-                "system_mode_verify.sh",
-                "stub.apk",
-            )) {
+            for (script in installScripts) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)
             }
@@ -804,6 +791,20 @@ abstract class MagiskInstallImpl protected constructor(
     }
 
     companion object {
+        private val installScripts = listOf(
+            "util_functions.sh",
+            "boot_patch.sh",
+            "addon.d.sh",
+            "app_functions.sh",
+            "uninstaller.sh",
+            "module_installer.sh",
+            "kitsune_system_install.sh",
+            "kitsune_system_launcher.sh",
+            "kitsune_system_rescue.sh",
+            "system_mode_transaction.sh",
+            "system_mode_verify.sh",
+            "stub.apk",
+        )
         private var haveActiveSession = AtomicBoolean(false)
         private val systemModeStates = setOf(
             "PREFLIGHTED",

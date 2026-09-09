@@ -160,10 +160,10 @@ run_setup() {
   adb shell 'PATH=$PATH:/debug_ramdisk magisk -v' | tr -d '\r'
 
   # Install the Magisk app
-  adb install -r -g "$MAGISK_OUT_DIR/app-${variant}.apk"
+  adb install --no-streaming -r -g "$MAGISK_OUT_DIR/app-${variant}.apk"
 
   # Install the test app
-  adb install -r -g "$MAGISK_OUT_DIR/test-${variant}.apk"
+  adb install --no-streaming -r -g "$MAGISK_OUT_DIR/test-${variant}.apk"
 
   local app="$MAGISK_TEST_PACKAGE/com.topjohnwu.magisk.test.AppTestRunner"
 
