@@ -398,6 +398,7 @@ void ZygiskContext::run_modules_post() {
 }
 
 void ZygiskContext::app_specialize_pre() {
+    prepare_unloader();
     flags |= APP_SPECIALIZE;
 
     rust::Vec<int> module_fds;
@@ -421,6 +422,7 @@ void ZygiskContext::app_specialize_post() {
 }
 
 void ZygiskContext::server_specialize_pre() {
+    prepare_unloader();
     rust::Vec<int> module_fds;
     if (owned_fd fd = get_module_info(1000, module_fds); fd >= 0) {
         if (module_fds.empty()) {

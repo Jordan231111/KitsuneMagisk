@@ -31,6 +31,59 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertEqual(raw, normalized)
         self.assertEqual(raw, subprocess.check_output(["git", "rev-parse", f"HEAD:{path}"]))
 
+    def test_unloader_waits_for_specialization_and_releases_context_once(self):
+        source = Path("native/src/core/zygisk/hook.cpp").read_text()
+        start = source.index("DCL_HOOK_FUNC(static int, pthread_attr_destroy,")
+        end = source.index("\n}\n", start) + 3
+        program = r"""
+#include <cassert>
+#include <pthread.h>
+#include <utility>
+static int tid = 1, pid = 1, calls = 0, restores = 0, deleted = 0, unloaded = 0;
+#define gettid() tid
+#define getpid() pid
+#define ZLOGV(...) ((void)0)
+#define DCL_HOOK_FUNC(ret, name, ...) ret new_##name(__VA_ARGS__)
+struct HookContext {
+    bool should_unmap = false;
+    bool can_restore = true;
+    void *self_handle = reinterpret_cast<void *>(42);
+    void restore_plt_hook() { ++restores; should_unmap = can_restore; }
+    ~HookContext() { ++deleted; }
+};
+static HookContext *g_hook;
+static int old_pthread_attr_destroy(pthread_attr_t *) { ++calls; return 19; }
+static int dlclose(void *handle) { assert(handle == reinterpret_cast<void *>(42)); ++unloaded; return 0; }
+""" + source[start:end] + r"""
+int main() {
+    g_hook = new HookContext;
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(g_hook && restores == 0 && deleted == 0);
+    g_hook->should_unmap = true;
+    tid = 2;
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(g_hook && restores == 0 && deleted == 0);
+    tid = 1;
+    g_hook->can_restore = false;
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(!g_hook && restores == 1 && deleted == 1 && unloaded == 0);
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(deleted == 1);
+    g_hook = new HookContext;
+    g_hook->should_unmap = true;
+    assert(new_pthread_attr_destroy(nullptr) == 0);
+    assert(!g_hook && restores == 2 && deleted == 2 && unloaded == 1);
+    assert(calls == 5);
+}
+"""
+        with tempfile.TemporaryDirectory(prefix="kitsune-unloader-") as temporary:
+            root = Path(temporary)
+            cpp, binary = root / "unloader.cpp", root / "unloader"
+            cpp.write_text(program)
+            subprocess.run(["c++", "-std=c++20", "-O2", str(cpp), "-o", str(binary)],
+                           check=True, capture_output=True, text=True)
+            subprocess.run([str(binary)], check=True, timeout=15)
+
     def test_zygote_name_copy_stops_at_guard_pages(self):
         source = Path("native/src/core/zygisk/hook.cpp").read_text()
         start = source.index("DCL_HOOK_FUNC(static size_t, legacy_strlcpy,")

@@ -3,6 +3,7 @@
 #include <sys/resource.h>
 #include <sys/system_properties.h>
 #include <cstdlib>
+#include <utility>
 #include <dlfcn.h>
 #include <unwind.h>
 #include <span>
@@ -153,7 +154,7 @@ DCL_HOOK_FUNC(static char *, strdup, const char * str) {
     // point (after the Zygote natives are (re)registered, before ZygoteInit#main forks), which is when
     // hook_zygote_jni() must arm. Match as a substring (rather than exact) so a wrapped/prefixed name
     // still triggers — harmless on standard devices, and it is what fires reliably on Meta Quest.
-    if (str && strstr(str, kZygoteInit)) {
+    if (g_hook && str && strstr(str, kZygoteInit)) {
         g_hook->hook_zygote_jni();
     }
     return old_strdup(str);
@@ -217,7 +218,7 @@ DCL_HOOK_FUNC(static void, android_log_close) {
 
 // It should be safe to assume all dlclose's in libnativebridge are for zygisk_loader
 DCL_HOOK_FUNC(static int, dlclose, void *handle) {
-    if (!g_hook->self_handle) {
+    if (g_hook && !g_hook->self_handle) {
         ZLOGV("dlclose zygisk_loader\n");
         g_hook->post_native_bridge_load(handle);
     }
@@ -230,8 +231,9 @@ DCL_HOOK_FUNC(static int, dlclose, void *handle) {
 DCL_HOOK_FUNC(static int, pthread_attr_destroy, void *target) {
     int res = old_pthread_attr_destroy((pthread_attr_t *)target);
 
-    // Only perform unloading on the main thread
-    if (gettid() != getpid())
+    // The hook is installed before specialization starts ART's threads.
+    // Wait until specialization has finished before unloading on the main thread.
+    if (gettid() != getpid() || !g_hook || !g_hook->should_unmap)
         return res;
 
     ZLOGV("pthread_attr_destroy\n");
@@ -240,7 +242,7 @@ DCL_HOOK_FUNC(static int, pthread_attr_destroy, void *target) {
         if (g_hook->should_unmap) {
             ZLOGV("dlclosing self\n");
             void *self_handle = g_hook->self_handle;
-            delete g_hook;
+            delete std::exchange(g_hook, nullptr);
 
             // Because both `pthread_attr_destroy` and `dlclose` have the same function signature,
             // we can use `musttail` to let the compiler reuse our stack frame and thus
@@ -249,7 +251,7 @@ DCL_HOOK_FUNC(static int, pthread_attr_destroy, void *target) {
         }
     }
 
-    delete g_hook;
+    delete std::exchange(g_hook, nullptr);
     return res;
 }
 
@@ -285,8 +287,15 @@ ZygiskContext::~ZygiskContext() {
     }
 
     // Cleanup
-    g_hook->should_unmap = true;
     g_hook->restore_zygote_hook(env);
+    g_hook->should_unmap = true;
+}
+
+void ZygiskContext::prepare_unloader() {
+    if (pid < 0 && (flags & (APP_FORK_AND_SPECIALIZE | SERVER_FORK_AND_SPECIALIZE)))
+        return;
+    // LSPlt moves and copies the GOT while installing a new hook. Do this in
+    // the single-threaded child, before ART or modules can start other threads.
     g_hook->hook_unloader();
 }
 
