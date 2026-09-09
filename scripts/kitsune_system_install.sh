@@ -297,8 +297,9 @@ ks_write_rc() {
     printf 'on post-fs-data\n'
     printf '    exec u:r:init:s0 0 0 -- %s/busybox sh %s/kitsune_system_launcher.sh prepare\n' \
       "$SM_ACTIVE_PAYLOAD" "$SM_ACTIVE_PAYLOAD"
-    printf '\n'
-    printf 'on property:%s\n' "$ready"
+    # Property actions can run after init has queued nonencrypted/boot and
+    # started zygote. Finish post-fs-data here, before leaving this boot event.
+    # The wrapper still refuses to run unless prepare published its success.
     printf '    exec u:r:magisk:s0 0 0 -- %s/busybox sh %s/kitsune_system_launcher.sh post-fs-data\n' \
       "$SM_ACTIVE_PAYLOAD" "$SM_ACTIVE_PAYLOAD"
     printf '\n'

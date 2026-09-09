@@ -449,6 +449,9 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("kitsune.system_mode.service.phase=1", rc)
         self.assertIn("kitsune.system_mode.service.ready", rc)
         self.assertIn("kitsune.system_mode.boot_complete.ready", rc)
+        first_action = rc[rc.index("printf 'on post-fs-data") : rc.index("printf 'on property:vold.decrypt")]
+        self.assertNotIn("printf 'on property:", first_action)
+        self.assertLess(first_action.index("launcher.sh prepare"), first_action.index("launcher.sh post-fs-data"))
         self.assertLess(rc.index("post-fs-data"), rc.index("vold.decrypt=trigger_restart_framework"))
         self.assertLess(rc.index("vold.decrypt=trigger_restart_framework"), rc.index("launcher.sh service"))
         self.assertLess(rc.index("launcher.sh service"), rc.index("launcher.sh boot-complete"))
@@ -492,12 +495,16 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
 
     def test_boot_verification_rejects_root_only_socket_access(self) -> None:
         verify = function_body(self.transaction, "sm_verify_boot")
-        for state, denied in (("BOOT_VERIFIED", False), ("BOOT_VERIFIED", True), ("COMMITTED", True)):
-            with self.subTest(state=state, denied=denied), tempfile.TemporaryDirectory() as directory:
+        for state, denied, database_valid in (
+            ("BOOT_VERIFIED", False, True), ("BOOT_VERIFIED", True, True),
+            ("COMMITTED", True, True), ("COMMITTED", False, False),
+            ("BOOT_VERIFIED", False, False),
+        ):
+            with self.subTest(state=state, denied=denied, database_valid=database_valid), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 executable = root / "magisk"
                 executable.write_text(
-                    '#!/bin/sh\nif [ "$CLIENT_UID" = 2000 ] && [ "$DENIED" = true ]; then exit 1; fi\nprintf "30700\\n"\n'
+                    '#!/bin/sh\nif [ "$1" = --sqlite ]; then [ "$DATABASE_VALID" = true ] || exit 1; printf "user_version=12\\n"; exit; fi\nif [ "$CLIENT_UID" = 2000 ] && [ "$DENIED" = true ]; then exit 1; fi\nprintf "30700\\n"\n'
                 )
                 executable.chmod(0o755)
                 (root / "su").write_text('#!/bin/sh\nprintf "uid=0(root)\\n"\n')
@@ -507,6 +514,7 @@ TEST_ROOT="$1"
 SM_RUNTIME_PATH="$1"
 SM_STATE="$2"
 export DENIED="$3"
+export DATABASE_VALID="$4"
 SM_BB=bb
 SM_VERSION_CODE=30700
 SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
@@ -528,13 +536,44 @@ sm_update_state() { SM_STATE="$1"; }
 getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
 ''' + verify + '\nsm_verify_boot\nresult=$?\nprintf "%s\\n" "$SM_STATE"\nexit "$result"\n'
                 result = subprocess.run(
-                    ["bash", "-c", script, "verify", directory, state, str(denied).lower()],
+                    ["bash", "-c", script, "verify", directory, state, str(denied).lower(), str(database_valid).lower()],
                     capture_output=True, text=True, timeout=10,
                 )
-                self.assertEqual(1 if denied else 0, result.returncode, result.stderr)
-                expected = "ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED" if denied else state
+                rejected = denied or not database_valid
+                self.assertEqual(1 if rejected else 0, result.returncode, result.stderr)
+                expected = "ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED" if rejected else state
                 self.assertEqual(expected, result.stdout.strip())
                 self.assertEqual("2000\n", (root / "clients").read_text())
+
+    def test_environment_check_accepts_only_verified_no_preinit_layout(self) -> None:
+        functions = (ROOT / "scripts/app_functions.sh").read_text()
+        check = function_body(functions, "env_check")
+        cases = (
+            (True, "BOOT_VERIFIED", "", True, 0),
+            (False, "BOOT_VERIFIED", "", True, 2),
+            (True, "COMMITTED", "", True, 2),
+            (True, "BOOT_VERIFIED", "ZXhwZWN0ZWQ=", True, 2),
+            (True, "BOOT_VERIFIED", "", False, 2),
+        )
+        for system_mode, state, device, runtime_matches, expected in cases:
+            with self.subTest(case=(system_mode, state, device, runtime_matches)), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                runtime = root / "runtime"
+                runtime.mkdir()
+                for name in ("busybox", "magiskboot", "magiskinit", "boot_patch.sh", "magiskpolicy"):
+                    (root / name).touch()
+                (root / "util_functions.sh").write_text("MAGISK_VER='test'\nMAGISK_VER_CODE=30700\n")
+                (root / "config").write_text(f"SYSTEMMODE={str(system_mode).lower()}\n")
+                receipt = root / "receipt"
+                receipt.write_text(
+                    f"STATE={state}\nRUNTIME_PATH={runtime if runtime_matches else '/other'}\n"
+                    f"PREINIT_DEVICE_B64={device}\nPREINIT_DIR_B64=\n"
+                )
+                script = check.replace("/data/adb/kitsune/system-mode/transaction.env", str(receipt))
+                script += '\nMAGISKBIN="$1"; MAGISKTMP="$1/runtime"; env_check test 30700\n'
+                result = subprocess.run(["sh", "-c", script, "env-check", directory],
+                                        capture_output=True, text=True, timeout=10)
+                self.assertEqual(expected, result.returncode, result.stderr)
 
     def test_su_rejects_a_failed_connection_before_writing_the_request(self) -> None:
         source = (ROOT / "native/src/core/su/su.cpp").read_text()
