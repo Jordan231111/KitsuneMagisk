@@ -3,6 +3,7 @@ package com.topjohnwu.magisk.test
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnitRunner
+import androidx.test.uiautomator.Configurator
 
 open class TestRunner : AndroidJUnitRunner() {
     override fun onCreate(arguments: Bundle) {
@@ -23,6 +24,9 @@ open class TestRunner : AndroidJUnitRunner() {
 
 class AppTestRunner : TestRunner() {
     override fun onCreate(arguments: Bundle) {
+        // Tests wait for explicit UI conditions. Waiting for animations and
+        // unrelated accessibility events to idle can consume those deadlines.
+        Configurator.getInstance().waitForIdleTimeout = 0
         // Force using the target context's classloader to run tests
         arguments.putString("classLoader", TestClassLoader::class.java.name)
         super.onCreate(arguments)

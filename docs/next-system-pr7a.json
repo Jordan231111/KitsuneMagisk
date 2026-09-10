@@ -138,6 +138,7 @@
     "app/test/src/main/cpp/CMakeLists.txt",
     "app/test/src/main/cpp/zygisk_test.cpp",
     "app/test/src/main/java/com/topjohnwu/magisk/test/AppMigrationTest.kt",
+    "app/test/src/main/java/com/topjohnwu/magisk/test/Runners.kt",
     "build.py",
     "compatibility/README.md",
     "compatibility/initial-lab-matrix.json",
