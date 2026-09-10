@@ -84,5 +84,9 @@ class AppMigrationTest {
     @Test
     fun testAppRestore() {
         testAppMigration(STUB_PKG, "setupAppRestore")
+        // Each hide uses a fresh signer. Remove our old instrumentation APK
+        // so another test run cannot collide with its previous certificate.
+        AutoCloseInputStream(uiAutomation.executeShellCommand("pm uninstall $STUB_PKG.test"))
+            .reader().use { it.readText() }
     }
 }

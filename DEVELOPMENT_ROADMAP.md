@@ -2880,8 +2880,8 @@ in the detail:
 
 - **Done:** stop automatic stable releases; mark existing artifacts experimental; keep debug-root,
   dead-updater, signing, and hide-table compatibility risks explicit.
-- **Done:** declare System Mode the primary fork product while preserving ordinary Magisk paths as
-  first-class compatibility requirements.
+- **Done:** define the full Kitsune purpose: ordinary rooting and recovery, early mounting,
+  hiding/SuList, provider flexibility, module compatibility, and qualified System Mode.
 - **Done foundation:** add the shared System Mode doctor, manifest/state schemas, ADB harness,
   reason codes, fixtures, and failure-injection contract before a forward-port.
 - **Done:** GitHub PR #26 contains the current-line release/data/runtime hardening and experimental

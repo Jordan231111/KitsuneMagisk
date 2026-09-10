@@ -48,6 +48,34 @@ class NextSystemManifestTest(unittest.TestCase):
             self.assertEqual(result.returncode, 37, result.stderr)
             self.assertEqual(result.stdout, b"\0".join(a.encode() for a in arguments) + b"\0")
 
+    def test_patched_ramdisk_keeps_sdk_profiles_without_owning_them(self):
+        source = Path("scripts/avd.sh").read_text()
+        start = source.index('  image_dir=$(mktemp ')
+        end = source.index("  local build=", start)
+        cleanup_start = source.index("cleanup() {")
+        cleanup_end = source.index("\n}\n", cleanup_start) + 3
+        with tempfile.TemporaryDirectory(prefix="kitsune-sdk-data-") as temporary:
+            root = Path(temporary)
+            sdk = root / "SDK with spaces"
+            profile = sdk / "data/misc/modem_simulator/iccprofile_for_sim0.xml"
+            profile.parent.mkdir(parents=True)
+            profile.write_text("original modem profile")
+            ramdisk = sdk / "ramdisk.img"
+            ramdisk.write_bytes(b"original ramdisk")
+            script = ('ramdisk=$1; test_dir=$2; owned_avd=; stop_emulator() { :; }\n'
+                      + source[start:end]
+                      + 'printf "%s\n" "$image_dir"\n'
+                      + 'cat "$image_dir/data/misc/modem_simulator/iccprofile_for_sim0.xml"\n'
+                      + source[cleanup_start:cleanup_end] + '\ncleanup\n')
+            result = subprocess.run(["bash", "-c", script, "profiles", str(ramdisk), str(root)],
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            image_dir, content = result.stdout.splitlines()
+            self.assertEqual(content, "original modem profile")
+            self.assertFalse(Path(image_dir).exists())
+            self.assertEqual(profile.read_text(), "original modem profile")
+            self.assertEqual(ramdisk.read_bytes(), b"original ramdisk")
+
     def test_futility_checkout_preserves_binary_bytes(self):
         path = "tools/futility"
         raw = subprocess.check_output(["git", "hash-object", "--no-filters", path])

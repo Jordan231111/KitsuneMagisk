@@ -553,13 +553,15 @@ getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
         functions = (ROOT / "scripts/app_functions.sh").read_text()
         check = function_body(functions, "env_check")
         cases = (
-            (True, "BOOT_VERIFIED", "", True, 0),
-            (False, "BOOT_VERIFIED", "", True, 2),
-            (True, "COMMITTED", "", True, 2),
-            (True, "BOOT_VERIFIED", "ZXhwZWN0ZWQ=", True, 2),
-            (True, "BOOT_VERIFIED", "", False, 2),
+            (True, "BOOT_VERIFIED", "", True, 0, 0),
+            (False, "BOOT_VERIFIED", "", True, 0, 2),
+            (False, "BOOT_VERIFIED", "", True, 1, 0),
+            (False, "BOOT_VERIFIED", "", True, 126, 2),
+            (True, "COMMITTED", "", True, 1, 2),
+            (True, "BOOT_VERIFIED", "ZXhwZWN0ZWQ=", True, 1, 2),
+            (True, "BOOT_VERIFIED", "", False, 1, 2),
         )
-        for system_mode, state, device, runtime_matches, expected in cases:
+        for system_mode, state, device, runtime_matches, probe_status, expected in cases:
             with self.subTest(case=(system_mode, state, device, runtime_matches)), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 runtime = root / "runtime"
@@ -574,6 +576,7 @@ getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
                     f"PREINIT_DEVICE_B64={device}\nPREINIT_DIR_B64=\n"
                 )
                 script = check.replace("/data/adb/kitsune/system-mode/transaction.env", str(receipt))
+                script += f'\nmagisk() {{ [ -z "$MAGISKTMP" ] || return 99; return {probe_status}; }}\n'
                 script += '\nMAGISKBIN="$1"; MAGISKTMP="$1/runtime"; env_check test 30700\n'
                 result = subprocess.run(["sh", "-c", script, "env-check", directory],
                                         capture_output=True, text=True, timeout=10)

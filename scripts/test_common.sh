@@ -172,6 +172,13 @@ run_setup() {
 }
 
 run_tests() {
+  # The tested boot can return to the keyguard even when setup woke the device.
+  adb shell input keyevent KEYCODE_WAKEUP
+  case $(adb shell getprop ro.build.version.sdk | tr -d '\r') in
+    23|24|25) adb shell input keyevent KEYCODE_MENU ;;
+    *) adb shell wm dismiss-keyguard ;;
+  esac
+
   local pkg="$MAGISK_TEST_PACKAGE"
   local self="$pkg/com.topjohnwu.magisk.test.TestRunner"
   local app="$pkg/com.topjohnwu.magisk.test.AppTestRunner"

@@ -443,7 +443,7 @@ test_main() {
   debug_image="$image_dir/magisk_debug.img"
   release_image="$image_dir/magisk_release.img"
   if [ -d "${ramdisk%/*}/data" ]; then
-    ln -s "${ramdisk%/*}/data" "$image_dir/data"
+    ln -s "$(cd "${ramdisk%/*}/data" && pwd -P)" "$image_dir/data"
   fi
 
   local build=(./build.py)

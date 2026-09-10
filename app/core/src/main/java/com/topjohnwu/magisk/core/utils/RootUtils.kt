@@ -47,6 +47,13 @@ class RootUtils(stub: Any?) : RootService() {
         am = getSystemService()!!
     }
 
+    override fun onDestroy() {
+        // Android 6 ART can tear down the VM while Binder threads still run.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+            android.os.Process.killProcess(android.os.Process.myPid())
+        }
+    }
+
     override fun getComponentName(): ComponentName {
         return ComponentName(packageName, className)
     }
