@@ -4,6 +4,8 @@ set -xe
 . scripts/test_common.sh
 
 cvd_args="-daemon -enable_sandbox=false -memory_mb=8192 -report_anonymous_usage_stats=n -cpus=$core_count"
+# Guest software rendering can block the UI during headless Compose tests.
+cvd_args+=" -gpu_mode=gfxstream_guest_angle_host_swiftshader"
 magisk_args='-init_boot_image=magisk_patched.img'
 
 cleanup() {
