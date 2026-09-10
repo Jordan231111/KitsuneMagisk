@@ -383,6 +383,32 @@ static const NativeBridgeRuntimeCallbacks* find_runtime_callbacks(struct _Unwind
     return nullptr;
 }
 
+static string native_bridge_property() {
+    // resetprop's process-lifetime mappings must not outlive this library.
+    // Older kernels keep their VMA names as pointers into our unloaded rodata.
+    string value;
+    const auto *info = __system_property_find(NBPROP);
+    if (!info)
+        return value;
+    using read_callback = void (*)(const prop_info *,
+        void (*)(void *, const char *, const char *, uint32_t), void *);
+    auto read = reinterpret_cast<read_callback>(
+        dlsym(RTLD_DEFAULT, "__system_property_read_callback"));
+    if (read) {
+        read(info, [](void *cookie, const char *, const char *v, uint32_t) {
+            *static_cast<string *>(cookie) = v;
+        }, &value);
+    } else {
+        // Keep API 23-25 loadable; these platforms only have short properties.
+        using property_get = int (*)(const char *, char *);
+        auto get = reinterpret_cast<property_get>(dlsym(RTLD_DEFAULT, "__system_property_get"));
+        char buffer[PROP_VALUE_MAX]{};
+        if (get && get(NBPROP, buffer) >= 0)
+            value = buffer;
+    }
+    return value;
+}
+
 void HookContext::post_native_bridge_load(void *handle) {
     self_handle = handle;
     using method_sig = const bool (*)(const char *, const NativeBridgeRuntimeCallbacks *);
@@ -412,7 +438,7 @@ void HookContext::post_native_bridge_load(void *handle) {
         return;
 
     // Reload the real native bridge if necessary
-    auto nb = get_prop(NBPROP);
+    auto nb = native_bridge_property();
     auto len = sizeof(ZYGISKLDR) - 1;
     if (nb.size() > len) {
         arg.load_native_bridge(nb.c_str() + len, arg.callbacks);

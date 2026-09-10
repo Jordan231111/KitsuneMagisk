@@ -246,6 +246,7 @@ def stock_boot_failure(first, record, boot):
         return None
     fingerprint = fingerprint[1]
     media_images = {
+        "Android/sdk_phone_x86/generic_x86:7.0/NYC/4174735:userdebug/test-keys",
         "Android/sdk_phone_x86_64/generic_x86_64:7.0/NYC/4174735:userdebug/test-keys",
         "Android/sdk_phone_x86_64/generic_x86_64:7.1.1/NYC/4931657:userdebug/test-keys",
     }

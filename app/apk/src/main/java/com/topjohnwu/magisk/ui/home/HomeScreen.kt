@@ -20,9 +20,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Build
@@ -251,7 +251,7 @@ fun HomeScreen(
         )
     }
 
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
 
     Scaffold(
         modifier = modifier,
@@ -275,58 +275,68 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        Column(
+        LazyColumn(
+            state = scrollState,
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(padding)
-                .verticalScrollbar(scrollState, contentPadding = PaddingValues(vertical = 12.dp))
-                .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .verticalScrollbar(scrollState, contentPadding = PaddingValues(vertical = 12.dp)),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (uiState.isNoticeVisible) {
-                NoticeCard(onHide = viewModel::hideNotice)
+                item("notice") {
+                    NoticeCard(onHide = viewModel::hideNotice)
+                }
             }
 
-            CoreCard(
-                modifier = Modifier.fillMaxWidth(),
-                state = uiState.magiskState,
-                version = uiState.magiskInstalledVersion,
-                onInstallClicked = { showInstallDialog = true }
-            )
+            item("core") {
+                CoreCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = uiState.magiskState,
+                    version = uiState.magiskInstalledVersion,
+                    onInstallClicked = { showInstallDialog = true }
+                )
+            }
 
-            StatusCard()
+            item("status") { StatusCard() }
 
-            AppCard(
-                modifier = Modifier.fillMaxWidth(),
-                state = uiState.appState,
-                version = uiState.managerInstalledVersion,
-                remoteVersion = uiState.managerRemoteVersion,
-                progress = uiState.managerProgress,
-                isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME,
-                onManagerPressed = viewModel::onManagerPressed,
-                onHideRestorePressed = viewModel::onHideRestorePressed,
-            )
+            item("app") {
+                AppCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = uiState.appState,
+                    version = uiState.managerInstalledVersion,
+                    remoteVersion = uiState.managerRemoteVersion,
+                    progress = uiState.managerProgress,
+                    isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME,
+                    onManagerPressed = viewModel::onManagerPressed,
+                    onHideRestorePressed = viewModel::onHideRestorePressed,
+                )
+            }
 
-            Text(
-                text = stringResource(CoreR.string.home_support_title),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-            )
+            item("support_title") {
+                Text(
+                    text = stringResource(CoreR.string.home_support_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                )
+            }
 
-            SupportCard(onLinkClicked = viewModel::onLinkPressed)
+            item("support") { SupportCard(onLinkClicked = viewModel::onLinkPressed) }
 
-            Text(
-                text = stringResource(CoreR.string.home_follow_title),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-            )
-            DevelopersCard(onLinkClicked = viewModel::onLinkPressed)
+            item("follow_title") {
+                Text(
+                    text = stringResource(CoreR.string.home_follow_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                )
+            }
+            item("developers") { DevelopersCard(onLinkClicked = viewModel::onLinkPressed) }
         }
     }
 

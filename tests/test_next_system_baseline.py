@@ -83,6 +83,74 @@ class NextSystemManifestTest(unittest.TestCase):
         self.assertEqual(raw, normalized)
         self.assertEqual(raw, subprocess.check_output(["git", "rev-parse", f"HEAD:{path}"]))
 
+    def test_zygisk_reads_platform_properties_without_resetprop_mappings(self):
+        source = Path("native/src/core/zygisk/hook.cpp").read_text()
+        start = source.index("static string native_bridge_property()")
+        end = source.index("\n}\n", start) + 3
+        program = r"""
+#include <cassert>
+#include <cstdint>
+#include <cstring>
+#include <string>
+using namespace std;
+#define NBPROP "ro.dalvik.vm.native.bridge"
+#define PROP_VALUE_MAX 92
+#define RTLD_DEFAULT nullptr
+struct prop_info {};
+static prop_info info;
+static string property;
+static bool present = true, modern = true, legacy = true, failed = false;
+static int callback_reads = 0, legacy_reads = 0;
+static const prop_info *__system_property_find(const char *name) {
+    assert(string(name) == NBPROP);
+    return present ? &info : nullptr;
+}
+static void read_property(const prop_info *p,
+        void (*callback)(void *, const char *, const char *, uint32_t), void *cookie) {
+    assert(p == &info);
+    ++callback_reads;
+    callback(cookie, NBPROP, property.c_str(), 0);
+}
+static int get_property(const char *name, char *buffer) {
+    assert(string(name) == NBPROP && property.size() < PROP_VALUE_MAX);
+    ++legacy_reads;
+    if (failed) return -1;
+    strcpy(buffer, property.c_str());
+    return property.size();
+}
+static void *dlsym(void *, const char *name) {
+    if (string(name) == "__system_property_read_callback")
+        return modern ? reinterpret_cast<void *>(read_property) : nullptr;
+    assert(string(name) == "__system_property_get");
+    return legacy ? reinterpret_cast<void *>(get_property) : nullptr;
+}
+""" + source[start:end] + r"""
+int main() {
+    property = string(256, 'a');
+    assert(native_bridge_property() == property);
+    assert(callback_reads == 1 && legacy_reads == 0);
+    modern = false;
+    property = "libhoudini.so";
+    assert(native_bridge_property() == property);
+    assert(callback_reads == 1 && legacy_reads == 1);
+    present = false;
+    assert(native_bridge_property().empty());
+    assert(callback_reads == 1 && legacy_reads == 1);
+    present = true;
+    failed = true;
+    assert(native_bridge_property().empty());
+    legacy = false;
+    assert(native_bridge_property().empty());
+}
+"""
+        with tempfile.TemporaryDirectory(prefix="kitsune-property-read-") as temporary:
+            root = Path(temporary)
+            cpp, binary = root / "property.cpp", root / "property"
+            cpp.write_text(program)
+            subprocess.run(["c++", "-std=c++20", "-O2", str(cpp), "-o", str(binary)],
+                           check=True, capture_output=True, text=True)
+            subprocess.run([str(binary)], check=True, timeout=15)
+
     def test_unloader_waits_for_specialization_and_releases_context_once(self):
         source = Path("native/src/core/zygisk/hook.cpp").read_text()
         start = source.index("DCL_HOOK_FUNC(static int, pthread_attr_destroy,")
@@ -587,6 +655,7 @@ while True:
                  "Build fingerprint: 'Android/sdk_phone_x86_64/generic_x86_64:7.0/NYC/4174735:userdebug/test-keys'\n"
                  "/system/lib/libminijail.so (log_sigsys_handler+85)\n")
         denied_sleep = "09-10 00:00:00.999  100  100 E media.extractor : libminijail: blocked syscall: nanosleep\n"
+        media_x86 = media.replace("sdk_phone_x86_64/generic_x86_64", "sdk_phone_x86/generic_x86")
         graphics = ("09-10 00:00:01.000  100  100 F libc : Fatal signal 6 (SIGABRT), in tid 100 (surfaceflinger)\n"
                     "Build fingerprint: 'Android/sdk_phone_x86_64/generic_x86_64:9/PSR1.180720.012/4923214:userdebug/test-keys'\n"
                     "/system/bin/surfaceflinger\nFailed HIDL return status not checked: DEAD_OBJECT\n"
@@ -603,6 +672,8 @@ while True:
             adb.chmod(0o700)
             cases = [
                 (media, denied_sleep + media, True, 0),
+                (media_x86, denied_sleep + media_x86, True, 0),
+                (media_x86, denied_sleep + media_x86, False, 1),
                 (graphics, graphics, True, 0),
                 (media, media, True, 1),
                 (media, denied_sleep + media, False, 1),
