@@ -4,7 +4,8 @@
 
 This branch is the experimental, maintainable-base rebuild of KitsuneMagisk. It is based directly
 on official Magisk v31.0 prerelease and carries the experimental Direct-System implementation
-and qualification tools. PR7A qualification is in progress; see the [roadmap](DEVELOPMENT_ROADMAP.md).
+and qualification tools. PR7A passed its prepared-MuMu and ordinary emulator gates; PR8 parity is
+next. See the [roadmap and acceptance limits](DEVELOPMENT_ROADMAP.md).
 
 The manager installs as `io.github.huskydg.magisk.next`, reports a
 `31.0-kitsune-next.<source>` version, and uses the `next-system-experimental` channel identity. It

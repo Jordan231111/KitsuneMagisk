@@ -1,6 +1,6 @@
 # KitsuneMagisk development roadmap
 
-> Roadmap last reconciled: 2026-09-09 UTC
+> Roadmap last reconciled: 2026-09-10 UTC
 >
 > Post-PR2 audit snapshot (not the fidelity boundary): `kitsune` at
 > `cf149fcf734539f6077cd6b349d9ffc2496c56ca`
@@ -9,14 +9,16 @@
 >
 > Hardening range recorded here: [GitHub PR #26](https://github.com/Jordan231111/KitsuneMagisk/pull/26), branch `codex/production-hardening`, final code commit `530f2a3f8` before this roadmap-only reconciliation
 >
-> Upstream rechecked 2026-09-09: official stable remains `v30.7`; the next development target is
+> Upstream rechecked 2026-09-10: official stable remains `v30.7`; the maintained development base is
 > **official `v31.0` prerelease**, tag commit `96221b69fae9910b1c0c75c2f92a4ebb2c2dc698`, released
-> 2026-09-04. PR7A updates the maintained base immediately after PR7; do not wait for a stable label.
+> 2026-09-04. PR7A has updated the base; continue tracking official prereleases without waiting
+> for a stable label.
 > PR6/PR7 v30.7 evidence remains historical evidence for that exact base.
 >
-> Current maintained-base branch: `next-system` at PR6 baseline commit
-> `eab2968c90c3903352a08150ae3dfb57724d6349`; PR7 passed prepared-MuMu acceptance at
-> `66079ee020bab254dc410642aeec7410d5d5cff0`. **PR7A (official v31.0 prerelease) is in progress.**
+> Current maintained-base branch: `next-system`. PR6/PR7 v30.7 records remain historical.
+> **PR7A is complete at production runtime `0d71d9f9742f2cc258e75d74ce90c2b5d6ad3c5c`,**
+> with subsequent test-harness fixes; [GitHub PR #30](https://github.com/Jordan231111/KitsuneMagisk/pull/30)
+> records the accepted v31.0 update. PR8 is next.
 >
 > Product charter: KitsuneMagisk provides reliable Magisk root on real phones and emulators while
 > preserving useful Kitsune-specific early mounting, hiding/SuList, provider, and module capabilities.
@@ -58,7 +60,7 @@ This section is the authoritative answer to “where am I now?” The detailed P
 below remain the source of acceptance criteria; their historical audit statements are not a second
 execution order.
 
-| Order | Work unit | State on 2026-09-09 | Required next decision or exit |
+| Order | Work unit | State on 2026-09-10 | Required next decision or exit |
 |---:|---|---|---|
 | 1 | Roadmap PR1 / GitHub #22 — product charter and release freeze | **Merged** | Preserve the product charter and experimental-release boundary. |
 | 2 | Roadmap PR2 / GitHub #23 — CI product gate | **Merged** | Keep pull-request build/test publication gates green. |
@@ -70,11 +72,12 @@ execution order.
 | 8 | Roadmap PR5B — conditional current-line durable transaction | **Merged to `kitsune` by GitHub #27** | Keep its tests/manifest contract as the behavioral oracle for PR7; do not turn the old core into a second permanent line. |
 | 9 | Roadmap PR6 — pristine official-v30.7 maintained base | **Complete on `next-system` at `eab2968c9`** | Preserve the recorded source/submodule/build identity and ordinary Magisk baseline. |
 | 10 | Roadmap PR7 — System Mode vertical slice | **Complete on the exact prepared MuMu target; experimental** | Preserve the [qualification, upgrade, module, SU, uninstall and restore evidence](docs/system-mode/mumu-pr7-2026-09-09.md). Release/phone/parity claims remain gated. |
-| 11 | Roadmap PR7A — official v31.0 prerelease update | **In progress** | Port the validated System Mode slice to the pinned v31.0 base and repeat its gates before PR8 parity. |
+| 11 | Roadmap PR7A — official v31.0 prerelease update | **Complete; merged by GitHub #30** | Preserve the exact v31.0 acceptance below; proceed to PR8 parity. |
 | 12 | Roadmap PR8–PR16 — parity, remaining historical features, qualification, and release | **Not started** | Close every feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
 
-The current engineering task is **PR7A** on `next-system`: update the qualified PR7 slice to official
-v31.0 prerelease before PR8 parity. PR6 established the exact v30.7 baseline, and
+The next engineering task is **PR8** on `next-system`: compare the v31.0-based implementation with
+the historical Kitsune feature ledger and qualify the selected line. PR7A completed the upstream
+update and inherited lifecycle gates. PR6 established the exact v30.7 baseline, and
 [PR7 completed its prepared-MuMu lifecycle](docs/system-mode/mumu-pr7-2026-09-09.md). PR5A used only MuMu VM index 0, restored the same byte-verified baseline between
 comparisons, and separated player, ADB, Android, and Magisk failures. PR5B supplies the current-line
 manifest/recovery oracle that PR7 ports rather than reinvents.
@@ -1418,7 +1421,7 @@ begin its design and timing/recovery fixtures with PR8, with implementation owne
 | Module `sepolicy.rule` live refresh/pre-init synchronization | Shipped module lifecycle behavior with boot and policy risk | PR14 must define install/update/disable/remove semantics and test enforcing, permissive, safe-mode, and stale-copy recovery |
 | Three-mode SU authentication | Shipped manager behavior: disabled, system credential, or manager biometric | PR13 must securely reimplement or explicitly retire each mode with migration and authentication-bypass tests |
 | Magic-mount/shared-tmpfs/systemless-hosts differences | Historical mount behavior was later rewritten upstream in Rust | PR8 records semantic differences; PR14 owns module/hosts visibility and writable-file compatibility tests rather than copying old C++ |
-| Direct install into system partition | Useful Kitsune installation route; PR7 has host and qualified MuMu lifecycle coverage, with PR7A repeating it on v31.0 | Keep exact capability qualification and recovery gates; ordinary boot-image rooting remains first-class for phones |
+| Direct install into system partition | Useful Kitsune installation route; PR7/PR7A have host and qualified MuMu lifecycle coverage, now on v31.0 | Keep exact capability qualification and recovery gates; ordinary boot-image rooting remains first-class for phones |
 | Dynamic MagiskSU injection into `/system/bin` | Adjacent detection/compatibility patch with broad mount impact; not required merely to persist System Mode | Decouple from the installer; keep only where Hide/SuList tests prove the need |
 | Random socket/package hiding changes | Cat-and-mouse behavior with maintenance/security cost | Threat-model and benchmark; do not preserve merely because it exists |
 | Vivo `do_mount_check` kernel workaround | Historical real-device compatibility patch absent from official v30.7 | PR15 must reproduce on an owned matching target or fixture, then narrowly port or explicitly retire it with affected-device guidance |
@@ -2526,7 +2529,7 @@ the risk; no AVD or ordinary Magisk lane substitutes for this destructive recove
 
 ## PR 7A — Update the maintained base to official v31.0 prerelease
 
-**Implementation status: in progress after PR7, before PR8.** Target official
+**Implementation status: complete; merged by [GitHub #30](https://github.com/Jordan231111/KitsuneMagisk/pull/30).** Based on official
 [`v31.0`](https://github.com/topjohnwu/Magisk/releases/tag/v31.0), commit
 `96221b69fae9910b1c0c75c2f92a4ebb2c2dc698`. Keeping up with official prereleases is an explicit
 development priority; the production release freeze and qualification requirements still apply.
@@ -2558,10 +2561,43 @@ development priority; the production release freeze and qualification requiremen
 **Exit:** the pinned v31.0-or-newer prerelease base passes the inherited PR7 lifecycle and ordinary
 Magisk gates. Physical-phone support and historical Kitsune feature parity remain PR8–PR16 work.
 
+**Acceptance (2026-09-10):** exact production runtime `0d71d9f9`, version
+`31.0-kitsune-next.0d71d9f9` / code 31000, passed on prepared Chinese MuMu 1.4.46 VM 0
+(API 32 ARM64, 4 KiB, writable ext4, permissive SELinux). The vendor root switch is off but
+root ADB remains available; forced ordinary-UID SU tests and owned init/daemon proofs are
+separate evidence. All MuMu cold boots used full Mac close/open, never `adb reboot`.
+
+- All four ABI debug/release builds, signatures/stubs, ELF/ZIP 16 KiB alignment, dependency audit,
+  lint and 208 host tests passed. The [final matrix](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/34476924390)
+  passed all 32 jobs, including ordinary API 23 through current/preview and real 16 KiB lanes.
+  The [renderer control](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/34474875112)
+  first passed both Cuttlefish variants with unchanged APKs; its exact host-SwiftShader
+  configuration was adopted. UI Automator's implicit idle wait was also removed. The 30-second
+  consent and 5-second dismissal assertions remain. Production code is unchanged from the fully
+  qualified `0d71d9f9` runtime. API 30 x86 passed an unchanged retry after a platform Conscrypt
+  BIO-close crash; API 25 x86_64 passed an unchanged retry after a short-lived Binder-client
+  shutdown crash. Original failures are retained as evidence, with no new crash exemptions.
+- Three qualification cold boots and both external restores matched all 465 inventory entries.
+  The manager was killed at `PREFLIGHTED`; the worker reached `COMMITTED`, retained valid files
+  for 60 seconds, and cold-booted to `BOOT_VERIFIED` with all four boot stages and DB schema 12.
+- Built-in Zygisk and built-in-off/ReZygisk 521 passed Vector 2.2/3080, CorePatch N-1.0 controlled
+  downgrade/signer tests, HMA-OSS 166 scoped/control checks across four package APIs, and 96
+  concurrent ordinary-UID SU requests per provider. CorePatch OFF rejected both prohibited
+  installs. Normal/hidden/restored manager, terminal and consent checks passed.
+- Exact uninstall removed 43 owned files while preserving both unowned challenge files and all
+  181 typed user-data entries. The uninstalled guest booted without the owned daemon, manager
+  or init property; verified external restore returned the latest tested root and original
+  module/HMA settings. Test apps and obsolete scratch/recovery copies were removed; required
+  recovery evidence remains. No additional local AVDs remain.
+
+These are foundation and exact-target results. Early/pre-init mounting, Hide/SuList, ordinary
+physical-phone qualification and the remaining historical feature ledger are still required before
+PR16; passing this PR does not establish complete Kitsune parity or production-phone support.
+
 ## PR 8 — Branch parity decision
 
-**Implementation status: not started. Depends on PR7 and PR7A completing the writable-target and
-ordinary-route gates. Compare against the updated v31.0-or-newer maintained base.**
+**Implementation status: next, not started. PR7/PR7A foundation gates are complete. Compare
+against the updated v31.0-or-newer maintained base.**
 
 - Run current and next artifacts on identical snapshots across the complete initial System Mode matrix.
 - Publish the results, remaining gaps, fork-delta comparison, and selected release line.
@@ -2683,6 +2719,8 @@ contracts; the UI must not invent semantics ahead of the backend.**
   record an explicit retirement rather than silently falling back to upstream semantics.
 - Port product-specific accessibility text and maintained translations for System Mode, Hide/SuList,
   authentication, recovery, and capability errors; stale or missing locales must fall back safely.
+- Test cold and already-open launcher shortcuts, application-preferences and Install requests from
+  other tabs; lifecycle restoration must preserve the requested destination.
 - Add instrumentation tests and consistent terminology.
 - Keep user-facing explanations short and actionable. Put long compatibility matrices and internal
   rationale in this roadmap or dedicated maintainer evidence, not in an app screen.
@@ -2905,9 +2943,9 @@ in the detail:
 - **Done — PR7:** the exact prepared-MuMu System Mode lifecycle passed, including qualified upgrade,
   both provider/module profiles, SU, exact uninstall and external restore. Keep the
   [runtime-specific evidence and limits](docs/system-mode/mumu-pr7-2026-09-09.md); this is not the complete Kitsune port.
-- **Open next — PR7A:** update the maintained base to official v31.0 prerelease (or an explicitly
-  re-pinned newer prerelease), port the System Mode UI, and repeat the inherited gates.
-- **Open — PR8:** run identical snapshots against current and next implementations and select the
+- **Done — PR7A:** the actual official v31.0 prerelease, Compose System Mode UI and inherited
+  lifecycle gates passed; preserve the exact runtime and CI evidence above.
+- **Open next — PR8:** run identical snapshots against current and next implementations and select the
   future main line only at the parity gate.
 - **Open — PR9/PR10/P0.7:** separate truthful version/protocol/capability fields, create one simple
   production signing identity/transition, and establish a project-owned update service before a
@@ -2918,7 +2956,7 @@ in the detail:
   matrices, publish the exact tested candidate with checksum/certificate/source evidence, and
   promote only after all claimed support lanes pass.
 
-These actions produce far more user value and risk reduction than merging the current Dependabot queue, attempting a monolithic upstream merge, rewriting all of Magisk, redesigning the UI, adding more hiding tricks, creating a needless SELinux fork, or continuing to increment the fake Magisk number.
+The remaining work prioritizes recoverable rooting, tested historical feature parity and clear device support claims on the maintained upstream base.
 
 ## Evidence and primary references
 
