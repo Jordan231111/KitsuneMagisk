@@ -642,6 +642,41 @@ while True:
         ]
         self.assertNotIn("awk", scanner)
 
+    def test_root_stress_uses_the_running_version_and_detects_change(self):
+        source = Path("scripts/test_common.sh").read_text()
+        runner = source[source.index("run_root_stress()"):] + """
+print_title() { :; }
+print_error() { echo "$1" >&2; }
+run_root_stress_batch() { printf 'uid=0\\nuid=0\\n'; }
+assert_no_stale_su() { return 0; }
+run_root_stress
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            adb = root / "adb"
+            adb.write_text("""#!/bin/sh
+if [ -f "$TEST_VERSION_READ" ]; then
+  echo "$TEST_LATER_VERSION"
+else
+  : >"$TEST_VERSION_READ"
+  echo "$TEST_INITIAL_VERSION"
+fi
+""")
+            adb.chmod(0o755)
+            for initial, later, expected in [("31000", "31000", 0),
+                                              ("31000", "31001", 1),
+                                              ("", "31000", 1)]:
+                with self.subTest(initial=initial, later=later):
+                    marker = root / "version-read"
+                    marker.unlink(missing_ok=True)
+                    env = os.environ | {"PATH": f"{root}:{os.environ['PATH']}",
+                        "AVD_STRESS_ITERATIONS": "1", "AVD_STRESS_PARALLEL": "2",
+                        "TEST_VERSION_READ": str(marker),
+                        "TEST_INITIAL_VERSION": initial, "TEST_LATER_VERSION": later}
+                    result = subprocess.run(["bash", "-c", runner], env=env,
+                                            capture_output=True, text=True, timeout=10)
+                    self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
+
     def test_instrumentation_timeout_preserves_adb_failure_status(self):
         source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
         runner = source[

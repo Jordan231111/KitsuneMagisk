@@ -42,6 +42,7 @@ export ASH_STANDALONE=1
 set -o standalone || exit 1
 # shellcheck disable=SC1090
 . "$KSL_TRANSACTION" || exit 1
+sm_log() { ksl_log "$1"; }
 sm_configure "$KSL_PAYLOAD" / "$KSL_SYSTEM_DIR" "$KSL_BB" || ksl_exit 1
 sm_acquire_lock "launcher-${1:-invalid}" || ksl_exit 1
 sm_load_transaction || { ksl_log "Invalid System Mode transaction"; ksl_exit 1; }

@@ -17,6 +17,7 @@ object Const {
     // Paths
     const val MODULE_PATH  = "/data/adb/modules"
     const val TMPDIR = "/dev/tmp"
+    const val SYSTEM_MODE_INSTALL_DIR = "system-install"
     const val MAGISK_LOG = "/cache/magisk.log"
 
     // Misc

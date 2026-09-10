@@ -1268,7 +1268,7 @@ Keep upstream built-in Zygisk intact through the System Mode parity gate so the 
 - [ ] Test provider missing, disabled, outdated, crash-looping, and upgrade cases.
 - [ ] Ensure MagiskHide/SuList still behaves predictably with provider on and off.
 
-## P1.4 Reimplement MagiskHide/SuList as a secondary differentiator — XL
+## P1.4 Restore tested MagiskHide/SuList semantics — XL
 
 After System Mode, this is the clearest feature that distinguishes Kitsune. It spans:
 

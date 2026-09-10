@@ -30,8 +30,7 @@ PR6 qualification evidence are recorded in
 
 ## Building
 
-Follow the upstream [Magisk build documentation](https://topjohnwu.github.io/Magisk/build.html),
-then run:
+Follow this branch's [build and development guide](docs/build.md), then run:
 
 ```sh
 ./build.py -v all

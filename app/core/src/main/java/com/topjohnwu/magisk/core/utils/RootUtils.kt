@@ -86,9 +86,11 @@ class RootUtils(stub: Any?) : RootService() {
             (action == "install" && !BuildConfig.DEBUG))
             return -1
         val dir = File(directory)
-        val allowed = mutableSetOf(File(filesDir.parent, "install").canonicalPath, Const.TMPDIR)
+        val allowed = mutableSetOf(
+            File(filesDir.parent, Const.SYSTEM_MODE_INSTALL_DIR).canonicalPath, Const.TMPDIR)
         if (Build.VERSION.SDK_INT >= 24) {
-            allowed += File(createDeviceProtectedStorageContext().filesDir.parent, "install").canonicalPath
+            allowed += File(createDeviceProtectedStorageContext().filesDir.parent,
+                Const.SYSTEM_MODE_INSTALL_DIR).canonicalPath
         }
         if (!dir.isAbsolute || !dir.isDirectory || dir.canonicalPath !in allowed)
             return -1

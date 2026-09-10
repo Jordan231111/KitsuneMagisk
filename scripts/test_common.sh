@@ -167,6 +167,13 @@ run_setup() {
 
   local app="$MAGISK_TEST_PACKAGE/com.topjohnwu.magisk.test.AppTestRunner"
 
+  if [ -n "${CF_HOME:-}" ]; then
+    # Cuttlefish defers costly bytecode verification until the first UI draw.
+    # Compile the test APKs before starting the bounded consent checks.
+    adb shell pm compile -m speed -f "$MAGISK_APP_PACKAGE"
+    adb shell pm compile -m speed -f "$MAGISK_TEST_PACKAGE"
+  fi
+
   # Run setup through the test app
   am_instrument '.Environment#setupEnvironment' $app
 }
@@ -399,7 +406,14 @@ run_root_stress() {
   fi
 
   print_title "* Stressing MagiskSU ($iterations x $parallel concurrent requests)"
-  local iteration raw out root_count version
+  local iteration raw out root_count version expected_version
+  expected_version=$(adb shell 'PATH=$PATH:/debug_ramdisk magisk -V' | tr -d '\r' | tail -n 1)
+  case "$expected_version" in
+    ''|*[!0-9]*)
+      print_error "Cannot read the Magisk daemon version before stress"
+      return 1
+      ;;
+  esac
   iteration=0
   while [ "$iteration" -lt "$iterations" ]; do
     raw=$(run_root_stress_batch "$parallel" "$request_timeout") || {
@@ -417,7 +431,7 @@ run_root_stress() {
       return 1
     fi
     version=$(adb shell 'PATH=$PATH:/debug_ramdisk magisk -V' | tr -d '\r' | tail -n 1)
-    if [ "$version" != "30700" ]; then
+    if [ "$version" != "$expected_version" ]; then
       print_error "Magisk daemon version changed during stress: $version"
       return 1
     fi

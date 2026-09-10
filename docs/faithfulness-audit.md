@@ -2,6 +2,11 @@
 
 Audit date: 2026-07-22 UTC; hardening reconciliation: 2026-08-01 UTC
 
+This report describes the historical references below. Current execution and acceptance status live
+in the [roadmap](../DEVELOPMENT_ROADMAP.md). PR7A uses actual official v31.0 prerelease source and
+prioritizes clean installs and current-format upgrades. Historical migration recommendations here
+do not require restoring the retired old-layout or database-v13 converters.
+
 Historical audited reference: `kitsune` at
 `cf149fcf734539f6077cd6b349d9ffc2496c56ca`. Current reconciled worktree:
 `codex/production-hardening`, based on `kitsune` at
@@ -172,7 +177,7 @@ Keep both implementations.
   `next-system`. It found a real writable MuMu layout without mutating port 16384 and correctly
   rejected modern immutable AVD layouts.
 - PR4 fixes current user-data and updater hazards without changing root installation architecture.
-  Its migration must also be carried into the first future build that accepts existing databases.
+  Retain its characterization evidence; PR7A's clean-install/current-format policy governs the forward port.
 - PR4A is necessary lab infrastructure and caught a real ARMv7 debug-link inconsistency. Its final
   AVD result proves normal emulator setup remains independent from System Mode.
 - The current hardening changes should be kept as one reviewed security/reliability set. They remove

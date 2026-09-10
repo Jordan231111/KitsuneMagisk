@@ -44,6 +44,7 @@ export ASH_STANDALONE=1
 set -o standalone || exit 1
 # shellcheck disable=SC1090
 . "$SMV_SOURCE" || smv_exit 1
+sm_log() { smv_log "$1"; }
 sm_configure "$SMV_PAYLOAD" / "$SMV_SYSTEM_DIR" "$SMV_BB" || smv_exit 1
 sm_acquire_lock verify || smv_exit 1
 sm_load_transaction || smv_exit 1

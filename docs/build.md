@@ -47,11 +47,16 @@ leave the tested build installed.
   For each action, use `-h` to access help (e.g. `./build.py native -h`)
 - Configure the build by using `config.prop`. A sample `config.prop.sample` is provided.
 
+Standalone Gradle, Cargo and toolchain commands must use `scripts/env.py` (for example,
+`../scripts/env.py ./gradlew :apk:lintDebug` from `app/`). `build.py` configures that environment
+itself. Keep `:apk-legacy` buildable when changing shared/core code; active UI work belongs in the
+Compose `:apk` module.
+
 ## IDE Support
 
 - Kotlin, Java, C++, and C code in the project should be supported in Android Studio out of the box. This repository can be directly opened with Android Studio as a project.
 - For Rust development, see the next section.
-- Before working on any native code, build all native code first with `./build.py native`, as some generated code is only created during the build process.
+- Before editing native code, run `./build.py gen` to generate its bindings and flags. Use `./build.py native` to verify compilation.
 
 ### Developing Rust
 

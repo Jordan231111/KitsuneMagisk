@@ -159,11 +159,14 @@ abstract class MagiskInstallImpl protected constructor(
         return findImage(slot)
     }
 
-    private suspend fun extractFiles(): Boolean {
+    private suspend fun extractFiles(systemMode: Boolean = false): Boolean {
         console.add("- Device platform: ${Const.CPU_ABI}")
         console.add("- Installing: ${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})")
 
-        installDir = localFS.getFile(context.filesDir.parent, "install")
+        // The daemon consumes "install" as an ordinary update at boot. A
+        // disconnected System Mode worker must never leave files in that inbox.
+        val directory = if (systemMode) Const.SYSTEM_MODE_INSTALL_DIR else "install"
+        installDir = localFS.getFile(context.filesDir.parent, directory)
         installDir.deleteRecursively()
         installDir.mkdirs()
 
@@ -715,7 +718,7 @@ abstract class MagiskInstallImpl protected constructor(
             console.add("! Use the normal Magisk installation path on this device")
             return false
         }
-        if (!extractFiles())
+        if (!extractFiles(systemMode = true))
             return false
 
         return runSystemMode("install")
@@ -744,7 +747,8 @@ abstract class MagiskInstallImpl protected constructor(
     protected fun restore() =
         !rejectOrdinaryInstallOverSystemMode() && findImage() && "restore_imgs $srcBoot".sh().isSuccess
 
-    protected suspend fun recoverSystemMode() = extractFiles() && runSystemMode("recover")
+    protected suspend fun recoverSystemMode() =
+        extractFiles(systemMode = true) && runSystemMode("recover")
 
     protected suspend fun uninstall(): Boolean {
         val state = systemModeState()
@@ -761,7 +765,7 @@ abstract class MagiskInstallImpl protected constructor(
             console.add("! Ordinary uninstall is blocked; use verified recovery")
             return false
         }
-        if (!extractFiles())
+        if (!extractFiles(systemMode = true))
             return false
 
         return runSystemMode("uninstall")
