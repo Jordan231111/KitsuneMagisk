@@ -77,18 +77,19 @@ class MagiskAppTest : BaseTest {
         } else {
             "$su -c id"
         }
-        val pfd = uiAutomation.executeShellCommand(cmd)
-
-        // Make sure SuRequestActivity is launched
-        val suRequest = monitor.waitForActivityWithTimeout(TimeUnit.SECONDS.toMillis(10))
-        assertNotNull("SuRequestActivity is not launched", suRequest)
-
-        // Check that the request went through
-        AutoCloseInputStream(pfd).reader().use {
-            assertTrue(
-                "Cannot grant root permission from shell",
-                it.readText().contains("uid=0")
-            )
+        try {
+            AutoCloseInputStream(uiAutomation.executeShellCommand(cmd)).reader().use {
+                // Cold Cuttlefish can take over ten seconds to create the UI.
+                // Stay below the daemon's seventy-second response deadline.
+                val suRequest = monitor.waitForActivityWithTimeout(TimeUnit.SECONDS.toMillis(30))
+                assertNotNull("SuRequestActivity is not launched", suRequest)
+                assertTrue(
+                    "Cannot grant root permission from shell",
+                    it.readText().contains("uid=0")
+                )
+            }
+        } finally {
+            instrumentation.removeMonitor(monitor)
         }
 
         // Check that the database is updated

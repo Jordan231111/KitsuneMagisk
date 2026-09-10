@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
     override val extension = ActivityExtension(this)
     override val splashController = SplashController(this)
 
-    private val intentState = MutableStateFlow(0)
+    private val intentState = MutableStateFlow<Intent?>(null)
     internal val showInvalidState = MutableStateFlow(false)
     internal val showUnsupported = MutableStateFlow<List<Pair<Int, Int>>>(emptyList())
     internal val showShortcutPrompt = MutableStateFlow(false)
@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        intentState.value = intent
         extension.onCreate(savedInstanceState)
         splashController.preOnCreate()
         theme.applyStyle(R.style.Main, true)
@@ -218,9 +219,9 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
     @Composable
     private fun HandleFlashIntent(navigator: Navigator) {
         val confirmation = rememberConfirmDialog()
-        val intentVersion by intentState.collectAsStateWithLifecycle()
-        LaunchedEffect(intentVersion) {
-            val currentIntent = intent ?: return@LaunchedEffect
+        val currentIntent = intentState.collectAsStateWithLifecycle().value
+        LaunchedEffect(currentIntent) {
+            currentIntent ?: return@LaunchedEffect
             if (currentIntent.getStringExtra(Const.Key.OPEN_SECTION) == Const.Nav.INSTALL) {
                 currentIntent.removeExtra(Const.Key.OPEN_SECTION)
                 showInstall.value = true
@@ -228,16 +229,18 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
             if (currentIntent.action == FlashUtils.INTENT_FLASH) {
                 val action = currentIntent.getStringExtra(FlashUtils.EXTRA_FLASH_ACTION)
                 val uri = currentIntent.getStringExtra(FlashUtils.EXTRA_FLASH_URI)?.toUri()
-                currentIntent.action = null
                 // This launcher is exported. An incoming intent is not consent
                 // to run a root operation, even when it came from a notification.
                 if (action != Const.Value.FLASH_ZIP || uri == null ||
-                    (uri.scheme != "file" && uri.scheme != "content"))
+                    (uri.scheme != "file" && uri.scheme != "content")) {
+                    currentIntent.action = null
                     return@LaunchedEffect
+                }
                 val result = confirmation.awaitConfirm(
                     title = getString(CoreR.string.confirm_install_title),
                     content = getString(CoreR.string.confirm_install, uri.lastPathSegment ?: "module.zip"),
                 )
+                currentIntent.action = null
                 if (result == ConfirmResult.Confirmed) {
                     navigator.push(Route.Flash(Const.Value.FLASH_ZIP, uri.toString()))
                 }
@@ -248,7 +251,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        intentState.value += 1
+        intentState.value = intent
     }
 
     private fun getInitialTab(intent: Intent?): Int {
