@@ -153,6 +153,7 @@
     "docs/system-mode/mumu-pr5a-pr5b-2026-08-01.md",
     "docs/system-mode/mumu-pr7-2026-09-09.md",
     "docs/system-mode/pr7-machine-qualification.md",
+    "docs/system-mode/sdk-native-boot-controls.md",
     "native/src/Cargo.lock",
     "native/src/Cargo.toml",
     "native/src/base/Cargo.toml",

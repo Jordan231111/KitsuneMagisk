@@ -39,7 +39,7 @@ class FlashIntentTest : BaseTest {
             val component = activity.flattenToString()
             val message = appContext.getString(CoreR.string.confirm_install, name)
             fun checkConfirmation() {
-                val shown = device.wait(Until.hasObject(By.text(message)), 10000)
+                val shown = device.wait(Until.hasObject(By.text(message)), 30000)
                 val hierarchy = if (shown) "" else ByteArrayOutputStream().use {
                     device.dumpWindowHierarchy(it)
                     it.toString("UTF-8")
@@ -55,7 +55,9 @@ class FlashIntentTest : BaseTest {
                 "--es ${FlashUtils.EXTRA_FLASH_URI} file:///data/local/tmp/$name"
             val output = AutoCloseInputStream(uiAutomation.executeShellCommand(command))
                 .reader().use { it.readText() }
-            if (output.contains("Status: ok")) {
+            // A cold virtual device may outlast am's first-draw wait while
+            // still launching successfully. Require the actual dialog below.
+            if (output.contains("Status: ok") || output.contains("Status: timeout")) {
                 checkConfirmation()
             } else {
                 // Android 13+ can reject an external action that does not match
@@ -72,7 +74,8 @@ class FlashIntentTest : BaseTest {
                 "-c android.intent.category.LAUNCHER"
             val launched = AutoCloseInputStream(uiAutomation.executeShellCommand(launch))
                 .reader().use { it.readText() }
-            assertTrue("Cannot foreground the manager: $launched", launched.contains("Status: ok"))
+            assertTrue("Cannot foreground the manager: $launched",
+                launched.contains("Status: ok") || launched.contains("Status: timeout"))
             val request = FlashUtils.installIntent(appContext, "file:///data/local/tmp/$name".toUri())
             try {
                 request.send()

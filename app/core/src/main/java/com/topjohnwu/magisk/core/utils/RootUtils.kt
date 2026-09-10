@@ -45,13 +45,13 @@ class RootUtils(stub: Any?) : RootService() {
 
     override fun onCreate() {
         am = getSystemService()!!
-    }
-
-    override fun onDestroy() {
-        // Android 6 ART can tear down the VM while Binder threads still run.
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
-            android.os.Process.killProcess(android.os.Process.myPid())
-        }
+        Runtime.getRuntime().addShutdownHook(Thread {
+            synchronized(this) {
+                // Finish an active transaction before exiting, without tearing
+                // down ART while Binder threads can still enter the VM.
+                android.os.Process.killProcess(android.os.Process.myPid())
+            }
+        })
     }
 
     override fun getComponentName(): ComponentName {

@@ -561,7 +561,7 @@ while True:
             root = Path(temporary)
             adb = root / "adb"
             adb.write_text("#!/usr/bin/env python3\nimport os, sys\n"
-                           "assert sys.argv[1:] == ['-s', 'pinned-test', 'logcat', '-d', '-b', 'crash']\n"
+                           "assert sys.argv[1:] == ['-s', 'pinned-test', 'logcat', '-d', '-b', 'crash', '-v', 'threadtime']\n"
                            "print(os.environ['TEST_CRASH_LOG'])\n"
                            "raise SystemExit(int(os.environ['TEST_ADB_STATUS']))\n")
             adb.chmod(0o700)
@@ -574,8 +574,50 @@ while True:
             ):
                 with self.subTest(log=log):
                     env = dict(os.environ, PATH=f"{root}:{os.environ['PATH']}",
-                               ANDROID_SERIAL="pinned-test", TEST_CRASH_LOG=log,
+                               ANDROID_SERIAL="pinned-test", MAGISK_OUT_DIR=str(root), TEST_CRASH_LOG=log,
                                TEST_ADB_STATUS=str(adb_status))
+                    result = subprocess.run(["bash", "-c", script + "\nassert_no_native_crashes"],
+                                            env=env, capture_output=True, text=True, timeout=20)
+                    self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
+
+    def test_stock_crash_exception_requires_identity_timing_and_recovery(self):
+        source = Path("scripts/test_common.sh").read_text()
+        script = source[source.index("assert_no_native_crashes()") : source.index("run_root_stress_batch()")]
+        media = ("09-10 00:00:01.000  100  100 F libc : Fatal signal 6 (SIGABRT), in tid 100 (mediaextractor)\n"
+                 "Build fingerprint: 'Android/sdk_phone_x86_64/generic_x86_64:7.0/NYC/4174735:userdebug/test-keys'\n"
+                 "/system/lib/libminijail.so (log_sigsys_handler+85)\n")
+        denied_sleep = "09-10 00:00:00.999  100  100 E media.extractor : libminijail: blocked syscall: nanosleep\n"
+        graphics = ("09-10 00:00:01.000  100  100 F libc : Fatal signal 6 (SIGABRT), in tid 100 (surfaceflinger)\n"
+                    "Build fingerprint: 'Android/sdk_phone_x86_64/generic_x86_64:9/PSR1.180720.012/4923214:userdebug/test-keys'\n"
+                    "/system/bin/surfaceflinger\nFailed HIDL return status not checked: DEAD_OBJECT\n"
+                    "Composer::getActiveConfig\n")
+        with tempfile.TemporaryDirectory(prefix="kitsune-stock-crash-") as temporary:
+            root = Path(temporary)
+            adb = root / "adb"
+            adb.write_text("#!/usr/bin/env python3\nimport os, sys\n"
+                           "if sys.argv[3:5] == ['logcat', '-d']:\n"
+                           " print(os.environ['TEST_CRASH_LOG'])\n"
+                           "else:\n"
+                           " assert sys.argv[3:6] == ['shell', 'service', 'check']\n"
+                           " print('Service: found' if os.environ['TEST_RECOVERED']=='1' else 'Service: not found')\n")
+            adb.chmod(0o700)
+            cases = [
+                (media, denied_sleep + media, True, 0),
+                (graphics, graphics, True, 0),
+                (media, media, True, 1),
+                (media, denied_sleep + media, False, 1),
+                (graphics, "", True, 1),
+                (graphics.replace("00:00:01", "00:00:02"), graphics, True, 1),
+                (graphics.replace("4923214", "unreviewed"), graphics, True, 1),
+                (graphics.replace("DEAD_OBJECT", "other failure"), graphics, True, 1),
+                (media.replace("mediaextractor", "magisk"), denied_sleep + media, True, 1),
+            ]
+            for crash, boot, recovered, expected in cases:
+                with self.subTest(crash=crash, boot=boot, recovered=recovered):
+                    (root / "native-boot.log").write_text(boot)
+                    env = os.environ | {"PATH": f"{root}:{os.environ['PATH']}",
+                        "ANDROID_SERIAL": "pinned-test", "MAGISK_OUT_DIR": str(root),
+                        "TEST_CRASH_LOG": crash, "TEST_RECOVERED": str(int(recovered))}
                     result = subprocess.run(["bash", "-c", script + "\nassert_no_native_crashes"],
                                             env=env, capture_output=True, text=True, timeout=20)
                     self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
