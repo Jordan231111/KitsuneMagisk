@@ -133,7 +133,6 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
-            beyondViewportPageCount = visibleTabs.size - 1,
             userScrollEnabled = true,
         ) { page ->
             val isCurrentPage = pagerState.currentPage == page

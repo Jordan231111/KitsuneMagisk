@@ -1418,7 +1418,7 @@ begin its design and timing/recovery fixtures with PR8, with implementation owne
 | Module `sepolicy.rule` live refresh/pre-init synchronization | Shipped module lifecycle behavior with boot and policy risk | PR14 must define install/update/disable/remove semantics and test enforcing, permissive, safe-mode, and stale-copy recovery |
 | Three-mode SU authentication | Shipped manager behavior: disabled, system credential, or manager biometric | PR13 must securely reimplement or explicitly retire each mode with migration and authentication-bypass tests |
 | Magic-mount/shared-tmpfs/systemless-hosts differences | Historical mount behavior was later rewritten upstream in Rust | PR8 records semantic differences; PR14 owns module/hosts visibility and writable-file compatibility tests rather than copying old C++ |
-| Direct install into system partition | Primary product purpose with high boot/data-loss risk and no current automated coverage | Characterize current `kitsune`; port first to `next-system`; release only for exact qualified capability tiers |
+| Direct install into system partition | Useful Kitsune installation route; PR7 has host and qualified MuMu lifecycle coverage, with PR7A repeating it on v31.0 | Keep exact capability qualification and recovery gates; ordinary boot-image rooting remains first-class for phones |
 | Dynamic MagiskSU injection into `/system/bin` | Adjacent detection/compatibility patch with broad mount impact; not required merely to persist System Mode | Decouple from the installer; keep only where Hide/SuList tests prove the need |
 | Random socket/package hiding changes | Cat-and-mouse behavior with maintenance/security cost | Threat-model and benchmark; do not preserve merely because it exists |
 | Vivo `do_mount_check` kernel workaround | Historical real-device compatibility patch absent from official v30.7 | PR15 must reproduce on an owned matching target or fixture, then narrowly port or explicitly retire it with affected-device guidance |
@@ -2569,6 +2569,9 @@ ordinary-route gates. Compare against the updated v31.0-or-newer maintained base
 - Compare ordinary Magisk paths as well as System Mode so a newer System Mode port cannot silently
   regress Select-and-Patch, Direct Install, inactive-slot, recovery, modules, MagiskSU, or safe-mode
   recovery.
+- Design early/pre-init module mounting and build timing, conflict, read-only/EROFS and recovery
+  fixtures for each installation route. Record the required point before Android consumes each
+  target; ordinary post-fs-data mounting is not early-mount parity. PR14 implements this contract.
 - Evaluate improvements beyond historical parity with an owner PR and measurable acceptance
   criteria: earlier module fault isolation/recovery (PR14–PR15), provider-conflict and per-app
   namespace diagnostics (PR11–PR13), and boot-layout/OTA-aware installation guidance (PR13–PR15).

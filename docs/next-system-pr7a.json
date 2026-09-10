@@ -102,6 +102,7 @@
     "app/apk/src/main/java/com/topjohnwu/magisk/test/FlashIntentTest.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/test/TerminalTest.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/MainActivity.kt",
+    "app/apk/src/main/java/com/topjohnwu/magisk/ui/MainScreen.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/flash/FlashScreen.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/flash/FlashViewModel.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/home/HomeScreen.kt",
