@@ -13,8 +13,8 @@ LAUNCHER = ROOT / "scripts" / "kitsune_system_launcher.sh"
 RESCUE = ROOT / "scripts" / "kitsune_system_rescue.sh"
 TRANSACTION = ROOT / "scripts" / "system_mode_transaction.sh"
 VERIFIER = ROOT / "scripts" / "system_mode_verify.sh"
-SETUP = ROOT / "app" / "buildSrc" / "src" / "main" / "java" / "Setup.kt"
-PLUGIN = ROOT / "app" / "buildSrc" / "src" / "main" / "java" / "Plugin.kt"
+SETUP = ROOT / "app" / "build-logic" / "src" / "main" / "java" / "Setup.kt"
+PLUGIN = ROOT / "app" / "build-logic" / "src" / "main" / "java" / "Plugin.kt"
 MAGISK_INSTALLER = (
     ROOT / "app" / "core" / "src" / "main" / "java" / "com" /
     "topjohnwu" / "magisk" / "core" / "tasks" / "MagiskInstaller.kt"
@@ -50,7 +50,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         cls.magisk_installer = MAGISK_INSTALLER.read_text(encoding="utf-8")
         cls.install_view_model = INSTALL_VIEW_MODEL.read_text(encoding="utf-8")
 
-    def test_system_mode_is_a_dedicated_v30_7_installer(self) -> None:
+    def test_system_mode_is_a_dedicated_installer(self) -> None:
         self.assertIn("kitsune_system_install.sh", self.setup)
         self.assertIn("kitsune_system_launcher.sh", self.setup)
         self.assertIn("kitsune_system_rescue.sh", self.setup)
@@ -132,7 +132,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         generated_path = source / "jni_hooks.hpp"
         generated_bytes = generated_path.read_bytes()
         generated = generated_bytes.decode("utf-8")
-        self.assertIn('cgroup_uid = Argument("cgroup_uid", jint, False)', generator)
+        self.assertIn('cgroup_uid = Argument("cgroup_uid", jint)', generator)
         self.assertIn("fas_c = ForkApp(", generator)
         self.assertIn("spec_c = SpecializeApp(", generator)
 
@@ -278,7 +278,10 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("BuildConfig.DEBUG", line)
         self.assertIn("isRooted", line)
         self.assertIn("SDK_INT >= 25", line)
-        self.assertIn("SystemModeWarningDialog", self.install_view_model)
+        self.assertIn("showSystemModeWarning = true", self.install_view_model)
+        dialog = (ROOT / "app/apk/src/main/java/com/topjohnwu/magisk/ui/install/InstallDialog.kt").read_text()
+        self.assertIn("systemModeDialog.awaitConfirm", dialog)
+        self.assertIn("result == ConfirmResult.Confirmed", dialog)
 
     def test_manager_uses_a_private_mount_namespace(self) -> None:
         direct = self.magisk_installer[
@@ -392,8 +395,6 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
 
     def test_version_is_complete_before_init_switches_to_it(self) -> None:
         install = function_body(self.installer, "ks_install")
-        restore_policy = install.index("sm_restore_legacy_policy")
-        restore_bootanim = install.index("sm_restore_legacy_bootanim")
         publish_version = install.index("ks_publish_version")
         publish_rc = install.index("ks_publish_rc")
         prune_old = install.index("ks_remove_superseded_payload")
@@ -402,9 +403,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         rescue_payload = install.index("ks_publish_rescue_payload")
         rescue_rc = install.index("ks_publish_rescue_rc")
         self.assertLess(rescue_payload, rescue_rc)
-        self.assertLess(rescue_rc, restore_policy)
-        self.assertLess(restore_policy, restore_bootanim)
-        self.assertLess(restore_bootanim, publish_version)
+        self.assertLess(rescue_rc, publish_version)
         self.assertLess(publish_version, publish_rc)
         self.assertLess(publish_rc, prune_old)
         self.assertLess(prune_old, runtime)
@@ -417,23 +416,9 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('sm_sha256_file "$stage/magisk.apk"', stage)
         self.assertIn("SM_ARTIFACT_SHA256", stage)
 
-    def test_legacy_startup_sidecars_are_removed_only_inside_the_transaction(self) -> None:
-        install = function_body(self.installer, "ks_install")
-        remove_sidecars = install.index("sm_remove_legacy_sidecars")
-        commit = install.index("sm_commit_transaction")
-        self.assertLess(remove_sidecars, commit)
-        policy_restore = function_body(self.transaction, "sm_restore_legacy_policy")
-        self.assertIn("SM_ORIGINAL_FILE", policy_restore)
-        self.assertIn("sm_digest_path", policy_restore)
-        self.assertIn("sm_atomic_publish", policy_restore)
+    def test_clean_install_check_precedes_authorization_consumption(self) -> None:
         begin = function_body(self.transaction, "sm_begin_transaction")
-        self.assertIn("legacy_policy_mutated", begin)
-        self.assertIn("legacy_migration", begin)
-        sidecar = function_body(self.transaction, "sm_find_legacy_policy_sidecar")
-        self.assertIn("/vendor/etc/selinux/precompiled_sepolicy", sidecar)
-        self.assertIn('sm_path_present "$real.gz"', sidecar)
-        self.assertIn('gzip -t "$real.gz"', sidecar)
-        self.assertIn("ks_remove_legacy_rc", install)
+        self.assertLess(begin.index("sm_check_clean_install"), begin.index("sm_consume_authorization"))
 
     def test_rc_has_one_launcher_and_boot_stage_order(self) -> None:
         rc = function_body(self.installer, "ks_write_rc")
@@ -494,6 +479,24 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
                 for path in (".magisk", ".magisk/device"):
                     self.assertEqual(0o711, (Path(directory) / path).stat().st_mode & 0o777)
 
+    def test_transaction_state_does_not_inherit_a_permissive_umask(self) -> None:
+        for mask in ("000", "022", "077"):
+            with self.subTest(umask=mask), tempfile.TemporaryDirectory() as directory:
+                script = r'''
+                    set -eu
+                    umask "$1"
+                    . "$2"
+                    sm_configure "$3" / /system/etc/init/magisk /bin/sh
+                    mkdir "$3/original"
+                    : > "$3/originals.tsv"
+                '''
+                result = subprocess.run(["bash", "-c", script, "bash", mask, str(TRANSACTION), directory],
+                                        capture_output=True, text=True)
+                self.assertEqual(0, result.returncode, result.stderr)
+                root = Path(directory)
+                self.assertEqual(0o700, (root / "original").stat().st_mode & 0o777)
+                self.assertEqual(0o600, (root / "originals.tsv").stat().st_mode & 0o777)
+
     def test_boot_verification_rejects_root_only_socket_access(self) -> None:
         verify = function_body(self.transaction, "sm_verify_boot")
         for state, denied, database_valid in (
@@ -550,13 +553,15 @@ getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
         functions = (ROOT / "scripts/app_functions.sh").read_text()
         check = function_body(functions, "env_check")
         cases = (
-            (True, "BOOT_VERIFIED", "", True, 0),
-            (False, "BOOT_VERIFIED", "", True, 2),
-            (True, "COMMITTED", "", True, 2),
-            (True, "BOOT_VERIFIED", "ZXhwZWN0ZWQ=", True, 2),
-            (True, "BOOT_VERIFIED", "", False, 2),
+            (True, "BOOT_VERIFIED", "", True, 0, 0),
+            (False, "BOOT_VERIFIED", "", True, 0, 2),
+            (False, "BOOT_VERIFIED", "", True, 1, 0),
+            (False, "BOOT_VERIFIED", "", True, 126, 2),
+            (True, "COMMITTED", "", True, 1, 2),
+            (True, "BOOT_VERIFIED", "ZXhwZWN0ZWQ=", True, 1, 2),
+            (True, "BOOT_VERIFIED", "", False, 1, 2),
         )
-        for system_mode, state, device, runtime_matches, expected in cases:
+        for system_mode, state, device, runtime_matches, probe_status, expected in cases:
             with self.subTest(case=(system_mode, state, device, runtime_matches)), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 runtime = root / "runtime"
@@ -571,6 +576,7 @@ getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
                     f"PREINIT_DEVICE_B64={device}\nPREINIT_DIR_B64=\n"
                 )
                 script = check.replace("/data/adb/kitsune/system-mode/transaction.env", str(receipt))
+                script += f'\nmagisk() {{ [ -z "$MAGISKTMP" ] || return 99; return {probe_status}; }}\n'
                 script += '\nMAGISKBIN="$1"; MAGISKTMP="$1/runtime"; env_check test 30700\n'
                 result = subprocess.run(["sh", "-c", script, "env-check", directory],
                                         capture_output=True, text=True, timeout=10)
@@ -784,7 +790,7 @@ bb() {
         install = function_body(self.installer, "ks_install")
         rescue_payload = install.index("ks_publish_rescue_payload")
         rescue_rc = install.index("ks_publish_rescue_rc")
-        first_destructive = install.index("sm_restore_legacy_policy")
+        first_destructive = install.index("ks_publish_version")
         self.assertLess(rescue_payload, rescue_rc)
         self.assertLess(rescue_rc, first_destructive)
         self.assertIn("PREFLIGHTED|STAGED|ROLLBACK_REQUIRED|ROLLING_BACK", self.rescue)

@@ -20,14 +20,19 @@ env_check() {
   fi
   if [ "$2" -ge 25210 ]; then
     if [ ! -b "$MAGISKTMP/.magisk/device/preinit" ] && [ ! -b "$MAGISKTMP/.magisk/block/preinit" ]; then
-      # Some qualified System Mode layouts have no eligible pre-init device.
-      # A normal reflash cannot create one; accept only the verified strategy.
-      grep -qxF 'SYSTEMMODE=true' "$MAGISKBIN/config" &&
+      if grep -qxF 'SYSTEMMODE=true' "$MAGISKBIN/config"; then
         [ -f "$receipt" ] && [ ! -L "$receipt" ] &&
-        grep -qxF 'STATE=BOOT_VERIFIED' "$receipt" &&
-        grep -qxF "RUNTIME_PATH=$MAGISKTMP" "$receipt" &&
-        grep -qxF 'PREINIT_DEVICE_B64=' "$receipt" &&
-        grep -qxF 'PREINIT_DIR_B64=' "$receipt" || return 2
+          grep -qxF 'STATE=BOOT_VERIFIED' "$receipt" &&
+          grep -qxF "RUNTIME_PATH=$MAGISKTMP" "$receipt" &&
+          grep -qxF 'PREINIT_DEVICE_B64=' "$receipt" &&
+          grep -qxF 'PREINIT_DIR_B64=' "$receipt" || return 2
+      else
+        # Reflashing cannot create eligible storage. Probe without changing
+        # the runtime pre-init mirror or creating directories on a partition.
+        local result=0
+        MAGISKTMP= magisk --preinit-device >/dev/null 2>&1 || result=$?
+        [ "$result" -eq 1 ] || return 2
+      fi
     fi
   fi
   grep -xqF "MAGISK_VER='$1'" "$MAGISKBIN/util_functions.sh" || return 3
@@ -106,11 +111,10 @@ restore_imgs() {
   flash_image $BACKUPDIR/boot.img.gz $1
 }
 
-# $1 = path to bootctl executable
 post_ota() {
   cd /data/adb
-  cp -f $1 bootctl
-  rm -f $1
+  cp -f $MAGISKBIN/bootctl bootctl
+  rm -f $MAGISKBIN/bootctl
   chmod 755 bootctl
   if ! ./bootctl hal-info; then
     rm -f bootctl

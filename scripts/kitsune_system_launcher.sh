@@ -2,7 +2,7 @@
 # shellcheck shell=busybox
 # shellcheck disable=SC2016,SC3043
 
-# Boot-time System Mode launcher. The bootstrap mirrors official v30.7
+# Boot-time System Mode launcher. The bootstrap mirrors official Magisk
 # scripts/live_setup.sh, but reads immutable payloads from the version selected
 # by the manifest-owned transaction.
 
@@ -42,6 +42,7 @@ export ASH_STANDALONE=1
 set -o standalone || exit 1
 # shellcheck disable=SC1090
 . "$KSL_TRANSACTION" || exit 1
+sm_log() { ksl_log "$1"; }
 sm_configure "$KSL_PAYLOAD" / "$KSL_SYSTEM_DIR" "$KSL_BB" || ksl_exit 1
 sm_acquire_lock "launcher-${1:-invalid}" || ksl_exit 1
 sm_load_transaction || { ksl_log "Invalid System Mode transaction"; ksl_exit 1; }
@@ -407,7 +408,7 @@ ksl_prepare_runtime() {
   export MAGISKTMP="$target"
   MAKEDEV=1 "$target/magisk" --preinit-device 9>&- >/dev/null 2>&1
   preinit_result=$?
-  # v30.7 returns 1 when no eligible pre-init partition exists; official
+  # Magisk returns 1 when no eligible pre-init partition exists; official
   # live_setup treats that as a supported layout and continues without rules.
   case "$preinit_result" in 0|1) ;; *) return 1 ;; esac
   ksl_validate_preinit_link "$target" || return 1
@@ -417,9 +418,8 @@ ksl_prepare_runtime() {
 ksl_apply_policy() {
   local rule="$SM_RUNTIME_PATH/.magisk/preinit/sepolicy.rule"
   [ -d /sys/fs/selinux ] || return 0
-  # The persistent source path is retained as install evidence and, for a
-  # legacy migration, exact-uninstall material. Boot always updates the policy
-  # that the kernel actually loaded; a precompiled sidecar can be stale while
+  # The persistent source path is read-only install evidence. Boot updates the
+  # policy that the kernel actually loaded; a precompiled sidecar can be stale while
   # Android is running a split policy assembled from CIL.
   if [ -f "$rule" ]; then
     "$KSL_PAYLOAD/magiskpolicy" --live --magisk --apply "$rule" 9>&-

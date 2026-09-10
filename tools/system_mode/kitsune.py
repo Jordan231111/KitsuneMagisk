@@ -163,6 +163,8 @@ def _authorize(args: argparse.Namespace) -> int:
         if artifact_bytes is None:
             raise ValueError("authorized manager APK could not be captured")
         artifact_digest = str(artifact_identity["sha256"])
+        if record["init"].get("artifact_sha256", artifact_digest) != artifact_digest:
+            raise ValueError("authorized APK differs from the qualified policy bootstrap")
         client = AdbClient(adb=args.adb, serial=args.serial, timeout=args.timeout)
         if args.connect:
             client.connect(_endpoint(args.connect))
@@ -302,6 +304,7 @@ def _qualify(args: argparse.Namespace) -> int:
             seal_key_path=Path(args.seal_key).expanduser() if args.seal_key else None,
             endpoint=endpoint,
             lifecycle_timeout=args.lifecycle_timeout,
+            artifact_path=Path(args.artifact).expanduser().absolute() if args.artifact else None,
         )
     except (OSError, ProbeError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
         print(f"qualification failed: {exc}", file=sys.stderr)
@@ -360,6 +363,7 @@ def build_parser() -> argparse.ArgumentParser:
         "qualify",
         help="prove init import, three cold boots, and an exact external restore",
     )
+    qualify.add_argument("--artifact", help="exact candidate APK; required when bootstrap root lacks the Magisk policy domain")
     qualify.add_argument("--output", required=True, help="new qualification record path")
     qualify.add_argument("--backup-location", required=True, help="absolute external backup file/tree")
     qualify.add_argument("--snapshot-id", required=True)

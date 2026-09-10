@@ -142,22 +142,19 @@ ensure_bb() {
 
   export ASH_STANDALONE=1
 
-  # Find our current arguments
-  # Run in busybox environment to ensure consistent results
-  # /proc/<pid>/cmdline shall be <interpreter> <script> <arguments...>
-  local cmds="$($bb sh -c "
-  for arg in \$(tr '\0' '\n' < /proc/$$/cmdline); do
-    if [ -z \"\$cmds\" ]; then
-      # Skip the first argument as we want to change the interpreter
-      cmds=\"sh\"
-    else
-      cmds=\"\$cmds '\$arg'\"
-    fi
-  done
-  echo \$cmds")"
-
-  # Re-exec our script
-  echo $cmds | $bb xargs $bb
+  # Read the original NUL-delimited arguments in BusyBox, replacing only
+  # the interpreter. Keep this parent alive until its cmdline is read.
+  "$bb" sh -c '
+    bb=$1
+    {
+      IFS= read -r -d "" arg
+      set --
+      while IFS= read -r -d "" arg; do
+        set -- "$@" "$arg"
+      done
+    } < /proc/$2/cmdline
+    exec "$bb" sh "$@"
+  ' sh "$bb" "$$"
   exit
 }
 

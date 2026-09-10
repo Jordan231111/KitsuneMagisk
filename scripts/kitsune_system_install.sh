@@ -2,7 +2,7 @@
 # shellcheck shell=busybox
 # shellcheck disable=SC1091,SC2153,SC3043
 
-# KitsuneMagisk Direct-System installer for the maintained v30.7 base.
+# KitsuneMagisk Direct-System installer for the maintained Magisk base.
 #
 # This entry point is intentionally separate from Magisk's boot-image flows.
 # It is executed in a private mount namespace by the manager and delegates all
@@ -10,8 +10,6 @@
 # transaction engine.
 
 KS_SYSTEM_DIR=/system/etc/init/magisk
-KS_ADDON_SCRIPT=/system/addon.d/99-magisk.sh
-KS_ADDON_DIR=/system/addon.d/magisk
 
 ks_log() {
   if command -v ui_print >/dev/null 2>&1; then
@@ -99,13 +97,13 @@ ks_validate_policy() {
       [ -n "$policy" ] || { ks_fail "The authorized SELinux source is missing"; return 1; }
       [ -f "$policy" ] || { ks_fail "The authorized SELinux source is unavailable"; return 1; }
       "$KS_INSTALL_DIR/magiskpolicy" --load "$policy" --save "$output" --magisk || {
-        ks_fail "The next-boot SELinux policy cannot be parsed with v30.7 magiskpolicy"
+        ks_fail "The next-boot SELinux policy cannot be parsed with the included magiskpolicy"
         return 1
       }
       ;;
     split)
       "$KS_INSTALL_DIR/magiskpolicy" --load-split --save "$output" --magisk || {
-        ks_fail "The split SELinux policy cannot be compiled with v30.7 magiskpolicy"
+        ks_fail "The split SELinux policy cannot be compiled with the included magiskpolicy"
         return 1
       }
       ;;
@@ -393,33 +391,6 @@ ks_publish_runtime() {
   sm_fsync_tree "$runtime"
 }
 
-ks_remove_legacy_addon() {
-  local path real
-  for path in "$KS_ADDON_SCRIPT" "$KS_ADDON_DIR"; do
-    real="$(sm_real_path "$path")" || return 1
-    if [ -e "$real" ] || [ -L "$real" ]; then
-      sm_remove_tree_safe "Legacy addon cleanup target" "$path" "$real" || return 1
-      sm_fsync_existing_parent "$real" || return 1
-    fi
-  done
-  # PR7 deliberately does not claim OTA survival. A future addon adapter must
-  # re-authorize the changed system image instead of silently replaying a stale
-  # transaction onto it.
-  sm_failpoint legacy-addon-removed
-}
-
-ks_remove_legacy_rc() {
-  local legacy="$KS_SYSTEM_DIR.rc" real
-  [ "$SM_LEGACY_MIGRATION" = true ] || return 0
-  [ "$legacy" != "$SM_INIT_PATH" ] || return 0
-  real="$(sm_real_path "$legacy")" || return 1
-  if [ -e "$real" ] || [ -L "$real" ]; then
-    "$SM_BB" rm -f "$real" || return 1
-    sm_fsync_existing_parent "$real" || return 1
-    sm_failpoint legacy-rc-removed || return 1
-  fi
-}
-
 ks_rollback() {
   local result=0 has_transaction=false
   sm_cleanup_authorization_claim || result=1
@@ -462,16 +433,6 @@ ks_install() {
   sm_journal_mark rescue-init-published "$SM_RESCUE_RC" || return 1
   ks_remove_superseded_rescue || return 1
   sm_journal_mark rescue-superseded-removed "$SM_RESCUE_DIR" || return 1
-  # Current-line Kitsune releases could own an injected bootanim.rc and a
-  # persistently rewritten policy. Restore the recorded stock bytes inside the
-  # new transaction before activating the single PR7 launcher.
-  sm_restore_legacy_policy || return 1
-  [ "$SM_POLICY_MUTATED" != true ] || \
-    sm_journal_mark legacy-policy-restored "$SM_POLICY_PATH" || return 1
-  sm_restore_legacy_bootanim || return 1
-  sm_journal_mark legacy-init-restored /system/etc/init/bootanim.rc || return 1
-  ks_remove_legacy_rc || return 1
-  sm_journal_mark legacy-rc-removed "$SM_SYSTEM_DIR.rc" || return 1
   ks_publish_version || return 1
   sm_journal_mark version-published "$SM_ACTIVE_PAYLOAD" || return 1
   ks_publish_rc || return 1
@@ -480,14 +441,6 @@ ks_install() {
   sm_journal_mark superseded-payload-removed "$SM_SYSTEM_DIR" || return 1
   ks_publish_runtime || return 1
   sm_journal_mark runtime-published /data/adb/magisk || return 1
-  ks_remove_legacy_addon || return 1
-  sm_journal_mark legacy-addon-removed "$KS_ADDON_SCRIPT" || return 1
-  sm_journal_mark legacy-addon-removed "$KS_ADDON_DIR" || return 1
-  sm_remove_legacy_sidecars || return 1
-  sm_journal_mark legacy-sidecar-removed /system/etc/init/bootanim.rc.gz || return 1
-  if [ "$SM_LEGACY_MIGRATION" = true ] && [ -n "$SM_POLICY_PATH" ]; then
-    sm_journal_mark legacy-sidecar-removed "$SM_POLICY_PATH.gz" || return 1
-  fi
   sm_commit_transaction || return 1
   sm_restore_persistent_mounts || {
     ks_fail "Installation committed, but filesystem modes could not be restored"

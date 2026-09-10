@@ -2,6 +2,11 @@
 
 Audit date: 2026-07-22 UTC; hardening reconciliation: 2026-08-01 UTC
 
+This report describes the historical references below. Current execution and acceptance status live
+in the [roadmap](../DEVELOPMENT_ROADMAP.md). PR7A uses actual official v31.0 prerelease source and
+prioritizes clean installs and current-format upgrades. Historical migration recommendations here
+do not require restoring the retired old-layout or database-v13 converters.
+
 Historical audited reference: `kitsune` at
 `cf149fcf734539f6077cd6b349d9ffc2496c56ca`. Current reconciled worktree:
 `codex/production-hardening`, based on `kitsune` at
@@ -17,11 +22,13 @@ Kitsune remains recognizably faithful to its intended product. The hardening wor
 several accidental security and reliability divergences, but the old core must still be treated as
 a reference/candidate implementation rather than a modern stable release.
 
-The faithful product is not “System Mode instead of Magisk.” It is the complete Magisk-derived root
-and systemless-customization platform, with persistent Direct-System/System Mode as Kitsune's
-release-defining addition and MagiskHide/SuList/emulator compatibility as important secondary
-differences. Ordinary boot-image installation, superuser policy, modules, MagiskBoot, recovery, and
-safe removal remain first-class responsibilities.
+The faithful product is the complete Magisk-derived root and systemless-customization platform.
+Early/pre-init module mounting, MagiskHide/SuList, provider flexibility, and commercial-emulator
+compatibility are core Kitsune capabilities. Persistent System Mode is one installation route;
+ordinary boot-image installation, superuser policy, modules, MagiskBoot, recovery, and safe removal
+remain first-class responsibilities. The current charter and release-parity requirements are in
+[the development roadmap](../DEVELOPMENT_ROADMAP.md); the historical audit measurements below
+remain evidence for their recorded commits.
 
 PR3 and PR4 did not redirect either installation path. PR3 characterizes System Mode. PR4 contains
 broken inherited update behavior and preserves Hide/DenyList/SuList data. PR4A hardens the local
@@ -34,8 +41,8 @@ comparison behavior for the forward port.
 The current branch is nevertheless far behind official Magisk in Android boot/init/SELinux/SU and
 Zygisk work. Updating scattered dependencies or merging hundreds of commits into it would not
 honestly solve that problem. The maintainable route remains a behavior-driven System Mode
-forward-port onto the latest audited official stable base, currently v30.7, followed by explicit
-Hide/SuList, Zygisk, module API, and device-qualification PRs.
+forward-port onto an audited official base (v30.7 at this historical audit; v31.0 prerelease
+in PR7A), followed by explicit Hide/SuList, Zygisk, module API, and device-qualification PRs.
 
 ## What was reviewed
 
@@ -69,10 +76,11 @@ false assurance of treating commit-message reading as runtime qualification.
 
 | Purpose | Historical/current evidence | Faithful maintenance rule |
 |---|---|---|
-| Persistent Direct-System/System Mode | `05289fb5` introduced the manager, recovery, native, init, policy, persistence, and uninstall slice; later changes added partition, `/sbin`, OTA, and emulator-specific behavior. | It is the primary Kitsune differentiator and release gate. Preserve behavior, make mutation transactional, and qualify exact writable targets. |
+| Persistent Direct-System/System Mode | `05289fb5` introduced the manager, recovery, native, init, policy, persistence, and uninstall slice; later changes added partition, `/sbin`, OTA, and emulator-specific behavior. | It is a Kitsune installation capability and a release gate for advertised writable targets. Preserve behavior, make mutation transactional, and qualify exact targets. |
 | Ordinary Magisk installation | The repository began as Magisk and retains file patch, direct boot-image install, inactive-slot, recovery, and emulator live-setup routes. | System Mode must complement, never replace or silently intercept, normal `boot`/`init_boot`/`vendor_boot` workflows. |
 | Superuser management | Magisk daemon/SU policy, prompts, database, namespaces, logging, multiuser behavior, and manager remain present. | Correct authorization and revocation outrank hiding tricks. Debug shell auto-grant must remain debug-only. |
 | Systemless customization and tools | Modules, magic mount, boot stages, BusyBox, `resetprop`, `magiskboot`, `magiskpolicy`, safe mode, systemless deletion, action scripts, and addon/update behavior are inherited or extended. | Prefer current official implementations; keep Kitsune extensions only with versioned contracts and lifecycle tests. |
+| Early/pre-init mounting | `3dcfaf9f` and historical init/module scripts mount selected module content before the normal module stage. | Preserve useful timing semantics with read-only/EROFS overlay and recovery evidence. Official pre-init storage alone does not replace this API; PR8 starts its design and PR14 implements it. |
 | MagiskHide, DenyList, and SuList | `92c0777e` is a large Kitsune-only hiding/SuList change; later commits added module hiding, SELinux-disabled behavior, package/socket changes, and table selection changes. | Preserve measured semantics and existing data, but do not promise universal detection or attestation bypass. Test namespace and provider behavior, not UI labels alone. |
 | Zygisk compatibility | The fork carried GrapheneOS fixes, then `2ef8f002` removed built-in Zygisk in favor of external providers. Official Magisk still includes and actively maintains built-in Zygisk. | Keep official built-in Zygisk during the System Mode forward-port. Decide built-in, external, or dual-provider architecture only through PR11's ADR and provider/version tests. |
 | Emulator and unusual-layout support | Direct-System, writable-partition discovery, Nox `/sbin`, SELinux-disabled, GrapheneOS, and partition-expansion commits show repeated compatibility intent. | Capability and recovery evidence—not a brand name or successful compilation—defines support. Keep ARM64, ARM32, x86_64, and x86 evidence separate. |
@@ -103,7 +111,7 @@ compatibility conclusion, not a claim that an untested physical device is safe t
 | Divergence | Classification | Assessment and required disposition |
 |---|---|---|
 | Direct-System/System Mode | Intentional product extension | Faithful and essential. The old mutation model is not safe enough for a new stable release; keep the behavior and replace the transaction/recovery mechanics. |
-| MagiskHide/SuList extensions | Intentional product extension | Faithful secondary purpose. PR4 fixes the data migration gap; PR12 must define CLI/database/namespace/provider semantics and test them across users and SELinux modes. |
+| MagiskHide/SuList extensions | Intentional product extension | Core Kitsune capability. PR4 fixes the data migration gap; PR12 must define CLI/database/namespace/provider semantics and test them across users and SELinux modes. |
 | Built-in Zygisk removal (`2ef8f002`) | Intentional but architecturally unresolved | It reflects a later external-provider direction, but diverges from both original Magisk capability and current official maintenance. Do not copy the deletion into `next-system`; retain official Zygisk through parity and decide later. |
 | Package signature enforcement disabled (`c12fca79`) | Accidental security regression, fixed in the hardening worktree | Release builds now use `ENFORCE_SIGNATURE=(!MAGISK_DEBUG)` and retain certificate-bound normal/hidden-manager recovery. The existing isolated BlueStacks test instance proved rejection of a differently signed manager and trusted-stub recovery. Debug relaxation remains explicit. Production identity rotation is still a blocker because the historical release key was public. |
 | Pointer-only `hidelist` → `denylist` selection (`25fa2159`) | Accidental upgrade defect around a reasonable compatibility direction | The hardening migration conservatively unions rows, keeps legacy/SuList state, makes a verified v12 backup, and tests interruption while deliberately retaining `user_version=12`. A completion marker distinguishes the migrated state, and the abandoned local v13 state is normalized back to v12. Runtime provider semantics remain PR12 work. |
@@ -128,8 +136,8 @@ port would make failures impossible to attribute.
 5. Treat detection behavior as a measured compatibility layer. Remove tricks whose repeatable benefit
    does not justify their boot, performance, or security risk.
 
-This order protects both purposes: System Mode becomes maintainable, while Kitsune's secondary
-hiding behavior is preserved as an explicit, testable feature instead of an opaque patch stack.
+This order keeps System Mode maintainable and preserves Kitsune hiding as an explicit, tested
+capability. Early mounting and the remaining module features likewise require their own parity evidence.
 
 ## Dependencies, upstream updates, and Android support
 
@@ -169,7 +177,7 @@ Keep both implementations.
   `next-system`. It found a real writable MuMu layout without mutating port 16384 and correctly
   rejected modern immutable AVD layouts.
 - PR4 fixes current user-data and updater hazards without changing root installation architecture.
-  Its migration must also be carried into the first future build that accepts existing databases.
+  Retain its characterization evidence; PR7A's clean-install/current-format policy governs the forward port.
 - PR4A is necessary lab infrastructure and caught a real ARMv7 debug-link inconsistency. Its final
   AVD result proves normal emulator setup remains independent from System Mode.
 - The current hardening changes should be kept as one reviewed security/reliability set. They remove

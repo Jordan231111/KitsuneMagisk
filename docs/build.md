@@ -1,11 +1,14 @@
 # Building and Development
 
-Development uses `next-system`. PR6 established the official v30.7 base and PR7 adds the
-experimental System Mode slice, with its [prepared-MuMu lifecycle qualified](system-mode/mumu-pr7-2026-09-09.md).
-The next base update is **PR7A: official v31.0 prerelease**, before
-PR8 parity; see the [execution checkpoint](../DEVELOPMENT_ROADMAP.md#current-execution-checkpoint--start-here).
-Build/version metadata must describe the actual checked-out base. The v31.0 target is planned work,
-not the identity of an existing PR7 artifact.
+Development uses `next-system`. PR7A ports the qualified System Mode slice onto official
+**v31.0 prerelease**, including its Compose manager. See the
+[execution checkpoint](../DEVELOPMENT_ROADMAP.md#current-execution-checkpoint--start-here) and
+[new base record](next-system-pr7a.json). PR7's v30.7 artifacts remain historical evidence;
+the v31.0 qualification is in progress. Builds report the actual base and source commit.
+
+System Mode supports clean installs and current-format upgrades. Remove older installations with
+their original manager before installing; modules and user settings left by a successful uninstall
+can be retained. Unsupported newer databases are preserved and refused, never reset automatically.
 
 For MuMu System Mode testing, follow the [machine qualification guide](system-mode/pr7-machine-qualification.md).
 Use the verified instance's ADB port and fully close/reopen MuMu for cold boots; do not use
@@ -20,7 +23,7 @@ leave the tested build installed.
   - macOS arm64 (Apple Silicon)
   - Windows x64
 - Windows only: Enable [developer mode](https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development). This is required because we need symbolic link support.
-- Install Python 3.8+:
+- Install Python 3.9+:
   - On Unix, install python3 using your favorite package manager
   - On Windows, download and install the latest Python version on the [official website](https://www.python.org/downloads/windows/).<br>
     Make sure to select **"Add Python to PATH"** during installation.
@@ -41,14 +44,19 @@ leave the tested build installed.
 
 - To build everything and create the final Magisk APK, run `./build.py all`.
 - You can also build specific sub-components; call `build.py` to see your options. \
-  For each action, use `-h` to access help (e.g. `./build.py binary -h`)
+  For each action, use `-h` to access help (e.g. `./build.py native -h`)
 - Configure the build by using `config.prop`. A sample `config.prop.sample` is provided.
+
+Standalone Gradle, Cargo and toolchain commands must use `scripts/env.py` (for example,
+`../scripts/env.py ./gradlew :apk:lintDebug` from `app/`). `build.py` configures that environment
+itself. Keep `:apk-legacy` buildable when changing shared/core code; active UI work belongs in the
+Compose `:apk` module.
 
 ## IDE Support
 
 - Kotlin, Java, C++, and C code in the project should be supported in Android Studio out of the box. This repository can be directly opened with Android Studio as a project.
 - For Rust development, see the next section.
-- Before working on any native code, build all native code first with `./build.py binary`, as some generated code is only created during the build process.
+- Before editing native code, run `./build.py gen` to generate its bindings and flags. Use `./build.py native` to verify compilation.
 
 ### Developing Rust
 

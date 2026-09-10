@@ -160,31 +160,46 @@ run_setup() {
   adb shell 'PATH=$PATH:/debug_ramdisk magisk -v' | tr -d '\r'
 
   # Install the Magisk app
-  adb install -r -g "$MAGISK_OUT_DIR/app-${variant}.apk"
+  adb install --no-streaming -r -g "$MAGISK_OUT_DIR/app-${variant}.apk"
 
   # Install the test app
-  adb install -r -g "$MAGISK_OUT_DIR/test-${variant}.apk"
+  adb install --no-streaming -r -g "$MAGISK_OUT_DIR/test-${variant}.apk"
 
   local app="$MAGISK_TEST_PACKAGE/com.topjohnwu.magisk.test.AppTestRunner"
+
+  if [ -n "${CF_HOME:-}" ]; then
+    # Cuttlefish defers costly bytecode verification until the first UI draw.
+    # Compile the test APKs before starting the bounded consent checks.
+    adb shell pm compile -m speed -f "$MAGISK_APP_PACKAGE"
+    adb shell pm compile -m speed -f "$MAGISK_TEST_PACKAGE"
+  fi
 
   # Run setup through the test app
   am_instrument '.Environment#setupEnvironment' $app
 }
 
 run_tests() {
+  adb logcat -d -b all -v threadtime > "$MAGISK_OUT_DIR/native-boot.log"
+  # The tested boot can return to the keyguard even when setup woke the device.
+  adb shell input keyevent KEYCODE_WAKEUP
+  case $(adb shell getprop ro.build.version.sdk | tr -d '\r') in
+    23|24|25) adb shell input keyevent KEYCODE_MENU ;;
+    *) adb shell wm dismiss-keyguard ;;
+  esac
+
   local pkg="$MAGISK_TEST_PACKAGE"
   local self="$pkg/com.topjohnwu.magisk.test.TestRunner"
   local app="$pkg/com.topjohnwu.magisk.test.AppTestRunner"
   local stub="repackaged.$pkg/com.topjohnwu.magisk.test.AppTestRunner"
 
   # Run app tests
-  am_instrument '.MagiskAppTest,.AdditionalTest' $app
+  am_instrument '.MagiskAppTest,.AdditionalTest,.TerminalTest,.FlashIntentTest' $app
 
   # Test app hiding
   am_instrument '.AppMigrationTest#testAppHide' $self
 
   # Make sure it still works
-  am_instrument '.MagiskAppTest' $stub
+  am_instrument '.MagiskAppTest,.FlashIntentTest' $stub
 
   # Test app restore
   am_instrument '.AppMigrationTest#testAppRestore' $self
@@ -193,6 +208,89 @@ run_tests() {
   am_instrument '.MagiskAppTest' $app
 
   run_root_stress
+  assert_no_native_crashes
+}
+
+assert_no_native_crashes() {
+  python3 - "$ANDROID_SERIAL" "${MAGISK_OUT_DIR:-out}/native-boot.log" <<'PYCODE'
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+
+def adb(*args):
+    try:
+        result = subprocess.run(
+            ["adb", "-s", sys.argv[1], *args],
+            capture_output=True, text=True, timeout=15,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        print(f"Cannot inspect native crash state: {error}", file=sys.stderr)
+        raise SystemExit(2)
+    if result.returncode:
+        print(result.stderr or result.stdout, file=sys.stderr)
+        raise SystemExit(result.returncode)
+    return result.stdout
+
+
+# Narrow obsolete SDK-image failure signatures with stock control evidence.
+# The evidence document distinguishes reproduction from inference. Never exempt
+# app/zygote/root-service crashes, later crashes, or arbitrary device images.
+# See docs/system-mode/sdk-native-boot-controls.md.
+def stock_boot_failure(first, record, boot):
+    if first not in boot:
+        return None
+    fingerprint = re.search(r"Build fingerprint: '([^']+)'", record)
+    if not fingerprint:
+        return None
+    fingerprint = fingerprint[1]
+    media_images = {
+        "Android/sdk_phone_x86/generic_x86:7.0/NYC/4174735:userdebug/test-keys",
+        "Android/sdk_phone_x86_64/generic_x86_64:7.0/NYC/4174735:userdebug/test-keys",
+        "Android/sdk_phone_x86_64/generic_x86_64:7.1.1/NYC/4931657:userdebug/test-keys",
+    }
+    graphics_images = {
+        "Android/sdk_phone_x86/generic_x86:9/PSR1.180720.012/4923214:userdebug/test-keys",
+        "Android/sdk_phone_x86_64/generic_x86_64:9/PSR1.180720.012/4923214:userdebug/test-keys",
+    }
+    if (fingerprint in graphics_images and "(surfaceflinger)" in first
+            and "/system/bin/surfaceflinger" in record
+            and "Failed HIDL return status not checked" in record
+            and "DEAD_OBJECT" in record and "Composer::getActiveConfig" in record):
+        return "SurfaceFlinger"
+    if (fingerprint in media_images and "(mediaextractor)" in first
+            and "/system/lib/libminijail.so (log_sigsys_handler+" in record):
+        pid = re.match(r"\S+\s+\S+\s+(\d+)\s+\d+\s+F\s+libc", first)
+        if pid and re.search(r"^\S+\s+\S+\s+" + pid[1]
+                + r"\s+\d+\s+E\s+media\.extractor\s*:\s*"
+                  r"libminijail: blocked syscall: nanosleep$", boot, re.MULTILINE):
+            return "media.extractor"
+    return None
+
+
+crash = adb("logcat", "-d", "-b", "crash", "-v", "threadtime")
+try:
+    boot = Path(sys.argv[2]).read_text()
+except OSError:
+    boot = ""
+matches = list(re.finditer(r"^.*Fatal signal \d+ \(SIG(\w+)\).*$", crash, re.MULTILINE))
+recovered = set()
+for index, match in enumerate(matches):
+    if match[1] not in {"SEGV", "ABRT", "BUS", "ILL", "FPE", "TRAP", "SYS", "STKFLT"}:
+        continue
+    end = matches[index + 1].start() if index + 1 < len(matches) else len(crash)
+    record = crash[match.start():end]
+    service = stock_boot_failure(match[0], record, boot)
+    if not service:
+        print(record)
+        raise SystemExit("Unexpected native crash during emulator tests")
+    recovered.add(service)
+for service in sorted(recovered):
+    if ": found" not in adb("shell", "service", "check", service):
+        raise SystemExit(f"Stock SDK service did not recover: {service}")
+    print(f"Known stock SDK boot failure recovered before acceptance: {service}")
+PYCODE
 }
 
 run_root_stress_batch() {
@@ -309,7 +407,14 @@ run_root_stress() {
   fi
 
   print_title "* Stressing MagiskSU ($iterations x $parallel concurrent requests)"
-  local iteration raw out root_count version
+  local iteration raw out root_count version expected_version
+  expected_version=$(adb shell 'PATH=$PATH:/debug_ramdisk magisk -V' | tr -d '\r' | tail -n 1)
+  case "$expected_version" in
+    ''|*[!0-9]*)
+      print_error "Cannot read the Magisk daemon version before stress"
+      return 1
+      ;;
+  esac
   iteration=0
   while [ "$iteration" -lt "$iterations" ]; do
     raw=$(run_root_stress_batch "$parallel" "$request_timeout") || {
@@ -327,7 +432,7 @@ run_root_stress() {
       return 1
     fi
     version=$(adb shell 'PATH=$PATH:/debug_ramdisk magisk -V' | tr -d '\r' | tail -n 1)
-    if [ "$version" != "30700" ]; then
+    if [ "$version" != "$expected_version" ]; then
       print_error "Magisk daemon version changed during stress: $version"
       return 1
     fi

@@ -260,6 +260,7 @@ struct ZygiskContext {
     ZygiskContext(JNIEnv *env, void *args);
     ~ZygiskContext();
 
+    void prepare_unloader();
     void run_modules_pre(rust::Vec<int> &fds);
     void run_modules_post();
     DCL_PRE_POST(fork)

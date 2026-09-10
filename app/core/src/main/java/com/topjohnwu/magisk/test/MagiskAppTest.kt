@@ -9,6 +9,7 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.model.su.SuPolicy
+import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.superuser.ShellUtils.fastCmd
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -34,6 +35,13 @@ class MagiskAppTest : BaseTest {
     @Test
     fun testZygisk() {
         assertTrue("Zygisk should be enabled", Info.isZygiskEnabled)
+    }
+
+    @Test
+    fun testSuNotifications() {
+        // Exercise both notifications on every API, including pre-O builders.
+        Notifications.suNotification(true, "Kitsune test")
+        Notifications.suNotification(false, "Kitsune test")
     }
 
     @Test
@@ -69,18 +77,19 @@ class MagiskAppTest : BaseTest {
         } else {
             "$su -c id"
         }
-        val pfd = uiAutomation.executeShellCommand(cmd)
-
-        // Make sure SuRequestActivity is launched
-        val suRequest = monitor.waitForActivityWithTimeout(TimeUnit.SECONDS.toMillis(10))
-        assertNotNull("SuRequestActivity is not launched", suRequest)
-
-        // Check that the request went through
-        AutoCloseInputStream(pfd).reader().use {
-            assertTrue(
-                "Cannot grant root permission from shell",
-                it.readText().contains("uid=0")
-            )
+        try {
+            AutoCloseInputStream(uiAutomation.executeShellCommand(cmd)).reader().use {
+                // Cold Cuttlefish can take over ten seconds to create the UI.
+                // Stay below the daemon's seventy-second response deadline.
+                val suRequest = monitor.waitForActivityWithTimeout(TimeUnit.SECONDS.toMillis(30))
+                assertNotNull("SuRequestActivity is not launched", suRequest)
+                assertTrue(
+                    "Cannot grant root permission from shell",
+                    it.readText().contains("uid=0")
+                )
+            }
+        } finally {
+            instrumentation.removeMonitor(monitor)
         }
 
         // Check that the database is updated

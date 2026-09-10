@@ -11,13 +11,13 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
-class LegacyDatabaseMigrationTest(unittest.TestCase):
+class DatabaseVersionTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temporary = tempfile.TemporaryDirectory(prefix="kitsune-native-sqlite-")
         cls.binary = Path(cls.temporary.name) / "database"
         source = (ROOT / "native/src/core/sqlite.cpp").read_text()
-        native = source[source.index("static bool is_legacy_v13_db("):source.index("// Exported from Rust")]
+        native = source[source.index("sqlite3 *open_and_init_db()"):source.index("// Exported from Rust")]
         support = r'''
 #include <sqlite3.h>
 #include <cstdio>
@@ -112,19 +112,9 @@ INSERT INTO hide_migration_v13 VALUES(1,'union-preserve-legacy',2,1,1,1,1,0,1);
         return subprocess.run([str(self.binary), str(path)], env=env,
                               capture_output=True, text=True, timeout=10)
 
-    def test_completed_v13_preserves_every_row_and_normalizes_once(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            path = Path(temporary) / "magisk.db"
-            self.database(path)
-            before, _ = self.dump(path)
-            self.assertEqual(0, self.run_native(path).returncode)
-            self.assertEqual((before, 12), self.dump(path))
-            normalized = path.read_bytes()
-            self.assertEqual(0, self.run_native(path).returncode)
-            self.assertEqual(normalized, path.read_bytes())
-
-    def test_unrecognized_versions_and_incomplete_migrations_are_preserved(self):
+    def test_newer_schemas_are_preserved_without_conversion(self):
         cases = [
+            (13, None),
             (14, None),
             (13, "DROP TABLE hide_migration_v13"),
             (13, "UPDATE hide_migration_v13 SET migrated_rows=99"),
@@ -142,16 +132,6 @@ INSERT INTO hide_migration_v13 VALUES(1,'union-preserve-legacy',2,1,1,1,1,0,1);
                 self.assertNotEqual(0, self.run_native(path).returncode)
                 self.assertEqual(before, path.read_bytes())
                 self.assertEqual(version, self.dump(path)[1])
-
-    def test_failed_version_write_or_commit_rolls_back_without_data_loss(self):
-        for failure in ("PRAGMA user_version=12", "COMMIT"):
-            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temporary:
-                path = Path(temporary) / "magisk.db"
-                self.database(path)
-                before = path.read_bytes()
-                self.assertNotEqual(0, self.run_native(path, failure).returncode)
-                self.assertEqual(before, path.read_bytes())
-                self.assertEqual(13, self.dump(path)[1])
 
     def test_v12_keeps_legacy_tables_and_policies(self):
         with tempfile.TemporaryDirectory() as temporary:

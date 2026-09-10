@@ -45,6 +45,13 @@ class RootUtils(stub: Any?) : RootService() {
 
     override fun onCreate() {
         am = getSystemService()!!
+        Runtime.getRuntime().addShutdownHook(Thread {
+            synchronized(this) {
+                // Finish an active transaction before exiting, without tearing
+                // down ART while Binder threads can still enter the VM.
+                android.os.Process.killProcess(android.os.Process.myPid())
+            }
+        })
     }
 
     override fun getComponentName(): ComponentName {
@@ -79,9 +86,11 @@ class RootUtils(stub: Any?) : RootService() {
             (action == "install" && !BuildConfig.DEBUG))
             return -1
         val dir = File(directory)
-        val allowed = mutableSetOf(File(filesDir.parent, "install").canonicalPath, Const.TMPDIR)
+        val allowed = mutableSetOf(
+            File(filesDir.parent, Const.SYSTEM_MODE_INSTALL_DIR).canonicalPath, Const.TMPDIR)
         if (Build.VERSION.SDK_INT >= 24) {
-            allowed += File(createDeviceProtectedStorageContext().filesDir.parent, "install").canonicalPath
+            allowed += File(createDeviceProtectedStorageContext().filesDir.parent,
+                Const.SYSTEM_MODE_INSTALL_DIR).canonicalPath
         }
         if (!dir.isAbsolute || !dir.isDirectory || dir.canonicalPath !in allowed)
             return -1
@@ -143,7 +152,7 @@ class RootUtils(stub: Any?) : RootService() {
         val module = File(Const.MODULE_PATH, "hosts")
         if (module.exists()) return true
         val hosts = File(module, "system/etc/hosts")
-        if (!hosts.parentFile.mkdirs()) return false
+        if (hosts.parentFile?.mkdirs() != true) return false
         File(module, "module.prop").outputStream().writer().use {
             it.write("""
                 id=hosts

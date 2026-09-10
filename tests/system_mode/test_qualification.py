@@ -9,13 +9,16 @@ from pathlib import Path
 import os
 import time
 import shlex
+import shutil
 import signal
 import sqlite3
+import struct
 import subprocess
 import tempfile
 import unittest
 from unittest import mock
 import uuid
+import zipfile
 
 from tools.system_mode.authorization import digest_backup_path
 from tools.system_mode.doctor import CommandResult, ProbeError, classify_report, fixture_report
@@ -23,12 +26,15 @@ from tools.system_mode.qualification import (
     QUALIFICATION_KEY_ENV,
     IndeterminateLifecycleError,
     _canonical_bytes,
+    _policy_from_apk,
+    _policy_bootstrap,
     _checked_command,
     _inventory_digest,
     _exec_result_payload,
     _remote_database_digest,
     _sqlite_content_digest,
     _verify_init_exec_probe,
+    _write_probe,
     _recover_from_candidates,
     _remove_verified_qualification_backups,
     _failure_recovery_candidates,
@@ -54,6 +60,77 @@ FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
 
 
 class QualificationTest(unittest.TestCase):
+    def test_probe_transfer_preserves_binary_bytes_and_checks_digest(self) -> None:
+        content = bytes(range(256)) * 2048
+        path = "/system/etc/init/test.policy"
+        evidence = {
+            "path": path, "sha256": hashlib.sha256(content).hexdigest(),
+            "size": len(content), "mode": "0755", "uid": 0, "gid": 0,
+        }
+        captured = []
+
+        def push(local, remote):
+            captured.append(Path(local))
+            self.assertEqual(Path(local).read_bytes(), content)
+
+        client = mock.Mock()
+        client.push.side_effect = push
+        with mock.patch("tools.system_mode.qualification._root_checked"), \
+             mock.patch("tools.system_mode.qualification._remote_file_evidence", return_value=evidence):
+            self.assertEqual(_write_probe(client, path, content, mode="0755"), evidence)
+            evidence["sha256"] = "0" * 64
+            with self.assertRaisesRegex(ProbeError, "digest mismatch"):
+                _write_probe(client, path, content, mode="0755")
+        self.assertEqual(len(captured), 2)
+        self.assertTrue(all(not path.exists() for path in captured))
+
+    def test_policy_apk_requires_the_clean_source_and_target_abi(self) -> None:
+        policy = bytearray(120)
+        policy[:6] = b"\x7fELF\x02\x01"
+        struct.pack_into("<H", policy, 18, 183)
+        struct.pack_into("<Q", policy, 32, 64)
+        struct.pack_into("<HH", policy, 54, 56, 1)
+        struct.pack_into("<I", policy, 64, 1)
+        struct.pack_into("<Q", policy, 112, 16384)
+        commit = "a" * 40
+        with tempfile.TemporaryDirectory() as temporary:
+            apk = Path(temporary) / "candidate.apk"
+            def write_apk(dirty="false", binary=policy):
+                with zipfile.ZipFile(apk, "w") as archive:
+                    archive.writestr("lib/arm64-v8a/libmagiskpolicy.so", binary)
+                    archive.writestr("assets/util_functions.sh",
+                                     f"KITSUNE_SOURCE_COMMIT='{commit}'\nKITSUNE_SOURCE_DIRTY={dirty}\n")
+            write_apk()
+            digest, captured = _policy_from_apk(apk, "arm64-v8a", commit)
+            self.assertEqual(hashlib.sha256(apk.read_bytes()).hexdigest(), digest)
+            self.assertEqual(policy, captured)
+            with self.assertRaisesRegex(ValueError, "source commit"):
+                _policy_from_apk(apk, "arm64-v8a", "b" * 40)
+            write_apk(dirty="true")
+            with self.assertRaisesRegex(ValueError, "source commit"):
+                _policy_from_apk(apk, "arm64-v8a", commit)
+            write_apk(binary=b"not an ELF")
+            with self.assertRaises(ValueError):
+                _policy_from_apk(apk, "arm64-v8a", commit)
+
+    def test_policy_bootstrap_requires_matching_bytes_and_success(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            policy = Path(temporary) / "policy with 'quotes'"
+            for code, corrupt, expected in ((0, False, 0), (8, False, 67), (0, True, 66)):
+                with self.subTest(code=code, corrupt=corrupt):
+                    policy.write_text(f"#!/bin/sh\n[ \"$*\" = '--live --magisk' ] || exit 9\nexit {code}\n")
+                    policy.chmod(0o755)
+                    digest = hashlib.sha256(policy.read_bytes()).hexdigest()
+                    if corrupt:
+                        policy.write_text(policy.read_text() + "# changed\n")
+                    script = "set -eu\nrole=init\n"
+                    if shutil.which("sha256sum") is None:
+                        script += 'sha256sum() { shasum -a 256 "$@"; }\n'
+                    script += _policy_bootstrap(str(policy), digest) + "printf proof\n"
+                    result = subprocess.run(["sh", "-c", script], capture_output=True, text=True, timeout=10)
+                    self.assertEqual(expected, result.returncode, result.stderr)
+                    self.assertEqual("proof" if expected == 0 else "", result.stdout)
+
     def test_domain_probe_waits_for_both_results_and_rejects_invalid_output(self) -> None:
         nonce = "1" * 32
         boot = "11111111-1111-1111-1111-111111111111"
@@ -1147,6 +1224,8 @@ class QualificationTest(unittest.TestCase):
                 }
 
             with (
+                mock.patch("tools.system_mode.qualification._policy_from_apk",
+                           return_value=("d" * 64, b"candidate-policy")),
                 mock.patch(
                     "tools.system_mode.qualification.collect_report",
                     side_effect=[
@@ -1210,8 +1289,11 @@ class QualificationTest(unittest.TestCase):
                     seal_key_path=root / "seal.key",
                     endpoint="127.0.0.1:16384",
                     lifecycle_timeout=30,
+                    artifact_path=root / "candidate.apk",
                 )
 
+            self.assertEqual("d" * 64, record["init"]["artifact_sha256"])
+            self.assertEqual(_sha256(b"candidate-policy"), record["init"]["policy"]["sha256"])
             self.assertTrue(output.is_file())
             self.assertEqual(3, len(record["persistence"]["cold_boot_ids"]))
             self.assertEqual(
@@ -1237,6 +1319,9 @@ class QualificationTest(unittest.TestCase):
             )
             self.assertFalse(any(root.glob(".*kitsune-challenge-*")))
             self.assertEqual("absent", record["backup"]["qualification_residue"])
+            record["init"].pop("artifact_sha256")
+            with self.assertRaisesRegex(ValueError, "present together"):
+                validate_qualification_record(record)
 
 
 if __name__ == "__main__":

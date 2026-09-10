@@ -56,7 +56,8 @@ open class FlashZip(
 
         console.add("- Installing ${mUri.displayName}")
 
-        return Shell.cmd("sh $installDir/update-binary dummy 1 \'$zipFile\'")
+        val path = zipFile.path.replace("'", "'\\''")
+        return Shell.cmd("sh $installDir/update-binary dummy 1 '$path'")
             .to(console, logs).exec().isSuccess
     }
 

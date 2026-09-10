@@ -2,15 +2,20 @@ from __future__ import annotations
 
 import json
 import copy
+import os
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
 from tools.system_mode.doctor import (
+    AdbClient,
     CommandResult,
     QualificationEvidence,
     _effective_mount,
     _ext4_features,
+    _probe_paths,
     _select_init_directory,
     _versioned_install_config,
     classify_report,
@@ -27,6 +32,46 @@ FIXTURES = ROOT / "tools" / "system_mode" / "fixtures"
 SCHEMAS = ROOT / "tools" / "system_mode" / "schemas"
 CONTRACTS = ROOT / "tools" / "system_mode" / "contracts"
 RECORDS = ROOT / "compatibility" / "records"
+
+
+class RootTransportTest(unittest.TestCase):
+    def test_probe_reports_zero_and_special_permission_bits(self):
+        client = AdbClient(serial="test")
+        path = "/data/adb/magisk.db"
+        for raw, expected in (("0", "0000"), ("70", "0070"), ("755", "0755"),
+                              ("4755", "4755"), ("888", None), ("10000", None)):
+            with self.subTest(mode=raw), patch.object(client, "shell", return_value=CommandResult(
+                f"{path}\tfile\ttrue\tfalse\t{path}\t0\t{raw}", "", 0
+            )):
+                self.assertEqual(expected, _probe_paths(client, (path,), root=True)[path]["mode"])
+
+    def test_root_adb_and_su_preserve_command_and_status(self):
+        with tempfile.TemporaryDirectory() as raw:
+            directory = Path(raw)
+            marker = directory / "su-called"
+            for uid in (0, 2000):
+                with self.subTest(uid=uid):
+                    (directory / "id").write_text(f"#!/bin/sh\nprintf '{uid}\\n'\n")
+                    (directory / "su").write_text(
+                        '#!/bin/sh\n: > "$SU_MARKER"\nshift\nexec sh -c "$1"\n'
+                    )
+                    for name in ("id", "su"):
+                        (directory / name).chmod(0o700)
+                    env = dict(os.environ, PATH=f"{directory}:/usr/bin:/bin", SU_MARKER=str(marker))
+
+                    def execute(*args, **kwargs):
+                        self.assertEqual(args[0], "shell")
+                        result = subprocess.run(
+                            ["sh", "-c", args[1]], env=env, capture_output=True, text=True
+                        )
+                        return CommandResult(result.stdout, result.stderr, result.returncode)
+
+                    client = AdbClient(serial="test")
+                    with patch.object(client, "_command", side_effect=execute):
+                        result = client.shell('printf "%s" "literal \' value"; exit 37', root=True)
+                    self.assertEqual(result.stdout, "literal ' value")
+                    self.assertEqual(result.returncode, 37)
+                    self.assertEqual(marker.exists(), uid != 0)
 
 
 class VersionedInstallProbeTest(unittest.TestCase):
@@ -73,6 +118,23 @@ class VersionedInstallProbeTest(unittest.TestCase):
             return _versioned_install_config(
                 object(), self.path, record or self.record(self.path), version, 30700, root=True
             )
+
+    def test_original_permissions_accept_zero_and_special_bits(self):
+        original = {
+            "path": "/data/adb/magisk.db", "sha256": "a" * 64, "size": 1,
+            "mode": "00", "uid": 0, "gid": 0, "selinux_context": None,
+            "existed": True,
+            "backup_path": "/data/adb/kitsune/system-mode/original/magisk_db",
+        }
+        self.manifest["originals"] = [original]
+        for mode in ("00", "0000", "0600", "04755"):
+            with self.subTest(mode=mode):
+                original["mode"] = mode
+                self.assertEqual(self.config, self.probe())
+        for mode in ("", "-1", "0x644", "0899", "077777"):
+            with self.subTest(invalid_mode=mode):
+                original["mode"] = mode
+                self.assertIsNone(self.probe())
 
     def test_verified_versioned_config_is_recognized_without_legacy_flat_file(self):
         self.assertEqual(self.config, self.probe())

@@ -7,6 +7,7 @@ import base64
 from contextlib import closing
 import hashlib
 import hmac
+import io
 import json
 import os
 from pathlib import Path
@@ -21,6 +22,7 @@ import tempfile
 import time
 from typing import Any, Callable, Mapping
 import uuid
+import zipfile
 
 from tools.system_mode.adapters import built_in_descriptors
 from tools.system_mode.doctor import (
@@ -882,12 +884,10 @@ def _write_probe(
     mode: str = "0644",
     selinux_context: str | None = "u:object_r:system_file:s0",
 ) -> dict[str, Any]:
-    try:
-        payload = content.decode("ascii")
-    except UnicodeDecodeError as exc:
-        raise ValueError("qualification probes must be ASCII") from exc
     quoted = shlex.quote(path)
     parent = shlex.quote(str(Path(path).parent))
+    staged = f"/data/local/tmp/kitsune-system-mode-probe-{uuid.uuid4()}"
+    quoted_staged = shlex.quote(staged)
     label = (
         f"chcon {shlex.quote(selinux_context)} {quoted} 2>/dev/null || true"
         if selinux_context
@@ -895,11 +895,19 @@ def _write_probe(
     )
     command = (
         f"test -d {parent} && test ! -e {quoted} && test ! -L {quoted} && "
-        f"umask 077 && printf %s {shlex.quote(payload)} > {quoted} && "
+        f"test -f {quoted_staged} && test ! -L {quoted_staged} && "
+        f"umask 077 && cat {quoted_staged} > {quoted} && "
         f"chmod {mode} {quoted} && chown 0:0 {quoted} && "
         f"({label}) && sync"
     )
-    _root_checked(client, command, "qualification probe publication")
+    with tempfile.NamedTemporaryFile(prefix="kitsune-system-mode-probe-") as temp:
+        temp.write(content)
+        temp.flush()
+        try:
+            client.push(temp.name, staged)
+            _root_checked(client, command, "qualification probe publication")
+        finally:
+            _root_checked(client, f"rm -f {quoted_staged}", "qualification staging cleanup")
     evidence = _remote_file_evidence(client, path)
     expected = hashlib.sha256(content).hexdigest()
     expected = {
@@ -1298,6 +1306,13 @@ def validate_qualification_record(record: Mapping[str, Any]) -> None:
             f"/data/adb/.kitsune-system-mode-final-recovery-{record_id}",
         ),
     )
+    policy = record["init"].get("policy")
+    if (policy is None) != (record["init"].get("artifact_sha256") is None):
+        raise ValueError("qualification policy and APK binding must be present together")
+    if policy is not None:
+        expected_paths += ((policy, f"{selected_init}/.kitsune-system-mode-qualification-{record_id}.policy"),)
+        if (policy["mode"], policy["uid"], policy["gid"]) != ("0755", 0, 0):
+            raise ValueError("qualification policy metadata is unsafe")
     for field, expected_path in expected_paths:
         if field["path"] != expected_path:
             raise ValueError("qualification probe path does not match its record identity")
@@ -1471,6 +1486,44 @@ def verify_report_qualification(
 
 
 
+def _policy_from_apk(path: Path, abi: str, source_commit: str) -> tuple[str, bytes]:
+    from tools.next_system_baseline import ABI_ELF_IDENTITIES, elf_identity_and_alignments
+    from tools.system_mode.authorization import stable_regular_file
+
+    identity, content = stable_regular_file(
+        path, purpose="qualification APK", capture=True, max_bytes=128 * 1024 * 1024
+    )
+    if content is None or abi not in ABI_ELF_IDENTITIES:
+        raise ValueError("qualification APK or target ABI is unavailable")
+    entry = f"lib/{abi}/libmagiskpolicy.so"
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            for name in (entry, "assets/util_functions.sh"):
+                if archive.namelist().count(name) != 1 or archive.getinfo(name).file_size > MAX_IDENTITY_BYTES:
+                    raise ValueError("qualification APK has missing, duplicate, or oversized bootstrap files")
+            script = archive.read("assets/util_functions.sh").decode("utf-8").splitlines()
+            if script.count(f"KITSUNE_SOURCE_COMMIT='{source_commit}'") != 1 or script.count("KITSUNE_SOURCE_DIRTY=false") != 1:
+                raise ValueError("qualification APK must match the exact clean source commit")
+            policy = archive.read(entry)
+    except zipfile.BadZipFile as exc:
+        raise ValueError("qualification APK is not a valid archive") from exc
+    elf_class, machine, _ = elf_identity_and_alignments(policy)
+    if (elf_class, machine) != ABI_ELF_IDENTITIES[abi]:
+        raise ValueError("qualification policy does not match the target ABI")
+    return str(identity["sha256"]), policy
+
+
+def _policy_bootstrap(path: str, digest: str) -> str:
+    # A failed policy load must prevent the init proof, even if an existing
+    # root provider already supplied the Magisk domain.
+    return (
+        'if [ "$role" = init ]; then\n'
+        f"  [ \"$(sha256sum {shlex.quote(path)} | cut -d ' ' -f 1)\" = '{digest}' ] || exit 66\n"
+        f"  {shlex.quote(path)} --live --magisk || exit 67\n"
+        'fi\n'
+    )
+
+
 def qualify_target(
     client: AdbClient,
     *,
@@ -1484,6 +1537,7 @@ def qualify_target(
     seal_key_path: Path | None = None,
     endpoint: str | None = None,
     lifecycle_timeout: int = 300,
+    artifact_path: Path | None = None,
 ) -> dict[str, Any]:
     """Prove a challenged restore, then retain only a clean proven backup."""
 
@@ -1542,6 +1596,14 @@ def qualify_target(
         raise ValueError(f"target has non-evidence System Mode blockers: {sorted(blockers)}")
     if baseline["source"].get("repository_dirty") is not False:
         raise ValueError("qualification requires a clean, exact source commit")
+    artifact_digest = None
+    policy = None
+    if artifact_path is not None:
+        artifact_digest, policy = _policy_from_apk(
+            artifact_path, baseline["device"]["abis"][0], baseline["source"]["repository_commit"]
+        )
+    elif not baseline["existing_install"].get("system_mode"):
+        raise ValueError("clean-install qualification requires --artifact with the exact candidate APK")
     baseline_digest = stable_target_digest(baseline)
     selected_init = baseline["init"].get("selected_directory")
     if selected_init not in {"/system/etc/init", "/system/etc/init/hw"}:
@@ -1560,6 +1622,7 @@ def qualify_target(
     data_anchor_path = f"/data/adb/.kitsune-system-mode-backup-anchor-{record_id}"
     probe_path = f"{selected_init}/kitsune-system-mode-qualification-{record_id}.rc"
     helper_path = f"{selected_init}/.kitsune-system-mode-qualification-{record_id}.sh"
+    policy_path = f"{selected_init}/.kitsune-system-mode-qualification-{record_id}.policy"
     marker_path = f"{selected_init}/.kitsune-system-mode-recovery-{record_id}"
     data_marker_path = f"/data/adb/.kitsune-system-mode-recovery-{record_id}"
     final_marker_path = f"{selected_init}/.kitsune-system-mode-final-recovery-{record_id}"
@@ -1581,6 +1644,9 @@ def qualify_target(
         magisk_result_path,
         f"{magisk_result_path}.new",
     )
+
+    if policy is not None:
+        residue_paths += (policy_path,)
 
     anchor_before_payload = (
         f"kitsune-backup-anchor-v1:{uuid.uuid4().hex}:{record_id}\n"
@@ -1605,6 +1671,7 @@ def qualify_target(
         "esac\n"
         "domain=\"$(cat /proc/$$/attr/current | tr -d '\\000')\"\n"
         "[ \"$domain\" = \"$expected\" ] || exit 65\n"
+        f"{_policy_bootstrap(policy_path, _sha256(policy)) if policy is not None else ''}"
         "boot_id=\"$(cat /proc/sys/kernel/random/boot_id)\"\n"
         "tmp=\"$output.new\"\n"
         "umask 077\n"
@@ -1734,8 +1801,10 @@ def qualify_target(
             mode="0600",
             selinux_context=None,
         )
-        probe_evidence = _write_probe(client, probe_path, probe)
         helper_evidence = _write_probe(client, helper_path, helper, mode="0755")
+        if policy is not None:
+            policy_evidence = _write_probe(client, policy_path, policy, mode="0755")
+        probe_evidence = _write_probe(client, probe_path, probe)
         marker_evidence = _write_probe(client, marker_path, marker, mode="0600")
         data_marker_evidence = _write_probe(
             client,
@@ -1746,6 +1815,8 @@ def qualify_target(
         )
         for _ in range(3):
             run_lifecycle("cold_boot", "cold boot")
+            if policy is not None and _remote_file_evidence(client, policy_path) != policy_evidence:
+                raise ProbeError("qualification policy changed across cold boot")
             if _remote_file_evidence(client, anchor_path) != anchor_mutated:
                 raise ProbeError("mutated recovery anchor did not persist through cold boot")
             if _remote_file_evidence(client, data_anchor_path) != data_anchor_mutated:
@@ -1996,6 +2067,9 @@ def qualify_target(
             "inventory_sha256_after_restore": _inventory_digest(restored_inventory),
         },
     }
+    if policy is not None:
+        record["init"]["policy"] = policy_evidence
+        record["init"]["artifact_sha256"] = artifact_digest
     _seal_record(record, canonical_seal_key)
     validate_qualification_record(record)
     _verify_record_seal(record, canonical_seal_key)

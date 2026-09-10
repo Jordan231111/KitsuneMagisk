@@ -3,6 +3,7 @@
 #include <sys/resource.h>
 #include <sys/system_properties.h>
 #include <cstdlib>
+#include <utility>
 #include <dlfcn.h>
 #include <unwind.h>
 #include <span>
@@ -105,6 +106,11 @@ struct HookContext : JniHookDefinitions {
     const NativeBridgeRuntimeCallbacks *runtime_callbacks = nullptr;
     void *self_handle = nullptr;
     bool should_unmap = false;
+    // Guards against hooking the zygote JNI methods more than once. On lazy-native-bridge
+    // devices both the post_native_bridge_load path and the strdup("ZygoteInit") trigger can
+    // fire; a second pass corrupts the JNI registration (nulls fnPtrs) and unregisters
+    // nativeForkSystemServer -> UnsatisfiedLinkError -> zygote dies.
+    bool jni_hooked = false;
 
     void hook_plt();
     void hook_unloader();
@@ -144,7 +150,11 @@ ret (*old_##func)(__VA_ARGS__);       \
 ret new_##func(__VA_ARGS__)
 
 DCL_HOOK_FUNC(static char *, strdup, const char * str) {
-    if (strcmp(kZygoteInit, str) == 0) {
+    // The runtime hands the "com.android.internal.os.ZygoteInit" class name to strdup at the correct
+    // point (after the Zygote natives are (re)registered, before ZygoteInit#main forks), which is when
+    // hook_zygote_jni() must arm. Match as a substring (rather than exact) so a wrapped/prefixed name
+    // still triggers — harmless on standard devices, and it is what fires reliably on Meta Quest.
+    if (g_hook && str && strstr(str, kZygoteInit)) {
         g_hook->hook_zygote_jni();
     }
     return old_strdup(str);
@@ -208,7 +218,7 @@ DCL_HOOK_FUNC(static void, android_log_close) {
 
 // It should be safe to assume all dlclose's in libnativebridge are for zygisk_loader
 DCL_HOOK_FUNC(static int, dlclose, void *handle) {
-    if (!g_hook->self_handle) {
+    if (g_hook && !g_hook->self_handle) {
         ZLOGV("dlclose zygisk_loader\n");
         g_hook->post_native_bridge_load(handle);
     }
@@ -221,8 +231,9 @@ DCL_HOOK_FUNC(static int, dlclose, void *handle) {
 DCL_HOOK_FUNC(static int, pthread_attr_destroy, void *target) {
     int res = old_pthread_attr_destroy((pthread_attr_t *)target);
 
-    // Only perform unloading on the main thread
-    if (gettid() != getpid())
+    // The hook is installed before specialization starts ART's threads.
+    // Wait until specialization has finished before unloading on the main thread.
+    if (gettid() != getpid() || !g_hook || !g_hook->should_unmap)
         return res;
 
     ZLOGV("pthread_attr_destroy\n");
@@ -231,7 +242,7 @@ DCL_HOOK_FUNC(static int, pthread_attr_destroy, void *target) {
         if (g_hook->should_unmap) {
             ZLOGV("dlclosing self\n");
             void *self_handle = g_hook->self_handle;
-            delete g_hook;
+            delete std::exchange(g_hook, nullptr);
 
             // Because both `pthread_attr_destroy` and `dlclose` have the same function signature,
             // we can use `musttail` to let the compiler reuse our stack frame and thus
@@ -240,7 +251,7 @@ DCL_HOOK_FUNC(static int, pthread_attr_destroy, void *target) {
         }
     }
 
-    delete g_hook;
+    delete std::exchange(g_hook, nullptr);
     return res;
 }
 
@@ -276,8 +287,15 @@ ZygiskContext::~ZygiskContext() {
     }
 
     // Cleanup
-    g_hook->should_unmap = true;
     g_hook->restore_zygote_hook(env);
+    g_hook->should_unmap = true;
+}
+
+void ZygiskContext::prepare_unloader() {
+    if (pid < 0 && (flags & (APP_FORK_AND_SPECIALIZE | SERVER_FORK_AND_SPECIALIZE)))
+        return;
+    // LSPlt moves and copies the GOT while installing a new hook. Do this in
+    // the single-threaded child, before ART or modules can start other threads.
     g_hook->hook_unloader();
 }
 
@@ -365,6 +383,32 @@ static const NativeBridgeRuntimeCallbacks* find_runtime_callbacks(struct _Unwind
     return nullptr;
 }
 
+static string native_bridge_property() {
+    // resetprop's process-lifetime mappings must not outlive this library.
+    // Older kernels keep their VMA names as pointers into our unloaded rodata.
+    string value;
+    const auto *info = __system_property_find(NBPROP);
+    if (!info)
+        return value;
+    using read_callback = void (*)(const prop_info *,
+        void (*)(void *, const char *, const char *, uint32_t), void *);
+    auto read = reinterpret_cast<read_callback>(
+        dlsym(RTLD_DEFAULT, "__system_property_read_callback"));
+    if (read) {
+        read(info, [](void *cookie, const char *, const char *v, uint32_t) {
+            *static_cast<string *>(cookie) = v;
+        }, &value);
+    } else {
+        // Keep API 23-25 loadable; these platforms only have short properties.
+        using property_get = int (*)(const char *, char *);
+        auto get = reinterpret_cast<property_get>(dlsym(RTLD_DEFAULT, "__system_property_get"));
+        char buffer[PROP_VALUE_MAX]{};
+        if (get && get(NBPROP, buffer) >= 0)
+            value = buffer;
+    }
+    return value;
+}
+
 void HookContext::post_native_bridge_load(void *handle) {
     self_handle = handle;
     using method_sig = const bool (*)(const char *, const NativeBridgeRuntimeCallbacks *);
@@ -394,12 +438,17 @@ void HookContext::post_native_bridge_load(void *handle) {
         return;
 
     // Reload the real native bridge if necessary
-    auto nb = get_prop(NBPROP);
+    auto nb = native_bridge_property();
     auto len = sizeof(ZYGISKLDR) - 1;
     if (nb.size() > len) {
         arg.load_native_bridge(nb.c_str() + len, arg.callbacks);
     }
     runtime_callbacks = arg.callbacks;
+    // NOTE: do NOT hook the zygote JNI methods here. The native bridge loads before the runtime
+    // finishes registering (and later re-registers) the Zygote natives, so a hook installed now is
+    // overwritten by the runtime and never takes effect. The strdup("com.android.internal.os.ZygoteInit")
+    // PLT hook fires at the correct time (after registration, before ZygoteInit#main forks), and it
+    // does fire on Meta Quest too, so let it arm hook_zygote_jni().
 }
 
 // -----------------------------------------------------------------
@@ -561,6 +610,10 @@ void HookContext::hook_jni_methods(JNIEnv *env, const char *clz, JNIMethods meth
 }
 
 void HookContext::hook_zygote_jni() {
+    // Idempotent: only replace the zygote JNI methods once per process.
+    if (jni_hooked) {
+        return;
+    }
     using method_sig = jint(*)(JavaVM **, jsize, jsize *);
     auto get_created_vms = reinterpret_cast<method_sig>(
             dlsym(RTLD_DEFAULT, "JNI_GetCreatedJavaVMs"));
@@ -593,7 +646,13 @@ void HookContext::hook_zygote_jni() {
     res = vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
     if (res != JNI_OK || env == nullptr) {
         ZLOGW("JNIEnv not found\n");
+        return;
     }
+
+    // Contain every JNI local reference we create (FindClass, ExceptionOccurred, ...) in an
+    // explicit frame. Depending on the exact caller/timing this may run outside a managed JNI
+    // transition, and leaking locals trips ART's "non-empty local reference table" check -> abort.
+    bool local_frame = env->PushLocalFrame(64) == JNI_OK;
 
     JNINativeMethod missing_method{};
     bool replaced_fork_app = false;
@@ -644,6 +703,13 @@ void HookContext::hook_zygote_jni() {
         if (!replaced_fork_server)
             ranges::for_each(fork_server_methods, [](auto &m) { m.fnPtr = nullptr; });
     }
+    // An older or partition zygote may not implement every method family.
+    // Arm the guard after replacing its discovered methods without error.
+    if (missing_method.name == nullptr &&
+        (replaced_fork_app || replaced_specialize_app || replaced_fork_server)) {
+        jni_hooked = true;
+    }
+    if (local_frame) env->PopLocalFrame(nullptr);
 }
 
 void HookContext::restore_zygote_hook(JNIEnv *env) {

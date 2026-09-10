@@ -1,5 +1,12 @@
 # Installation
 
+This page describes the inherited boot-image routes. The v31 Compose redesign keeps those routes;
+it does not make System Mode the default for phones. On `next-system`, use matching Kitsune app
+and daemon artifacts from the [branch build guide](build.md). The official Magisk download below
+and older screenshots are upstream references, not a Kitsune release or physical-device qualification.
+For a writable emulator without a usable boot-image route, follow the separate
+[System Mode qualification guide](system-mode/pr7-machine-qualification.md).
+
 If you already have Magisk installed, it is **strongly recommended** to upgrade directly via the Magisk app using its "Direct Install" method. The following tutorial is only for the initial installation.
 
 ## Getting Started
@@ -86,7 +93,7 @@ Before proceeding, please acknowledge that:
 
 ### Requirements
 
-To verify whether or not Magisk can be installed in your Samsung device, you first must check the OEM Lock and KnoxGuard (RMM) status. To do so, boot your device in Download mode with its key combo.
+To verify whether or not Magisk can be installed in your Samsung device, you first must check the OEM Lock and KnoxGuard (RMM) status. To do so, go to `Settings` -> `Device Care` -> `Maintenance Mode` and enable it, then boot your device in Download mode with its key combo.
 
 Possible OEM Lock values are the following:
 - **ON (L)**: fully locked.

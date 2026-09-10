@@ -96,6 +96,8 @@
         "directory": {"enum": ["/system/etc/init", "/system/etc/init/hw"]},
         "probe": {"$ref": "#/$defs/remoteFile"},
         "helper": {"$ref": "#/$defs/remoteFile"},
+        "policy": {"$ref": "#/$defs/remoteFile"},
+        "artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "property": {"const": "kitsune.system_mode.qualify"},
         "nonce_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "domains": {

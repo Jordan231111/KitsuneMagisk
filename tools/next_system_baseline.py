@@ -37,7 +37,7 @@ DAEMON_MODE_PATTERN = re.compile(
 DAEMON_FULL_VERSION_PATTERN = re.compile(
     rb"(?<![0-9A-Za-z._+-])([0-9A-Za-z._+-]+)\(([0-9]+)\)\x00"
 )
-VERSION_PATTERN = re.compile(r"^30\.7-kitsune-next\.[0-9a-f]{8}$")
+VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+-kitsune-next\.[0-9a-f]{8}$")
 ABI_ELF_IDENTITIES = {
     "armeabi-v7a": (1, 40),
     "arm64-v8a": (2, 183),
@@ -226,19 +226,21 @@ def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
         submodules[path] = {"gitlink": actual, "initialized": initialized}
 
     identity = manifest["identity"]
+    prefix = manifest["upstream"]["release"].removeprefix("v") + "-kitsune-next"
+    modern = (root / "app/build-logic").is_dir()
+    plugin = "app/build-logic/src/main/java/Plugin.kt" if modern else "app/buildSrc/src/main/java/Plugin.kt"
     expected_contracts = {
-        "app/buildSrc/src/main/java/Plugin.kt": [
+        plugin: [
             f'const val APP_ID = "{identity["application_id"]}"',
             f'const val PRODUCT_CHANNEL = "{identity["channel"]}"',
             f'const val UPSTREAM_BASE = "{upstream}"',
-            'const val VERSION_PREFIX = "30.7-kitsune-next"',
-            ".findGitDir(rootFile(\".\"))",
+            f'const val VERSION_PREFIX = "{prefix}"',
+            '"git", "rev-parse", "HEAD"' if modern else '.findGitDir(rootFile("."))',
             '"status", "--porcelain=v1", "--untracked-files=normal"',
             'findProperty("expectedSourceCommit")',
         ],
         "build.py": [
-            'error("Requires Python 3.9+")',
-            'f"30.7-kitsune-next.{commit_hash}"',
+            f'f"{prefix}.{{commit_hash}}"',
             '"Git source state changed while building the APK"',
             'f"-PexpectedSourceCommit={source_state[0]}"',
         ],
@@ -270,6 +272,9 @@ def verify_source(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
             '#[cfg(all(feature = "check-signature", not(debug_assertions)))]'
         ],
     }
+    expected_contracts.setdefault("scripts/env.py" if modern else "build.py", []).append(
+        'error("Requires Python 3.9+")'
+    )
     for path, values in expected_contracts.items():
         for value in values:
             expect_text(root, path, value)
@@ -536,6 +541,7 @@ def inspect_apk(
             if Path(name).name == "libmagisk.so":
                 daemon_identities[abi] = parse_daemon_identity(data)
         for abi, libraries in REQUIRED_LIBRARIES.items():
+            libraries = libraries | set(manifest.get("additional_native_libraries", []))
             packaged = {
                 Path(name).name for name in native if name.startswith(f"lib/{abi}/")
             }
@@ -724,11 +730,11 @@ def inspect_stub_apk(
     }
 
 
-def expected_source_version(root: Path) -> str:
+def expected_source_version(root: Path, release: str = "v30.7") -> str:
     commit = run(("git", "rev-parse", "HEAD"), root).strip()
     if re.fullmatch(r"[a-f0-9]{40}", commit) is None:
         raise BaselineError("cannot bind artifacts to the current source commit")
-    return f"30.7-kitsune-next.{commit[:8]}"
+    return f"{release.removeprefix('v')}-kitsune-next.{commit[:8]}"
 
 
 def verify_artifacts(
@@ -738,7 +744,7 @@ def verify_artifacts(
     aapt: Path,
     apksigner: Path,
 ) -> dict[str, Any]:
-    expected_version = expected_source_version(root)
+    expected_version = expected_source_version(root, manifest["upstream"]["release"])
     debug = inspect_apk(
         outdir / "app-debug.apk", "debug", aapt, apksigner, manifest,
         expected_version,

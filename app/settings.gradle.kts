@@ -1,11 +1,34 @@
-@Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage")
+
 dependencyResolutionManagement {
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
     repositories {
-        google()
+        google {
+            content {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
         mavenCentral()
         maven("https://jitpack.io")
     }
 }
+
+pluginManagement {
+    includeBuild("build-logic")
+    repositories {
+        google {
+            content {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "Magisk"
-include(":apk", ":core", ":shared", ":stub", ":test")
+include(":apk", ":apk-legacy", ":core", ":shared", ":stub", ":stub-res", ":test")

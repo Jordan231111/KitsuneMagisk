@@ -17,12 +17,17 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.encoders.Base64;
 
 import java.io.ByteArrayOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.security.DigestOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -147,10 +152,11 @@ public class SignApk {
         for (JarEntry entry : byName.values()) {
             String name = entry.getName();
             if (!entry.isDirectory() && !stripPattern.matcher(name).matches()) {
-                InputStream data = jar.getInputStream(entry);
-                while ((num = data.read(buffer)) > 0) {
-                    if (md_sha1 != null) md_sha1.update(buffer, 0, num);
-                    if (md_sha256 != null) md_sha256.update(buffer, 0, num);
+                try (InputStream data = jar.getInputStream(entry)) {
+                    while ((num = data.read(buffer)) > 0) {
+                        if (md_sha1 != null) md_sha1.update(buffer, 0, num);
+                        if (md_sha256 != null) md_sha256.update(buffer, 0, num);
+                    }
                 }
 
                 Attributes attr = null;
@@ -336,10 +342,11 @@ public class SignApk {
 
             out.putNextEntry(outEntry);
 
-            InputStream data = in.getInputStream(inEntry);
-            while ((num = data.read(buffer)) > 0) {
-                out.write(buffer, 0, num);
-                offset += num;
+            try (InputStream data = in.getInputStream(inEntry)) {
+                while ((num = data.read(buffer)) > 0) {
+                    out.write(buffer, 0, num);
+                    offset += num;
+                }
             }
             out.flush();
         }
@@ -357,9 +364,10 @@ public class SignApk {
             outEntry.setTime(timestamp);
             out.putNextEntry(outEntry);
 
-            InputStream data = in.getInputStream(inEntry);
-            while ((num = data.read(buffer)) > 0) {
-                out.write(buffer, 0, num);
+            try (InputStream data = in.getInputStream(inEntry)) {
+                while ((num = data.read(buffer)) > 0) {
+                    out.write(buffer, 0, num);
+                }
             }
             out.flush();
         }
@@ -377,7 +385,7 @@ public class SignApk {
         if (entryName.endsWith(".so")) {
             // Align .so contents to memory page boundary to enable memory-mapped
             // execution.
-            return 4096;
+            return 16384;
         } else {
             return defaultAlignment;
         }
@@ -491,7 +499,7 @@ public class SignApk {
     }
 
     public static void sign(X509Certificate cert, PrivateKey key,
-                            JarMap inputJar, OutputStream outputStream) throws Exception {
+                            JarMap inputJar, OutputStream outputStream, File tempDirectory) throws Exception {
         int alignment = 4;
         int hashes = 0;
 
@@ -509,29 +517,33 @@ public class SignApk {
         PrivateKey[] privateKey = new PrivateKey[1];
         privateKey[0] = key;
 
-        // Generate, in memory, an APK signed using standard JAR Signature Scheme.
-        ByteArrayStream v1SignedApkBuf = new ByteArrayStream();
-        JarOutputStream outputJar = new JarOutputStream(v1SignedApkBuf);
-        // Use maximum compression for compressed entries because the APK lives forever on
-        // the system partition.
-        outputJar.setLevel(9);
-        Manifest manifest = addDigestsToManifest(inputJar, hashes);
-        copyFiles(manifest, inputJar, outputJar, timestamp, alignment);
-        signFile(manifest, publicKey, privateKey, timestamp, outputJar);
-        outputJar.close();
-        ByteBuffer v1SignedApk = v1SignedApkBuf.toByteBuffer();
-
-        ByteBuffer[] outputChunks;
-        List<ApkSignerV2.SignerConfig> signerConfigs = createV2SignerConfigs(privateKey, publicKey,
-                new String[]{APK_SIG_SCHEME_V2_DIGEST_ALGORITHM});
-        outputChunks = ApkSignerV2.sign(v1SignedApk, signerConfigs);
-
-        // This assumes outputChunks are array-backed. To avoid this assumption, the
-        // code could be rewritten to use FileChannel.
-        for (ByteBuffer outputChunk : outputChunks) {
-            outputStream.write(outputChunk.array(),
-                    outputChunk.arrayOffset() + outputChunk.position(), outputChunk.remaining());
-            outputChunk.position(outputChunk.limit());
+        // Keep the APK off the Java heap. Large test/stub APKs must also be
+        // signable on devices with a small per-process heap.
+        File temporary = File.createTempFile("signing-", ".apk", tempDirectory);
+        try {
+            try (JarOutputStream outputJar = new JarOutputStream(
+                    new BufferedOutputStream(new FileOutputStream(temporary)))) {
+                outputJar.setLevel(9);
+                Manifest manifest = addDigestsToManifest(inputJar, hashes);
+                copyFiles(manifest, inputJar, outputJar, timestamp, alignment);
+                signFile(manifest, publicKey, privateKey, timestamp, outputJar);
+            }
+            List<ApkSignerV2.SignerConfig> signerConfigs = createV2SignerConfigs(privateKey, publicKey,
+                    new String[]{APK_SIG_SCHEME_V2_DIGEST_ALGORITHM});
+            try (FileInputStream input = new FileInputStream(temporary)) {
+                ByteBuffer v1SignedApk = input.getChannel().map(
+                        FileChannel.MapMode.READ_ONLY, 0, temporary.length());
+                byte[] buffer = new byte[64 * 1024];
+                for (ByteBuffer chunk : ApkSignerV2.sign(v1SignedApk, signerConfigs)) {
+                    while (chunk.hasRemaining()) {
+                        int size = Math.min(buffer.length, chunk.remaining());
+                        chunk.get(buffer, 0, size);
+                        outputStream.write(buffer, 0, size);
+                    }
+                }
+            }
+        } finally {
+            temporary.delete();
         }
     }
 

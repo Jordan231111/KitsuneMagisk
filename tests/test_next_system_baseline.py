@@ -24,6 +24,186 @@ from tools.next_system_baseline import (
 
 
 class NextSystemManifestTest(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == "linux", "Requires Linux proc cmdline")
+    def test_busybox_handoff_preserves_arguments_and_status(self):
+        source = Path("scripts/util_functions.sh").read_text()
+        start = source.index("  export ASH_STANDALONE=1", source.index("ensure_bb()"))
+        end = source.index("\n}", start)
+        with tempfile.TemporaryDirectory(prefix="kitsune-arguments-") as temporary:
+            root = Path(temporary)
+            # Bash implements the NUL-delimited read used by BusyBox ash.
+            busybox = root / "busybox"
+            busybox.write_text('#!/bin/sh\nshift\nexec /bin/bash "$@"\n')
+            busybox.chmod(0o755)
+            script = root / "script one's test.sh"
+            script.write_text(
+                'bb=$KITSUNE_TEST_BB\nif [ "${ASH_STANDALONE:-}" != 1 ]; then\n'
+                + source[start:end] + '\nfi\nprintf "%s\\0" "$@"\nexit 37\n'
+            )
+            arguments = ["one space", "one's quote", 'double"quote', "back\\slash",
+                         "", "line\nend", "*wildcard*", "--option", "$(literal)"]
+            env = os.environ | {"KITSUNE_TEST_BB": str(busybox), "ASH_STANDALONE": ""}
+            result = subprocess.run(["sh", str(script), *arguments], env=env,
+                                    capture_output=True, timeout=10)
+            self.assertEqual(result.returncode, 37, result.stderr)
+            self.assertEqual(result.stdout, b"\0".join(a.encode() for a in arguments) + b"\0")
+
+    def test_patched_ramdisk_keeps_sdk_profiles_without_owning_them(self):
+        source = Path("scripts/avd.sh").read_text()
+        start = source.index('  image_dir=$(mktemp ')
+        end = source.index("  local build=", start)
+        cleanup_start = source.index("cleanup() {")
+        cleanup_end = source.index("\n}\n", cleanup_start) + 3
+        with tempfile.TemporaryDirectory(prefix="kitsune-sdk-data-") as temporary:
+            root = Path(temporary)
+            sdk = root / "SDK with spaces"
+            profile = sdk / "data/misc/modem_simulator/iccprofile_for_sim0.xml"
+            profile.parent.mkdir(parents=True)
+            profile.write_text("original modem profile")
+            ramdisk = sdk / "ramdisk.img"
+            ramdisk.write_bytes(b"original ramdisk")
+            script = ('ramdisk=$1; test_dir=$2; owned_avd=; stop_emulator() { :; }\n'
+                      + source[start:end]
+                      + 'printf "%s\n" "$image_dir"\n'
+                      + 'cat "$image_dir/data/misc/modem_simulator/iccprofile_for_sim0.xml"\n'
+                      + source[cleanup_start:cleanup_end] + '\ncleanup\n')
+            result = subprocess.run(["bash", "-c", script, "profiles", str(ramdisk), str(root)],
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            image_dir, content = result.stdout.splitlines()
+            self.assertEqual(content, "original modem profile")
+            self.assertFalse(Path(image_dir).exists())
+            self.assertEqual(profile.read_text(), "original modem profile")
+            self.assertEqual(ramdisk.read_bytes(), b"original ramdisk")
+
+    def test_futility_checkout_preserves_binary_bytes(self):
+        path = "tools/futility"
+        raw = subprocess.check_output(["git", "hash-object", "--no-filters", path])
+        normalized = subprocess.check_output(["git", "hash-object", f"--path={path}", path])
+        self.assertEqual(raw, normalized)
+        self.assertEqual(raw, subprocess.check_output(["git", "rev-parse", f"HEAD:{path}"]))
+
+    def test_zygisk_reads_platform_properties_without_resetprop_mappings(self):
+        source = Path("native/src/core/zygisk/hook.cpp").read_text()
+        start = source.index("static string native_bridge_property()")
+        end = source.index("\n}\n", start) + 3
+        program = r"""
+#include <cassert>
+#include <cstdint>
+#include <cstring>
+#include <string>
+using namespace std;
+#define NBPROP "ro.dalvik.vm.native.bridge"
+#define PROP_VALUE_MAX 92
+#define RTLD_DEFAULT nullptr
+struct prop_info {};
+static prop_info info;
+static string property;
+static bool present = true, modern = true, legacy = true, failed = false;
+static int callback_reads = 0, legacy_reads = 0;
+static const prop_info *__system_property_find(const char *name) {
+    assert(string(name) == NBPROP);
+    return present ? &info : nullptr;
+}
+static void read_property(const prop_info *p,
+        void (*callback)(void *, const char *, const char *, uint32_t), void *cookie) {
+    assert(p == &info);
+    ++callback_reads;
+    callback(cookie, NBPROP, property.c_str(), 0);
+}
+static int get_property(const char *name, char *buffer) {
+    assert(string(name) == NBPROP && property.size() < PROP_VALUE_MAX);
+    ++legacy_reads;
+    if (failed) return -1;
+    strcpy(buffer, property.c_str());
+    return property.size();
+}
+static void *dlsym(void *, const char *name) {
+    if (string(name) == "__system_property_read_callback")
+        return modern ? reinterpret_cast<void *>(read_property) : nullptr;
+    assert(string(name) == "__system_property_get");
+    return legacy ? reinterpret_cast<void *>(get_property) : nullptr;
+}
+""" + source[start:end] + r"""
+int main() {
+    property = string(256, 'a');
+    assert(native_bridge_property() == property);
+    assert(callback_reads == 1 && legacy_reads == 0);
+    modern = false;
+    property = "libhoudini.so";
+    assert(native_bridge_property() == property);
+    assert(callback_reads == 1 && legacy_reads == 1);
+    present = false;
+    assert(native_bridge_property().empty());
+    assert(callback_reads == 1 && legacy_reads == 1);
+    present = true;
+    failed = true;
+    assert(native_bridge_property().empty());
+    legacy = false;
+    assert(native_bridge_property().empty());
+}
+"""
+        with tempfile.TemporaryDirectory(prefix="kitsune-property-read-") as temporary:
+            root = Path(temporary)
+            cpp, binary = root / "property.cpp", root / "property"
+            cpp.write_text(program)
+            subprocess.run(["c++", "-std=c++20", "-O2", str(cpp), "-o", str(binary)],
+                           check=True, capture_output=True, text=True)
+            subprocess.run([str(binary)], check=True, timeout=15)
+
+    def test_unloader_waits_for_specialization_and_releases_context_once(self):
+        source = Path("native/src/core/zygisk/hook.cpp").read_text()
+        start = source.index("DCL_HOOK_FUNC(static int, pthread_attr_destroy,")
+        end = source.index("\n}\n", start) + 3
+        program = r"""
+#include <cassert>
+#include <pthread.h>
+#include <utility>
+static int tid = 1, pid = 1, calls = 0, restores = 0, deleted = 0, unloaded = 0;
+#define gettid() tid
+#define getpid() pid
+#define ZLOGV(...) ((void)0)
+#define DCL_HOOK_FUNC(ret, name, ...) ret new_##name(__VA_ARGS__)
+struct HookContext {
+    bool should_unmap = false;
+    bool can_restore = true;
+    void *self_handle = reinterpret_cast<void *>(42);
+    void restore_plt_hook() { ++restores; should_unmap = can_restore; }
+    ~HookContext() { ++deleted; }
+};
+static HookContext *g_hook;
+static int old_pthread_attr_destroy(pthread_attr_t *) { ++calls; return 19; }
+static int dlclose(void *handle) { assert(handle == reinterpret_cast<void *>(42)); ++unloaded; return 0; }
+""" + source[start:end] + r"""
+int main() {
+    g_hook = new HookContext;
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(g_hook && restores == 0 && deleted == 0);
+    g_hook->should_unmap = true;
+    tid = 2;
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(g_hook && restores == 0 && deleted == 0);
+    tid = 1;
+    g_hook->can_restore = false;
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(!g_hook && restores == 1 && deleted == 1 && unloaded == 0);
+    assert(new_pthread_attr_destroy(nullptr) == 19);
+    assert(deleted == 1);
+    g_hook = new HookContext;
+    g_hook->should_unmap = true;
+    assert(new_pthread_attr_destroy(nullptr) == 0);
+    assert(!g_hook && restores == 2 && deleted == 2 && unloaded == 1);
+    assert(calls == 5);
+}
+"""
+        with tempfile.TemporaryDirectory(prefix="kitsune-unloader-") as temporary:
+            root = Path(temporary)
+            cpp, binary = root / "unloader.cpp", root / "unloader"
+            cpp.write_text(program)
+            subprocess.run(["c++", "-std=c++20", "-O2", str(cpp), "-o", str(binary)],
+                           check=True, capture_output=True, text=True)
+            subprocess.run([str(binary)], check=True, timeout=15)
+
     def test_zygote_name_copy_stops_at_guard_pages(self):
         source = Path("native/src/core/zygisk/hook.cpp").read_text()
         start = source.index("DCL_HOOK_FUNC(static size_t, legacy_strlcpy,")
@@ -442,6 +622,77 @@ while True:
                         pass
                     process.communicate(timeout=2)
 
+    def test_native_crash_gate_rejects_crashes_and_unreadable_logs(self):
+        source = Path("scripts/test_common.sh").read_text()
+        script = source[source.index("assert_no_native_crashes()") : source.index("run_root_stress_batch()")]
+        with tempfile.TemporaryDirectory(prefix="kitsune-crash-gate-") as temporary:
+            root = Path(temporary)
+            adb = root / "adb"
+            adb.write_text("#!/usr/bin/env python3\nimport os, sys\n"
+                           "assert sys.argv[1:] == ['-s', 'pinned-test', 'logcat', '-d', '-b', 'crash', '-v', 'threadtime']\n"
+                           "print(os.environ['TEST_CRASH_LOG'])\n"
+                           "raise SystemExit(int(os.environ['TEST_ADB_STATUS']))\n")
+            adb.chmod(0o700)
+            for log, adb_status, expected in (
+                ("", 0, 0), ("FATAL EXCEPTION: main", 0, 0),
+                ("Fatal signal 11 (SIGSEGV), code 1", 0, 1),
+                ("Fatal signal 6 (SIGABRT), code -1", 0, 1),
+                ("Fatal signal 31 (SIGSYS), code 1", 0, 1),
+                ("logcat unavailable", 7, 7),
+            ):
+                with self.subTest(log=log):
+                    env = dict(os.environ, PATH=f"{root}:{os.environ['PATH']}",
+                               ANDROID_SERIAL="pinned-test", MAGISK_OUT_DIR=str(root), TEST_CRASH_LOG=log,
+                               TEST_ADB_STATUS=str(adb_status))
+                    result = subprocess.run(["bash", "-c", script + "\nassert_no_native_crashes"],
+                                            env=env, capture_output=True, text=True, timeout=20)
+                    self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
+
+    def test_stock_crash_exception_requires_identity_timing_and_recovery(self):
+        source = Path("scripts/test_common.sh").read_text()
+        script = source[source.index("assert_no_native_crashes()") : source.index("run_root_stress_batch()")]
+        media = ("09-10 00:00:01.000  100  100 F libc : Fatal signal 6 (SIGABRT), in tid 100 (mediaextractor)\n"
+                 "Build fingerprint: 'Android/sdk_phone_x86_64/generic_x86_64:7.0/NYC/4174735:userdebug/test-keys'\n"
+                 "/system/lib/libminijail.so (log_sigsys_handler+85)\n")
+        denied_sleep = "09-10 00:00:00.999  100  100 E media.extractor : libminijail: blocked syscall: nanosleep\n"
+        media_x86 = media.replace("sdk_phone_x86_64/generic_x86_64", "sdk_phone_x86/generic_x86")
+        graphics = ("09-10 00:00:01.000  100  100 F libc : Fatal signal 6 (SIGABRT), in tid 100 (surfaceflinger)\n"
+                    "Build fingerprint: 'Android/sdk_phone_x86_64/generic_x86_64:9/PSR1.180720.012/4923214:userdebug/test-keys'\n"
+                    "/system/bin/surfaceflinger\nFailed HIDL return status not checked: DEAD_OBJECT\n"
+                    "Composer::getActiveConfig\n")
+        with tempfile.TemporaryDirectory(prefix="kitsune-stock-crash-") as temporary:
+            root = Path(temporary)
+            adb = root / "adb"
+            adb.write_text("#!/usr/bin/env python3\nimport os, sys\n"
+                           "if sys.argv[3:5] == ['logcat', '-d']:\n"
+                           " print(os.environ['TEST_CRASH_LOG'])\n"
+                           "else:\n"
+                           " assert sys.argv[3:6] == ['shell', 'service', 'check']\n"
+                           " print('Service: found' if os.environ['TEST_RECOVERED']=='1' else 'Service: not found')\n")
+            adb.chmod(0o700)
+            cases = [
+                (media, denied_sleep + media, True, 0),
+                (media_x86, denied_sleep + media_x86, True, 0),
+                (media_x86, denied_sleep + media_x86, False, 1),
+                (graphics, graphics, True, 0),
+                (media, media, True, 1),
+                (media, denied_sleep + media, False, 1),
+                (graphics, "", True, 1),
+                (graphics.replace("00:00:01", "00:00:02"), graphics, True, 1),
+                (graphics.replace("4923214", "unreviewed"), graphics, True, 1),
+                (graphics.replace("DEAD_OBJECT", "other failure"), graphics, True, 1),
+                (media.replace("mediaextractor", "magisk"), denied_sleep + media, True, 1),
+            ]
+            for crash, boot, recovered, expected in cases:
+                with self.subTest(crash=crash, boot=boot, recovered=recovered):
+                    (root / "native-boot.log").write_text(boot)
+                    env = os.environ | {"PATH": f"{root}:{os.environ['PATH']}",
+                        "ANDROID_SERIAL": "pinned-test", "MAGISK_OUT_DIR": str(root),
+                        "TEST_CRASH_LOG": crash, "TEST_RECOVERED": str(int(recovered))}
+                    result = subprocess.run(["bash", "-c", script + "\nassert_no_native_crashes"],
+                                            env=env, capture_output=True, text=True, timeout=20)
+                    self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
+
     def test_avd_root_stress_is_timeout_bounded_and_checks_orphans(self):
         source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
         self.assertIn("subprocess.TimeoutExpired", source)
@@ -461,6 +712,41 @@ while True:
             source.index("assert_no_stale_su()") : source.index("run_root_stress()")
         ]
         self.assertNotIn("awk", scanner)
+
+    def test_root_stress_uses_the_running_version_and_detects_change(self):
+        source = Path("scripts/test_common.sh").read_text()
+        runner = source[source.index("run_root_stress()"):] + """
+print_title() { :; }
+print_error() { echo "$1" >&2; }
+run_root_stress_batch() { printf 'uid=0\\nuid=0\\n'; }
+assert_no_stale_su() { return 0; }
+run_root_stress
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            adb = root / "adb"
+            adb.write_text("""#!/bin/sh
+if [ -f "$TEST_VERSION_READ" ]; then
+  echo "$TEST_LATER_VERSION"
+else
+  : >"$TEST_VERSION_READ"
+  echo "$TEST_INITIAL_VERSION"
+fi
+""")
+            adb.chmod(0o755)
+            for initial, later, expected in [("31000", "31000", 0),
+                                              ("31000", "31001", 1),
+                                              ("", "31000", 1)]:
+                with self.subTest(initial=initial, later=later):
+                    marker = root / "version-read"
+                    marker.unlink(missing_ok=True)
+                    env = os.environ | {"PATH": f"{root}:{os.environ['PATH']}",
+                        "AVD_STRESS_ITERATIONS": "1", "AVD_STRESS_PARALLEL": "2",
+                        "TEST_VERSION_READ": str(marker),
+                        "TEST_INITIAL_VERSION": initial, "TEST_LATER_VERSION": later}
+                    result = subprocess.run(["bash", "-c", runner], env=env,
+                                            capture_output=True, text=True, timeout=10)
+                    self.assertEqual(expected, result.returncode, result.stdout + result.stderr)
 
     def test_instrumentation_timeout_preserves_adb_failure_status(self):
         source = Path("scripts/test_common.sh").read_text(encoding="utf-8")
@@ -619,7 +905,7 @@ raise SystemExit(2)
         self.assertIn('"stub_payloads_and_signers_match": True', source)
 
     def test_gradle_identity_uses_exact_git_dirty_status(self):
-        plugin = Path("app/buildSrc/src/main/java/Plugin.kt").read_text(
+        plugin = Path("app/build-logic/src/main/java/Plugin.kt").read_text(
             encoding="utf-8"
         )
         self.assertIn(
@@ -649,14 +935,14 @@ raise SystemExit(2)
                         ),
                         create=True,
                     ),
-                    mock.patch.object(build, "ensure_paths"),
+                    mock.patch.object(build, "ensure_cargo"),
                     mock.patch.object(
                         build, "llvm_tool", return_value=Path("/ondk/bin/clang")
                     ),
                     mock.patch.object(
                         build, "rust_sysroot", Path("/ondk/rust"), create=True
                     ),
-                    mock.patch.object(build, "execv", return_value=failure) as execv,
+                    mock.patch.object(build.subprocess, "run", return_value=failure) as execute,
                 ):
                     with self.assertRaises(SystemExit) as raised:
                         build.cargo_cli()
@@ -664,7 +950,7 @@ raise SystemExit(2)
                 os.chdir(original_cwd)
 
             self.assertEqual(raised.exception.code, 37)
-            self.assertEqual(execv.call_args.args[0], ["cargo", "metadata", "--offline"])
+            self.assertEqual(execute.call_args.args[0], ["cargo", "metadata", "--offline"])
 
     def test_manifest_extension_deep_merges_maps_and_replaces_lists(self):
         with tempfile.TemporaryDirectory() as directory:
