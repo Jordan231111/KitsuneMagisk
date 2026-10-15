@@ -16,7 +16,9 @@ jobs:
       - name: Configure repository toolchain wrapper
         run: ./build.py ndk
       - name: Install exact stock image
-        run: scripts/env.py "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --channel=3 platform-tools emulator 'system-images;android-25;default;x86'
+        run: |
+          yes | scripts/env.py "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          scripts/env.py "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --channel=3 platform-tools emulator 'system-images;android-25;default;x86'
       - name: Observe stock boots and media-service restarts
         run: scripts/env.py python3 tools/pr11_stock_control.py
       - uses: actions/upload-artifact@v4
