@@ -208,8 +208,7 @@ test_cf() {
   adb wait-for-device
   run_setup $variant
 
-  adb reboot
-  sleep 5
+  adb shell sync
   run_cvd_bin stop_cvd || true
 
   timeout $boot_timeout bash -c "run_cvd_bin launch_cvd $cvd_args $magisk_args"
