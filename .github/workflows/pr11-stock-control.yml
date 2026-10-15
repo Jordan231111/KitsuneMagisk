@@ -1,0 +1,22 @@
+name: PR11 stock SDK control
+on:
+  push:
+    branches: [codex/pr11-sdk-control]
+permissions:
+  contents: read
+jobs:
+  stock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - run: .github/kvm.sh
+      - name: Install exact stock image
+        run: scripts/env.py "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'system-images;android-25;default;x86'
+      - name: Observe stock boots and media-service restarts
+        run: scripts/env.py python3 tools/pr11_stock_control.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr11-stock-api25-x86
+          path: out/pr11-stock-control
