@@ -81,5 +81,6 @@ finally:
     after = hashlib.sha256(ramdisk.read_bytes()).hexdigest()
     assert before == after
     (output / "record.json").write_text(json.dumps({"stock_only": True,
+        "stock_adb_root_for_service_restarts": True,
         "image": "system-images;android-25;default;x86", "ramdisk_sha256": before,
         "unchanged_ramdisk": True, "boots": records}, indent=2) + "\n")
