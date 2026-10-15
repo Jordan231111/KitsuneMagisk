@@ -39,7 +39,6 @@ import com.topjohnwu.magisk.ui.navigation.Route
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import com.topjohnwu.magisk.core.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,14 +66,7 @@ fun SystemModeScreen(onBack: () -> Unit) {
                             output.toByteArray()
                         }
                         require(bytes.size <= 4 * 1024 * 1024)
-                        val json = JSONObject(bytes.toString(Charsets.UTF_8))
-                        require(json.getInt("schema_version") == 1)
-                        val assessment = json.getJSONObject("assessment")
-                        val verdict = assessment.getString("verdict")
-                        require(verdict in setOf("supported", "unsupported", "unknown"))
-                        val reason = assessment.getString("primary_reason")
-                        require(reason.matches(Regex("[A-Z0-9_]{1,80}")))
-                        "$verdict: $reason"
+                        ManagerDiagnostics.parseDoctor(bytes.toString(Charsets.UTF_8))
                     }.getOrElse { resources.getString(CoreR.string.system_mode_report_error) }
                 }
             }

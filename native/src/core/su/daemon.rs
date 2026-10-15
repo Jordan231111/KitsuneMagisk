@@ -38,7 +38,7 @@ pub struct SuInfo {
     pub(super) eval_uid: i32,
     pub(super) mgr_pkg: String,
     pub(super) mgr_uid: i32,
-    cfg: DbSettings,
+    pub(super) cfg: DbSettings,
     access: Mutex<AccessInfo>,
 }
 

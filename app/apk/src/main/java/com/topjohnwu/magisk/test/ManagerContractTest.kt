@@ -58,6 +58,11 @@ class ManagerContractTest : BaseTest {
         assertEquals("UNKNOWN", ManagerDiagnostics.parseTransaction(listOf("SCHEMA_VERSION=1", "STATE=BOOT_VERIFIED", "STATE=STAGED")))
         assertEquals("UNKNOWN", ManagerDiagnostics.parseTransaction(listOf("SCHEMA_VERSION=2", "STATE=BOOT_VERIFIED")))
         assertEquals("BOOT_VERIFIED", ManagerDiagnostics.parseTransaction(listOf("SCHEMA_VERSION=1", "STATE=BOOT_VERIFIED")))
+        for (verdict in listOf("supported", "blocked", "needs_evidence", "error")) {
+            val report = JSONObject().put("schema_version", 1).put("assessment",
+                JSONObject().put("verdict", verdict).put("primary_reason", "INIT_IMPORT_UNPROVEN"))
+            assertEquals("$verdict: INIT_IMPORT_UNPROVEN", ManagerDiagnostics.parseDoctor(report.toString()))
+        }
         assertTrue(runCatching { HideStatus.parse("{\"schema\":2}") }.isFailure)
         val report = ManagerDiagnostics.collect()
         val allowed = setOf("schema", "manager", "android_api", "system_mode", "transaction_state",
@@ -83,7 +88,7 @@ class ManagerContractTest : BaseTest {
         fun launch(extra: String) {
             AutoCloseInputStream(uiAutomation.executeShellCommand(
                 "am start -W -n $component -a android.intent.action.MAIN -c android.intent.category.LAUNCHER $extra"
-            )).close()
+            )).reader().use { it.readText() }
         }
         try {
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.SETTINGS}")

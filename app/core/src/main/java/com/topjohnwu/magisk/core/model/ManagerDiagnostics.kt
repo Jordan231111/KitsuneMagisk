@@ -23,6 +23,16 @@ object ManagerDiagnostics {
         return states.single().substringAfter('=').takeIf { it in transactionStates } ?: "UNKNOWN"
     }
 
+    fun parseDoctor(text: String): String = JSONObject(text).run {
+        require(getInt("schema_version") == 1)
+        val assessment = getJSONObject("assessment")
+        val verdict = assessment.getString("verdict")
+        require(verdict in setOf("supported", "blocked", "needs_evidence", "error"))
+        val reason = assessment.getString("primary_reason")
+        require(reason.matches(Regex("[A-Z0-9_]{1,80}")))
+        "$verdict: $reason"
+    }
+
     suspend fun systemState(): String = withContext(Dispatchers.IO) {
         val result = Shell.cmd(
             "if [ ! -e /data/adb/kitsune/system-mode ]; then echo ABSENT; " +

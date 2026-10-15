@@ -228,6 +228,13 @@ impl SuAppContext<'_> {
             stream.set_read_timeout(Some(remaining())).log()?;
             stream.set_write_timeout(Some(remaining())).log()?;
             let cfg = self.daemon.get_db_settings()?;
+            if std::mem::discriminant(&cfg.root_access)
+                != std::mem::discriminant(&self.info.cfg.root_access)
+                || std::mem::discriminant(&cfg.multiuser_mode)
+                    != std::mem::discriminant(&self.info.cfg.multiuser_mode)
+            {
+                return Ok(SuPolicy::Deny);
+            }
             // Big endian, versioned and fixed length. Intent extras never name a UID.
             for value in [
                 0x4b535531,
