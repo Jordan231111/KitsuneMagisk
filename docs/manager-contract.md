@@ -37,7 +37,10 @@ including partial writes. It accepts only deny, allow or restricted allow and
 known policy durations. It rejects disconnected callers, expired responses,
 invalid authentication flags, changed root/multiuser settings and lost SuList
 eligibility. Policy persistence happens in the daemon before acknowledgement;
-the manager never persists a grant from an untrusted intent. A one-time grant
+the manager never persists a grant from an untrusted intent. Persistence uses an
+atomic replacement with preserved notification/logging fields, compatible with
+Android 6 SQLite; [UPSERT requires SQLite 3.24](https://www.sqlite.org/lang_upsert.html#history)
+and failed on the older runtime lane. A one-time grant
 is not reused through the three-second policy cache. CLI policy changes invalidate
 that cache. Manager policy edits and database settings confirm the persisted value
 before reporting success; failed writes reload policy or reset the settings view.

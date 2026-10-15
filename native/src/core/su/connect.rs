@@ -267,14 +267,17 @@ impl SuAppContext<'_> {
                 // Preserve logging/notification preferences on an existing UID.
                 self.daemon
                     .db_exec(
-                        "INSERT INTO policies (uid,policy,until,logging,notification) \
-                     VALUES (?,?,CASE WHEN ?=0 THEN 0 ELSE strftime('%s','now')+? END,1,1) \
-                     ON CONFLICT(uid) DO UPDATE SET policy=excluded.policy,until=excluded.until",
+                        "INSERT OR REPLACE INTO policies (uid,policy,until,logging,notification) \
+                     VALUES (?,?,CASE WHEN ?=0 THEN 0 ELSE strftime('%s','now')+? END, \
+                     COALESCE((SELECT logging FROM policies WHERE uid=?),1), \
+                     COALESCE((SELECT notification FROM policies WHERE uid=?),1))",
                         &[
                             Integer(self.info.eval_uid as i64),
                             Integer(policy as i64),
                             Integer(seconds as i64),
                             Integer(seconds as i64),
+                            Integer(self.info.eval_uid as i64),
+                            Integer(self.info.eval_uid as i64),
                         ],
                     )
                     .sql_result()
