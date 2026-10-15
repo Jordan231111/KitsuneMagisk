@@ -320,4 +320,5 @@
     <string name="sulist_disable_required">To turn off SuList, select MagiskHide and restart.</string>
     <string name="su_user_label">Android user %1$d</string>
     <string name="hidden_cleanup">Full app installed. Remove the old hidden app on this screen.</string>
+    <string name="su_prompt_protection_summary">Block obscured touches and screen-reader control of root prompts. Turn off for assistive services you trust.</string>
 </resources>

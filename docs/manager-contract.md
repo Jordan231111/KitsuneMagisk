@@ -120,6 +120,11 @@ close/focus/auto-close variants. Background actions must not be replayed after
 process death. Inactive-slot installation points users to Android System Updates'
 Restart action; PR15 retains real-device OTA qualification.
 
+Prompt protection also suppresses accessibility controls on the consent surface.
+Its toggle is available on every API so trusted screen-reader users can opt out
+while retaining Android credential authentication. Android 12+ overlay blocking
+remains enabled independently.
+
 New product strings cover Simplified/Traditional Chinese, Vietnamese, Russian and
 Turkish, with Android's default-language fallback for other locales. The maintained
 libsu dispatcher remains in use; its root-service, parallel-request and hidden-

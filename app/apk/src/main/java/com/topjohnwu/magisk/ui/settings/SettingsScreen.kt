@@ -433,23 +433,21 @@ private fun SuperuserSection(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
-        // Tapjack (SDK < S)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            var tapjack by remember { mutableStateOf(Config.suTapjack) }
-            SettingsSwitch(
-                title = stringResource(CoreR.string.settings_su_tapjack_title),
-                summary = stringResource(CoreR.string.settings_su_tapjack_summary),
-                checked = tapjack,
-                onCheckedChange = {
-                    tapjack = it
-                    Config.suTapjack = it
-                }
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            )
-        }
+        // Keep the consent accessibility choice available on every API.
+        var tapjack by remember { mutableStateOf(Config.suTapjack) }
+        SettingsSwitch(
+            title = stringResource(CoreR.string.settings_su_tapjack_title),
+            summary = stringResource(CoreR.string.su_prompt_protection_summary),
+            checked = tapjack,
+            onCheckedChange = {
+                tapjack = it
+                Config.suTapjack = it
+            }
+        )
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
 
         Text(stringResource(CoreR.string.su_auth_migration), Modifier.padding(16.dp))
         // Authentication

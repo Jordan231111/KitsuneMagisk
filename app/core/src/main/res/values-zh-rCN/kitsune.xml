@@ -44,4 +44,5 @@
     <string name="sulist_disable_required">要关闭 SuList，请选择 MagiskHide 并重新启动。</string>
     <string name="su_user_label">Android 用户 %1$d</string>
     <string name="hidden_cleanup">完整应用已安装。请在此页面卸载旧的隐藏应用。</string>
+    <string name="su_prompt_protection_summary">阻止被遮挡的触摸和屏幕阅读器控制 root 提示。使用可信的辅助服务时可关闭。</string>
 </resources>

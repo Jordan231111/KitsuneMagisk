@@ -44,4 +44,5 @@
     <string name="sulist_disable_required">Чтобы выключить SuList, выберите MagiskHide и перезапустите устройство.</string>
     <string name="su_user_label">Пользователь Android %1$d</string>
     <string name="hidden_cleanup">Полное приложение установлено. Удалите старое скрытое приложение на этом экране.</string>
+    <string name="su_prompt_protection_summary">Блокировать касания под перекрывающими окнами и управление запросами root через экранный диктор. Отключите для доверенных служб специальных возможностей.</string>
 </resources>
