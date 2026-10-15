@@ -10,7 +10,11 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - run: .github/kvm.sh
+      - name: Configure repository toolchain wrapper
+        run: ./build.py ndk
       - name: Install exact stock image
         run: scripts/env.py "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'system-images;android-25;default;x86'
       - name: Observe stock boots and media-service restarts
