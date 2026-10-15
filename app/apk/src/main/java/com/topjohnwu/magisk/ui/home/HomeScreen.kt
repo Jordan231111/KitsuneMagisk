@@ -82,13 +82,10 @@ import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.download.DownloadEngine
-import com.topjohnwu.magisk.core.download.Subject
 import com.topjohnwu.magisk.core.ktx.reboot
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
-import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.magisk.ui.component.MagiskDialog
 import com.topjohnwu.magisk.ui.component.MarkdownTextAsync
 import com.topjohnwu.magisk.ui.component.rememberLoadingDialog
@@ -106,7 +103,10 @@ import com.topjohnwu.magisk.core.R as CoreR
 fun HomeScreen(
     viewModel: HomeViewModel,
     installVm: InstallViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    openInstall: Boolean = false,
+    onInstallHandled: () -> Unit = {},
+    onInstallManager: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -122,14 +122,10 @@ fun HomeScreen(
     var showRestoreDialog by rememberSaveable { mutableStateOf(false) }
     var showInstallDialog by rememberSaveable { mutableStateOf(false) }
     var envFixCode by remember { mutableIntStateOf(0) }
-    val activity = androidx.activity.compose.LocalActivity.current as? MainActivity
-    if (activity != null) {
-        val openInstall by activity.showInstall.collectAsStateWithLifecycle()
-        LaunchedEffect(openInstall) {
-            if (openInstall) {
-                showInstallDialog = true
-                activity.showInstall.value = false
-            }
+    LaunchedEffect(openInstall) {
+        if (openInstall) {
+            showInstallDialog = true
+            onInstallHandled()
         }
     }
 
@@ -188,9 +184,7 @@ fun HomeScreen(
             onDismiss = { showManagerDialog = false },
             onInstall = {
                 showManagerDialog = false
-                (context as? MainActivity)?.let {
-                    DownloadEngine.startWithActivity(it, Subject.App())
-                }
+                onInstallManager()
             }
         )
     }

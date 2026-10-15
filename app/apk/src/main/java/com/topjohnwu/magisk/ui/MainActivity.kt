@@ -139,7 +139,13 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                                     )
                                     MainScreen(
                                         requestedTab = requestedTab.collectAsStateWithLifecycle().value,
-                                        onTabHandled = { requestedTab.value = null },
+                                        onTabHandled = { requestedTab.compareAndSet(it, null) },
+                                        openInstall = showInstall.collectAsStateWithLifecycle().value,
+                                        onInstallHandled = { showInstall.value = false },
+                                        onInstallManager = {
+                                            com.topjohnwu.magisk.core.download.DownloadEngine.startWithActivity(
+                                                this@MainActivity, com.topjohnwu.magisk.core.download.Subject.App())
+                                        },
                                         superuserViewModel = superuserVm,
                                         onAuthenticate = { action ->
                                             extension.withAuthentication { if (it) action() }

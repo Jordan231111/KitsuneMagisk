@@ -68,7 +68,10 @@ enum class Tab(val titleRes: Int, val iconRes: Int) {
 fun MainScreen(
     modifier: Modifier = Modifier,
     requestedTab: Int? = null,
-    onTabHandled: () -> Unit = {},
+    onTabHandled: (Int) -> Unit = {},
+    openInstall: Boolean = false,
+    onInstallHandled: () -> Unit = {},
+    onInstallManager: () -> Unit = {},
     superuserViewModel: SuperuserViewModel? = null,
     onAuthenticate: ((onSuccess: () -> Unit) -> Unit)? = null,
 ) {
@@ -89,7 +92,7 @@ fun MainScreen(
         requestedTab?.let {
             val target = Tab.entries.getOrNull(it) ?: Tab.HOME
             pagerState.scrollToPage(visibleTabs.indexOf(target).takeIf { page -> page >= 0 } ?: initialPage)
-            onTabHandled()
+            onTabHandled(it)
         }
     }
     var moduleFabAction by remember { mutableStateOf<(() -> Unit)?>(null) }
@@ -153,7 +156,10 @@ fun MainScreen(
                     }
                     CollectNavEvents(vm, navigator)
                     CollectNavEvents(installVm, navigator)
-                    HomeScreen(vm, installVm)
+                    HomeScreen(vm, installVm,
+                        openInstall = openInstall && isCurrentPage,
+                        onInstallHandled = onInstallHandled,
+                        onInstallManager = onInstallManager)
                 }
                 Tab.SUPERUSER -> {
                     val activity = LocalActivity.current as? ComponentActivity
