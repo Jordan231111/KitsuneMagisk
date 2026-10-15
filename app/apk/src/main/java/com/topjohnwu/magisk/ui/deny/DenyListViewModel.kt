@@ -167,34 +167,34 @@ class DenyListViewModel : AsyncLoadViewModel() {
         _loading.value = true
         failure.value = null
         try {
-        val (current, rows) = HidePolicy.selection()
-        status.value = current
-        val apps = withContext(Dispatchers.Default) {
-            val pm = AppContext.packageManager
-            val denyList = rows.map { CmdlineListItem(it) }
-            val apps = pm.getInstalledApplications(MATCH_UNINSTALLED_PACKAGES).run {
-                asFlow()
-                    .filter { AppContext.packageName != it.packageName }
-                    .concurrentMap { AppProcessInfo(it, pm, denyList) }
-                    .filter { it.processes.isNotEmpty() }
-                    .concurrentMap { DenyAppState(it) }
-                    .toCollection(ArrayList(size + 1))
-            }
-            apps += DenyAppState(
-                AppProcessInfo.webViewZygote(
-                    pm,
-                    denyList,
-                    "WebView Zygote",
+            val (current, rows) = HidePolicy.selection()
+            status.value = current
+            val apps = withContext(Dispatchers.Default) {
+                val pm = AppContext.packageManager
+                val denyList = rows.map { CmdlineListItem(it) }
+                val apps = pm.getInstalledApplications(MATCH_UNINSTALLED_PACKAGES).run {
+                    asFlow()
+                        .filter { AppContext.packageName != it.packageName }
+                        .concurrentMap { AppProcessInfo(it, pm, denyList) }
+                        .filter { it.processes.isNotEmpty() }
+                        .concurrentMap { DenyAppState(it) }
+                        .toCollection(ArrayList(size + 1))
+                }
+                apps += DenyAppState(
+                    AppProcessInfo.webViewZygote(
+                        pm,
+                        denyList,
+                        "WebView Zygote",
+                    )
                 )
-            )
-            apps.sortWith(compareBy(
-                { !it.initiallyChecked },
-                { it.info }
-            ))
-            apps
-        }
-        val expanded = _allApps.value.filter { it.isExpanded }.map { it.info.packageName }.toSet()
-        _allApps.value = apps.map { it.copy(isExpanded = it.info.packageName in expanded) }
+                apps.sortWith(compareBy(
+                    { !it.initiallyChecked },
+                    { it.info }
+                ))
+                apps
+            }
+            val expanded = _allApps.value.filter { it.isExpanded }.map { it.info.packageName }.toSet()
+            _allApps.value = apps.map { it.copy(isExpanded = it.info.packageName in expanded) }
         } catch (e: HideFailure) {
             status.value = null
             failure.value = e.messageRes

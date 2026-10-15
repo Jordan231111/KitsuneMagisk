@@ -48,7 +48,7 @@ has deliberately selected automatic response. With authentication enabled,
 automatic allow must show consent and authenticate. Both the daemon's requirement
 and the manager's setting must be satisfied. Removing a screen lock never turns
 authentication off. Cancellation, unavailable credentials, lockout, timeout and
-process death cannot issue a grant; late callbacks are ignored. The visible
+process death before a valid response cannot issue a grant; late callbacks are ignored. The visible
 request timer remains bounded when changing duration or opening authentication.
 
 Historical mode 0 remains disabled. Every nonzero `su_biometric` value, including
@@ -109,3 +109,11 @@ New product strings cover Simplified/Traditional Chinese, Vietnamese, Russian an
 Turkish, with Android's default-language fallback for other locales. The maintained
 libsu dispatcher remains in use; its root-service, parallel-request and hidden-
 manager tests qualify the replacement instead of reintroducing the old 5.x fork.
+
+A prepared MuMu boot exposed a missing standard `su` entry after vendor root was
+disabled, even though the owned runtime and daemon remained valid. The maintained
+mount tree now also considers missing PATH directories under protected root-owned
+system/vendor/product/system_ext parents. It creates them through the existing
+mount machinery, never by writing the persistent partition or adding a second
+late unmount engine. Existing symlinks and writable/unowned parents do not qualify
+for this new candidate path. Application-PATH root is a required runtime test.

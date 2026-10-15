@@ -250,7 +250,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                 // to run a root operation, even when it came from a notification.
                 if (action != Const.Value.FLASH_ZIP || uri == null ||
                     (uri.scheme != "file" && uri.scheme != "content")) {
-                    intentState.value = null
+                    intentState.compareAndSet(currentIntent, null)
                     return@LaunchedEffect
                 }
                 val result = confirmation.awaitConfirm(
@@ -261,7 +261,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                     navigator.push(Route.Flash(Const.Value.FLASH_ZIP, uri.toString()))
                 }
             }
-            intentState.value = null
+            intentState.compareAndSet(currentIntent, null)
         }
     }
 

@@ -3,7 +3,7 @@
 set -e
 . scripts/test_common.sh
 
-emu_args_base="-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -read-only -no-snapshot -cores $core_count"
+emu_args_base="-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -cores $core_count"
 log_args="-show-kernel -logcat ''"
 emu_args=
 emu_pid=
@@ -49,7 +49,9 @@ stop_emulator() {
     return
   fi
   if kill -0 "$emu_pid" >/dev/null 2>&1; then
-    kill -INT "$emu_pid" >/dev/null 2>&1 || true
+    # Flush guest writes before terminating QEMU, including installed APK data.
+    adb shell sync >/dev/null 2>&1 || true
+    adb emu kill >/dev/null 2>&1 || true
     local count=0
     while kill -0 "$emu_pid" >/dev/null 2>&1 && [ "$count" -lt 30 ]; do
       sleep 1

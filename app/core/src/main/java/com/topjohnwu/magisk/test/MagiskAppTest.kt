@@ -46,6 +46,18 @@ class MagiskAppTest : BaseTest {
     }
 
     @Test
+    fun testRootIsAvailableOnTheApplicationPath() {
+        val process = ProcessBuilder("su", "-c", "id").redirectErrorStream(true).start()
+        try {
+            val result = process.inputStream.bufferedReader().use { it.readText() }
+            assertEquals("The application PATH must expose MagiskSU", 0, process.waitFor())
+            assertTrue("The verified manager must retain root: $result", result.contains("uid=0"))
+        } finally {
+            process.destroy()
+        }
+    }
+
+    @Test
     fun testSuNotifications() {
         // Exercise both notifications on every API, including pre-O builders.
         Notifications.suNotification(true, "Kitsune test")

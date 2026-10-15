@@ -110,7 +110,7 @@ fun LogScreen(
                             IconButton(onClick = saveMagiskLog) {
                                 Icon(
                                     imageVector = Icons.Default.Download,
-                                    contentDescription = stringResource(CoreR.string.menuSaveLog),
+                                    contentDescription = stringResource(CoreR.string.manager_diagnostics),
                                 )
                             }
                         }

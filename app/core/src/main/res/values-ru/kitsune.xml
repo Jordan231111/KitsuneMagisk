@@ -38,4 +38,7 @@
     <string name="system_mode_uninstall_msg">Удалить эту установку системного режима. Модули, правила root и скрипты сохраняются. По завершении перезапустите устройство.</string>
     <string name="system_mode_recovery">Восстановить системный режим</string>
     <string name="system_mode_recovery_msg">Восстановить прерванную установку системного режима по сохранённой транзакции. По завершении перезапустите устройство.</string>
+    <string name="kitsune_notice">Экспериментальная сборка KitsuneMagisk на основе Magisk. Обновляйтесь из проверенных выпусков этого проекта.</string>
+    <string name="kitsune_upstream_support">KitsuneMagisk основан на Magisk. Эти ссылки на пожертвования поддерживают разработчиков исходного Magisk.</string>
+    <string name="kitsune_credits">Участники Kitsune и Magisk</string>
 </resources>

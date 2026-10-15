@@ -37,8 +37,8 @@ class SuRequestHandler(
             val path = intent.getStringExtra("socket") ?: return@withContext false
             require(path.matches(Regex("/[^\\n]+/\\.magisk/su_[0-9]+_[0-9]+")))
             val connection = LocalSocket().also { socket = it }
-            connection.soTimeout = 5000
             connection.connect(LocalSocketAddress(path, LocalSocketAddress.Namespace.FILESYSTEM))
+            connection.soTimeout = 5000
             require(connection.peerCredentials.uid == 0)
             val input = DataInputStream(connection.inputStream)
             require(input.readInt() == 0x4b535531)

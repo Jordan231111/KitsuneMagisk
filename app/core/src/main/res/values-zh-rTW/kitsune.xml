@@ -38,4 +38,7 @@
     <string name="system_mode_uninstall_msg">移除此系統模式安裝。保留模組、root 政策與指令碼。完成後請重新啟動裝置。</string>
     <string name="system_mode_recovery">復原系統模式</string>
     <string name="system_mode_recovery_msg">使用已儲存的交易復原中斷的系統模式安裝。完成後請重新啟動裝置。</string>
+    <string name="kitsune_notice">基於 Magisk 的實驗性 KitsuneMagisk 組建。請使用本專案已驗證的發行版本更新。</string>
+    <string name="kitsune_upstream_support">KitsuneMagisk 基於 Magisk。這些捐款連結用於支持 Magisk 上游維護者。</string>
+    <string name="kitsune_credits">Kitsune 與 Magisk 貢獻者</string>
 </resources>

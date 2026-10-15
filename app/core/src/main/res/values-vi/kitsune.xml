@@ -38,4 +38,7 @@
     <string name="system_mode_uninstall_msg">Gỡ bản cài Chế độ hệ thống này. Giữ mô-đun, chính sách root và tập lệnh. Khởi động lại thiết bị khi hoàn tất.</string>
     <string name="system_mode_recovery">Khôi phục Chế độ hệ thống</string>
     <string name="system_mode_recovery_msg">Khôi phục cài đặt Chế độ hệ thống bị gián đoạn bằng giao dịch đã lưu. Khởi động lại thiết bị khi hoàn tất.</string>
+    <string name="kitsune_notice">Bản KitsuneMagisk thử nghiệm dựa trên Magisk. Dùng bản phát hành đã xác minh của dự án này để cập nhật.</string>
+    <string name="kitsune_upstream_support">KitsuneMagisk dựa trên Magisk. Các liên kết quyên góp này hỗ trợ nhóm duy trì Magisk gốc.</string>
+    <string name="kitsune_credits">Người đóng góp Kitsune và Magisk</string>
 </resources>

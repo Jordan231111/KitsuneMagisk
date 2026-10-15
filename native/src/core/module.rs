@@ -498,7 +498,30 @@ fn inject_magisk_bins(system: &mut FsNode, is_emulator: bool) {
             continue;
         }
 
-        // Override existing su first
+        // A declared PATH directory may not exist yet (for example /product/bin).
+        // Build it through the same owned mount tree when its parent is protected.
+        // This also avoids depending on a vendor su entry removed later in boot.
+        let path = Utf8CString::from(orig_item);
+        if !orig_item.split('/').any(|part| part == "." || part == "..")
+            && matches!(
+                nix::sys::stat::lstat(path.as_cstr()),
+                Err(nix::errno::Errno::ENOENT)
+            )
+            && let Some(parent) = path.parent_dir()
+        {
+            let parent = Utf8CString::from(parent);
+            if let Ok(attr) = parent.follow_link().get_attr()
+                && attr.is_dir()
+                && attr.st.st_uid == 0
+                && attr.st.st_mode & 0o022 == 0
+                && attr.st.st_mode & 0o001 != 0
+            {
+                candidates.push((strip_system_prefix(orig_item), 0));
+                continue;
+            }
+        }
+
+        // Prefer existing su over populated directories.
         let su_path = Utf8CString::from(format!("{orig_item}/su"));
         if su_path.exists() {
             let item = strip_system_prefix(orig_item);

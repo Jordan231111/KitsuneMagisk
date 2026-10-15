@@ -314,4 +314,7 @@
     <string name="su_auth_migration">Legacy manager biometrics now use Android authentication. Keep a device screen lock configured.</string>
     <string name="lite_migration">For the former Lite setup, select SuList, leave Zygisk off, and disable modules before upgrading.</string>
     <string name="ota_restart">Installation complete. Finish the update with Restart in Android System Updates.</string>
+    <string name="kitsune_notice">Experimental KitsuneMagisk build based on Magisk. Use this project’s verified releases for updates.</string>
+    <string name="kitsune_upstream_support">KitsuneMagisk builds on Magisk. These donation links support Magisk’s upstream maintainers.</string>
+    <string name="kitsune_credits">Kitsune and Magisk contributors</string>
 </resources>

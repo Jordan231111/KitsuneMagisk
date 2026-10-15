@@ -12,8 +12,8 @@ object ManagerDiagnostics {
     @Volatile var lastSystemOperation: String? = null
     @Volatile var lastSystemSuccess: Boolean? = null
 
-    val transactionStates = setOf("PREFLIGHTED", "STAGED", "APPLYING", "COMMITTED",
-        "BOOT_VERIFIED", "ROLLING_BACK", "ROLLED_BACK", "UNINSTALLING", "UNINSTALLED", "FAILED")
+    val transactionStates = setOf("PREFLIGHTED", "STAGED", "COMMITTED", "BOOT_VERIFIED",
+        "ROLLBACK_REQUIRED", "ROLLING_BACK", "UNINSTALLED", "FAILED")
 
     fun parseTransaction(lines: List<String>): String {
         if (lines == listOf("ABSENT")) return "ABSENT"

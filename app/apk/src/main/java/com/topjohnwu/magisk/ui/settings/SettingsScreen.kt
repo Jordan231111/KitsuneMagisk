@@ -81,6 +81,13 @@ fun SettingsScreen(
             CustomizationSection(viewModel = viewModel)
             Spacer(Modifier.height(16.dp))
             AppSettingsSection()
+            if (Info.isRooted) {
+            SettingsArrow(
+                title = stringResource(CoreR.string.system_mode_title),
+                summary = stringResource(CoreR.string.system_mode_status_summary),
+                onClick = { viewModel.navigateTo(com.topjohnwu.magisk.ui.navigation.Route.SystemMode) }
+            )
+            }
             if (Info.env.isActive) {
                 Spacer(Modifier.height(16.dp))
                 MagiskSection(viewModel = viewModel)
@@ -398,11 +405,7 @@ private fun MagiskSection(
                 summary = stringResource(CoreR.string.hide_list_summary),
                 onClick = viewModel::navigateToDenyList
             )
-            SettingsArrow(
-                title = stringResource(CoreR.string.system_mode_title),
-                summary = stringResource(CoreR.string.system_mode_status_summary),
-                onClick = { viewModel.navigateTo(com.topjohnwu.magisk.ui.navigation.Route.SystemMode) }
-            )
+
         }
     }
 }

@@ -38,4 +38,7 @@
     <string name="system_mode_uninstall_msg">移除此系统模式安装。保留模块、root 策略和脚本。完成后请重新启动设备。</string>
     <string name="system_mode_recovery">恢复系统模式</string>
     <string name="system_mode_recovery_msg">使用已保存的事务恢复中断的系统模式安装。完成后请重新启动设备。</string>
+    <string name="kitsune_notice">基于 Magisk 的实验性 KitsuneMagisk 构建。请使用本项目已验证的发布版本更新。</string>
+    <string name="kitsune_upstream_support">KitsuneMagisk 基于 Magisk。这些捐赠链接用于支持 Magisk 上游维护者。</string>
+    <string name="kitsune_credits">Kitsune 和 Magisk 贡献者</string>
 </resources>

@@ -94,7 +94,7 @@ class ManagerContractTest : BaseTest {
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.SETTINGS}")
             assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.settings_customization))), 30000))
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.INSTALL}")
-            assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.install_method_title))), 10000))
+            assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.select_patch_file))), 10000))
             device.pressBack()
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.SETTINGS}")
             assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.settings_customization))), 10000))
@@ -130,4 +130,103 @@ class ManagerContractTest : BaseTest {
             device.pressHome()
         }
     }
+
+    private fun shellRequest(): java.io.InputStream {
+        val binary = Shell.cmd("magisk --path").exec().out.single() + "/su"
+        val caller = AutoCloseInputStream(uiAutomation.executeShellCommand("id -u"))
+            .reader().use { it.readText().trim() }
+        val command = if (caller == "0") "$binary -s $binary 2000 -c id" else "$binary -c id"
+        return AutoCloseInputStream(uiAutomation.executeShellCommand(command))
+    }
+
+    private fun withConsentPolicy(block: () -> Unit) {
+        val db = ServiceLocator.policyDB
+        val settings = ServiceLocator.settingsDB
+        val policy = runBlocking { db.fetch(2000) }
+        val oldAuth = runBlocking { settings.fetch(Config.Key.SU_BIOMETRIC, -1) }
+        val oldAccess = runBlocking { settings.fetch(Config.Key.ROOT_ACCESS, -1) }
+        val auto = Config.suAutoResponse
+        val timeout = Config.suDefaultTimeout
+        val tapjack = Config.suTapjack
+        try {
+            Config.suAutoResponse = Config.Value.SU_PROMPT
+            Config.suDefaultTimeout = 15
+            Config.suTapjack = false
+            Config.suAuth = false
+            runBlocking { db.update(SuPolicy(2000, logging = false, notification = false, remain = 0)) }
+            block()
+        } finally {
+            runBlocking {
+                if (oldAuth == -1) settings.delete(Config.Key.SU_BIOMETRIC) else settings.put(Config.Key.SU_BIOMETRIC, oldAuth)
+                if (oldAccess == -1) settings.delete(Config.Key.ROOT_ACCESS) else settings.put(Config.Key.ROOT_ACCESS, oldAccess)
+                if (policy == null) db.delete(2000) else db.update(policy)
+            }
+            Config.suAutoResponse = auto
+            Config.suDefaultTimeout = timeout
+            Config.suTapjack = tapjack
+            device.pressHome()
+        }
+    }
+
+    private fun grantVisibleRequest() {
+        assertTrue("Consent must be visible", device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.su_warning))), 15000))
+        // The one-second consent delay is intentional tapjacking protection.
+        android.os.SystemClock.sleep(1200)
+        val grant = device.findObject(By.text(appContext.getString(CoreR.string.grant)))
+        assertNotNull("Grant control must be accessible", grant)
+        grant.click()
+    }
+
+    @Test fun testOnceGrantReplayAndImmediateRevocation() = withConsentPolicy {
+        val prefs = ServiceLocator.timeoutPrefs
+        val key = "com.android.shell"
+        val old = prefs.getInt(key, -1)
+        val monitor = instrumentation.addMonitor(android.content.IntentFilter(Intent.ACTION_VIEW).apply {
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }, null, false)
+        try {
+            prefs.edit().putInt(key, 1).commit()
+            lateinit var original: Intent
+            shellRequest().reader().use { response ->
+                val activity = monitor.waitForActivityWithTimeout(30000)
+                assertNotNull(activity)
+                original = Intent(activity.intent)
+                grantVisibleRequest()
+                assertTrue(response.readText().contains("uid=0"))
+            }
+            runBlocking {
+                assertEquals(SuPolicy.QUERY, ServiceLocator.policyDB.fetch(2000)?.policy)
+                val replay = SuRequestHandler(appContext.packageManager, ServiceLocator.policyDB)
+                try { assertFalse(replay.start(original)) } finally { replay.close() }
+            }
+            Config.suAutoResponse = Config.Value.SU_AUTO_DENY
+            shellRequest().reader().use { assertFalse("Once must not be cached as allow", it.readText().contains("uid=0")) }
+            runBlocking { assertEquals(SuPolicy.DENY, ServiceLocator.policyDB.fetch(2000)?.policy) }
+        } finally {
+            instrumentation.removeMonitor(monitor)
+            prefs.edit().apply { if (old == -1) remove(key) else putInt(key, old) }.commit()
+        }
+    }
+
+    @Test fun testUnavailableCredentialRetainsLegacyRequirement() = withConsentPolicy {
+        org.junit.Assume.assumeFalse(com.topjohnwu.magisk.core.Info.isDeviceSecure)
+        runBlocking { ServiceLocator.settingsDB.put(Config.Key.SU_BIOMETRIC, 2) }
+        assertTrue("Legacy biometric mode must remain enabled without enrollment", Config.suAuth)
+        shellRequest().reader().use {
+            grantVisibleRequest()
+            assertFalse(it.readText().contains("uid=0"))
+        }
+        runBlocking { assertEquals(SuPolicy.QUERY, ServiceLocator.policyDB.fetch(2000)?.policy) }
+    }
+
+    @Test fun testAccessChangeRejectsPendingGrant() = withConsentPolicy {
+        shellRequest().reader().use {
+            assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.su_warning))), 15000))
+            runBlocking { ServiceLocator.settingsDB.put(Config.Key.ROOT_ACCESS, Config.Value.ROOT_ACCESS_DISABLED) }
+            grantVisibleRequest()
+            assertFalse(it.readText().contains("uid=0"))
+        }
+        runBlocking { assertEquals(SuPolicy.QUERY, ServiceLocator.policyDB.fetch(2000)?.policy) }
+    }
+
 }
