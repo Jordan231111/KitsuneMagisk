@@ -149,6 +149,7 @@ val Activity.launchPackage: String? get() {
 }
 
 fun Activity.relaunch() {
-    startActivity(Intent(intent).setFlags(0))
-    finish()
+    // Starting a singleTask activity again delivers onNewIntent to this same
+    // instance; finishing it would close the launcher instead of refreshing it.
+    recreate()
 }
