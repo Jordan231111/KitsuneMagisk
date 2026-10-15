@@ -43,4 +43,5 @@
     <string name="kitsune_credits">Kitsune ve Magisk katkıcıları</string>
     <string name="sulist_disable_required">SuList kapatmak için MagiskHide seçip yeniden başlatın.</string>
     <string name="su_user_label">Android kullanıcısı %1$d</string>
+    <string name="hidden_cleanup">Tam uygulama kuruldu. Bu ekranda eski gizli uygulamayı kaldırın.</string>
 </resources>

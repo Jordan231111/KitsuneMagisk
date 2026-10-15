@@ -43,4 +43,5 @@
     <string name="kitsune_credits">Kitsune 與 Magisk 貢獻者</string>
     <string name="sulist_disable_required">若要關閉 SuList，請選擇 MagiskHide 並重新啟動。</string>
     <string name="su_user_label">Android 使用者 %1$d</string>
+    <string name="hidden_cleanup">完整應用程式已安裝。請在此畫面解除安裝舊的隱藏應用程式。</string>
 </resources>

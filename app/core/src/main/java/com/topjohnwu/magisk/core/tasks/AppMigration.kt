@@ -289,7 +289,14 @@ object AppMigration {
                         context.startActivity(Intent(Intent.ACTION_DELETE,
                             android.net.Uri.fromParts("package", hiddenPackage, null))
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    }.onFailure { context.toast(R.string.failure, Toast.LENGTH_LONG) }
+                    }.onFailure {
+                        context.toast(R.string.hidden_cleanup, Toast.LENGTH_LONG)
+                        runCatching {
+                            context.startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                android.net.Uri.fromParts("package", hiddenPackage, null))
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }
+                    }
                 } else {
                     context.toast(R.string.failure, Toast.LENGTH_LONG)
                 }
@@ -307,6 +314,9 @@ object AppMigration {
             Timber.e(e)
             false
         } catch (e: SecurityException) {
+            Timber.e(e)
+            false
+        } catch (e: android.content.ActivityNotFoundException) {
             Timber.e(e)
             false
         }

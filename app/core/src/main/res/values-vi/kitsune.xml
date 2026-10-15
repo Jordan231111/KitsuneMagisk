@@ -43,4 +43,5 @@
     <string name="kitsune_credits">Người đóng góp Kitsune và Magisk</string>
     <string name="sulist_disable_required">Để tắt SuList, chọn MagiskHide rồi khởi động lại.</string>
     <string name="su_user_label">Người dùng Android %1$d</string>
+    <string name="hidden_cleanup">Đã cài ứng dụng đầy đủ. Hãy gỡ ứng dụng ẩn cũ trên màn hình này.</string>
 </resources>

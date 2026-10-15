@@ -100,7 +100,10 @@ attestation guarantee. Payload signature checks, PR10 verified updates, bootstra
 launch and restore remain mandatory. Without root, the hidden launcher renders
 its recovery dialog and uses Android's installer to restore the full APK. It
 checks the installed signer before asking Android to remove the old hidden app;
-installation or uninstall cancellation does not silently claim restored root. The global signature bypass remains retired.
+installation or uninstall cancellation does not silently claim restored root.
+Stub revision 42 carries the launcher/preferences and uninstall-permission changes;
+older stubs upgrade through the existing signed self-update path when root is
+available, or open their Android app settings for cleanup after rootless restore. The global signature bypass remains retired.
 
 The separate obsolete Lite distribution remains retired. Its usable configuration
 is SuList, no enabled modules and Zygisk off. Users must persist SuList before

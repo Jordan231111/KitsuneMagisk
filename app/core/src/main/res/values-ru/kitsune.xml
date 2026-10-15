@@ -43,4 +43,5 @@
     <string name="kitsune_credits">Участники Kitsune и Magisk</string>
     <string name="sulist_disable_required">Чтобы выключить SuList, выберите MagiskHide и перезапустите устройство.</string>
     <string name="su_user_label">Пользователь Android %1$d</string>
+    <string name="hidden_cleanup">Полное приложение установлено. Удалите старое скрытое приложение на этом экране.</string>
 </resources>

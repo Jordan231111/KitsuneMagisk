@@ -319,4 +319,5 @@
     <string name="kitsune_credits">Kitsune and Magisk contributors</string>
     <string name="sulist_disable_required">To turn off SuList, select MagiskHide and restart.</string>
     <string name="su_user_label">Android user %1$d</string>
+    <string name="hidden_cleanup">Full app installed. Remove the old hidden app on this screen.</string>
 </resources>
