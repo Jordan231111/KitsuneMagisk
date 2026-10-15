@@ -298,8 +298,15 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                 showInvalidState.value = true
             } else {
                 lifecycleScope.launch {
-                    if (!AppMigration.restoreApp(this@MainActivity)) {
-                        toast(CoreR.string.failure, Toast.LENGTH_LONG)
+                    if (Info.isRooted) {
+                        if (!AppMigration.restoreApp(this@MainActivity)) {
+                            toast(CoreR.string.failure, Toast.LENGTH_LONG)
+                        }
+                    } else {
+                        showInvalidState.value = true
+                        if (!AppMigration.restoreWithoutRoot(this@MainActivity)) {
+                            toast(CoreR.string.failure, Toast.LENGTH_LONG)
+                        }
                     }
                 }
             }

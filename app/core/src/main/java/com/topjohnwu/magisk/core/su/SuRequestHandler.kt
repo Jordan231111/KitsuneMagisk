@@ -8,6 +8,7 @@ import android.net.LocalSocketAddress
 import android.os.SystemClock
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
+import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.core.data.magiskdb.PolicyDao
 import com.topjohnwu.magisk.core.ktx.getPackageInfo
 import com.topjohnwu.magisk.core.model.su.SuPolicy
@@ -24,6 +25,8 @@ class SuRequestHandler(
     private var socket: LocalSocket? = null
     private var responded = false
     var requiresAuthentication = true
+        private set
+    var userId = 0
         private set
     var expiresAt = 0L
         private set
@@ -49,10 +52,8 @@ class SuRequestHandler(
             require(uid > 0 && pid > 0 && auth in 0..1 && remaining in 1..70000)
             requiresAuthentication = auth == 1 || Config.suAuth
             expiresAt = SystemClock.elapsedRealtime() + remaining - 1000
-            pkgInfo = pm.getPackageInfo(uid, pid) ?: PackageInfo().apply {
-                sharedUserId = (pm.getNameForUid(uid)
-                    ?: throw PackageManager.NameNotFoundException()).substringBefore(':')
-            }
+            userId = uid / 100000
+            pkgInfo = requestPackage(uid, pid)
             if (pkgInfo.packageName == BuildConfig.APP_PACKAGE_NAME) {
                 respond(SuPolicy.DENY, -1)
                 return@withContext false
@@ -73,6 +74,30 @@ class SuRequestHandler(
             close()
             false
         }
+    }
+
+    private fun requestPackage(uid: Int, pid: Int): PackageInfo {
+        runCatching { pm.getPackageInfo(uid, pid) }.getOrNull()?.let { return it }
+        // Owner-managed requests can originate in a profile unavailable to the
+        // owner's PackageManager. Resolve the actual UID through our root service.
+        val packages = RootUtils.getPackagesForUid(uid)?.takeIf { it.isNotEmpty() }
+            ?: throw PackageManager.NameNotFoundException()
+        if (packages.size == 1) {
+            val name = packages.single()
+            return runCatching {
+                pm.getPackageInfo(name, PackageManager.MATCH_UNINSTALLED_PACKAGES)
+            }.getOrElse {
+                PackageInfo().apply {
+                    packageName = name
+                    applicationInfo = android.content.pm.ApplicationInfo().apply {
+                        packageName = name
+                        this.uid = uid
+                        nonLocalizedLabel = name
+                    }
+                }
+            }
+        }
+        return PackageInfo().apply { sharedUserId = packages.sorted().joinToString(", ") }
     }
 
     suspend fun respond(action: Int, time: Long, authenticated: Boolean = false) =

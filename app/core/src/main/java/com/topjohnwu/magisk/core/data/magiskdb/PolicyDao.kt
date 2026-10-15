@@ -12,11 +12,16 @@ class PolicyDao : MagiskDB() {
         val query = "DELETE FROM ${Table.POLICY} WHERE " +
             "(until > 0 AND until < strftime(\"%s\", \"now\")) OR until < 0"
         exec(query)
+
     }
 
     suspend fun delete(uid: Int) {
         val query = "DELETE FROM ${Table.POLICY} WHERE uid=$uid"
         exec(query)
+        val count = exec("SELECT count(*) AS remaining FROM ${Table.POLICY} WHERE uid=$uid") {
+            it["remaining"]?.toIntOrNull()
+        }.singleOrNull()
+        if (count != 0) throw java.io.IOException("Could not confirm policy removal")
     }
 
     suspend fun fetch(uid: Int): SuPolicy? {
@@ -32,10 +37,18 @@ class PolicyDao : MagiskDB() {
         }
         val query = "REPLACE INTO ${Table.POLICY} ${map.toQuery()}"
         exec(query)
+        val saved = fetch(policy.uid)
+        if (saved == null || saved.policy != policy.policy || saved.logging != policy.logging ||
+            saved.notification != policy.notification ||
+            (policy.remain <= 0 && saved.remain != policy.remain) ||
+            (policy.remain > 0 && saved.remain !in (policy.remain - 5).coerceAtLeast(1)..policy.remain)) {
+            throw java.io.IOException("Could not confirm policy update")
+        }
     }
 
     suspend fun fetchAll(): List<SuPolicy> {
-        val query = "$SELECT_QUERY FROM ${Table.POLICY} WHERE uid/100000=${Const.USER_ID}"
+        val query = "$SELECT_QUERY FROM ${Table.POLICY} WHERE uid/100000=${Const.USER_ID} " +
+            "AND (until=0 OR until>strftime(\"%s\", \"now\"))"
         return exec(query, ::toPolicy).filterNotNull()
     }
 

@@ -19,6 +19,7 @@ import com.topjohnwu.magisk.core.su.SuRequestHandler
 import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.BeforeClass
@@ -227,6 +228,47 @@ class ManagerContractTest : BaseTest {
             assertFalse(it.readText().contains("uid=0"))
         }
         runBlocking { assertEquals(SuPolicy.QUERY, ServiceLocator.policyDB.fetch(2000)?.policy) }
+    }
+
+
+    @Test fun testRejectedWritesDoNotReportSavedPolicyOrSettings() = runBlocking {
+        val db = ServiceLocator.policyDB
+        val settings = ServiceLocator.settingsDB
+        val uid = 99899
+        val key = "kitsune_pr13_probe"
+        org.junit.Assume.assumeTrue(db.fetch(uid) == null && settings.fetch(key, -1) == -1)
+        val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO + kotlinx.coroutines.SupervisorJob())
+        val config = object : com.topjohnwu.magisk.core.repository.DBConfig {
+            override val settingsDB = settings
+            override val stringDB = ServiceLocator.stringDB
+            override val coroutineScope = scope
+            var probe by dbSettings(key, false)
+        }
+        try {
+            db.update(SuPolicy(uid, SuPolicy.DENY, 0))
+            settings.put(key, 0)
+            db.exec("CREATE TRIGGER kitsune_pr13_policy_write BEFORE INSERT ON policies WHEN NEW.uid=$uid BEGIN SELECT RAISE(FAIL, \"probe\"); END")
+            try { db.update(SuPolicy(uid, SuPolicy.ALLOW, 0)); fail("Rejected grant reported success") }
+            catch (_: java.io.IOException) {}
+            assertEquals(SuPolicy.DENY, db.fetch(uid)?.policy)
+            db.exec("CREATE TRIGGER kitsune_pr13_policy_delete BEFORE DELETE ON policies WHEN OLD.uid=$uid BEGIN SELECT RAISE(FAIL, \"probe\"); END")
+            try { db.delete(uid); fail("Rejected revoke reported success") }
+            catch (_: java.io.IOException) {}
+            assertNotNull(db.fetch(uid))
+            db.exec("CREATE TRIGGER kitsune_pr13_setting_write BEFORE INSERT ON settings WHEN NEW.key=\"$key\" BEGIN SELECT RAISE(FAIL, \"probe\"); END")
+            assertFalse(config.probe)
+            val revision = com.topjohnwu.magisk.core.repository.DBConfig.revision
+            val before = revision.value
+            config.probe = true
+            kotlinx.coroutines.withTimeout(5000) { revision.first { it != before } }
+            assertFalse("Failed writes must not change the cached value", config.probe)
+            assertEquals(0, settings.fetch(key))
+        } finally {
+            scope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+            db.exec("DROP TRIGGER IF EXISTS kitsune_pr13_policy_write; DROP TRIGGER IF EXISTS kitsune_pr13_policy_delete; DROP TRIGGER IF EXISTS kitsune_pr13_setting_write;")
+            db.delete(uid)
+            settings.delete(key)
+        }
     }
 
 }

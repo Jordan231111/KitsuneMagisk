@@ -41,4 +41,6 @@
     <string name="kitsune_notice">基於 Magisk 的實驗性 KitsuneMagisk 組建。請使用本專案已驗證的發行版本更新。</string>
     <string name="kitsune_upstream_support">KitsuneMagisk 基於 Magisk。這些捐款連結用於支持 Magisk 上游維護者。</string>
     <string name="kitsune_credits">Kitsune 與 Magisk 貢獻者</string>
+    <string name="sulist_disable_required">若要關閉 SuList，請選擇 MagiskHide 並重新啟動。</string>
+    <string name="su_user_label">Android 使用者 %1$d</string>
 </resources>

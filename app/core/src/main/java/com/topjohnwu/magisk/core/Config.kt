@@ -155,9 +155,16 @@ object Config : PreferenceConfig, DBConfig {
     var suMntNamespaceMode by dbSettings(Key.SU_MNT_NS, Value.NAMESPACE_MODE_REQUESTER)
     var suMultiuserMode by dbSettings(Key.SU_MULTIUSER_MODE, Value.MULTIUSER_MODE_OWNER_ONLY)
     var suAuth: Boolean
-        get() = kotlinx.coroutines.runBlocking { settingsDB.fetch(Key.SU_BIOMETRIC, 0) != 0 }
+        get() = prefs.getBoolean(SU_FINGERPRINT, false) || kotlinx.coroutines.runBlocking {
+            // A successful query returns one row even when the legacy key is absent.
+            // An unavailable/malformed database must not disable authentication.
+            settingsDB.exec("SELECT COALESCE((SELECT value FROM settings WHERE key=\"${Key.SU_BIOMETRIC}\" LIMIT 1),0) AS value") {
+                it["value"]?.toIntOrNull()
+            }.singleOrNull()?.let { it != 0 } ?: true
+        }
         set(value) {
             kotlinx.coroutines.runBlocking { settingsDB.put(Key.SU_BIOMETRIC, if (value) 1 else 0) }
+            prefs.edit { remove(SU_FINGERPRINT) }
         }
     var suReAuth by preference(Key.SU_REAUTH, false)
     var suTapjack by preference(Key.SU_TAPJACK, true)
@@ -201,9 +208,15 @@ object Config : PreferenceConfig, DBConfig {
 
         prefs.edit {
             // Migrate su_fingerprint
-            if (prefs.getBoolean(SU_FINGERPRINT, false))
-                suAuth = true
-            remove(SU_FINGERPRINT)
+            if (prefs.getBoolean(SU_FINGERPRINT, false) && Info.env.isActive) {
+                try {
+                    suAuth = true
+                    remove(SU_FINGERPRINT)
+                } catch (_: java.io.IOException) {
+                    // Retain the requirement until its database migration succeeds.
+                    DBConfig.writeFailed()
+                }
+            }
 
             // Migrate update_channel
             prefs.getString(UPDATE_CHANNEL, null)?.let {

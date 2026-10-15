@@ -255,7 +255,10 @@ object AppMigration {
             show()
         }
         val success = withContext(Dispatchers.IO) {
-            patchAndHide(activity, label)
+            try { patchAndHide(activity, label) } catch (e: IOException) {
+                Timber.e(e)
+                false
+            }
         }
         if (!success) {
             dialog.dismiss()
@@ -263,7 +266,60 @@ object AppMigration {
         }
     }
 
-    suspend fun restoreApp(context: Context): Boolean {
+    @Suppress("DEPRECATION")
+    suspend fun restoreWithoutRoot(context: Context): Boolean = withContext(Dispatchers.IO) {
+        val hiddenPackage = context.applicationContext.packageName
+        if (hiddenPackage == APP_PACKAGE_NAME) return@withContext false
+        val completed = java.util.concurrent.atomic.AtomicBoolean(false)
+        val apk = StubApk.current(context)
+        val session = APKInstall.startSession(context, APP_PACKAGE_NAME,
+            { context.toast(R.string.failure, Toast.LENGTH_LONG) },
+            {
+                val verified = runCatching {
+                    val flags = PackageManager.GET_SIGNATURES
+                    val expected = context.packageManager.getPackageArchiveInfo(apk.path, flags)?.signatures
+                    val actual = context.packageManager.getPackageInfo(APP_PACKAGE_NAME, flags).signatures
+                    expected?.size == 1 && actual?.size == 1 && expected[0] == actual[0]
+                }.getOrDefault(false)
+                if (verified) {
+                    completed.set(true)
+                    launchApp(context, APP_PACKAGE_NAME)
+                    // Android owns both confirmations when no privileged installer exists.
+                    runCatching {
+                        context.startActivity(Intent(Intent.ACTION_DELETE,
+                            android.net.Uri.fromParts("package", hiddenPackage, null))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }.onFailure { context.toast(R.string.failure, Toast.LENGTH_LONG) }
+                } else {
+                    context.toast(R.string.failure, Toast.LENGTH_LONG)
+                }
+            })
+        try {
+            session.openStream(context).use { out ->
+                apk.inputStream().use { input -> input.copyTo(out) }
+            }
+            val action = session.waitIntent()
+            if (action != null) {
+                withContext(Dispatchers.Main) { context.startActivity(action) }
+                true
+            } else completed.get()
+        } catch (e: IOException) {
+            Timber.e(e)
+            false
+        } catch (e: SecurityException) {
+            Timber.e(e)
+            false
+        }
+    }
+
+    suspend fun restoreApp(context: Context): Boolean = try {
+        restoreWithRoot(context)
+    } catch (e: IOException) {
+        Timber.e(e)
+        false
+    }
+
+    private suspend fun restoreWithRoot(context: Context): Boolean {
         val apk = StubApk.current(context)
         val cmd = "adb_pm_install $apk $APP_PACKAGE_NAME"
         if (Shell.cmd(cmd).await().isSuccess) {

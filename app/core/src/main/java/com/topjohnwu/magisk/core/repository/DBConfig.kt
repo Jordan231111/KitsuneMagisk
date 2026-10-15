@@ -4,11 +4,25 @@ import com.topjohnwu.magisk.core.data.magiskdb.SettingsDao
 import com.topjohnwu.magisk.core.data.magiskdb.StringDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.io.IOException
+import com.topjohnwu.magisk.core.ktx.toast
 import kotlinx.coroutines.runBlocking
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 interface DBConfig {
+    companion object {
+        val revision = MutableStateFlow(0)
+        fun writeFailed() {
+            revision.update { it + 1 }
+            com.topjohnwu.magisk.core.AppContext.toast(
+                com.topjohnwu.magisk.core.R.string.hide_operation_error, android.widget.Toast.LENGTH_LONG)
+        }
+    }
     val settingsDB: SettingsDao
     val stringDB: StringDao
     val coroutineScope: CoroutineScope
@@ -37,6 +51,8 @@ class IntDBProperty(
 ) : ReadWriteProperty<DBConfig, Int> {
 
     var value: Int? = null
+    private var generation = 0
+    private val writer = Mutex()
 
     @Synchronized
     override fun getValue(thisRef: DBConfig, property: KProperty<*>): Int {
@@ -46,13 +62,21 @@ class IntDBProperty(
     }
 
     override fun setValue(thisRef: DBConfig, property: KProperty<*>, value: Int) {
-        synchronized(this) {
-            this.value = value
-        }
+        val request = synchronized(this) { ++generation }
         thisRef.coroutineScope.launch {
-            thisRef.settingsDB.put(name, value)
+            writer.withLock {
+                if (synchronized(this@IntDBProperty) { request != generation }) return@withLock
+                try {
+                    thisRef.settingsDB.put(name, value)
+                    synchronized(this@IntDBProperty) { this@IntDBProperty.value = value }
+                } catch (_: IOException) {
+                    synchronized(this@IntDBProperty) { this@IntDBProperty.value = null }
+                    DBConfig.writeFailed()
+                }
+            }
         }
     }
+
 }
 
 open class BoolDBProperty(
@@ -87,27 +111,18 @@ class StringDBProperty(
     }
 
     override fun setValue(thisRef: DBConfig, property: KProperty<*>, value: String) {
-        synchronized(this) {
-            this.value = value
+        suspend fun write() {
+            if (value.isEmpty()) thisRef.stringDB.delete(name)
+            else thisRef.stringDB.put(name, value)
+            synchronized(this@StringDBProperty) { this@StringDBProperty.value = value }
         }
-        if (value.isEmpty()) {
-            if (sync) {
-                runBlocking {
-                    thisRef.stringDB.delete(name)
-                }
-            } else {
-                thisRef.coroutineScope.launch {
-                    thisRef.stringDB.delete(name)
-                }
-            }
+        if (sync) {
+            runBlocking { write() }
         } else {
-            if (sync) {
-                runBlocking {
-                    thisRef.stringDB.put(name, value)
-                }
-            } else {
-                thisRef.coroutineScope.launch {
-                    thisRef.stringDB.put(name, value)
+            thisRef.coroutineScope.launch {
+                try { write() } catch (_: IOException) {
+                    synchronized(this@StringDBProperty) { this@StringDBProperty.value = null }
+                    DBConfig.writeFailed()
                 }
             }
         }

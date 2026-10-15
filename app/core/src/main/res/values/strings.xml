@@ -317,4 +317,6 @@
     <string name="kitsune_notice">Experimental KitsuneMagisk build based on Magisk. Use this project’s verified releases for updates.</string>
     <string name="kitsune_upstream_support">KitsuneMagisk builds on Magisk. These donation links support Magisk’s upstream maintainers.</string>
     <string name="kitsune_credits">Kitsune and Magisk contributors</string>
+    <string name="sulist_disable_required">To turn off SuList, select MagiskHide and restart.</string>
+    <string name="su_user_label">Android user %1$d</string>
 </resources>

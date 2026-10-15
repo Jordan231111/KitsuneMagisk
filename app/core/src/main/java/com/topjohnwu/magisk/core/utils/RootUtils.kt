@@ -60,6 +60,10 @@ class RootUtils(stub: Any?) : RootService() {
 
     override fun onBind(intent: Intent): IBinder {
         return object : IRootUtils.Stub() {
+            override fun getPackagesForUid(uid: Int): Array<String>? {
+                if (Binder.getCallingUid() != applicationInfo.uid || uid <= 0) return null
+                return safe(null) { packageManager.getPackagesForUid(uid) }
+            }
             override fun getAppProcess(pid: Int) = safe(null) { getAppProcessImpl(pid) }
             override fun getFileSystem(): IBinder = FileSystemManager.getService()
             override fun addSystemlessHosts() = safe(false) { addSystemlessHostsImpl() }
@@ -226,6 +230,8 @@ class RootUtils(stub: Any?) : RootService() {
                 Connection.await()
                 return field
             }
+
+        fun getPackagesForUid(uid: Int) = safe(null) { obj?.getPackagesForUid(uid) }
 
         fun getAppProcess(pid: Int) = safe(null) { obj?.getAppProcess(pid) }
 

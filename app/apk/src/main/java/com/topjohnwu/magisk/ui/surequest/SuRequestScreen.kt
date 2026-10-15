@@ -110,6 +110,9 @@ fun SuRequestScreen(
                             SharedUidBadge()
                         }
                     }
+                    uiState.userId?.let {
+                        Text(stringResource(CoreR.string.su_user_label, it), style = MaterialTheme.typography.bodySmall)
+                    }
                     Text(
                         text = packageName,
                         style = MaterialTheme.typography.bodySmall,

@@ -83,6 +83,15 @@ fun SuperuserScreen(
             return@Scaffold
         }
 
+        if (uiState.error) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.TextButton(onClick = { viewModel.startLoading() }) {
+                    Text(stringResource(CoreR.string.hide_operation_error))
+                }
+            }
+            return@Scaffold
+        }
+
         if (uiState.policies.isEmpty()) {
             Box(
                 modifier = Modifier

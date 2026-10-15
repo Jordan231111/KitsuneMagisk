@@ -11,10 +11,14 @@ class SettingsDao : MagiskDB() {
         val kv = mapOf("key" to key, "value" to value)
         val query = "REPLACE INTO ${Table.SETTINGS} ${kv.toQuery()}"
         exec(query)
+        val saved = exec("SELECT value FROM ${Table.SETTINGS} WHERE key=\"$key\" LIMIT 1") {
+            it["value"]?.toIntOrNull()
+        }.singleOrNull()
+        if (saved != value) throw java.io.IOException("Could not confirm setting update")
     }
 
     suspend fun fetch(key: String, default: Int = -1): Int {
         val query = "SELECT value FROM ${Table.SETTINGS} WHERE key=\"$key\" LIMIT 1"
-        return exec(query) { it["value"]?.toInt() }.firstOrNull() ?: default
+        return exec(query) { it["value"]?.toIntOrNull() }.firstOrNull() ?: default
     }
 }

@@ -56,6 +56,7 @@ class SuperuserViewModel(
 
     data class UiState(
         val loading: Boolean = true,
+        val error: Boolean = false,
         val policies: List<PolicyItem> = emptyList(),
         val suRestrict: Boolean = Config.suRestrict,
     )
@@ -69,50 +70,59 @@ class SuperuserViewModel(
             _uiState.update { it.copy(loading = false) }
             return
         }
-        _uiState.update { it.copy(loading = true) }
-        withContext(Dispatchers.IO) {
-            db.deleteOutdated()
-            db.delete(AppContext.applicationInfo.uid)
-            val policies = ArrayList<PolicyItem>()
-            val pm = AppContext.packageManager
-            for (policy in db.fetchAll()) {
-                val pkgs =
-                    if (policy.uid == Process.SYSTEM_UID) arrayOf("android")
-                    else pm.getPackagesForUid(policy.uid)
-                if (pkgs == null) {
-                    db.delete(policy.uid)
-                    continue
-                }
-                val map = pkgs.mapNotNull { pkg ->
-                    try {
-                        val info = pm.getPackageInfo(pkg, MATCH_UNINSTALLED_PACKAGES)
-                        PolicyItem(
-                            policy = policy,
-                            packageName = info.packageName,
-                            isSharedUid = info.sharedUserId != null,
-                            icon = info.applicationInfo?.loadIcon(pm) ?: pm.defaultActivityIcon,
-                            appName = info.applicationInfo?.getLabel(pm) ?: info.packageName,
-                            policyValue = policy.policy,
-                            notification = policy.notification,
-                            logging = policy.logging,
-                        )
-                    } catch (_: PackageManager.NameNotFoundException) {
-                        null
+        _uiState.update { it.copy(loading = true, error = false) }
+        try {
+            withContext(Dispatchers.IO) {
+                db.deleteOutdated()
+                db.delete(AppContext.applicationInfo.uid)
+                val policies = ArrayList<PolicyItem>()
+                val pm = AppContext.packageManager
+                for (policy in db.fetchAll()) {
+                    val pkgs =
+                        if (policy.uid == Process.SYSTEM_UID) arrayOf("android")
+                        else pm.getPackagesForUid(policy.uid)
+                    if (pkgs == null) {
+                        policies.add(unresolvedPolicy(policy))
+                        continue
                     }
+                    val map = pkgs.mapNotNull { pkg ->
+                        try {
+                            val info = pm.getPackageInfo(pkg, MATCH_UNINSTALLED_PACKAGES)
+                            PolicyItem(
+                                policy = policy,
+                                packageName = info.packageName,
+                                isSharedUid = info.sharedUserId != null,
+                                icon = info.applicationInfo?.loadIcon(pm) ?: pm.defaultActivityIcon,
+                                appName = info.applicationInfo?.getLabel(pm) ?: info.packageName,
+                                policyValue = policy.policy,
+                                notification = policy.notification,
+                                logging = policy.logging,
+                            )
+                        } catch (_: PackageManager.NameNotFoundException) {
+                            null
+                        }
+                    }
+                    if (map.isEmpty()) {
+                        policies.add(unresolvedPolicy(policy))
+                        continue
+                    }
+                    policies.addAll(map)
                 }
-                if (map.isEmpty()) {
-                    db.delete(policy.uid)
-                    continue
-                }
-                policies.addAll(map)
+                policies.sortWith(compareBy(
+                    { it.appName.lowercase(Locale.ROOT) },
+                    { it.packageName }
+                ))
+                _uiState.update { it.copy(loading = false, policies = policies, suRestrict = Config.suRestrict) }
             }
-            policies.sortWith(compareBy(
-                { it.appName.lowercase(Locale.ROOT) },
-                { it.packageName }
-            ))
-            _uiState.update { it.copy(loading = false, policies = policies, suRestrict = Config.suRestrict) }
+        } catch (_: java.io.IOException) {
+            _uiState.update { it.copy(loading = false, error = true) }
         }
     }
+
+    private fun unresolvedPolicy(policy: SuPolicy) = PolicyItem(
+        policy, "UID ${policy.uid}", false, AppContext.packageManager.defaultActivityIcon,
+        "UID ${policy.uid}", policy.policy, policy.notification, policy.logging
+    )
 
     fun refreshSuRestrict() {
         _uiState.update { it.copy(suRestrict = Config.suRestrict) }
@@ -120,8 +130,19 @@ class SuperuserViewModel(
 
     val requiresAuth get() = Config.suAuth
 
-    fun performDelete(item: PolicyItem, onDeleted: () -> Unit = {}) {
+    private fun editPolicy(action: suspend () -> Unit) {
         viewModelScope.launch {
+            try {
+                action()
+            } catch (_: java.io.IOException) {
+                showSnackbar(R.string.hide_operation_error)
+                startLoading()
+            }
+        }
+    }
+
+    fun performDelete(item: PolicyItem, onDeleted: () -> Unit = {}) {
+        editPolicy {
             db.delete(item.policy.uid)
             _uiState.update { state ->
                 state.copy(policies = state.policies.filter { it.policy.uid != item.policy.uid })
@@ -133,7 +154,7 @@ class SuperuserViewModel(
     fun updateNotify(item: PolicyItem) {
         val newNotification = !item.notification
         item.policy.notification = newNotification
-        viewModelScope.launch {
+        editPolicy {
             db.update(item.policy)
             _uiState.update { state ->
                 state.copy(
@@ -150,7 +171,7 @@ class SuperuserViewModel(
     fun updateLogging(item: PolicyItem) {
         val newLogging = !item.logging
         item.policy.logging = newLogging
-        viewModelScope.launch {
+        editPolicy {
             db.update(item.policy)
             _uiState.update { state ->
                 state.copy(
@@ -166,7 +187,7 @@ class SuperuserViewModel(
 
     fun updatePolicy(item: PolicyItem, newPolicy: Int) {
         fun updateState() {
-            viewModelScope.launch {
+            editPolicy {
                 item.policy.policy = newPolicy
                 db.update(item.policy)
                 _uiState.update { state ->

@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -85,6 +86,9 @@ fun LogScreen(
     )
     val pagerState = rememberPagerState(pageCount = { tabTitles.size })
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val saveDiagnostics = rememberExternalStoragePermissionLauncher {
+        viewModel.saveDiagnostics()
+    }
     val saveMagiskLog = rememberExternalStoragePermissionLauncher {
         viewModel.saveMagiskLog()
     }
@@ -107,11 +111,16 @@ fun LogScreen(
                     title = { Text(stringResource(CoreR.string.logs)) },
                     actions = {
                         if (pagerState.currentPage == 1) {
-                            IconButton(onClick = saveMagiskLog) {
+                            IconButton(onClick = saveDiagnostics) {
                                 Icon(
                                     imageVector = Icons.Default.Download,
                                     contentDescription = stringResource(CoreR.string.manager_diagnostics),
                                 )
+                            }
+                        }
+                        if (pagerState.currentPage == 1) {
+                            IconButton(onClick = saveMagiskLog) {
+                                Icon(Icons.Default.Save, stringResource(CoreR.string.menuSaveLog))
                             }
                         }
                         IconButton(

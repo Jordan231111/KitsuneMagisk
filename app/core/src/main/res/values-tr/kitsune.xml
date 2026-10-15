@@ -41,4 +41,6 @@
     <string name="kitsune_notice">Magisk tabanlı deneysel KitsuneMagisk derlemesi. Güncellemeler için bu projenin doğrulanmış sürümlerini kullanın.</string>
     <string name="kitsune_upstream_support">KitsuneMagisk, Magisk üzerine kuruludur. Bu bağış bağlantıları asıl Magisk geliştiricilerini destekler.</string>
     <string name="kitsune_credits">Kitsune ve Magisk katkıcıları</string>
+    <string name="sulist_disable_required">SuList kapatmak için MagiskHide seçip yeniden başlatın.</string>
+    <string name="su_user_label">Android kullanıcısı %1$d</string>
 </resources>

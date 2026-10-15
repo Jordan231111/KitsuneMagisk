@@ -58,6 +58,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
+    val configRevision by com.topjohnwu.magisk.core.repository.DBConfig.revision.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val scrollState = rememberScrollState()
     Scaffold(
@@ -78,23 +79,25 @@ fun SettingsScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            CustomizationSection(viewModel = viewModel)
-            Spacer(Modifier.height(16.dp))
-            AppSettingsSection()
-            if (Info.isRooted) {
-            SettingsArrow(
-                title = stringResource(CoreR.string.system_mode_title),
-                summary = stringResource(CoreR.string.system_mode_status_summary),
-                onClick = { viewModel.navigateTo(com.topjohnwu.magisk.ui.navigation.Route.SystemMode) }
-            )
-            }
-            if (Info.env.isActive) {
+            androidx.compose.runtime.key(configRevision) {
+                CustomizationSection(viewModel = viewModel)
                 Spacer(Modifier.height(16.dp))
-                MagiskSection(viewModel = viewModel)
-            }
-            if (Info.showSuperUser) {
-                Spacer(Modifier.height(16.dp))
-                SuperuserSection(viewModel = viewModel)
+                AppSettingsSection()
+                if (Info.isRooted) {
+                    SettingsArrow(
+                        title = stringResource(CoreR.string.system_mode_title),
+                        summary = stringResource(CoreR.string.system_mode_status_summary),
+                        onClick = { viewModel.navigateTo(com.topjohnwu.magisk.ui.navigation.Route.SystemMode) }
+                    )
+                }
+                if (Info.env.isActive) {
+                    Spacer(Modifier.height(16.dp))
+                    MagiskSection(viewModel = viewModel)
+                }
+                if (Info.showSuperUser) {
+                    Spacer(Modifier.height(16.dp))
+                    SuperuserSection(viewModel = viewModel)
+                }
             }
         }
     }
@@ -348,6 +351,7 @@ private fun MagiskSection(
             )
 
             Text(stringResource(CoreR.string.lite_migration), Modifier.padding(16.dp))
+            val status by viewModel.hideStatus.collectAsStateWithLifecycle()
             // Zygisk
             var zygisk by remember { mutableStateOf(Config.zygisk) }
             SettingsSwitch(
@@ -357,10 +361,15 @@ private fun MagiskSection(
                     else CoreR.string.settings_zygisk_summary
                 ),
                 checked = zygisk,
+                enabled = status?.ready == true,
                 onCheckedChange = {
-                    zygisk = it
-                    Config.zygisk = it
-                    viewModel.notifyZygiskChange()
+                    if (it && status?.configuredProvider == "external") {
+                        viewModel.showSnackbar(CoreR.string.hide_provider_error)
+                    } else {
+                        zygisk = it
+                        Config.zygisk = it
+                        viewModel.notifyZygiskChange()
+                    }
                 }
             )
 
@@ -369,7 +378,6 @@ private fun MagiskSection(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
-            val status by viewModel.hideStatus.collectAsStateWithLifecycle()
             val failure by viewModel.hideFailure.collectAsStateWithLifecycle()
             val busy by viewModel.hideBusy.collectAsStateWithLifecycle()
             failure?.let {
@@ -456,8 +464,13 @@ private fun SuperuserSection(
             enabled = Info.isDeviceSecure,
             onCheckedChange = { newValue ->
                 viewModel.withAuth {
-                    suAuth = newValue
-                    Config.suAuth = newValue
+                    try {
+                        Config.suAuth = newValue
+                        suAuth = Config.suAuth
+                    } catch (_: java.io.IOException) {
+                        suAuth = Config.suAuth
+                        viewModel.showSnackbar(CoreR.string.hide_operation_error)
+                    }
                 }
             }
         )

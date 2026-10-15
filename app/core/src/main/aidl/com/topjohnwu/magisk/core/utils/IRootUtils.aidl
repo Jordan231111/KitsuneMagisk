@@ -10,4 +10,5 @@ interface IRootUtils {
     int runSystemMode(String action, String directory, String apk,
         in android.os.ParcelFileDescriptor output);
     void uninstallSelf();
+    String[] getPackagesForUid(int uid);
 }

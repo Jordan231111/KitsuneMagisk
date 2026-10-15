@@ -25,7 +25,7 @@ boxes. An engine label is not an external injection-health claim.
 
 The `kitsune.su-consent.v1` capability identifies a paired manager/core protocol.
 The daemon creates a private, per-request Unix socket under its owned runtime
-path, accepts only the verified manager UID, and supplies UID, PID, authentication
+path, accepts only the verified manager UID, and supplies the actual caller UID, PID, authentication
 requirement and remaining deadline over that connection. The manager checks the
 root peer. Launcher extras carry only the socket path; they cannot choose a UID,
 FIFO file or remembered grant. The endpoint is removed after acceptance and the
@@ -39,7 +39,9 @@ invalid authentication flags, changed root/multiuser settings and lost SuList
 eligibility. Policy persistence happens in the daemon before acknowledgement;
 the manager never persists a grant from an untrusted intent. A one-time grant
 is not reused through the three-second policy cache. CLI policy changes invalidate
-that cache. Root and the verified manager retain their existing recovery paths.
+that cache. Manager policy edits and database settings confirm the persisted value
+before reporting success; failed writes reload policy or reset the settings view.
+Legacy fingerprint migration retains its requirement if persistence fails. Root and the verified manager retain their existing recovery paths.
 
 Authentication protects **new grants and manager policy edits**. It does not
 retroactively revoke existing grants or authenticate every command under a saved
@@ -61,7 +63,11 @@ nonzero until the user authenticates a settings change. Android owns credential,
 biometric fallback and lockout behavior. Its [credential confirmation contract](https://developer.android.com/reference/android/app/KeyguardManager#createConfirmDeviceCredentialIntent(java.lang.CharSequence,java.lang.CharSequence))
 returns no intent when a credential is unavailable; the manager denies that case.
 
-Shared UIDs retain one policy row per Linux UID. Owner-only, owner-managed and
+Shared UIDs retain one policy row per Linux UID. Owner-managed requests display
+the actual Android user while the daemon alone maps persistence to the owner's
+policy UID. A root-service lookup resolves profile packages without assuming that
+the owner has installed them. Unresolved policy rows remain visible by UID; the
+UI does not delete grants merely because a profile is locked or unavailable. Owner-only, owner-managed and
 per-user behavior remain daemon decisions. Hidden and normal managers use the
 same signer checks and protocol. SELinux-disabled eligibility remains PR12/PR15;
 the manager does not bypass a backend denial.
@@ -81,14 +87,17 @@ Diagnostic export uses an allowlist of build identities, API, provider/Hide stat
 transaction state and operation result codes. It excludes package selections,
 serials, app commands, properties, environment variables and raw logs. Operation
 results are session observations, not durable receipts. Raw root logs remain
-viewable locally. Keep exported compatibility details in maintainer reports.
+viewable locally and can be saved separately. Keep exported compatibility details in maintainer reports.
 
 ## Historical manager behavior
 
 Randomized manager packages retain the historical `com.*` shape and generated
 signer. This reduces casual package-name matching; it is not invisibility or an
 attestation guarantee. Payload signature checks, PR10 verified updates, bootstrap,
-launch and restore remain mandatory. The global signature bypass remains retired.
+launch and restore remain mandatory. Without root, the hidden launcher renders
+its recovery dialog and uses Android's installer to restore the full APK. It
+checks the installed signer before asking Android to remove the old hidden app;
+installation or uninstall cancellation does not silently claim restored root. The global signature bypass remains retired.
 
 The separate obsolete Lite distribution remains retired. Its usable configuration
 is SuList, no enabled modules and Zygisk off. Users must persist SuList before

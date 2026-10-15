@@ -61,7 +61,15 @@ class SplashController<T>(private val activity: T)
         } else {
             Shell.getShell(Shell.EXECUTOR) {
                 if (isRunningAsStub && !it.isRoot) {
-                    activity.showInvalidStateMessage()
+                    activity.runOnUiThread {
+                        splashShown = true
+                        activity.showInvalidStateMessage()
+                        if (activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            doCreateUi(savedInstanceState)
+                        } else {
+                            shouldCreateUiOnResume = true
+                        }
+                    }
                     return@getShell
                 }
                 activity.initializeApp()
@@ -108,7 +116,7 @@ class SplashController<T>(private val activity: T)
             }
         } else {
             if (Config.suManager.isNotEmpty()) {
-                Config.suManager = ""
+                runCatching { Config.suManager = "" }.onFailure { Timber.e(it) }
             }
             if (isPackageMigration) {
                 Shell.cmd("(pm uninstall $prevPkg)& >/dev/null 2>&1").exec()

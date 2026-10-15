@@ -122,7 +122,7 @@ fun HomeScreen(
     var showRestoreDialog by rememberSaveable { mutableStateOf(false) }
     var showInstallDialog by rememberSaveable { mutableStateOf(false) }
     var envFixCode by remember { mutableIntStateOf(0) }
-    val activity = context as? MainActivity
+    val activity = androidx.activity.compose.LocalActivity.current as? MainActivity
     if (activity != null) {
         val openInstall by activity.showInstall.collectAsStateWithLifecycle()
         LaunchedEffect(openInstall) {

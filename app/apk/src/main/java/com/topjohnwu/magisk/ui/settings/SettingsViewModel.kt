@@ -45,8 +45,10 @@ class SettingsViewModel : BaseViewModel() {
                 hideStatus.value = HidePolicy.configure(operation, value)
                 hideFailure.value = null
             } catch (e: HideFailure) {
-                hideFailure.value = e.messageRes
-                showSnackbar(e.messageRes)
+                val message = if (operation == "disable" && e.code == 8 && hideStatus.value?.isSuList == true)
+                    R.string.sulist_disable_required else e.messageRes
+                hideFailure.value = message
+                showSnackbar(message)
             } finally {
                 hideBusy.value = false
             }

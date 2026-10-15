@@ -238,7 +238,7 @@ impl SuAppContext<'_> {
             // Big endian, versioned and fixed length. Intent extras never name a UID.
             for value in [
                 0x4b535531,
-                self.info.eval_uid,
+                self.cred.uid as i32,
                 self.cred.pid.unwrap_or(-1),
                 i32::from(cfg.su_auth),
                 remaining().as_millis() as i32,

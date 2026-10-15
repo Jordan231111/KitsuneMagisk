@@ -41,4 +41,6 @@
     <string name="kitsune_notice">Экспериментальная сборка KitsuneMagisk на основе Magisk. Обновляйтесь из проверенных выпусков этого проекта.</string>
     <string name="kitsune_upstream_support">KitsuneMagisk основан на Magisk. Эти ссылки на пожертвования поддерживают разработчиков исходного Magisk.</string>
     <string name="kitsune_credits">Участники Kitsune и Magisk</string>
+    <string name="sulist_disable_required">Чтобы выключить SuList, выберите MagiskHide и перезапустите устройство.</string>
+    <string name="su_user_label">Пользователь Android %1$d</string>
 </resources>

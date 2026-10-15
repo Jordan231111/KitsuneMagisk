@@ -140,7 +140,7 @@ public final class APKInstall {
         public Intent waitIntent() {
             try {
                 // noinspection ResultOfMethodCallIgnored
-                latch.await(5, TimeUnit.SECONDS);
+                latch.await(30, TimeUnit.SECONDS);
             } catch (Exception ignored) {}
             return userAction;
         }
