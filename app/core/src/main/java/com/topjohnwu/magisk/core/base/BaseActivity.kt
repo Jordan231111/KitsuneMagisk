@@ -59,8 +59,9 @@ class ActivityExtension(private val activity: ComponentActivity) {
 
     private var authenticateCallback: ((Boolean) -> Unit)? = null
     private val requestAuthenticate = activity.registerForActivityResult(RequestAuthentication()) {
-        authenticateCallback?.invoke(it)
+        val callback = authenticateCallback
         authenticateCallback = null
+        callback?.invoke(it)
     }
 
     private var contentCallback: ContentResultCallback? = null
@@ -108,8 +109,20 @@ class ActivityExtension(private val activity: ComponentActivity) {
     }
 
     fun withAuthentication(callback: (Boolean) -> Unit) {
+        if (authenticateCallback != null) {
+            callback(false)
+            return
+        }
         authenticateCallback = callback
-        requestAuthenticate.launch(Unit)
+        try {
+            requestAuthenticate.launch(Unit)
+        } catch (_: ActivityNotFoundException) {
+            authenticateCallback = null
+            callback(false)
+        } catch (_: SecurityException) {
+            authenticateCallback = null
+            callback(false)
+        }
     }
 
     fun getContent(type: String, callback: ContentResultCallback) {

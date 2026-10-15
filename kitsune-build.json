@@ -9,6 +9,6 @@
   "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
   "compat_version_code": 31000,
   "protocol_version": 1,
-  "capabilities": ["kitsune.build-info.v1", "kitsune.zygisk-provider.v1", "kitsune.hide.v1"],
+  "capabilities": ["kitsune.build-info.v1", "kitsune.zygisk-provider.v1", "kitsune.hide.v1", "kitsune.su-consent.v1"],
   "debug_capabilities": ["kitsune.system-mode.transaction.v1"]
 }

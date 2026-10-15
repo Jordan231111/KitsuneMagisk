@@ -44,13 +44,12 @@
     <string name="install_start">Let\'s go</string>
     <string name="manager_download_install">Press to download and install</string>
     <string name="direct_install">Direct install (Recommended)</string>
-    <!-- PR13 owns maintained product translations; use the safe English fallback until then. -->
-    <string name="direct_install_system_mode" translatable="false">System Mode (qualified writable targets only)</string>
-    <string name="system_mode_warning" translatable="false">System Mode directly changes persistent system and init files. Continue only after the host doctor has authorized this exact target with persistent-write, init-import, and verified external-recovery evidence. An incompatible install can prevent Android from booting.</string>
-    <string name="system_mode_unavailable" translatable="false">System Mode requires vendor bootstrap root or an existing System Mode installation. Use normal Magisk installation for an ordinary Magisk-rooted device.</string>
-    <string name="system_mode_uninstall_msg" translatable="false">Remove this System Mode installation. User modules, root policies, and scripts are kept. Restart the device after completion.</string>
-    <string name="system_mode_recovery" translatable="false">Recover System Mode</string>
-    <string name="system_mode_recovery_msg" translatable="false">Recover an interrupted System Mode installation using its saved transaction. Restart the device after completion.</string>
+    <string name="direct_install_system_mode">System Mode (qualified writable targets only)</string>
+    <string name="system_mode_warning">System Mode directly changes persistent system and init files. Continue only after the host doctor has authorized this exact target with persistent-write, init-import, and verified external-recovery evidence. An incompatible install can prevent Android from booting.</string>
+    <string name="system_mode_unavailable">System Mode requires vendor bootstrap root or an existing System Mode installation. Use normal Magisk installation for an ordinary Magisk-rooted device.</string>
+    <string name="system_mode_uninstall_msg">Remove this System Mode installation. User modules, root policies, and scripts are kept. Restart the device after completion.</string>
+    <string name="system_mode_recovery">Recover System Mode</string>
+    <string name="system_mode_recovery_msg">Recover an interrupted System Mode installation using its saved transaction. Restart the device after completion.</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
     <string name="install_inactive_slot_msg">Your device will be FORCED to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
     <string name="setup_title">Additional setup</string>
@@ -280,4 +279,39 @@
     <string name="app_not_found">No app found to handle this action</string>
     <string name="reboot_apply_change">Reboot to apply changes</string>
     <string name="restore_app_confirmation">This will restore the hidden app back to the original app. Do you really want to do this?</string>
+
+    <!-- Kitsune manager contracts -->
+    <string name="hide_title">MagiskHide</string>
+    <string name="sulist_title">SuList</string>
+    <string name="hide_mode">Selection mode</string>
+    <string name="hide_summary">Selected processes lose Magisk and module mounts. Relaunch apps after editing.</string>
+    <string name="sulist_summary">Only selected apps keep root and module visibility. Selection does not grant root.</string>
+    <string name="hide_restart_required">Restart to apply the saved mode or provider. The current list is read-only until then.</string>
+    <string name="hide_invalid_name">The process name is invalid. Refresh the list and try again.</string>
+    <string name="hide_namespace_error">The mount namespace is unavailable. Restart and try again.</string>
+    <string name="hide_provider_error">The provider cannot enforce this mode. Disable conflicting providers or use the compatible adapter.</string>
+    <string name="hide_operation_error">The core could not complete this operation. Refresh or update the app and core together.</string>
+    <string name="hide_provider">Hide provider</string>
+    <string name="hide_provider_core">Built-in / no injection</string>
+    <string name="hide_provider_external">External adapter</string>
+    <string name="hide_engine">Running engine: %1$s</string>
+    <string name="hide_configure">Configure Hide / SuList</string>
+    <string name="hide_list_summary">Edit the running mode’s selection. Applies to all Android users.</string>
+    <string name="su_auth_summary">Authenticate new grants with Android. Existing grants remain valid until revoked.</string>
+    <string name="su_auth_unavailable">Set a device screen lock. New authenticated grants are denied until authentication is available.</string>
+    <string name="system_mode_title">System Mode</string>
+    <string name="system_mode_status_summary">Installation status, doctor report and recovery</string>
+    <string name="system_mode_running">System Mode is active.</string>
+    <string name="system_mode_ordinary">Use ordinary boot-image installation when supported.</string>
+    <string name="system_mode_state">Recorded transaction: %1$s</string>
+    <string name="system_mode_doctor_summary">A computer must verify the writable target and its recovery backup before installation.</string>
+    <string name="system_mode_open_report">Open doctor report</string>
+    <string name="system_mode_report_notice">A report is for review only. The installer rechecks this device and live recovery authorization.</string>
+    <string name="system_mode_report_error">Cannot read this doctor report. Export a new version 1 JSON report.</string>
+    <string name="system_mode_recovery_help">After recovery, fully close and reopen an emulator. If Android cannot start, restore the verified backup from your computer.</string>
+    <string name="manager_refresh">Refresh</string>
+    <string name="manager_diagnostics">Export diagnostics</string>
+    <string name="su_auth_migration">Legacy manager biometrics now use Android authentication. Keep a device screen lock configured.</string>
+    <string name="lite_migration">For the former Lite setup, select SuList, leave Zygisk off, and disable modules before upgrading.</string>
+    <string name="ota_restart">Installation complete. Finish the update with Restart in Android System Updates.</string>
 </resources>

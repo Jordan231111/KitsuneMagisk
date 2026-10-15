@@ -44,6 +44,7 @@ fun FlashScreen(
         FlashViewModel.State.FAILED -> stringResource(CoreR.string.failure)
     }
 
+    com.topjohnwu.magisk.utils.LockOperationOrientation()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = modifier,
@@ -91,6 +92,7 @@ fun FlashScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
+            retainedEmulator = viewModel.emulator,
             onEmulatorCreated = { viewModel.onEmulatorCreated(it) },
         )
     }

@@ -36,6 +36,7 @@ private const val MIN_TERMINAL_COLUMNS = 256
 fun TerminalScreen(
     modifier: Modifier = Modifier,
     onEmulatorCreated: (TerminalEmulator) -> Unit = {},
+    retainedEmulator: TerminalEmulator? = null,
 ) {
     val density = LocalDensity.current
     val renderer = remember {
@@ -43,7 +44,7 @@ fun TerminalScreen(
         TerminalRenderer(textSizePx, Typeface.MONOSPACE)
     }
 
-    var emulator by remember { mutableStateOf<TerminalEmulator?>(null) }
+    var emulator by remember { mutableStateOf(retainedEmulator) }
     var updateTick by remember { mutableIntStateOf(0) }
     var topRow by remember { mutableIntStateOf(0) }
     var scrollX by remember { mutableFloatStateOf(0f) }
@@ -64,18 +65,19 @@ fun TerminalScreen(
         val maxScrollX = maxOf(0f, contentWidthPx - widthPx)
 
         LaunchedEffect(cols, rows) {
-            val emu = emulator
-            if (emu == null) {
-                val newEmu = TerminalEmulator(cols, rows, renderer.fontWidth.toInt(), renderer.fontLineSpacing, null)
-                newEmu.onScreenUpdate = {
-                    if (scrolledToBottom) topRow = 0
-                    updateTick++
-                }
-                emulator = newEmu
-                onEmulatorCreated(newEmu)
-            } else {
-                emu.resize(cols, rows, renderer.fontWidth.toInt(), renderer.fontLineSpacing)
+            val emu = emulator ?: TerminalEmulator(cols, rows, renderer.fontWidth.toInt(), renderer.fontLineSpacing, null)
+            emu.onScreenUpdate = {
+                if (scrolledToBottom) topRow = 0
+                updateTick++
             }
+            emu.resize(cols, rows, renderer.fontWidth.toInt(), renderer.fontLineSpacing)
+            emulator = emu
+            onEmulatorCreated(emu)
+        }
+
+        val attachedEmulator = emulator
+        androidx.compose.runtime.DisposableEffect(attachedEmulator) {
+            onDispose { attachedEmulator?.onScreenUpdate = null }
         }
 
         LaunchedEffect(maxScrollX) {

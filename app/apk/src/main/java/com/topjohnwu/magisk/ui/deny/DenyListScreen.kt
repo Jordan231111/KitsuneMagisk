@@ -79,6 +79,10 @@ fun DenyListScreen(
     modifier: Modifier = Modifier
 ) {
     val loading by viewModel.loading.collectAsStateWithLifecycle()
+    val status by viewModel.status.collectAsStateWithLifecycle()
+    val failure by viewModel.failure.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val editable = !busy && status?.ready == true && status?.rebootRequired == false
     val apps by viewModel.filteredApps.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val showSystem by viewModel.showSystem.collectAsStateWithLifecycle()
@@ -94,14 +98,14 @@ fun DenyListScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(CoreR.string.denylist)) },
+                title = { Text(stringResource(if (status?.isSuList == true) CoreR.string.sulist_title else CoreR.string.hide_title)) },
                 navigationIcon = {
                     IconButton(
                         onClick = onBack
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(CoreR.string.back),
                         )
                     }
                 },
@@ -203,6 +207,16 @@ fun DenyListScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
+            Text(stringResource(if (status?.isSuList == true) CoreR.string.sulist_summary else CoreR.string.hide_summary),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+            if (status?.rebootRequired == true) {
+                Text(stringResource(CoreR.string.hide_restart_required), Modifier.padding(16.dp))
+            }
+            failure?.let {
+                androidx.compose.material3.TextButton(onClick = { viewModel.startLoading() }) {
+                    Text(stringResource(it))
+                }
+            }
             if (loading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -235,6 +249,7 @@ fun DenyListScreen(
                     ) { app ->
                         DenyAppCard(
                             app = app,
+                            enabled = editable,
                             onToggleExpand = { viewModel.toggleExpanded(app) },
                             onToggleAll = { viewModel.toggleAll(app) },
                             onToggleProcess = { proc -> viewModel.toggleProcess(app, proc) }
@@ -291,6 +306,7 @@ private fun SearchInput(
 @Composable
 private fun DenyAppCard(
     app: DenyAppState,
+    enabled: Boolean,
     onToggleExpand: () -> Unit,
     onToggleAll: () -> Unit,
     onToggleProcess: (DenyProcessState) -> Unit,
@@ -348,6 +364,7 @@ private fun DenyAppCard(
                         app.checkedPercent < 1f -> ToggleableState.Indeterminate
                         else -> ToggleableState.On
                     },
+                    enabled = enabled,
                     onClick = onToggleAll
                 )
             }
@@ -361,6 +378,7 @@ private fun DenyAppCard(
                     app.processes.forEach { proc ->
                         ProcessRow(
                             proc = proc,
+                            enabled = enabled,
                             onToggle = { onToggleProcess(proc) }
                         )
                     }
@@ -373,6 +391,7 @@ private fun DenyAppCard(
 @Composable
 private fun ProcessRow(
     proc: DenyProcessState,
+    enabled: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -382,6 +401,7 @@ private fun ProcessRow(
             .clip(RoundedCornerShape(12.dp))
             .toggleable(
                 value = proc.isEnabled,
+                enabled = enabled,
                 role = Role.Checkbox,
                 onValueChange = { onToggle() }
             )

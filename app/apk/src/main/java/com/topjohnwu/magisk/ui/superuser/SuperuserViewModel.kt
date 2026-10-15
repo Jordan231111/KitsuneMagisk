@@ -45,7 +45,7 @@ class SuperuserViewModel(
     private val db: PolicyDao
 ) : AsyncLoadViewModel() {
 
-    var authenticate: (onSuccess: () -> Unit) -> Unit = { it() }
+    var authenticate: (onSuccess: () -> Unit) -> Unit = {}
 
     init {
         @OptIn(FlowPreview::class)

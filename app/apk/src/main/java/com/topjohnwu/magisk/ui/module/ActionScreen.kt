@@ -33,10 +33,12 @@ fun ActionScreen(
 ) {
     val actionState by viewModel.actionState.collectAsStateWithLifecycle()
     val finished = actionState != ActionViewModel.State.RUNNING
+    androidx.activity.compose.BackHandler(enabled = !finished) {}
     val saveLog = rememberExternalStoragePermissionLauncher {
         viewModel.saveLog()
     }
 
+    com.topjohnwu.magisk.utils.LockOperationOrientation()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = modifier,
@@ -45,7 +47,8 @@ fun ActionScreen(
                 title = { Text(actionName) },
                 navigationIcon = {
                     IconButton(
-                        onClick = onBack
+                        onClick = onBack,
+                        enabled = finished
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -73,6 +76,7 @@ fun ActionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
+            retainedEmulator = viewModel.emulator,
             onEmulatorCreated = { viewModel.onEmulatorCreated(it) },
         )
     }

@@ -726,12 +726,15 @@ abstract class MagiskInstallImpl protected constructor(
 
     private suspend fun runSystemMode(action: String): Boolean {
         systemModeOperation = true
+        com.topjohnwu.magisk.core.model.ManagerDiagnostics.lastSystemOperation = action
+        com.topjohnwu.magisk.core.model.ManagerDiagnostics.lastSystemSuccess = null
         val result = RootUtils.runSystemMode(action, installDir.path, AppApkPath) { console.add(it) }
         if (result == null) {
             console.add("! Root worker disconnected; restart once to recover the transaction")
             console.add("! Installer files have been retained for recovery")
             return false
         }
+        com.topjohnwu.magisk.core.model.ManagerDiagnostics.lastSystemSuccess = result == 0
         if (!installDir.deleteRecursively())
             console.add("! Could not remove the completed installer working directory")
         return result == 0

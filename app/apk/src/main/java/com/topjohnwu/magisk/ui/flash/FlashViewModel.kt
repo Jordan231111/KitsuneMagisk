@@ -50,7 +50,8 @@ class FlashViewModel : BaseViewModel() {
     var flashUri: Uri? = null
     private var started = false
 
-    private var emulator: TerminalEmulator? = null
+    var emulator: TerminalEmulator? = null
+        private set
     private val emulatorReady = CompletableDeferred<TerminalEmulator>()
 
     fun onEmulatorCreated(emu: TerminalEmulator) {
@@ -148,6 +149,9 @@ class FlashViewModel : BaseViewModel() {
 
     private fun onResult(success: Boolean) {
         _flashState.value = if (success) State.SUCCESS else State.FAILED
+        if (success && flashAction == Const.Value.FLASH_INACTIVE_SLOT) {
+            outItems.add(AppContext.getString(com.topjohnwu.magisk.core.R.string.ota_restart))
+        }
     }
 
     private suspend fun flashZip(emu: TerminalEmulator, uri: Uri) {
@@ -207,6 +211,9 @@ class FlashViewModel : BaseViewModel() {
         }
 
         _flashState.value = if (success) State.SUCCESS else State.FAILED
+        if (success && flashAction == Const.Value.FLASH_INACTIVE_SLOT) {
+            outItems.add(AppContext.getString(com.topjohnwu.magisk.core.R.string.ota_restart))
+        }
     }
 
     private fun shellQuote(value: String) = "'" + value.replace("'", "'\\''") + "'"

@@ -154,11 +154,10 @@ object Config : PreferenceConfig, DBConfig {
     var rootMode by dbSettings(Key.ROOT_ACCESS, Value.ROOT_ACCESS_APPS_AND_ADB)
     var suMntNamespaceMode by dbSettings(Key.SU_MNT_NS, Value.NAMESPACE_MODE_REQUESTER)
     var suMultiuserMode by dbSettings(Key.SU_MULTIUSER_MODE, Value.MULTIUSER_MODE_OWNER_ONLY)
-    private var suBiometric by dbSettings(Key.SU_BIOMETRIC, false)
-    var suAuth
-        get() = Info.isDeviceSecure && suBiometric
+    var suAuth: Boolean
+        get() = kotlinx.coroutines.runBlocking { settingsDB.fetch(Key.SU_BIOMETRIC, 0) != 0 }
         set(value) {
-            suBiometric = value
+            kotlinx.coroutines.runBlocking { settingsDB.put(Key.SU_BIOMETRIC, if (value) 1 else 0) }
         }
     var suReAuth by preference(Key.SU_REAUTH, false)
     var suTapjack by preference(Key.SU_TAPJACK, true)
@@ -203,7 +202,7 @@ object Config : PreferenceConfig, DBConfig {
         prefs.edit {
             // Migrate su_fingerprint
             if (prefs.getBoolean(SU_FINGERPRINT, false))
-                suBiometric = true
+                suAuth = true
             remove(SU_FINGERPRINT)
 
             // Migrate update_channel

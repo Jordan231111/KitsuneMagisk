@@ -11,7 +11,9 @@ import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.ui.navigation.Route
 import com.topjohnwu.magisk.view.Shortcuts
-import com.topjohnwu.superuser.Shell
+import com.topjohnwu.magisk.core.model.HidePolicy
+import com.topjohnwu.magisk.core.model.HideStatus
+import com.topjohnwu.magisk.core.model.HideFailure
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,12 +21,39 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel : BaseViewModel() {
 
-    private val _denyListEnabled = MutableStateFlow(Config.denyList)
-    val denyListEnabled: StateFlow<Boolean> = _denyListEnabled.asStateFlow()
+    val hideStatus = MutableStateFlow<HideStatus?>(null)
+    val hideFailure = MutableStateFlow<Int?>(null)
+    val hideBusy = MutableStateFlow(false)
 
-    val zygiskMismatch get() = Config.zygisk != Info.isZygiskEnabled
+    fun refreshHide() {
+        viewModelScope.launch {
+            try {
+                hideStatus.value = HidePolicy.status()
+                hideFailure.value = null
+            } catch (e: HideFailure) {
+                hideStatus.value = null
+                hideFailure.value = e.messageRes
+            }
+        }
+    }
 
-    var authenticate: (onSuccess: () -> Unit) -> Unit = { it() }
+    fun configureHide(operation: String, value: String? = null) {
+        if (hideBusy.value) return
+        hideBusy.value = true
+        viewModelScope.launch {
+            try {
+                hideStatus.value = HidePolicy.configure(operation, value)
+                hideFailure.value = null
+            } catch (e: HideFailure) {
+                hideFailure.value = e.messageRes
+                showSnackbar(e.messageRes)
+            } finally {
+                hideBusy.value = false
+            }
+        }
+    }
+
+    var authenticate: (onSuccess: () -> Unit) -> Unit = {}
 
     fun navigateToDenyList() {
         navigateTo(Route.DenyList)
@@ -41,21 +70,9 @@ class SettingsViewModel : BaseViewModel() {
         }
     }
 
-    fun toggleDenyList(enabled: Boolean) {
-        _denyListEnabled.value = enabled
-        val cmd = if (enabled) "enable" else "disable"
-        Shell.cmd("magisk --denylist $cmd").submit { result ->
-            if (result.isSuccess) {
-                Config.denyList = enabled
-            } else {
-                _denyListEnabled.value = !enabled
-            }
-        }
-    }
-
     fun withAuth(action: () -> Unit) = authenticate(action)
 
     fun notifyZygiskChange() {
-        if (zygiskMismatch) showSnackbar(R.string.reboot_apply_change)
+        if (Config.zygisk != Info.isZygiskEnabled) showSnackbar(R.string.reboot_apply_change)
     }
 }

@@ -90,11 +90,8 @@ class AppProcessInfo(
             }
         }
         if (hasIsolated) {
-            val prefix = "${info.processName ?: info.packageName}:"
-            val isEnabled = denyList.any {
-                it.packageName == ISOLATED_MAGIC && it.process.startsWith(prefix)
-            }
-            result.add(ProcessInfo(prefix, ISOLATED_MAGIC, isEnabled))
+            val prefix = info.processName ?: info.packageName
+            result.add(createProcess(prefix, ISOLATED_MAGIC))
         }
         return result
     }
@@ -117,6 +114,11 @@ class AppProcessInfo(
         processSet += packageInfo.services.toProcessList()
         processSet += packageInfo.receivers.toProcessList()
         processSet += packageInfo.providers.toProcessList()
+        // Keep custom and legacy selections visible and removable after an update.
+        denyList.filter {
+            it.packageName == info.packageName ||
+                it.process == info.packageName || it.process.startsWith("${info.packageName}:")
+        }.forEach { processSet += createProcess(it.process, it.packageName) }
         return processSet
     }
 

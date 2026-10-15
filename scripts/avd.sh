@@ -418,8 +418,9 @@ test_emu() {
   launch_emulator "-wipe-data -ramdisk $image -feature -SystemAsRoot"
   run_setup "$variant"
 
-  adb reboot
-  wait_emu
+  # Restart the owned process, preserving userdata and the patched boot image.
+  stop_emulator
+  launch_emulator "-ramdisk $image -feature -SystemAsRoot"
   run_tests
   stop_emulator
 }

@@ -1,4 +1,5 @@
 mod connect;
+mod consent;
 mod daemon;
 mod db;
 mod pts;

@@ -58,9 +58,7 @@ class SuRequestActivity : ComponentActivity(), UntrackedActivity {
 
         onBackPressedDispatcher.addCallback(this) { viewModel.denyPressed() }
         viewModel.finishActivity = { finish() }
-        viewModel.authenticate = { onSuccess ->
-            extension.withAuthentication { if (it) onSuccess() }
-        }
+        viewModel.authenticate = { extension.withAuthentication(it) }
 
         if (intent.action == Intent.ACTION_VIEW) {
             val action = intent.getStringExtra("action")
@@ -78,7 +76,7 @@ class SuRequestActivity : ComponentActivity(), UntrackedActivity {
             finish()
         }
 
-        if (viewModel.useTapjackProtection) {
+        if (com.topjohnwu.magisk.core.Config.suTapjack) {
             window.decorView.rootView.accessibilityDelegate = EmptyAccessibilityDelegate
         }
 
@@ -102,7 +100,7 @@ class SuRequestActivity : ComponentActivity(), UntrackedActivity {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.activityDestroyed()
+        if (!isChangingConfigurations) viewModel.activityDestroyed()
     }
 
     private object EmptyAccessibilityDelegate : View.AccessibilityDelegate() {

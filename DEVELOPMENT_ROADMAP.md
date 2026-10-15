@@ -2754,8 +2754,8 @@ early-mount, UI and additional-device gates retain their original PR14, PR13 and
 
 ## PR 13 — Product manager UI and SU authorization contract
 
-**Implementation status: not started. Depends on stable PR7 System Mode and PR12 hiding/provider
-contracts; the UI must not invent semantics ahead of the backend.**
+**Implementation status: in progress. The [manager contract](docs/manager-contract.md)
+connects the stable PR7/PR12 backends; runtime and release checks are pending.**
 
 - Port System Mode doctor/results/recovery plus Hide/SuList list/settings UI and error/diagnostic states.
 - Preserve the historical SU authentication use case through a security-reviewed disabled/system-

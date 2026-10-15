@@ -138,12 +138,15 @@ impl MagiskD {
 
             // Talk to su manager
             let mut app = SuAppContext {
+                daemon: self,
+                client: &client,
                 cred,
                 request: &req,
                 info: &info,
                 settings: &mut access.settings,
                 sdk_int: self.sdk_int(),
             };
+            let prompted = app.settings.policy == SuPolicy::Query;
             app.connect_app();
 
             // Before unlocking, refresh the timestamp
@@ -153,10 +156,17 @@ impl MagiskD {
                 req.drop_cap = true;
             }
 
-            if access.settings.policy == SuPolicy::Deny {
+            if access.settings.policy != SuPolicy::Allow
+                && access.settings.policy != SuPolicy::Restrict
+            {
                 warn!("su: request rejected ({})", info.uid);
                 client.write_pod(&SuPolicy::Deny.repr).ok();
                 return;
+            }
+            if prompted {
+                // A one-time grant must never become a three-second cached grant.
+                // Persisted consent is reloaded through the ordinary database path.
+                access.timestamp = Instant::now() - Duration::from_secs(3);
             }
         }
 

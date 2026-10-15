@@ -63,6 +63,7 @@ pub struct DbSettings {
     pub boot_count: i32,
     pub denylist: bool,
     pub sulist: bool,
+    pub su_auth: bool,
     pub zygisk: bool,
 }
 
@@ -125,6 +126,7 @@ impl SqlTable for DbSettings {
             "mnt_ns" => self.mnt_ns = MntNsMode { repr: value },
             "denylist" => self.denylist = value != 0,
             "sulist" => self.sulist = value != 0,
+            "su_biometric" => self.su_auth = value != 0,
             "zygisk" => self.zygisk = value != 0,
             "bootloop" => self.boot_count = value,
             _ => {}
@@ -317,6 +319,8 @@ impl MagiskD {
             writer.write_encodable(&out).log_ok();
         };
         self.db_exec_with_rows(&sql, &[], &mut output_fn);
+        // Policy and access changes must revoke previously cached authorization.
+        self.cached_su_info.store(Default::default());
         writer.write_encodable("").log()
     }
 }

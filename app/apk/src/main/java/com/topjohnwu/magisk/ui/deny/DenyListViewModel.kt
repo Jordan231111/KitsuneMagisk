@@ -6,7 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.AsyncLoadViewModel
 import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.ktx.concurrentMap
-import com.topjohnwu.superuser.Shell
+import com.topjohnwu.magisk.core.model.HidePolicy
+import com.topjohnwu.magisk.core.model.HideStatus
+import com.topjohnwu.magisk.core.model.HideFailure
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -124,57 +127,37 @@ class DenyListViewModel : AsyncLoadViewModel() {
         }
     }
 
+    val status = MutableStateFlow<HideStatus?>(null)
+    val failure = MutableStateFlow<Int?>(null)
+    val busy = MutableStateFlow(false)
+
     fun toggleAll(app: DenyAppState) {
-        val willCheck = !app.isChecked
-        if (!willCheck) {
-            Shell.cmd("magisk --denylist rm ${app.info.packageName}").submit()
-        }
-        _allApps.update { apps ->
-            apps.map { currentApp ->
-                if (currentApp.info.packageName == app.info.packageName) {
-                    val newProcs = currentApp.processes.map { proc ->
-                        if (willCheck) {
-                            if (!proc.isEnabled) {
-                                val (name, pkg) = proc.process
-                                Shell.cmd("magisk --denylist add $pkg '$name'").submit()
-                            }
-                            proc.copy(isEnabled = true)
-                        } else {
-                            if (proc.process.isIsolated && proc.isEnabled) {
-                                val (name, pkg) = proc.process
-                                Shell.cmd("magisk --denylist rm $pkg '$name'").submit()
-                            }
-                            proc.copy(isEnabled = false)
-                        }
-                    }
-                    currentApp.copy(processes = newProcs)
-                } else {
-                    currentApp
-                }
-            }
-        }
+        val selected = !app.isChecked
+        edit(app.processes.filter { it.isEnabled != selected }.map {
+            Triple(it.process.packageName, it.process.name, selected)
+        })
     }
 
     fun toggleProcess(app: DenyAppState, proc: DenyProcessState) {
-        val newEnabled = !proc.isEnabled
-        val arg = if (newEnabled) "add" else "rm"
-        val (name, pkg) = proc.process
-        Shell.cmd("magisk --denylist $arg $pkg '$name'").submit()
+        edit(listOf(Triple(proc.process.packageName, proc.process.name, !proc.isEnabled)))
+    }
 
-        _allApps.update { apps ->
-            apps.map { currentApp ->
-                if (currentApp.info.packageName == app.info.packageName) {
-                    val newProcs = currentApp.processes.map { currentProc ->
-                        if (currentProc.process.name == proc.process.name && currentProc.process.packageName == proc.process.packageName) {
-                            currentProc.copy(isEnabled = newEnabled)
-                        } else {
-                            currentProc
-                        }
-                    }
-                    currentApp.copy(processes = newProcs)
-                } else {
-                    currentApp
-                }
+    private fun edit(changes: List<Triple<String, String, Boolean>>) {
+        val mode = status.value?.mode ?: return
+        if (busy.value) return
+        busy.value = true
+        viewModelScope.launch {
+            try {
+                HidePolicy.edit(mode, changes)
+                failure.value = null
+            } catch (e: HideFailure) {
+                failure.value = e.messageRes
+            } finally {
+                // A batch can partially succeed. Always reload the daemon's result.
+                val operationFailure = failure.value
+                doLoadWork()
+                if (operationFailure != null) failure.value = operationFailure
+                busy.value = false
             }
         }
     }
@@ -182,10 +165,13 @@ class DenyListViewModel : AsyncLoadViewModel() {
     @SuppressLint("InlinedApi")
     override suspend fun doLoadWork() {
         _loading.value = true
+        failure.value = null
+        try {
+        val (current, rows) = HidePolicy.selection()
+        status.value = current
         val apps = withContext(Dispatchers.Default) {
             val pm = AppContext.packageManager
-            val denyList = Shell.cmd("magisk --denylist ls").exec().out
-                .map { CmdlineListItem(it) }
+            val denyList = rows.map { CmdlineListItem(it) }
             val apps = pm.getInstalledApplications(MATCH_UNINSTALLED_PACKAGES).run {
                 asFlow()
                     .filter { AppContext.packageName != it.packageName }
@@ -207,7 +193,13 @@ class DenyListViewModel : AsyncLoadViewModel() {
             ))
             apps
         }
-        _allApps.value = apps
-        _loading.value = false
+        val expanded = _allApps.value.filter { it.isExpanded }.map { it.info.packageName }.toSet()
+        _allApps.value = apps.map { it.copy(isExpanded = it.info.packageName in expanded) }
+        } catch (e: HideFailure) {
+            status.value = null
+            failure.value = e.messageRes
+        } finally {
+            _loading.value = false
+        }
     }
 }

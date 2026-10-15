@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.os.CountDownTimer
+import android.os.SystemClock
 import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.BaseViewModel
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -45,25 +45,36 @@ class SuRequestViewModel(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    var authenticate: (onSuccess: () -> Unit) -> Unit = { it() }
+    var authenticate: (callback: (Boolean) -> Unit) -> Unit = { it(false) }
     var finishActivity: () -> Unit = {}
 
     val useTapjackProtection get() = _uiState.value.useTapjackProtection
 
     private val handler = SuRequestHandler(AppContext.packageManager, policyDB)
-    private val millis = SECONDS.toMillis(Config.suDefaultTimeout.toLong())
+    private val millis = SECONDS.toMillis(Config.suDefaultTimeout.toLong().coerceIn(1, 60))
     private var timer = SuTimer(millis, 1000)
+    private var started = false
+    private var authenticating = false
     private var initialized = false
     private var responded = false
 
     fun setSelectedItemPosition(position: Int) {
-        _uiState.update { it.copy(selectedItemPosition = position) }
+        if (!authenticating && !responded) {
+            _uiState.update { it.copy(selectedItemPosition = position.coerceIn(Config.Value.TIMEOUT_LIST.indices)) }
+        }
     }
 
     fun grantPressed() {
-        cancelTimer()
-        if (Config.suAuth) {
-            authenticate { respond(ALLOW) }
+        if (!initialized || responded || authenticating || !_uiState.value.grantEnabled) return
+        if (handler.requiresAuthentication || Config.suAuth) {
+            authenticating = true
+            _uiState.update { it.copy(grantEnabled = false) }
+            timer.cancel()
+            timer = SuTimer((handler.expiresAt - SystemClock.elapsedRealtime()).coerceAtLeast(1), 1000)
+            timer.start()
+            authenticate { success ->
+                if (success) respond(ALLOW, authenticated = true) else respond(DENY, remember = false)
+            }
         } else {
             respond(ALLOW)
         }
@@ -74,15 +85,14 @@ class SuRequestViewModel(
     }
 
     fun spinnerTouched() {
-        cancelTimer()
+        // Changing duration never removes the request deadline.
     }
 
     fun handleRequest(intent: Intent) {
-        viewModelScope.launch(Dispatchers.Default) {
-            if (handler.start(intent))
-                showDialog()
-            else
-                finishActivity()
+        if (started) return
+        started = true
+        viewModelScope.launch {
+            if (handler.start(intent)) showDialog() else finishActivity()
         }
     }
 
@@ -106,7 +116,7 @@ class SuRequestViewModel(
             packageName = info.packageName
         }
 
-        val selectedPos = timeoutPrefs.getInt(packageName, 0)
+        val selectedPos = timeoutPrefs.getInt(packageName, 0).coerceIn(Config.Value.TIMEOUT_LIST.indices)
         _uiState.update {
             it.copy(
                 showUi = true,
@@ -123,29 +133,23 @@ class SuRequestViewModel(
             delay(1000)
             _uiState.update { it.copy(grantEnabled = true) }
         }
-        timer.start()
         initialized = true
+        timer = SuTimer(minOf(millis, (handler.expiresAt - SystemClock.elapsedRealtime()).coerceAtLeast(1)), 1000)
+        timer.start()
     }
 
     fun activityDestroyed() {
         if (initialized && !responded) {
-            respond(DENY)
+            respond(DENY, remember = false)
         }
     }
 
     override fun onCleared() {
-        super.onCleared()
         timer.cancel()
-        if (initialized && !responded) {
-            responded = true
-            val pos = _uiState.value.selectedItemPosition
-            runBlocking(Dispatchers.IO) {
-                handler.respond(DENY, Config.Value.TIMEOUT_LIST[pos])
-            }
-        }
+        handler.close()
     }
 
-    private fun respond(action: Int) {
+    private fun respond(action: Int, authenticated: Boolean = false, remember: Boolean = true) {
         if (!initialized || responded) return
         responded = true
         timer.cancel()
@@ -155,16 +159,11 @@ class SuRequestViewModel(
         timeoutPrefs.edit { putInt(pkg, pos) }
 
         viewModelScope.launch(Dispatchers.IO) {
-            handler.respond(action, Config.Value.TIMEOUT_LIST[pos])
+            handler.respond(action, if (remember) Config.Value.TIMEOUT_LIST[pos] else -1, authenticated)
             withContext(Dispatchers.Main) {
                 finishActivity()
             }
         }
-    }
-
-    private fun cancelTimer() {
-        timer.cancel()
-        _uiState.update { it.copy(denyCountdown = 0) }
     }
 
     private inner class SuTimer(
@@ -182,7 +181,7 @@ class SuRequestViewModel(
 
         override fun onFinish() {
             _uiState.update { it.copy(denyCountdown = 0) }
-            respond(DENY)
+            respond(DENY, remember = false)
         }
     }
 }

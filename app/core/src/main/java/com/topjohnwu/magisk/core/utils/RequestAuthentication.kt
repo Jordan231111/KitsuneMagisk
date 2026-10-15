@@ -11,6 +11,7 @@ class RequestAuthentication: ActivityResultContract<Unit, Boolean>() {
     override fun createIntent(context: Context, input: Unit) =
         context.getSystemService(KeyguardManager::class.java)
             .createConfirmDeviceCredentialIntent(null, null)
+            ?: throw android.content.ActivityNotFoundException("No device credential")
 
     override fun parseResult(resultCode: Int, intent: Intent?) =
         resultCode == Activity.RESULT_OK

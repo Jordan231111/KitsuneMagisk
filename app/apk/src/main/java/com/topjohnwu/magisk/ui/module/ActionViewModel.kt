@@ -8,6 +8,7 @@ import com.topjohnwu.magisk.core.utils.MediaStoreUtils
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils.outputStream
 import com.topjohnwu.magisk.terminal.TerminalEmulator
 import com.topjohnwu.magisk.terminal.runSuCommand
+import com.topjohnwu.magisk.terminal.appendLineOnMain
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,8 @@ class ActionViewModel : BaseViewModel() {
     var actionId: String = ""
     var actionName: String = ""
 
-    private var emulator: TerminalEmulator? = null
+    var emulator: TerminalEmulator? = null
+        private set
     private val emulatorReady = CompletableDeferred<TerminalEmulator>()
 
     fun onEmulatorCreated(emu: TerminalEmulator) {
@@ -36,10 +38,21 @@ class ActionViewModel : BaseViewModel() {
         emulatorReady.complete(emu)
     }
 
+    fun recoverAfterProcessDeath() {
+        _actionState.value = State.FAILED
+        viewModelScope.launch {
+            val emu = emulatorReady.await()
+            emu.appendLineOnMain("! Action interrupted. Check the module before running it again.")
+        }
+    }
+
     fun startRunAction() {
         viewModelScope.launch {
             val emu = emulatorReady.await()
-
+            if (!actionId.matches(Regex("[a-zA-Z][a-zA-Z0-9._-]*"))) {
+                _actionState.value = State.FAILED
+                return@launch
+            }
             val success = withContext(Dispatchers.IO) {
                 runSuCommand(
                     emu,

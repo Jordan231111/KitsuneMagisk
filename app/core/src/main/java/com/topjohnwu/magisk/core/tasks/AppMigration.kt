@@ -63,7 +63,7 @@ object AppMigration {
             val idx = random.nextInt(len - 2)
             builder[idx + 1] = '.'
         }
-        return builder.toString()
+        return "com.$builder"
     }
 
     private fun classNameGenerator() = sequence {
@@ -181,17 +181,23 @@ object AppMigration {
         }
     }
 
-    private fun launchApp(context: Context, pkg: String) {
-        val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return
+    private fun launchApp(context: Context, pkg: String): Boolean {
+        val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return false
         intent.putExtra(Const.Key.PREV_CONFIG, Config.toBundle())
         val options = ActivityOptions.makeBasic()
         if (Build.VERSION.SDK_INT >= 34) {
             options.setShareIdentityEnabled(true)
         }
-        context.startActivity(intent, options.toBundle())
+        try {
+            context.startActivity(intent, options.toBundle())
+        } catch (e: RuntimeException) {
+            Timber.e(e)
+            return false
+        }
         if (context is Activity) {
             context.finish()
         }
+        return true
     }
 
     suspend fun patchAndHide(context: Context, label: String, pkg: String? = null): Boolean {
@@ -229,10 +235,12 @@ object AppMigration {
         // Install and auto launch app
         val cmd = "adb_pm_install $repack $pkg"
         if (Shell.cmd(cmd).exec().isSuccess) {
+            val previous = Config.suManager
             Config.suManager = pkg
             Shell.cmd("touch $AppApkPath").exec()
-            launchApp(context, pkg)
-            return true
+            if (launchApp(context, pkg)) return true
+            Config.suManager = previous
+            return false
         } else {
             return false
         }
@@ -259,10 +267,12 @@ object AppMigration {
         val apk = StubApk.current(context)
         val cmd = "adb_pm_install $apk $APP_PACKAGE_NAME"
         if (Shell.cmd(cmd).await().isSuccess) {
+            val previous = Config.suManager
             Config.suManager = ""
             Shell.cmd("touch $AppApkPath").exec()
-            launchApp(context, APP_PACKAGE_NAME)
-            return true
+            if (launchApp(context, APP_PACKAGE_NAME)) return true
+            Config.suManager = previous
+            return false
         }
         return false
     }
