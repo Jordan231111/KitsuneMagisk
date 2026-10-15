@@ -237,6 +237,21 @@ class ManagerContractTest : BaseTest {
         }
     }
 
+    @Test fun testRepeatedConsentLaunchesReachManager() = withConsentPolicy {
+        Config.suAutoResponse = Config.Value.SU_AUTO_DENY
+        repeat(10) {
+            runBlocking {
+                ServiceLocator.policyDB.update(SuPolicy(2000, logging = false,
+                    notification = false, remain = 0))
+            }
+            shellRequest().reader().use { assertFalse(it.readText().contains("uid=0")) }
+            runBlocking {
+                assertEquals("The manager must receive and answer each request",
+                    SuPolicy.DENY, ServiceLocator.policyDB.fetch(2000)?.policy)
+            }
+        }
+    }
+
     @Test fun testAccessChangeRejectsPendingGrant() = withConsentPolicy {
         shellRequest().reader().use {
             assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.su_warning))), 15000))

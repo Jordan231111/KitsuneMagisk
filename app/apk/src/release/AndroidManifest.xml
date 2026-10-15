@@ -4,10 +4,11 @@
 
     <application>
 
-        <!-- Remove PreviewActivity in release builds -->
+        <!-- Keep the removal guard even when the debug-only class is absent. -->
         <activity
             android:name="androidx.compose.ui.tooling.PreviewActivity"
             android:exported="true"
+            tools:ignore="MissingClass"
             tools:node="remove" />
     </application>
 

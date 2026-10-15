@@ -42,6 +42,7 @@
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/systemmode/SystemModeScreen.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/ui/terminal/TerminalScreen.kt",
     "app/apk/src/main/java/com/topjohnwu/magisk/utils/OperationOrientation.kt",
+    "app/apk/src/release/AndroidManifest.xml",
     "app/build-logic/src/main/java/Plugin.kt",
     "app/build-logic/src/main/java/Setup.kt",
     "app/build-logic/src/main/java/Stub.kt",

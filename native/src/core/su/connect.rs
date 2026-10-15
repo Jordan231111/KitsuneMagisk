@@ -9,11 +9,13 @@ use crate::ffi::{SuPolicy, SuRequest, get_magisk_tmp};
 use ExtraVal::{Bool, Int, IntList, Str};
 use base::{BytesExt, FileAttr, LoggedResult, ResultExt, Utf8CStrBuf, cstr, fork_dont_care, warn};
 use nix::poll::{PollFd, PollFlags, PollTimeout};
+use nix::sys::signal::SigSet;
 use num_traits::AsPrimitive;
 use std::fmt::Write;
 use std::io::Write as IoWrite;
 use std::os::fd::AsFd;
 use std::os::unix::net::{UCred, UnixListener, UnixStream};
+use std::os::unix::process::CommandExt;
 use std::process::{Command, Stdio, exit};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
@@ -28,6 +30,22 @@ enum ExtraVal<'a> {
     Bool(bool),
     Str(&'a str),
     IntList(&'a [u32]),
+}
+
+fn app_process() -> Command {
+    let mut cmd = Command::new("/system/bin/app_process");
+    // Daemon workers block all signals. ART needs its synchronous fault handlers
+    // for managed code, so restore the mask in the child, as exec_command does.
+    // SAFETY: pthread_sigmask is async-signal-safe; no allocation or logging runs
+    // between fork and exec. The daemon worker keeps its original signal mask.
+    unsafe {
+        cmd.pre_exec(|| {
+            SigSet::empty()
+                .thread_set_mask()
+                .map_err(std::io::Error::from)
+        });
+    }
+    cmd
 }
 
 impl Extra<'_> {
@@ -108,7 +126,7 @@ impl SuAppContext<'_> {
 
         if use_provider && cstr!("/system/framework/content.jar").exists() {
             let provider = format!("content://{}.provider", self.info.mgr_pkg);
-            let mut cmd = Command::new("/system/bin/app_process");
+            let mut cmd = app_process();
             cmd.args([
                 "/system/bin",
                 "com.android.commands.content.Content",
@@ -137,7 +155,7 @@ impl SuAppContext<'_> {
             }
         }
 
-        let mut cmd = Command::new("/system/bin/app_process");
+        let mut cmd = app_process();
         cmd.args([
             "/system/bin",
             "com.android.commands.am.Am",
