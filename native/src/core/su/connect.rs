@@ -7,7 +7,7 @@ use crate::db::DbArg::Integer;
 use crate::db::SqliteReturn;
 use crate::ffi::{SuPolicy, SuRequest, get_magisk_tmp};
 use ExtraVal::{Bool, Int, IntList, Str};
-use base::{BytesExt, FileAttr, LoggedResult, ResultExt, Utf8CStrBuf, cstr, fork_dont_care};
+use base::{BytesExt, FileAttr, LoggedResult, ResultExt, Utf8CStrBuf, cstr, fork_dont_care, warn};
 use nix::poll::{PollFd, PollFlags, PollTimeout};
 use num_traits::AsPrimitive;
 use std::fmt::Write;
@@ -160,20 +160,36 @@ impl SuAppContext<'_> {
         cmd.env("CLASSPATH", "/system/framework/am.jar");
 
         // Bound launcher failures as well as the consent socket wait.
-        cmd.stdout(Stdio::piped()).stderr(Stdio::null());
+        cmd.stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
         for _ in 0..3 {
-            let Ok(mut child) = cmd.spawn() else { continue };
+            let Ok(mut child) = cmd.spawn().log() else {
+                continue;
+            };
             let launch_deadline = Instant::now() + Duration::from_secs(3);
             loop {
                 if let Ok(Some(_)) = child.try_wait() {
-                    if let Ok(output) = child.wait_with_output()
-                        && !output.stdout.is_empty()
-                    {
-                        return;
+                    if let Ok(output) = child.wait_with_output().log() {
+                        if output.status.success()
+                            && !output.stdout.is_empty()
+                            && !output.stdout.contains(b"Error")
+                            && !output.stderr.contains(b"Error")
+                        {
+                            return;
+                        }
+                        warn!("su: manager launch failed ({})", output.status);
+                        // Do not log intent arguments: log/notify can include a
+                        // user's command. Keep framework diagnostics bounded.
+                        if action == "request" {
+                            let end = output.stderr.len().min(1024);
+                            warn!("{}", String::from_utf8_lossy(&output.stderr[..end]));
+                        }
                     }
                     break;
                 }
                 if Instant::now() >= launch_deadline {
+                    warn!("su: manager launch timed out");
                     child.kill().ok();
                     child.wait().ok();
                     break;

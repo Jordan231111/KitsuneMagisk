@@ -320,7 +320,7 @@ impl MagiskD {
         };
         self.db_exec_with_rows(&sql, &[], &mut output_fn);
         // Policy and access changes must revoke previously cached authorization.
-        self.cached_su_info.store(Default::default());
+        *self.cached_su_info.lock() = Default::default();
         writer.write_encodable("").log()
     }
 }

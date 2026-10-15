@@ -220,6 +220,23 @@ class ManagerContractTest : BaseTest {
         runBlocking { assertEquals(SuPolicy.QUERY, ServiceLocator.policyDB.fetch(2000)?.policy) }
     }
 
+    @Test fun testSavedGrantRevocationInvalidatesCache() = withConsentPolicy {
+        repeat(5) {
+            runBlocking {
+                ServiceLocator.policyDB.update(SuPolicy(2000, SuPolicy.ALLOW, 0,
+                    logging = false, notification = false))
+            }
+            shellRequest().reader().use { assertTrue(it.readText().contains("uid=0")) }
+            runBlocking {
+                ServiceLocator.policyDB.update(SuPolicy(2000, SuPolicy.DENY, 0,
+                    logging = false, notification = false))
+            }
+            shellRequest().reader().use {
+                assertFalse("A revoked grant must not survive in the cache", it.readText().contains("uid=0"))
+            }
+        }
+    }
+
     @Test fun testAccessChangeRejectsPendingGrant() = withConsentPolicy {
         shellRequest().reader().use {
             assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.su_warning))), 15000))

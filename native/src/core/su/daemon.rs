@@ -223,13 +223,16 @@ impl MagiskD {
             return Arc::new(SuInfo::allow(AID_ROOT));
         }
 
-        let cached = self.cached_su_info.load();
+        let cached = self.cached_su_info.lock().clone();
         if cached.uid == uid && cached.access.lock().is_fresh() {
             return cached;
         }
 
+        // Serialize publication with CLI invalidation, including the database
+        // read. Never hold this lock while waiting for consent on access.lock().
+        let mut cached = self.cached_su_info.lock();
         let info = self.build_su_info(uid);
-        self.cached_su_info.store(info.clone());
+        *cached = info.clone();
         info
     }
 

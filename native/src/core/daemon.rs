@@ -18,8 +18,8 @@ use crate::thread::ThreadPool;
 use crate::zygisk::ZygiskState;
 use base::const_format::concatcp;
 use base::{
-    AtomicArc, BufReadExt, FileAttr, FsPathBuilder, LoggedResult, ReadExt, ResultExt, Utf8CStr,
-    Utf8CStrBuf, WriteExt, cstr, fork_dont_care, info, libc, log_err, set_nice_name,
+    BufReadExt, FileAttr, FsPathBuilder, LoggedResult, ReadExt, ResultExt, Utf8CStr, Utf8CStrBuf,
+    WriteExt, cstr, fork_dont_care, info, libc, log_err, set_nice_name,
 };
 use nix::fcntl::OFlag;
 use nix::mount::MsFlags;
@@ -31,9 +31,9 @@ use std::io::{BufReader, Write};
 use std::os::fd::{AsFd, AsRawFd, IntoRawFd, RawFd};
 use std::os::unix::net::{UCred, UnixListener, UnixStream};
 use std::process::{Command, exit};
-use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::nonpoison::Mutex;
+use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
 // Global magiskd singleton
@@ -61,7 +61,7 @@ pub struct MagiskD {
     pub module_list: OnceLock<Vec<ModuleInfo>>,
     pub zygisk_enabled: AtomicBool,
     pub zygisk: Mutex<ZygiskState>,
-    pub cached_su_info: AtomicArc<SuInfo>,
+    pub cached_su_info: Mutex<Arc<SuInfo>>,
     pub sdk_int: i32,
     pub is_emulator: bool,
     is_recovery: bool,
