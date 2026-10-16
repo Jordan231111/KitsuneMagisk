@@ -130,8 +130,8 @@ class AdditionalTest : BaseTest {
         assertFalse(pending.exists())
         try {
             assertTrue(pending.mkdirs())
-            module.base.getChildFile("module.prop").newInputStream().use { source ->
-                pending.getChildFile("module.prop").newOutputStream().use { source.copyTo(it) }
+            pending.getChildFile("module.prop").newOutputStream().use {
+                it.write("id=$MOUNT_TEST\nname=Pending state test\nversion=1\nversionCode=1\n".toByteArray())
             }
             // Reproduce an update left disabled by safe mode before activation.
             assertTrue(pending.getChildFile("disable").createNewFile())
