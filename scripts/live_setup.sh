@@ -158,7 +158,7 @@ MAKEDEV=1 $MAGISKTMP/magisk --preinit-device 2>&1
 
 RULESCMD=""
 rule="$MAGISKTMP/.magisk/preinit/sepolicy.rule"
-[ -f "$rule" ] && RULESCMD="--apply $rule"
+[ -f "$rule" ] && [ ! -e "$MAGISKTMP/.magisk/preinit/kitsune-v2/disabled" ] && RULESCMD="--apply $rule"
 
 # SELinux stuffs
 if [ -d /sys/fs/selinux ]; then

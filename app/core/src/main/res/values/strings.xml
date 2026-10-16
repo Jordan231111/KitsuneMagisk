@@ -322,4 +322,5 @@
     <string name="hidden_cleanup">Full app installed. Remove the old hidden app on this screen.</string>
     <string name="su_prompt_protection_summary">Block obscured touches and screen-reader control of root prompts. Turn off for assistive services you trust.</string>
     <string name="hidden_restore_defaults">App preferences return to their defaults when the full app is restored.</string>
+    <string name="module_update_failed">Module settings could not be fully updated. Refresh the list and try again.</string>
 </resources>

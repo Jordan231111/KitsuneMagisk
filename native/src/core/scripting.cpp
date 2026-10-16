@@ -116,10 +116,67 @@ static bool operator>(const timespec &a, const timespec &b) {
     return a.tv_nsec > b.tv_nsec;
 }
 
+static void exec_boot_completed(const rust::Vec<ModuleInfo> &modules) {
+    // Do not hold the daemon's boot-stage lock while running module code.
+    if (fork_dont_care() != 0)
+        return;
+    timespec deadline{};
+    clock_gettime(CLOCK_MONOTONIC, &deadline);
+    deadline.tv_sec += 120;
+    for (auto &m : modules) {
+        string name(m.name);
+        string dir = MODULEROOT "/" + name;
+        if (access((dir + "/disable").c_str(), F_OK) == 0 ||
+            access((dir + "/remove").c_str(), F_OK) == 0 ||
+            access((dir + "/boot-completed.sh").c_str(), F_OK) != 0)
+            continue;
+        timespec limit{};
+        clock_gettime(CLOCK_MONOTONIC, &limit);
+        if (limit > deadline)
+            break;
+        limit.tv_sec += 10;
+        if (limit > deadline)
+            limit = deadline;
+        LOGI("%s: exec [boot-completed.sh]\n", name.c_str());
+        exec_t exec {
+            .pre_exec = [] {
+                setpgid(0, 0);
+                set_script_env();
+            }
+        };
+        int pid = exec_command(exec, BBEXEC_CMD, (dir + "/boot-completed.sh").c_str());
+        if (pid < 0)
+            continue;
+        setpgid(pid, pid);
+        int status = 0;
+        for (;;) {
+            int result = waitpid(pid, &status, WNOHANG);
+            if (result == pid || (result < 0 && errno != EINTR))
+                break;
+            timespec now{};
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            if (now > limit) {
+                LOGW("%s: boot-completed.sh timed out\n", name.c_str());
+                kill(-pid, SIGKILL);
+                kill(pid, SIGKILL);
+                while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {}
+                break;
+            }
+            usleep(10000);
+        }
+        LOGI("%s: boot-completed.sh status=%d\n", name.c_str(), status);
+    }
+    _exit(0);
+}
+
 void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_list) {
     LOGI("* Running module %s scripts\n", stage.c_str());
     if (module_list.empty())
         return;
+    if (stage == "boot-completed") {
+        exec_boot_completed(module_list);
+        return;
+    }
 
     bool pfs = stage == "post-fs-data";
     if (pfs) {

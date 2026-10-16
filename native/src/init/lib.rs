@@ -8,6 +8,8 @@ use rootdir::{OverlayAttr, inject_magisk_rc};
 
 #[path = "../include/consts.rs"]
 mod consts;
+mod early;
+mod early_contract;
 mod getinfo;
 mod init;
 mod logging;
@@ -53,6 +55,7 @@ pub mod ffi {
         type Utf8CStrRef<'a> = base::Utf8CStrRef<'a>;
 
         unsafe fn magisk_proxy_main(argc: i32, argv: *mut *mut c_char) -> i32;
+        fn check_safe_mode_key() -> bool;
         fn backup_init() -> Utf8CStrRef<'static>;
 
         // Constants
@@ -83,6 +86,7 @@ pub mod ffi {
     // MagiskInit
     extern "Rust" {
         type OverlayAttr;
+        fn load_early_mount(self: &mut MagiskInit) -> Vec<String>;
         fn parse_config_file(self: &mut MagiskInit);
         fn mount_overlay(self: &mut MagiskInit, dest: Utf8CStrRef);
         fn handle_sepolicy(self: &mut MagiskInit);

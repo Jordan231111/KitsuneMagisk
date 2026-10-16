@@ -421,7 +421,7 @@ ksl_apply_policy() {
   # The persistent source path is read-only install evidence. Boot updates the
   # policy that the kernel actually loaded; a precompiled sidecar can be stale while
   # Android is running a split policy assembled from CIL.
-  if [ -f "$rule" ]; then
+  if [ -f "$rule" ] && [ ! -e "$SM_RUNTIME_PATH/.magisk/preinit/kitsune-v2/disabled" ]; then
     "$KSL_PAYLOAD/magiskpolicy" --live --magisk --apply "$rule" 9>&-
   else
     "$KSL_PAYLOAD/magiskpolicy" --live --magisk 9>&-

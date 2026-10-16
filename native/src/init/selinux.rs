@@ -92,11 +92,17 @@ impl MagiskInit {
         let mut rules = String::new();
         let mut policy_ver = cstr!("/selinux_version");
         let rule_file = cstr!(concatcp!("/data/", PREINITMIRR, "/sepolicy.rule"));
-        if rule_file.exists() {
+        if rule_file.exists()
+            && !cstr!("/data/.magisk/early-safe-mode").exists()
+            && !cstr!("/data/.magisk/preinit/kitsune-v2/disabled").exists()
+        {
             debug!("Loading custom sepolicy patch: [{}]", rule_file);
-            rule_file
-                .open(OFlag::O_RDONLY)?
-                .read_to_string(&mut rules)?;
+            let mut candidate = String::new();
+            if let Ok(mut file) = rule_file.open(OFlag::O_RDONLY).log()
+                && file.read_to_string(&mut candidate).log().is_ok()
+            {
+                rules = candidate;
+            }
         }
 
         // Step 0: determine strategy

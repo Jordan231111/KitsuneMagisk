@@ -18,3 +18,4 @@ base = { workspace = true }
 magiskpolicy = { workspace = true, features = ["no-main"] }
 cxx = { workspace = true }
 num-traits = { workspace = true }
+sha2 = { workspace = true }

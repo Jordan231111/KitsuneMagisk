@@ -99,14 +99,13 @@ pub fn clean_mounts() {
 // - cache: size is limited, but still can be safely written
 // - klogdump: available on some Smartisan devices and can be safely written
 // - metadata: size is limited, and it might cause unexpected behavior if written
-// - persist: it's the last resort, as it's dangerous to write to it
+// Persist contains device calibration data and is never selected for new installs.
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum PartId {
     Data,
     Cache,
     Klogdump,
     Metadata,
-    Persist,
 }
 
 enum EncryptType {
@@ -155,7 +154,6 @@ pub fn find_preinit_device() -> String {
             // take data iff it's not encrypted or file-based encrypted without metadata
             // other partitions are always taken
             match info.target.as_str() {
-                "/persist" | "/mnt/vendor/persist" => Some((PartId::Persist, info)),
                 "/metadata" => Some((PartId::Metadata, info)),
                 "/klogdump" => Some((PartId::Klogdump, info)),
                 "/cache" => Some((PartId::Cache, info)),

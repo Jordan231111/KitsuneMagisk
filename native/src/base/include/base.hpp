@@ -198,6 +198,7 @@ static inline std::string rtrim(std::string &&s) {
     return std::move(s);
 }
 
+bool check_safe_mode_key();
 int fork_dont_care();
 int fork_no_orphan();
 void init_argv0(int argc, char **argv);

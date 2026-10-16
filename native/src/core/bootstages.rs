@@ -130,12 +130,20 @@ impl MagiskD {
             return true;
         }
 
+        // /data is now available. Resolve the writable pre-init directory before
+        // persisting safe-mode disable markers; never remount its block device.
+        setup_preinit_dir();
+
         // Check safe mode
         let boot_cnt = self.get_db_setting(DbEntryKey::BootloopCount);
         self.set_db_setting(DbEntryKey::BootloopCount, boot_cnt + 1)
             .log()
             .ok();
-        let safe_mode = boot_cnt >= 2
+        let safe_mode = cstr::buf::default()
+            .join_path(get_magisk_tmp())
+            .join_path(".magisk/early-safe-mode")
+            .exists()
+            || boot_cnt >= 2
             || get_prop(cstr!("persist.sys.safemode")) == "1"
             || get_prop(cstr!("ro.sys.safemode")) == "1"
             || check_key_combo();
@@ -170,7 +178,7 @@ impl MagiskD {
         }
     }
 
-    fn boot_complete(&self) {
+    fn boot_complete(&self, safe_mode: bool) {
         setup_logfile();
         info!("** boot-complete triggered");
 
@@ -184,6 +192,9 @@ impl MagiskD {
         }
 
         setup_preinit_dir();
+        if !safe_mode && let Some(modules) = self.module_list.get() {
+            exec_module_scripts(cstr!("boot-completed"), modules);
+        }
         self.ensure_manager();
         if self.zygisk_enabled.load(Ordering::Relaxed) {
             self.zygisk.lock().reset(true);
@@ -213,9 +224,11 @@ impl MagiskD {
             }
             RequestCode::BOOT_COMPLETE => {
                 drop(client);
-                if state.contains(BootState::PostFsDataDone) {
+                if state.contains(BootState::PostFsDataDone)
+                    && !state.contains(BootState::BootComplete)
+                {
                     state.insert(BootState::BootComplete);
-                    self.boot_complete()
+                    self.boot_complete(state.contains(BootState::SafeMode))
                 }
             }
             _ => {}

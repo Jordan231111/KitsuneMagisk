@@ -136,7 +136,18 @@ class Environment : BaseTest {
         assertTrue(error, bin.mkdirs())
         assertTrue(error, Shell.cmd("mknod $bin/screenrecord c 0 0").exec().isSuccess)
 
-        assertTrue(error, Shell.cmd("set_default_perm $path").exec().isSuccess)
+        val rootEtc = path.getChildFile("root/system/etc")
+        assertTrue(error, rootEtc.mkdirs())
+        rootEtc.getChildFile("kitsune-root-v2").newOutputStream().use {
+            it.write("root-api-v2\n".toByteArray())
+        }
+        path.getChildFile("boot-completed.sh").newOutputStream().use {
+            it.write("echo completed >> /dev/.kitsune-boot-completed\n".toByteArray())
+        }
+        assertTrue(error, Shell.cmd(
+            "ln -s kitsune-root-v2 $rootEtc/kitsune-root-link",
+            "set_default_perm $path"
+        ).exec().isSuccess)
     }
 
     private fun setupSystemlessHost() {
@@ -155,6 +166,37 @@ class Environment : BaseTest {
             it.println("type magisk_test domain")
         }
 
+        // The consumer records both the early bytes and whether post-fs-data
+        // had already begun. A root-shell read after boot cannot pass this test.
+        if (Build.VERSION.SDK_INT >= 30) {
+            path.getChildFile("module.prop").newOutputStream().use {
+                it.write("id=sepolicy_rule\nversion=1\nversionCode=1\n".toByteArray())
+            }
+            val early = path.getChildFile("early-mount")
+            val etc = early.getChildFile("system/etc")
+            assertTrue(error, etc.mkdirs())
+            etc.getChildFile("hosts").newOutputStream().use {
+                it.write("# kitsune-early-v2\n127.0.0.1 localhost\n::1 localhost\n".toByteArray())
+            }
+            val rcDir = early.getChildFile("initrc.d")
+            assertTrue(error, rcDir.mkdirs())
+            rcDir.getChildFile("consumer.rc").newOutputStream().use {
+                it.write("""
+                    service kitsune_sepolicy_rule_probe /system/bin/sh -c "head -n1 /system/etc/hosts > /dev/.kitsune-early; if [ -e /dev/.kitsune-pfs ]; then echo late >> /dev/.kitsune-early; else echo early >> /dev/.kitsune-early; fi"
+                        user root
+                        group root
+                        seclabel u:r:magisk:s0
+                        oneshot
+                        disabled
+                        timeout_period 10
+                    on early-init
+                        start kitsune_sepolicy_rule_probe
+                """.trimIndent().toByteArray())
+            }
+            path.getChildFile("post-fs-data.sh").newOutputStream().use {
+                it.write("echo late > /dev/.kitsune-pfs\n".toByteArray())
+            }
+        }
         assertTrue(error, Shell.cmd(
             "set_default_perm $path",
             "copy_preinit_files"

@@ -121,27 +121,28 @@ class ModuleViewModel : AsyncLoadViewModel() {
         navigateTo(Route.Action(id, name))
     }
 
-    fun toggleEnabled(item: ModuleItem) {
-        val newEnabled = !item.isEnabled
-        item.module.enable = newEnabled
-        _uiState.update { state ->
-            state.copy(
-                modules = state.modules.map {
-                    if (it.module.id == item.module.id) it.copy(isEnabled = newEnabled) else it
+    private val changingModules = mutableSetOf<String>()
+
+    private fun updateModule(item: ModuleItem, change: () -> Boolean) {
+        if (!changingModules.add(item.module.id)) return
+        viewModelScope.launch {
+            try {
+                val success = withContext(Dispatchers.IO) {
+                    runCatching(change).getOrDefault(false)
                 }
-            )
+                if (!success) showSnackbar(CoreR.string.module_update_failed)
+                startLoading()
+            } finally {
+                changingModules.remove(item.module.id)
+            }
         }
     }
 
-    fun toggleRemove(item: ModuleItem) {
-        val newRemoved = !item.isRemoved
-        item.module.remove = newRemoved
-        _uiState.update { state ->
-            state.copy(
-                modules = state.modules.map {
-                    if (it.module.id == item.module.id) it.copy(isRemoved = newRemoved) else it
-                }
-            )
-        }
+    fun toggleEnabled(item: ModuleItem) = updateModule(item) {
+        item.module.updateEnabled(!item.isEnabled)
+    }
+
+    fun toggleRemove(item: ModuleItem) = updateModule(item) {
+        item.module.updateRemoved(!item.isRemoved)
     }
 }

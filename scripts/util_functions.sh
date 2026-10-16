@@ -575,24 +575,93 @@ run_migrations() {
   copy_preinit_files
 }
 
-copy_preinit_files() {
+copy_preinit_files() (
+  # Serialize manager toggles and installers. A crash releases the descriptor;
+  # a directory lock would strand future refreshes after SIGKILL or power loss.
   local PREINITDIR=$MAGISKTMP/.magisk/preinit
-  if [ ! -d $PREINITDIR ]; then
-    ui_print "- Unable to find preinit dir"
-    return 1
+  [ -d "$PREINITDIR" ] || { ui_print "- Unable to find preinit dir"; return 1; }
+  umask 077
+  local EARLY=false STATE="$MAGISKTMP/.magisk/module-policy" POLICY=
+  if [ "$(cat "$MAGISKTMP/.magisk/early-mount-api" 2>/dev/null)" = 2 ]; then
+    EARLY=true
+    STATE="$PREINITDIR/kitsune-v2"
   fi
-
-  # Copy all enabled sepolicy.rule
-  for r in /data/adb/modules*/*/sepolicy.rule; do
-    [ -f "$r" ] || continue
-    local MODDIR=${r%/*}
-    [ -f $MODDIR/disable ] && continue
-    [ -f $MODDIR/remove ] && continue
-    [ -f $MODDIR/update ] && continue
-    cat $r
-    echo
-  done > $PREINITDIR/sepolicy.rule
-}
+  [ ! -L "$STATE" ] || return 1
+  mkdir -p "$STATE" || return 1
+  exec 9>"$STATE/lock" || return 1
+  flock -x 9 || return 1
+  local STAGE=
+  trap 'rm -rf "$STAGE"; rm -f "$POLICY" "$STATE/link.$$" "$PREINITDIR/.policy.$$"' EXIT
+  # A failed refresh must never resurrect a just-disabled module/policy. System
+  # Mode owns only sepolicy.rule, so keep its working state in the runtime tmpfs.
+  if $EARLY; then
+    touch "$STATE/disabled" && sync -f "$STATE" || return 1
+  else
+    POLICY=$(mktemp "$PREINITDIR/.policy.XXXXXXXX") || return 1
+    sync -f "$POLICY" && mv -Tf "$POLICY" "$PREINITDIR/sepolicy.rule" || return 1
+    sync -f "$PREINITDIR" || return 1
+  fi
+  STAGE=$(mktemp -d "$STATE/gen.XXXXXXXX") || return 1
+  mkdir "$STAGE/modules" || return 1
+  printf '2\n' > "$STAGE/version" || return 1
+  : > "$STAGE/sepolicy.rule" || return 1
+  local d id live
+  for d in /data/adb/modules/* /data/adb/modules_update/*; do
+    [ -d "$d" ] && [ ! -L "$d" ] || continue
+    id=${d##*/}
+    case "$id" in .*|*[!a-zA-Z0-9._-]*) continue ;; esac
+    live=/data/adb/modules/$id
+    [ ! -e "$live/disable" ] && [ ! -e "$live/remove" ] || continue
+    [ ! -e "$d/disable" ] && [ ! -e "$d/remove" ] || continue
+    # An installed module is superseded only by a completely published update.
+    [ "$d" != "$live" ] || [ ! -d "/data/adb/modules_update/$id" ] || continue
+    if [ -f "$d/sepolicy.rule" ] && [ ! -L "$d/sepolicy.rule" ]; then
+      cat "$d/sepolicy.rule" >> "$STAGE/sepolicy.rule" || return 1
+      printf '\n' >> "$STAGE/sepolicy.rule" || return 1
+    fi
+    if $EARLY && [ -d "$d/early-mount" ] && [ ! -L "$d/early-mount" ]; then
+      [ -z "$(find "$d/early-mount" ! -type f ! -type d -print)" ] || {
+        ui_print "! $id: early-mount v2 requires regular files and directories"
+        return 1
+      }
+      mkdir "$STAGE/modules/$id" || return 1
+      cp -af "$d/early-mount" "$STAGE/modules/$id/" || return 1
+      cp "$d/module.prop" "$STAGE/modules/$id/" || return 1
+    fi
+  done
+  if ! $EARLY; then
+    POLICY=$(mktemp "$PREINITDIR/.policy.XXXXXXXX") || return 1
+    cat "$STAGE/sepolicy.rule" > "$POLICY" || return 1
+    sync -f "$POLICY" && mv -Tf "$POLICY" "$PREINITDIR/sepolicy.rule" || return 1
+    sync -f "$PREINITDIR" || return 1
+    return 0
+  fi
+  if [ -d /data/adb/early-mount.d ] && [ ! -L /data/adb/early-mount.d ]; then
+    [ -z "$(find /data/adb/early-mount.d ! -type f ! -type d -print)" ] || return 1
+    cp -af /data/adb/early-mount.d "$STAGE/global" || return 1
+  fi
+  # Every payload is durable before the one-name publication. Interrupted copies
+  # are unreachable; the prior complete generation remains available for recovery.
+  (cd "$STAGE" && find . -type f ! -name manifest -exec sha256sum '{}' ';' > manifest) || return 1
+  sync -f "$STAGE" || return 1
+  local OLD
+  OLD=$(readlink "$STATE/current") || OLD=
+  ln -s "${STAGE##*/}" "$STATE/link.$$" || return 1
+  mv -Tf "$STATE/link.$$" "$STATE/current" || return 1
+  STAGE=
+  sync -f "$STATE" || return 1
+  ln -s kitsune-v2/current/sepolicy.rule "$PREINITDIR/.policy.$$" || return 1
+  mv -Tf "$PREINITDIR/.policy.$$" "$PREINITDIR/sepolicy.rule" || return 1
+  sync -f "$PREINITDIR" || return 1
+  rm -f "$STATE/disabled" || return 1
+  sync -f "$STATE" || return 1
+  # Retain one previous generation. Only our own generation names are eligible.
+  local CURRENT
+  CURRENT=$(readlink "$STATE/current")
+  for d in "$STATE"/gen.*; do
+    [ "${d##*/}" = "$CURRENT" ] || [ "${d##*/}" = "$OLD" ] || rm -rf "$d"
+  done
+)
 
 #################
 # Module Related
@@ -640,10 +709,10 @@ set_default_perm() {
 
 # Require OUTFD, ZIPFILE to be set
 install_module() {
-  rm -rf $TMPDIR
-  mkdir -p $TMPDIR
-  chcon u:object_r:system_file:s0 $TMPDIR
-  cd $TMPDIR
+  local TMPDIR
+  TMPDIR=$(mktemp -d /dev/kitsune-install.XXXXXXXX) || return 1
+  chcon u:object_r:system_file:s0 "$TMPDIR"
+  cd "$TMPDIR" || return 1
 
   setup_flashable
   mount_partitions
@@ -666,12 +735,22 @@ install_module() {
   MODID=$(grep_prop id $TMPDIR/module.prop)
   MODNAME=$(grep_prop name $TMPDIR/module.prop)
   MODAUTH=$(grep_prop author $TMPDIR/module.prop)
-  MODPATH=$MODULEROOT/$MODID
-
-  # Create mod paths
-  rm -rf $MODPATH
-  mkdir -p $MODPATH
-  chcon u:object_r:system_file:s0 $MODPATH
+  case "$MODID" in
+    ""|.*|*[!a-zA-Z0-9._-]*) abort "! Invalid module ID" ;;
+  esac
+  mkdir -p "$MODULEROOT" || abort "! Cannot create module directory"
+  exec 8>/data/adb/.module-install.lock || abort "! Cannot lock module installation"
+  flock -x 8 || abort "! Cannot lock module installation"
+  local FINALPATH=$MODULEROOT/$MODID
+  local PREVIOUS=$MODULEROOT/.previous-$MODID
+  # Recover an interrupted publication before starting another install.
+  if [ -d "$PREVIOUS" ] && [ ! -e "$FINALPATH" ]; then
+    mv -T "$PREVIOUS" "$FINALPATH" || abort "! Cannot recover previous module"
+  fi
+  MODPATH=$(mktemp -d "$MODULEROOT/.staging-$MODID.XXXXXXXX") || abort "! Cannot stage module"
+  local INSTALL_STAGE=$MODPATH
+  trap 'rm -rf "$INSTALL_STAGE" "$TMPDIR"' EXIT
+  chcon u:object_r:system_file:s0 "$MODPATH"
 
   if is_legacy_script; then
     unzip -oj "$ZIPFILE" module.prop install.sh uninstall.sh 'common/*' -d $TMPDIR >&2
@@ -720,19 +799,35 @@ install_module() {
     mknod $MODPATH$TARGET c 0 0
   done
 
+  if [ -d "$MODPATH/early-mount" ] && ! magisk --early-mount-status >/dev/null 2>&1; then
+    abort "! Early mounting is unavailable on this boot route"
+  fi
+
+  # Publish only after extraction and customization completed successfully.
+  # A process death before this rename cannot expose an incomplete new module.
+  sync -f "$MODPATH" || abort "! Cannot sync module"
+  rm -rf "$PREVIOUS"
+  if [ -e "$FINALPATH" ]; then
+    mv -T "$FINALPATH" "$PREVIOUS" || abort "! Cannot preserve previous module"
+    sync -f "$MODULEROOT" || abort "! Cannot sync previous module"
+  fi
+  if ! mv -T "$MODPATH" "$FINALPATH"; then
+    [ ! -e "$PREVIOUS" ] || mv -T "$PREVIOUS" "$FINALPATH"
+    abort "! Cannot publish module"
+  fi
+  MODPATH=$FINALPATH
+  sync -f "$MODULEROOT" || abort "! Cannot sync module publication"
+  rm -rf "$PREVIOUS"
+
   if $BOOTMODE; then
     # Update info for Magisk app
     mktouch /data/adb/modules/$MODID/update
     rm -rf /data/adb/modules/$MODID/remove 2>/dev/null
-    rm -rf /data/adb/modules/$MODID/disable 2>/dev/null
     cp -af $MODPATH/module.prop /data/adb/modules/$MODID/module.prop
   fi
 
-  # Copy over custom sepolicy rules
-  if [ -f $MODPATH/sepolicy.rule ]; then
-    ui_print "- Installing custom sepolicy rules"
-    copy_preinit_files
-  fi
+  # Removing rules or early files in an update also invalidates the old snapshot.
+  copy_preinit_files || ui_print "! Pre-init refresh failed; early modules remain disabled"
 
   # Remove stuff that doesn't belong to modules and clean up any empty directories
   rm -rf \
@@ -744,6 +839,8 @@ install_module() {
   $BOOTMODE || recovery_cleanup
   rm -rf $TMPDIR
 
+  trap - EXIT
+  exec 8>&-
   ui_print "- Done"
 }
 

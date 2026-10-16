@@ -27,7 +27,7 @@
 > PR12 core/DB/provider qualification is complete in [GitHub #35](https://github.com/Jordan231111/KitsuneMagisk/pull/35);
 > [its contract and evidence](docs/hide-policy.md) retain the PR14/PR15 target dependencies. PR13's
 > manager implementation and local acceptance are complete in [GitHub #36](https://github.com/Jordan231111/KitsuneMagisk/pull/36),
-> with [scoped evidence](docs/manager-pr13.json); final PR checks gate its merge. PR14 is next.
+> with [scoped evidence](docs/manager-pr13.json), and is merged after passing its checks. PR14 is in progress.
 > Production promotion remains gated.
 >
 > Product charter: KitsuneMagisk provides reliable Magisk root on real phones and emulators while
@@ -88,12 +88,12 @@ execution order.
 | 14 | Roadmap PR10 — authenticated update service and stub | **Complete; merged by GitHub #33; experimental beta published** | Preserve the [shared update contract](docs/update-service.md) and [public-download/clean-stub acceptance](docs/update-service-acceptance.json); stable promotion remains PR16. |
 | 15 | Roadmap PR11 / GitHub #34 — Zygisk architecture and adapter boundary | **Complete** | Preserve the [single-provider ADR](docs/adr/0001-zygisk-provider.md), native contract and [runtime evidence](docs/zygisk-pr11.json); PR12 owns Hide/SuList and external adapter integration. |
 | 16 | Roadmap PR12 / GitHub #35 — Hide/SuList core and DB migration | **Complete** | Preserve the [core contract](docs/hide-policy.md), [qualification](docs/hide-pr12.json), and named PR14/PR15 dependencies. |
-| 17 | Roadmap PR13 / GitHub #36 — manager UI and SU authorization | **Implementation and local acceptance complete; final PR checks gate merge** | Preserve the [manager contract](docs/manager-contract.md), [runtime record](docs/manager-pr13.json), authenticated migration and explicit historical replacements. |
-| 18 | Roadmap PR14–PR16 — remaining module features, qualification, and release | **Not started** | Close every remaining feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
+| 17 | Roadmap PR13 / GitHub #36 — manager UI and SU authorization | **Complete; merged by GitHub #36** | Preserve the [manager contract](docs/manager-contract.md), [runtime record](docs/manager-pr13.json), authenticated migration and explicit historical replacements. |
+| 18 | Roadmap PR14–PR16 — remaining module features, qualification, and release | **PR14 implementation and qualification in progress; PR15–PR16 not started** | Close every remaining feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
 
 The next implementation task is **PR14**, on the maintained `next-system` foundation with PR8–PR12 complete
 and [PR13 manager acceptance in GitHub #36](https://github.com/Jordan231111/KitsuneMagisk/pull/36).
-PR13's exact head must pass its PR checks before merging.
+PR13's exact head passed its checks and is merged. PR14 implements the [versioned module contract](docs/module-contract.md); qualification remains in progress.
 PR8 selected the v31.0-based
 development foundation while retaining historical-feature and release qualification gates. PR7A completed the upstream
 update and inherited lifecycle gates. PR6 established the exact v30.7 baseline, and
@@ -2793,8 +2793,9 @@ PR14–PR16 retain their named module, physical-target and release gates.
 
 ## PR 14 — Module compatibility closure and early-mount v2
 
-**Implementation status: not started. Depends on the selected upstream-based core and stable module
-lifecycle.**
+**Implementation status: in progress on the selected v31.0 core. The [module contract](docs/module-contract.md)
+records the implementation and explicit migration boundaries; exact-candidate qualification and
+historical-ledger closure still gate completion.**
 
 - Port the documented global/per-module early-mount API, including the historical `initrc.d`
   injection use case, behind a versioned capability contract.
@@ -3018,7 +3019,7 @@ in the detail:
   comparisons; preserve the exact runtime and historical disposition evidence.
 - **Done — PR12:** Hide/SuList core, rollback-compatible migration and the pinned external source
   adapter are qualified; preserve their exact evidence and limits.
-- **Open — PR13/PR14:** finish the focused manager UI and early-mount/module closure on this foundation.
+- **Open — PR14:** finish early-mount/module qualification and ledger closure; PR13 is merged.
 - **Open — PR15/PR16:** complete commercial-emulator and advertised physical-device recovery
   matrices, publish the exact tested candidate with checksum/certificate/source evidence, and
   promote only after all claimed support lanes pass.

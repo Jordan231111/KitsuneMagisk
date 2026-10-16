@@ -37,7 +37,7 @@ on property:sys.boot_completed=1
     mem::forget(file)
 }
 
-pub struct OverlayAttr(Utf8CString, Utf8CString);
+pub struct OverlayAttr(pub(crate) Utf8CString, pub(crate) Utf8CString);
 
 impl MagiskInit {
     pub(crate) fn parse_config_file(&mut self) {

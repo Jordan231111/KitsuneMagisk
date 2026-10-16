@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.test
 
+import android.os.Build
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import androidx.annotation.Keep
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -111,6 +112,45 @@ class AdditionalTest : BaseTest {
             egg,
             arrayOf("newfile")
         )
+    }
+
+    @Test
+    fun testRootModuleApiAndBootCompleted() {
+        assumeTrue(Environment.mount())
+        assertEquals("root-api-v2", Shell.cmd("cat /system/etc/kitsune-root-v2").exec().out.joinToString(""))
+        assertEquals("kitsune-root-v2", Shell.cmd("readlink /system/etc/kitsune-root-link").exec().out.joinToString(""))
+        assertEquals("completed", Shell.cmd("cat /dev/.kitsune-boot-completed").exec().out.joinToString(""))
+    }
+
+    @Test
+    fun testPreinitPublicationFailure() {
+        assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
+        val module = modules.first { it.id == SEPOLICY_RULE }
+        try {
+            assertTrue(module.updateEnabled(false))
+            assertTrue(Shell.cmd("test ! -e \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current/modules/$SEPOLICY_RULE\"").exec().isSuccess)
+            assertTrue(module.updateEnabled(true))
+            val old = Shell.cmd("readlink \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current\"").exec().out
+            assertTrue(Shell.cmd("(cp() { return 1; }; ! copy_preinit_files)").exec().isSuccess)
+            assertEquals(old, Shell.cmd("readlink \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current\"").exec().out)
+            assertTrue(Shell.cmd("test -f \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/disabled\"").exec().isSuccess)
+        } finally {
+            assertTrue(module.updateEnabled(true))
+        }
+    }
+
+    @Test
+    fun testBootCompletedRunsOnce() {
+        assumeTrue(Environment.mount())
+        assertTrue(Shell.cmd("magisk --boot-complete", "magisk --boot-complete").exec().isSuccess)
+        assertEquals(listOf("completed"), Shell.cmd("cat /dev/.kitsune-boot-completed").exec().out)
+    }
+
+    @Test
+    fun testEarlyConsumer() {
+        assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
+        assertEquals(listOf("# kitsune-early-v2", "early"), Shell.cmd("cat /dev/.kitsune-early").exec().out)
+        assertTrue(Shell.cmd("test -f /dev/.kitsune-pfs").exec().isSuccess)
     }
 
     @Test

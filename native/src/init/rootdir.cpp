@@ -306,6 +306,8 @@ void MagiskInit::patch_ro_root() noexcept {
         close(dest);
     }
 
+    for (const auto &script : load_early_mount())
+        rc_list.emplace_back(script);
     load_overlay_rc(ROOTOVL);
     if (access(ROOTOVL "/sbin", F_OK) == 0) {
         // Move files in overlay.d/sbin into tmp_dir
@@ -352,15 +354,17 @@ void MagiskInit::patch_rw_root() noexcept {
     rm_rf("/data/overlay.d");
     rm_rf("/.backup");
 
-    // Patch init.rc
-    if (patch_rc_scripts("/", "/sbin", true))
-        patch_fissiond("/sbin");
-
     xmkdir(PRE_TMPSRC, 0);
     xmount("tmpfs", PRE_TMPSRC, "tmpfs", 0, "mode=755");
     xmkdir(PRE_TMPDIR, 0);
     setup_tmp(PRE_TMPDIR);
     chdir(PRE_TMPDIR);
+
+    for (const auto &script : load_early_mount())
+        rc_list.emplace_back(script);
+    // Patch after loading pre-init module RC, still before Android init runs.
+    if (patch_rc_scripts("/", "/sbin", true))
+        patch_fissiond("/sbin");
 
     // Extract overlay archives
     extract_files(true);

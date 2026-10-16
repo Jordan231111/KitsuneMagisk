@@ -13,6 +13,7 @@ LOCAL_EXPORT_STATIC_LIBRARIES := libcxx
 LOCAL_STATIC_LIBRARIES := libcxx
 LOCAL_SRC_FILES := \
     base.cpp \
+    boot.cpp \
     base-rs.cpp \
     ../external/cxx-rs/src/cxx.cc
 include $(BUILD_STATIC_LIBRARY)

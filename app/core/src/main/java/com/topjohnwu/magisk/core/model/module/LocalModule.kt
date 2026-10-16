@@ -63,6 +63,29 @@ data class LocalModule(
             }
         }
 
+    fun updateEnabled(enabled: Boolean): Boolean {
+        if (enabled) {
+            if (disableFile.exists() && !disableFile.delete()) return false
+        } else if (!disableFile.exists() && !disableFile.createNewFile()) {
+            return false
+        }
+        return refreshPreinit()
+    }
+
+    fun updateRemoved(removed: Boolean): Boolean {
+        if (removed) {
+            if (updated) return false
+            if (!removeFile.exists() && !removeFile.createNewFile()) return false
+        } else if (removeFile.exists() && !removeFile.delete()) {
+            return false
+        }
+        return refreshPreinit()
+    }
+
+    private fun refreshPreinit(): Boolean = Shell.cmd(
+        "[ ! -d \"\$MAGISKTMP/.magisk/preinit\" ] || copy_preinit_files"
+    ).exec().isSuccess
+
     @Throws(NumberFormatException::class)
     private fun parseProps(props: List<String>) {
         for (line in props) {

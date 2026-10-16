@@ -47,6 +47,7 @@ Advanced Options (Internal APIs):
    --denylist ARGS           denylist config CLI
    --hide ARGS               Kitsune Hide/SuList config CLI
    --preinit-device          resolve a device to store preinit files
+   --early-mount-status      report early-mount route eligibility (root)
 
 Available applets:
      {}
@@ -89,6 +90,7 @@ enum MagiskAction {
     DenyList(DenyList),
     Hide(Hide),
     PreInitDevice(PreInitDevice),
+    EarlyMountStatus(EarlyMountStatus),
 }
 
 #[derive(FromArgs)]
@@ -216,6 +218,10 @@ struct Hide {
 #[argh(subcommand, name = "--preinit-device")]
 struct PreInitDevice {}
 
+#[derive(FromArgs)]
+#[argh(subcommand, name = "--early-mount-status")]
+struct EarlyMountStatus {}
+
 impl MagiskAction {
     fn exec(self) -> LoggedResult<i32> {
         use MagiskAction::*;
@@ -322,6 +328,19 @@ impl MagiskAction {
             }
             Hide(self::Hide { mut args }) => {
                 return Ok(crate::ffi::hide_cli(&mut args));
+            }
+            EarlyMountStatus(_) => {
+                if unsafe { base::libc::geteuid() } != 0 {
+                    return Ok(1);
+                }
+                let tmp = get_magisk_tmp();
+                let api = std::fs::read_to_string(format!("{tmp}/.magisk/early-mount-api"))
+                    .is_ok_and(|s| s.trim() == "2");
+                let preinit = std::path::Path::new(&format!("{tmp}/.magisk/preinit")).is_dir();
+                println!(
+                    "{{\"version\":2,\"magiskinit_route\":{api},\"preinit_available\":{preinit}}}"
+                );
+                return Ok(i32::from(!api || !preinit));
             }
             PreInitDevice(_) => {
                 let name = find_preinit_device();

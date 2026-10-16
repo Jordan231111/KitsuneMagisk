@@ -34,7 +34,8 @@ class BuildInfoTest(unittest.TestCase):
         self.assertNotEqual(debug["build_id"], release["build_id"])
         self.assertIn("kitsune.system-mode.transaction.v1", debug["capabilities"])
         self.assertNotIn("kitsune.system-mode.transaction.v1", release["capabilities"])
-        self.assertFalse(any("sulist" in x or "early-mount" in x for x in debug["capabilities"]))
+        self.assertIn("kitsune.early-mount.v2", debug["capabilities"])
+        self.assertIn("kitsune.module-root.v2", debug["capabilities"])
 
     def test_shell_identity_preserves_distinct_integer_contracts(self):
         info = build_info.variant_info(self.data, "debug")

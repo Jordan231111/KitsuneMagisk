@@ -680,6 +680,7 @@ dependencies = [
  "cxx-gen",
  "magiskpolicy",
  "num-traits",
+ "sha2",
 ]
 
 [[package]]

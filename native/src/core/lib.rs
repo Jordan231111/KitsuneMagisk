@@ -34,6 +34,7 @@ mod db;
 mod logging;
 mod magisk;
 mod module;
+mod module_store;
 mod mount;
 mod package;
 mod resetprop;
