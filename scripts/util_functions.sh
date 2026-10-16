@@ -649,7 +649,7 @@ copy_preinit_files() (
   fi
   # Every payload is durable before the one-name publication. Interrupted copies
   # are unreachable; the prior complete generation remains available for recovery.
-  (cd "$STAGE" && find . -type f ! -name manifest -exec sha256sum '{}' ';' > manifest) || return 1
+  (cd "$STAGE" && find . -type f ! -path ./manifest -exec sha256sum '{}' ';' > manifest) || return 1
   sync -f "$STAGE" || return 1
   local OLD
   OLD=$(readlink "$STATE/current") || OLD=
