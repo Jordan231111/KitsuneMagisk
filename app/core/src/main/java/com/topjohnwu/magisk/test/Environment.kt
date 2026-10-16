@@ -178,6 +178,14 @@ class Environment : BaseTest {
             etc.getChildFile("hosts").newOutputStream().use {
                 it.write("# kitsune-early-v2\n127.0.0.1 localhost\n::1 localhost\n".toByteArray())
             }
+            val vendor = RootUtils.fs.getFile("/vendor/build.prop")
+            if (vendor.isFile) {
+                val alias = early.getChildFile("system/vendor")
+                assertTrue(error, alias.mkdirs())
+                vendor.newInputStream().use { source ->
+                    alias.getChildFile("build.prop").newOutputStream().use { source.copyTo(it) }
+                }
+            }
             val rcDir = early.getChildFile("initrc.d")
             assertTrue(error, rcDir.mkdirs())
             rcDir.getChildFile("consumer.rc").newOutputStream().use {

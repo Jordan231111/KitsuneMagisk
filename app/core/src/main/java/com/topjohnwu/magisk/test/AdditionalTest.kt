@@ -190,6 +190,14 @@ class AdditionalTest : BaseTest {
         assertEquals(listOf("# kitsune-early-v2", "early"), Shell.cmd("cat /dev/.kitsune-early").exec().out)
         assertTrue(Shell.cmd("test -f /dev/.kitsune-pfs").exec().isSuccess)
         assertEquals(listOf("600 0"), Shell.cmd("stat -c '%a %u' \"\$MAGISKTMP/.magisk/early-mount-api\"").exec().out)
+        if (RootUtils.fs.getFile("/vendor/build.prop").isFile) {
+            val target = Shell.cmd("readlink -f /vendor/build.prop").exec()
+            assertTrue(target.isSuccess)
+            val mounts = Shell.cmd("cat /proc/1/mountinfo").exec()
+            assertTrue(mounts.isSuccess && mounts.out.any {
+                it.contains(" ${target.out.single()} ") && it.contains(" - tmpfs magisk ")
+            })
+        }
         val label = Shell.cmd("ls -Z \"\$MAGISKTMP/.magisk/early-mount/0\"").exec()
         assertTrue("Early payload must retain its system label", label.isSuccess &&
             label.out.any { it.contains("u:object_r:system_file:s0") })

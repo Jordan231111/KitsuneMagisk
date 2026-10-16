@@ -48,7 +48,19 @@ fn checked_file(path: &str, budget: &mut usize) -> Option<Vec<u8>> {
 }
 
 fn target_path(path: &str) -> Option<String> {
-    let (partition, rest) = path.split_once('/')?;
+    let (mut partition, mut rest) = path.split_once('/')?;
+    // Preserve the historical system/vendor spelling on split-partition
+    // devices, following only Android's known reciprocal aliases.
+    if partition == "system"
+        && let Some((name, tail)) = rest.split_once('/')
+        && matches!(name, "vendor" | "product" | "system_ext")
+        && let Ok(link) = fs::read_link(format!("/system/{name}"))
+        && (link == std::path::Path::new(&format!("/{name}"))
+            || link == std::path::Path::new(&format!("../{name}")))
+    {
+        partition = name;
+        rest = tail;
+    }
     if !matches!(
         partition,
         "system" | "vendor" | "product" | "system_ext" | "odm"

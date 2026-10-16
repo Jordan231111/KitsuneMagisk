@@ -141,9 +141,7 @@ pub fn validate_rc(text: &str, owner: &str) -> bool {
                     && name
                         .bytes()
                         .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b)) =>
-            {
-                ()
-            }
+            {}
             _ => return false,
         }
     }
