@@ -306,7 +306,7 @@ void MagiskInit::patch_ro_root() noexcept {
         close(dest);
     }
 
-    for (const auto &script : load_early_mount())
+    for (const auto &script : load_early_mount(tmp_dir.data()))
         rc_list.emplace_back(script);
     load_overlay_rc(ROOTOVL);
     if (access(ROOTOVL "/sbin", F_OK) == 0) {
@@ -360,7 +360,7 @@ void MagiskInit::patch_rw_root() noexcept {
     setup_tmp(PRE_TMPDIR);
     chdir(PRE_TMPDIR);
 
-    for (const auto &script : load_early_mount())
+    for (const auto &script : load_early_mount(PRE_TMPDIR))
         rc_list.emplace_back(script);
     // Patch after loading pre-init module RC, still before Android init runs.
     if (patch_rc_scripts("/", "/sbin", true))

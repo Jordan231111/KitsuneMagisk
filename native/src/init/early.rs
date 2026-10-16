@@ -5,7 +5,7 @@ use crate::early_contract::{guard_services, safe_path, validate_rc};
 use crate::ffi::{MagiskInit, check_safe_mode_key};
 use crate::rootdir::OverlayAttr;
 use base::nix::mount::{MsFlags, mount};
-use base::{Directory, LoggedResult, ResultExt, Utf8CString, clone_attr, cstr, debug, warn};
+use base::{LoggedResult, ResultExt, Utf8CStr, Utf8CString, clone_attr, cstr, debug, warn};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -92,7 +92,7 @@ fn target_path(path: &str) -> Option<String> {
 }
 
 impl MagiskInit {
-    pub(crate) fn load_early_mount(&mut self) -> Vec<String> {
+    pub(crate) fn load_early_mount(&mut self, tmp_dir: &Utf8CStr) -> Vec<String> {
         write_control(".magisk/early-mount-api", b"2\n").log_ok();
         if !std::path::Path::new(STATE).exists() {
             return Vec::new();
@@ -105,7 +105,7 @@ impl MagiskInit {
             warn!("early-mount: snapshot disabled");
             return Vec::new();
         }
-        match self.prepare_early_mount() {
+        match self.prepare_early_mount(tmp_dir) {
             Some(rc) => rc,
             None => {
                 write_control(".magisk/early-snapshot-invalid", b"1\n").log_ok();
@@ -115,7 +115,7 @@ impl MagiskInit {
         }
     }
 
-    fn prepare_early_mount(&mut self) -> Option<Vec<String>> {
+    fn prepare_early_mount(&mut self, tmp_dir: &Utf8CStr) -> Option<Vec<String>> {
         let start = Instant::now();
         let generation = fs::read_link(format!("{STATE}/current")).ok()?;
         let generation = generation.to_str()?;
@@ -218,22 +218,24 @@ impl MagiskInit {
         }
         let mut mounted: Vec<Utf8CString> = Vec::new();
         let mut contexts = Vec::new();
-        let mut early_dir = cstr::buf::default();
+        // The stock debug ramdisk temporarily covers the final runtime path.
+        // Stage and relabel through the inherited cwd; RC runs after it is exposed.
+        let runtime_dir = format!("{tmp_dir}/{PAYLOAD}");
         let result = (|| -> LoggedResult<()> {
-            Directory::open(payload)?.resolve_path(&mut early_dir)?;
-            if !scripts.is_empty() && early_dir.starts_with("/magisk/tmp/") {
+            debug!("early-mount: staging for {}", runtime_dir);
+            if !scripts.is_empty() && runtime_dir.starts_with("/magisk/tmp/") {
                 return base::log_err!("early-mount: RC requires a stable runtime path");
             }
             let guard = format!(
                 "#!/system/bin/sh\n[ -f '{0}/ready' ] && [ ! -e '{0}/../early-safe-mode' ] || exit 1\nexec \"$@\"\n",
-                early_dir
+                runtime_dir
             );
-            write_control(&format!("{}/exec.sh", early_dir), guard.as_bytes()).log()?;
+            write_control(concat!(".magisk/early-mount", "/exec.sh"), guard.as_bytes()).log()?;
             for (index, (target, (_owner, bytes))) in mounts.iter().enumerate() {
                 if start.elapsed() > Duration::from_secs(2) {
                     return base::log_err!("early-mount: publication budget exceeded");
                 }
-                let source = Utf8CString::from(format!("{}/{index}", early_dir));
+                let source = Utf8CString::from(format!("{PAYLOAD}/{index}"));
                 let target = Utf8CString::from(target.as_str());
                 let mut file = fs::OpenOptions::new()
                     .write(true)
@@ -262,7 +264,7 @@ impl MagiskInit {
             payload.unmount().log_ok();
             return None;
         }
-        self.early_dir = early_dir.to_string();
+        self.early_dir = PAYLOAD.to_string();
         self.early_targets = mounted.iter().map(|p| p.to_string()).collect();
         self.overlay_con.extend(contexts);
         debug!(
@@ -272,7 +274,7 @@ impl MagiskInit {
         );
         scripts
             .into_values()
-            .map(|text| guard_services(&text, &format!("{}/exec.sh", early_dir)))
+            .map(|text| guard_services(&text, &format!("{}/exec.sh", runtime_dir)))
             .collect()
     }
     pub(crate) fn finish_early_mounts(&self, contexts_ready: bool) {

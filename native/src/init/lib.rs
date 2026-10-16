@@ -88,7 +88,7 @@ pub mod ffi {
     // MagiskInit
     extern "Rust" {
         type OverlayAttr;
-        fn load_early_mount(self: &mut MagiskInit) -> Vec<String>;
+        fn load_early_mount(self: &mut MagiskInit, tmp_dir: Utf8CStrRef) -> Vec<String>;
         fn parse_config_file(self: &mut MagiskInit);
         fn mount_overlay(self: &mut MagiskInit, dest: Utf8CStrRef);
         fn handle_sepolicy(self: &mut MagiskInit);
