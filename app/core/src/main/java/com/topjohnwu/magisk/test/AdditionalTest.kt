@@ -123,6 +123,36 @@ class AdditionalTest : BaseTest {
     }
 
     @Test
+    fun testPendingModuleEnableAfterSafeMode() {
+        assumeTrue(Environment.mount())
+        val module = modules.first { it.id == MOUNT_TEST }
+        val pending = RootUtils.fs.getFile("/data/adb/modules_update/$MOUNT_TEST")
+        assertFalse(pending.exists())
+        try {
+            assertTrue(pending.mkdirs())
+            module.base.getChildFile("module.prop").newInputStream().use { source ->
+                pending.getChildFile("module.prop").newOutputStream().use { source.copyTo(it) }
+            }
+            // Reproduce an update left disabled by safe mode before activation.
+            assertTrue(pending.getChildFile("disable").createNewFile())
+            assertTrue(module.updateEnabled(false))
+            assertTrue(module.updateEnabled(true))
+            assertTrue(module.enable)
+            assertFalse(pending.getChildFile("disable").exists())
+            module.enable = false
+            assertTrue(pending.getChildFile("disable").exists())
+            assertFalse(module.base.getChildFile("update").exists())
+            assertTrue(module.updated)
+            assertFalse(module.updateRemoved(true))
+            module.remove = true
+            assertFalse(module.remove)
+        } finally {
+            assertTrue(Shell.cmd("rm -rf $pending").exec().isSuccess)
+            assertTrue(module.updateEnabled(true))
+        }
+    }
+
+    @Test
     fun testNestedManifestPayloadIsHashed() {
         assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
         val module = modules.first { it.id == SEPOLICY_RULE }

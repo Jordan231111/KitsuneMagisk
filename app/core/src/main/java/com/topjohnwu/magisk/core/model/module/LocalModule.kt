@@ -30,10 +30,11 @@ data class LocalModule(
     private val removeFile = base.getChildFile("remove")
     private val disableFile = base.getChildFile("disable")
     private val updateFile = base.getChildFile("update")
+    private val pendingDir get() =
+        RootUtils.fs.getFile("${Const.MODULE_PATH}_update").getChildFile(base.name)
     val zygiskFolder = base.getChildFile("zygisk")
 
-    val updated get() = updateFile.exists() ||
-        RootUtils.fs.getFile("${Const.MODULE_PATH}_update").getChildFile(base.name).exists()
+    val updated get() = updateFile.exists() || pendingDir.exists()
     val isRiru = (id == "riru-core") || base.getChildFile("riru").exists()
     val isZygisk = zygiskFolder.exists()
     val zygiskUnloaded = zygiskFolder.getChildFile("unloaded").exists()
@@ -42,11 +43,7 @@ data class LocalModule(
     var enable: Boolean
         get() = !disableFile.exists()
         set(enable) {
-            if (enable) {
-                disableFile.delete()
-                Shell.cmd("copy_preinit_files").submit()
-            } else {
-                !disableFile.createNewFile()
+            if (setEnabledState(enable)) {
                 Shell.cmd("copy_preinit_files").submit()
             }
         }
@@ -55,7 +52,7 @@ data class LocalModule(
         get() = removeFile.exists()
         set(remove) {
             if (remove) {
-                if (updateFile.exists()) return
+                if (updated) return
                 removeFile.createNewFile()
                 Shell.cmd("copy_preinit_files").submit()
             } else {
@@ -64,14 +61,26 @@ data class LocalModule(
             }
         }
 
-    fun updateEnabled(enabled: Boolean): Boolean {
-        if (enabled) {
-            if (disableFile.exists() && !disableFile.delete()) return false
-        } else if (!disableFile.exists() && !disableFile.createNewFile()) {
-            return false
+    private fun setEnabledState(enabled: Boolean): Boolean {
+        val pending = pendingDir
+        // Safe mode also disables pending updates. An explicit user toggle must
+        // apply to that version before it becomes the installed module.
+        val markers = if (pending.isDirectory) {
+            arrayOf(pending.getChildFile("disable"), disableFile)
+        } else {
+            arrayOf(disableFile)
         }
-        return refreshPreinit()
+        for (marker in markers) {
+            if (enabled) {
+                if (marker.exists() && !marker.delete()) return false
+            } else if (!marker.exists() && !marker.createNewFile()) {
+                return false
+            }
+        }
+        return true
     }
+
+    fun updateEnabled(enabled: Boolean) = setEnabledState(enabled) && refreshPreinit()
 
     fun updateRemoved(removed: Boolean): Boolean {
         if (removed) {
