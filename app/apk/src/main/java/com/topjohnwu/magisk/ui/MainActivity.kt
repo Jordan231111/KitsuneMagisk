@@ -240,13 +240,15 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
         val currentIntent = intentState.collectAsStateWithLifecycle().value
         LaunchedEffect(currentIntent) {
             currentIntent ?: return@LaunchedEffect
+            if (currentIntent.action != Intent.ACTION_MAIN || currentIntent.hasExtra(Const.Key.OPEN_SECTION)) {
+                showShortcutPrompt.value = false
+            }
             requestedTab.value = getInitialTab(currentIntent)
             if (navigator.current() != Route.Main && navigator.current() !is Route.Flash && navigator.current() !is Route.Action) {
                 navigator.backStack.clear()
                 navigator.push(Route.Main)
             }
             if (currentIntent.getStringExtra(Const.Key.OPEN_SECTION) == Const.Nav.INSTALL) {
-                currentIntent.removeExtra(Const.Key.OPEN_SECTION)
                 showInstall.value = true
             }
             if (currentIntent.action == FlashUtils.INTENT_FLASH) {
@@ -344,7 +346,9 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
     }
 
     private fun askForHomeShortcut() {
-        if (isRunningAsStub && !Config.askedHome &&
+        // An optional launcher prompt must not cover a requested destination.
+        if (intent.action == Intent.ACTION_MAIN && !intent.hasExtra(Const.Key.OPEN_SECTION) &&
+            isRunningAsStub && !Config.askedHome &&
             ShortcutManagerCompat.isRequestPinShortcutSupported(this)) {
             Config.askedHome = true
             showShortcutPrompt.value = true
@@ -395,13 +399,12 @@ private fun MainActivityDialogs(
         }
     }
 
-    val shortcutDialog = rememberConfirmDialog(
-        onConfirm = onShortcutConfirmed,
-        onDismiss = onShortcutDismissed
-    )
-
-    LaunchedEffect(showShortcut) {
-        if (showShortcut) {
+    if (showShortcut) {
+        val shortcutDialog = rememberConfirmDialog(
+            onConfirm = onShortcutConfirmed,
+            onDismiss = onShortcutDismissed
+        )
+        LaunchedEffect(Unit) {
             shortcutDialog.showConfirm(
                 title = resources.getString(CoreR.string.add_shortcut_title),
                 content = resources.getString(CoreR.string.add_shortcut_msg),

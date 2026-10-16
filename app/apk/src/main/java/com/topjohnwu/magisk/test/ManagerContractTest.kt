@@ -86,9 +86,10 @@ class ManagerContractTest : BaseTest {
 
     @Test fun testWarmNavigationAndInstallDestination() {
         val component = MainActivity::class.java.cmp(appContext.packageName).flattenToString()
-        fun launch(extra: String) {
+        fun launch(extra: String = "", action: String = Intent.ACTION_MAIN) {
+            val category = if (action == Intent.ACTION_MAIN) "-c android.intent.category.LAUNCHER" else ""
             val output = AutoCloseInputStream(uiAutomation.executeShellCommand(
-                "am start -W -n $component -a android.intent.action.MAIN -c android.intent.category.LAUNCHER $extra"
+                "am start -W -n $component -a $action $category $extra"
             )).reader().use { it.readText() }
             assertTrue("Cannot launch requested destination: $output",
                 output.contains("Status: ok") || output.contains("Status: timeout"))
@@ -108,7 +109,7 @@ class ManagerContractTest : BaseTest {
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.INSTALL}")
             shown(CoreR.string.select_patch_file, 10000)
             device.pressBack()
-            launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.SETTINGS}")
+            launch(action = Intent.ACTION_APPLICATION_PREFERENCES)
             shown(CoreR.string.settings_customization, 10000)
         } finally { device.pressHome() }
     }
