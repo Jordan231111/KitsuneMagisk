@@ -45,4 +45,5 @@
     <string name="su_user_label">Android kullanıcısı %1$d</string>
     <string name="hidden_cleanup">Tam uygulama kuruldu. Bu ekranda eski gizli uygulamayı kaldırın.</string>
     <string name="su_prompt_protection_summary">Örtülü dokunuşları ve ekran okuyucuların root istemlerini yönetmesini engelleyin. Güvendiğiniz erişilebilirlik hizmetleri için kapatın.</string>
+    <string name="hidden_restore_defaults">Tam uygulama geri yüklendiğinde uygulama tercihleri varsayılana döner.</string>
 </resources>

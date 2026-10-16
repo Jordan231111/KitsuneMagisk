@@ -16,6 +16,7 @@ import com.topjohnwu.magisk.core.model.HideStatus
 import com.topjohnwu.magisk.core.model.ManagerDiagnostics
 import com.topjohnwu.magisk.core.model.su.SuPolicy
 import com.topjohnwu.magisk.core.su.SuRequestHandler
+import com.topjohnwu.magisk.core.tasks.ManagerMigration
 import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.runBlocking
@@ -82,6 +83,24 @@ class ManagerContractTest : BaseTest {
             assertFalse(handler.start(Intent().putExtra("socket", "/data/local/tmp/forged")))
             assertEquals(before, ServiceLocator.policyDB.fetch(2000)?.toMap())
         } finally { handler.close() }
+    }
+
+    @Test fun testMigrationRequiresAuthenticatedSingleUseHandoff() = runBlocking {
+        val preferences = android.os.Bundle().apply { putString("locale", "en") }
+        val intent = Intent().putExtra(Const.Key.PREV_CONFIG, preferences)
+        assertNull(ManagerMigration.consume(appContext, intent, appContext.packageName))
+        val token = ManagerMigration.prepare(appContext, appContext.packageName)
+        try {
+            intent.putExtra(ManagerMigration.EXTRA_TOKEN, token.nonce)
+            assertNull(ManagerMigration.consume(appContext, intent, "com.android.shell"))
+            val accepted = ManagerMigration.consume(appContext, intent, appContext.packageName)
+            assertEquals(appContext.packageName, accepted?.source)
+            assertEquals("en", accepted?.preferences?.getString("locale"))
+            assertNull("A consumed migration cannot be replayed",
+                ManagerMigration.consume(appContext, intent, appContext.packageName))
+        } finally {
+            ManagerMigration.discard(token)
+        }
     }
 
     @Test fun testWarmNavigationAndInstallDestination() {

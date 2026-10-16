@@ -321,4 +321,5 @@
     <string name="su_user_label">Android user %1$d</string>
     <string name="hidden_cleanup">Full app installed. Remove the old hidden app on this screen.</string>
     <string name="su_prompt_protection_summary">Block obscured touches and screen-reader control of root prompts. Turn off for assistive services you trust.</string>
+    <string name="hidden_restore_defaults">App preferences return to their defaults when the full app is restored.</string>
 </resources>

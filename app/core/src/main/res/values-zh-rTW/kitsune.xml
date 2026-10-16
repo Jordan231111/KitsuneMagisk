@@ -45,4 +45,5 @@
     <string name="su_user_label">Android 使用者 %1$d</string>
     <string name="hidden_cleanup">完整應用程式已安裝。請在此畫面解除安裝舊的隱藏應用程式。</string>
     <string name="su_prompt_protection_summary">阻擋被遮蔽的觸控及螢幕閱讀器控制 root 提示。使用可信任的輔助服務時可關閉。</string>
+    <string name="hidden_restore_defaults">還原完整應用程式後，應用程式偏好設定將恢復為預設值。</string>
 </resources>

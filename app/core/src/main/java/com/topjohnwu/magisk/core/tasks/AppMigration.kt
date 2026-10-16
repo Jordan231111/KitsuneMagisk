@@ -181,9 +181,12 @@ object AppMigration {
         }
     }
 
-    private fun launchApp(context: Context, pkg: String): Boolean {
+    private fun launchApp(context: Context, pkg: String, token: String? = null): Boolean {
         val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return false
-        intent.putExtra(Const.Key.PREV_CONFIG, Config.toBundle())
+        if (token != null) {
+            intent.putExtra(Const.Key.PREV_CONFIG, Config.toBundle())
+            intent.putExtra(ManagerMigration.EXTRA_TOKEN, token)
+        }
         val options = ActivityOptions.makeBasic()
         if (Build.VERSION.SDK_INT >= 34) {
             options.setShareIdentityEnabled(true)
@@ -198,6 +201,13 @@ object AppMigration {
             context.finish()
         }
         return true
+    }
+
+    private suspend fun launchMigration(context: Context, pkg: String): Boolean {
+        val token = ManagerMigration.prepare(context, pkg)
+        if (launchApp(context, pkg, token.nonce)) return true
+        ManagerMigration.discard(token)
+        return false
     }
 
     suspend fun patchAndHide(context: Context, label: String, pkg: String? = null): Boolean {
@@ -238,9 +248,13 @@ object AppMigration {
             val previous = Config.suManager
             Config.suManager = pkg
             Shell.cmd("touch $AppApkPath").exec()
-            if (launchApp(context, pkg)) return true
-            Config.suManager = previous
-            return false
+            var launched = false
+            try {
+                launched = launchMigration(context, pkg)
+                return launched
+            } finally {
+                if (!launched) Config.suManager = previous
+            }
         } else {
             return false
         }
@@ -281,9 +295,8 @@ object AppMigration {
                     val actual = context.packageManager.getPackageInfo(APP_PACKAGE_NAME, flags).signatures
                     expected?.size == 1 && actual?.size == 1 && expected[0] == actual[0]
                 }.getOrDefault(false)
-                if (verified) {
+                if (verified && launchApp(context, APP_PACKAGE_NAME)) {
                     completed.set(true)
-                    launchApp(context, APP_PACKAGE_NAME)
                     // Android owns both confirmations when no privileged installer exists.
                     runCatching {
                         context.startActivity(Intent(Intent.ACTION_DELETE,
@@ -336,9 +349,13 @@ object AppMigration {
             val previous = Config.suManager
             Config.suManager = ""
             Shell.cmd("touch $AppApkPath").exec()
-            if (launchApp(context, APP_PACKAGE_NAME)) return true
-            Config.suManager = previous
-            return false
+            var launched = false
+            try {
+                launched = launchMigration(context, APP_PACKAGE_NAME)
+                return launched
+            } finally {
+                if (!launched) Config.suManager = previous
+            }
         }
         return false
     }

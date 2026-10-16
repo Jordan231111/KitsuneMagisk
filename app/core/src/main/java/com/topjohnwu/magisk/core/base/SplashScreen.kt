@@ -18,11 +18,13 @@ import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.AppMigration
+import com.topjohnwu.magisk.core.tasks.ManagerMigration
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -104,11 +106,14 @@ class SplashController<T>(private val activity: T)
     }
 
     private fun T.initializeApp(): Boolean {
-        val prevPkg = launchPackage
-        val prevConfig = intent.getBundleExtra(Const.Key.PREV_CONFIG)
-        val isPackageMigration = prevPkg != null && prevConfig != null
+        val handoff = runBlocking {
+            runCatching { ManagerMigration.consume(this@initializeApp, intent, launchPackage) }
+                .onFailure { Timber.e(it, "Cannot authenticate manager migration") }.getOrNull()
+        }
+        val prevPkg = handoff?.source
+        val isPackageMigration = handoff != null
 
-        Config.init(prevConfig)
+        Config.init(handoff?.preferences)
 
         if (packageName != APP_PACKAGE_NAME) {
             runCatching {

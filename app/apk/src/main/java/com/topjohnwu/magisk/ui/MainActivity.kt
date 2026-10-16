@@ -376,7 +376,8 @@ private fun MainActivityDialogs(
         if (showInvalid) {
             invalidDialog.showConfirm(
                 title = resources.getString(CoreR.string.unsupport_nonroot_stub_title),
-                content = resources.getString(CoreR.string.unsupport_nonroot_stub_msg),
+                content = resources.getString(CoreR.string.unsupport_nonroot_stub_msg) + "\n\n" +
+                    resources.getString(CoreR.string.hidden_restore_defaults),
                 confirm = resources.getString(CoreR.string.install),
             )
         }

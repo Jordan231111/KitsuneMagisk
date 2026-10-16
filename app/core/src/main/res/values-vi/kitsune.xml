@@ -45,4 +45,5 @@
     <string name="su_user_label">Người dùng Android %1$d</string>
     <string name="hidden_cleanup">Đã cài ứng dụng đầy đủ. Hãy gỡ ứng dụng ẩn cũ trên màn hình này.</string>
     <string name="su_prompt_protection_summary">Chặn thao tác chạm bị che và trình đọc màn hình điều khiển yêu cầu root. Tắt khi dùng dịch vụ trợ năng đáng tin cậy.</string>
+    <string name="hidden_restore_defaults">Khôi phục ứng dụng đầy đủ sẽ đặt lại các tùy chọn ứng dụng về mặc định.</string>
 </resources>
