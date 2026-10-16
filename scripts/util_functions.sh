@@ -642,7 +642,8 @@ copy_preinit_files() (
     sync -f "$PREINITDIR" || return 1
     return 0
   fi
-  if [ -d /data/adb/early-mount.d ] && [ ! -L /data/adb/early-mount.d ]; then
+  if [ -d /data/adb/early-mount.d ] && [ ! -L /data/adb/early-mount.d ] &&
+     [ ! -e /data/adb/early-mount.d/disable ]; then
     [ -z "$(find /data/adb/early-mount.d ! -type f ! -type d -print)" ] || return 1
     cp -af /data/adb/early-mount.d "$STAGE/global" || return 1
   fi

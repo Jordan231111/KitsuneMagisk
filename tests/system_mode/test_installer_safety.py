@@ -767,7 +767,9 @@ bb() {
         main = function_body(self.launcher, "ksl_prepare")
         self.assertLess(main.index("ksl_prepare_runtime"), main.index("ksl_apply_policy"))
         policy = function_body(self.launcher, "ksl_apply_policy")
-        self.assertIn(".magisk/preinit/sepolicy.rule", policy)
+        # This namespace is already covered by transaction backup/uninstall and
+        # remains available when the target has no raw pre-init partition.
+        self.assertIn("local rule=/data/adb/sepolicy.rule", policy)
         self.assertIn('--apply "$rule"', policy)
         self.assertIn('magiskpolicy" --live --magisk', policy)
         self.assertNotIn('--load "$SM_POLICY_SOURCE"', policy)

@@ -114,6 +114,9 @@ jobs:
       - name: Test SU consent parser and socket deadlines
         run: python3 -m unittest discover -s tests -p test_su_consent.py -v
 
+      - name: Test module staging and early parser
+        run: scripts/env.py python3 -m unittest discover -s tests -p test_module_contract.py -v
+
       - name: Verify next-system source baseline
         run: >-
           python tools/next_system_baseline.py

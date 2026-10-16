@@ -46,7 +46,9 @@ cannot advertise that they run before Android init's early consumers. An install
 rejects a module requesting early mounting when the current route lacks it.
 
 Input is `MODDIR/early-mount/` or the explicitly managed global
-`/data/adb/early-mount.d/`. Run `copy_preinit_files` after editing global input.
+`/data/adb/early-mount.d/`. Run `copy_preinit_files` after editing global input. A `disable` marker in that
+global directory suppresses it. Safe mode and remove-modules create the marker;
+remove it explicitly before re-enabling global input.
 Do not copy a historical cache tree into a newly selected partition automatically.
 
 V2 publishes only existing regular files below system, vendor, product, system_ext

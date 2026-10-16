@@ -722,6 +722,22 @@ fn for_each_module(mut func: impl FnMut(&DirEntry) -> LoggedResult<()>) -> Logge
 }
 
 fn inhibit_preinit() {
+    // Global input must stay disabled across later unrelated module installs.
+    let global = cstr!("/data/adb/early-mount.d");
+    if global.get_attr().is_ok_and(|attr| attr.is_dir()) {
+        let _ = (|| -> LoggedResult<()> {
+            let marker = cstr!("/data/adb/early-mount.d/disable");
+            marker
+                .create(OFlag::O_WRONLY | OFlag::O_CREAT | OFlag::O_NOFOLLOW, 0o600)?
+                .sync_all()
+                .log()?;
+            std::fs::File::open(global.as_str())
+                .and_then(|dir| dir.sync_all())
+                .log()?;
+            Ok(())
+        })()
+        .log();
+    }
     let mut preinit = std::path::PathBuf::from(get_magisk_tmp().as_str()).join(".magisk/preinit");
     if !preinit.is_dir()
         && std::fs::read_to_string("/data/adb/magisk/config")
