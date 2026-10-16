@@ -83,28 +83,28 @@ selects the development foundation while retaining these explicit product gates.
 | `ZYG-007` | E | Built-in removal, mandatory external-only direction and provider boundary | `k31-70068d25` → `k31-25fa2159` | `retired-with-evidence` | PR11 |
 | `ZYG-007-adapter` | E | External-provider Next-manager discovery, Hide/SuList and process-selection integration | `k31-70068d25` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `ZYG-008` | O | Lite product's explicitly no-Zygisk behavior and migration/retirement impact | `metadata-96724b2e-note_lite-md` → `metadata-64403347-note_lite-md` | `ported-and-tested-in-PR11` | PR11 |
-| `MOD-001` | E | Global early-mount files and ordering | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-002` | E | Per-module `early-mount` storage, install, disable, and removal | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-003` | E | `initrc.d` init-RC injection | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-004` | E | `MODDIR/root` standard and expanded partition API | `metadata-29aaacaa-note-md` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-005` | O | Conditional Magisk binary injection when PATH already exposes tools | `metadata-bb4af859-note-md` → `metadata-c5d500af-note-md` | `deferred-to-PR14` | PR14 |
-| `MOD-006` | E | Systemless-hosts read-only and visibility behavior | `metadata-bb4af859-note-md` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-007` | E | Mirrorless magic-mount topology and visibility | `metadata-51fad676-note-md` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-008` | E | Shared tmpfs mount propagation to later namespaces | `metadata-2976a6f5-note-md` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-009` | E | `REMOVE` char-device whiteout deletion | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-010` | E | `.replace` directory semantics | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-011` | E | Live `sepolicy.rule` application and pre-init refresh/synchronization | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-012` | E | Empty-line-safe module policy parser | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-013` | E | `action.sh` discovery and execution backend | `k27-2-2` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
+| `MOD-001` | E | Global early-mount files and ordering | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-002` | E | Per-module `early-mount` storage, install, disable, and removal | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-003` | E | `initrc.d` init-RC injection | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-004` | E | `MODDIR/root` standard and expanded partition API | `metadata-29aaacaa-note-md` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-005` | O | Conditional Magisk binary injection when PATH already exposes tools | `metadata-bb4af859-note-md` → `metadata-c5d500af-note-md` | `inherited-and-tested` | PR14 |
+| `MOD-006` | E | Systemless-hosts read-only and visibility behavior | `metadata-bb4af859-note-md` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-007` | E | Mirrorless magic-mount topology and visibility | `metadata-51fad676-note-md` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-008` | E | Shared tmpfs mount propagation to later namespaces | `metadata-2976a6f5-note-md` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-009` | E | `REMOVE` char-device whiteout deletion | `original-stable` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-010` | E | `.replace` directory semantics | `original-stable` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-011` | E | Live `sepolicy.rule` application and pre-init refresh/synchronization | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-012` | E | Empty-line-safe module policy parser | `k27-2-1` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-013` | E | `action.sh` discovery and execution backend | `k27-2-2` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
 | `MOD-014` | E | Module Action manager surface | `k27-2-2` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
-| `MOD-015` | E | Per-module `boot-completed.sh` stage | `k27-2-3` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-016` | E | Ordinary install/update/disable/remove/rollback, boot scripts, interruption, and safe mode | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-017` | E | Pre-init storage preference, no-`/persist` policy, and cache/metadata/data migration | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-018` | E | `.magisk/block` to `.magisk/device` layout compatibility | `b149cd26` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-019` | O | `/apex` peer-group propagation and its namespace/detection behavior | `metadata-96724b2e-note_lite-md` → `metadata-7fd85617-note-md` | `deferred-to-PR14` | PR14 |
-| `MOD-020` | E | Correct symlink handling distinct from `REMOVE` whiteout character devices, including upgrade from the shipped bug | `metadata-bb4af859-note-md` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-021` | O | Historical module-template ZIP bytes, endpoint, guards, extended APIs and author migration | `module-template` → `module-template` | `deferred-to-PR14` | PR14 |
-| `MOD-022` | O | Lite product's published modules-unsupported contract and user migration | `metadata-96724b2e-note_lite-md` → `metadata-64403347-note_lite-md` | `deferred-to-PR14` | PR14 |
+| `MOD-015` | E | Per-module `boot-completed.sh` stage | `k27-2-3` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-016` | E | Ordinary install/update/disable/remove/rollback, boot scripts, interruption, and safe mode | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-017` | E | Pre-init storage preference, no-`/persist` policy, and cache/metadata/data migration | `k27-2-1` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
+| `MOD-018` | E | `.magisk/block` to `.magisk/device` layout compatibility | `b149cd26` → `k31-25fa2159` | `retired-with-evidence` | PR14 |
+| `MOD-019` | O | `/apex` peer-group propagation and its namespace/detection behavior | `metadata-96724b2e-note_lite-md` → `metadata-7fd85617-note-md` | `retired-with-evidence` | PR14 |
+| `MOD-020` | E | Correct symlink handling distinct from `REMOVE` whiteout character devices, including upgrade from the shipped bug | `metadata-bb4af859-note-md` → `k31-25fa2159` | `inherited-and-tested` | PR14 |
+| `MOD-021` | O | Historical module-template ZIP bytes, endpoint, guards, extended APIs and author migration | `module-template` → `module-template` | `retired-with-evidence` | PR14 |
+| `MOD-022` | O | Lite product's published modules-unsupported contract and user migration | `metadata-96724b2e-note_lite-md` → `metadata-64403347-note_lite-md` | `retired-with-evidence` | PR14 |
 | `SU-001` | E | Disabled, system-credential, and manager biometric authentication modes | `metadata-51fad676-note-md` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `SU-002` | E | Prompt/allow/deny/revoke/timeout, namespace, shared UID, multiuser, and no-manager lifecycle | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `SU-003` | E | Deterministic manager policy-row retrieval (`LIMIT 1`) | `k27-2-4-inherited` → `k31-25fa2159` | `inherited-and-tested` | PR13 |
@@ -148,7 +148,7 @@ selects the development foundation while retaining these explicit product gates.
 | `ORD-007` | E | Read-only resetprop serial-counter behavior and property waiter/override semantics | `metadata-02ba306e-note-md` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
 | `BOOT-007` | E | Require the full /system/etc/init/hw/init.rc path before selecting the Android 11 init-RC location | `metadata-51fad676-note-md` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
 | `SYS-011` | O | Later Lite selects existing /debug_ramdisk when /sbin is absent instead of creating /sbin | `metadata-64403347-note_lite-md` → `metadata-64403347-note_lite-md` | `deferred-to-PR15` | PR15 |
-| `HID-010-early` | E | Cleanup of the separately implemented PR14 early-mount and expanded-partition API | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
+| `HID-010-early` | E | Cleanup of the separately implemented PR14 early-mount and expanded-partition API | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
 | `HID-014-device` | E | Exact SELinux-disabled/Waydroid runtime qualification | `k31-70068d25` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
 | `SU-004-device` | E | SU and restorecon on exact SELinux-disabled/container targets | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
 

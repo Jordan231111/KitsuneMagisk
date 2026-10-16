@@ -1725,7 +1725,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "HID-004",
@@ -1968,7 +1968,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "HID-007",
@@ -3401,7 +3401,7 @@
       "decision": "ported-and-tested-in-PR11",
       "owner_pr": 11,
       "affected_users": "Published Kitsune Lite users.",
-      "migration": "Keep built-in off and install no external injector for no-Zygisk operation. This does not turn Next into the historical Lite product; always-SuList, no-modules and distribution migration remain DIST-004 and their PR12–PR14 owners.",
+      "migration": "Keep built-in off and install no external injector for no-Zygisk operation. This does not turn Next into the historical Lite product; always-SuList, no-modules and distribution migration remain DIST-004 and their PR12\u2013PR14 owners.",
       "first_shipped": "metadata-96724b2e-note_lite-md",
       "last_shipped": "metadata-64403347-note_lite-md",
       "upstream_evidence": [
@@ -3450,11 +3450,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official pre-init handling copies sepolicy.rule; it has no Kitsune global/per-module early-mount tree or initrc.d injection contract. Post-fs-data module success does not close this gap. PR14 must implement the PR8 first-consumer and recovery fixtures.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Move explicitly selected global input to /data/adb/early-mount.d, resolve overlaps and publish a v2 snapshot. A disable marker survives safe mode/remove-modules. No automatic copying from an unknown old partition.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on global early-mount files and ordering.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Move explicitly selected global input to /data/adb/early-mount.d, resolve overlaps and publish a v2 snapshot. A disable marker survives safe mode/remove-modules. No automatic copying from an unknown old partition.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3465,7 +3465,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-002",
@@ -3500,11 +3501,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official pre-init handling copies sepolicy.rule; it has no Kitsune global/per-module early-mount tree or initrc.d injection contract. Post-fs-data module success does not close this gap. PR14 must implement the PR8 first-consumer and recovery fixtures.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Existing regular-file replacements are retained through complete snapshots. Unsupported early node types/path shapes fail closed; use ordinary mounts for new files, symlinks, whiteouts and .replace. Disabled/removed input is republished before the next first consumer.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on per-module `early-mount` storage, install, disable, and removal.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Existing regular-file replacements are retained through complete snapshots. Unsupported early node types/path shapes fail closed; use ordinary mounts for new files, symlinks, whiteouts and .replace. Disabled/removed input is republished before the next first consumer.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3515,7 +3516,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-003",
@@ -3552,11 +3554,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official pre-init handling copies sepolicy.rule; it has no Kitsune global/per-module early-mount tree or initrc.d injection contract. Post-fs-data module success does not close this gap. PR14 must implement the PR8 first-consumer and recovery fixtures.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use namespaced disabled oneshot services with timeout_period 10 and the documented v2 grammar. Raw blocking commands, service overrides, property loops, line folding and ambiguous quoting/expansion are explicitly replaced, not claimed compatible.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `initrc.d` init-RC injection.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use namespaced disabled oneshot services with timeout_period 10 and the documented v2 grammar. Raw blocking commands, service overrides, property loops, line folding and ambiguous quoting/expansion are explicitly replaced, not claimed compatible.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3567,7 +3569,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-004",
@@ -3596,11 +3599,11 @@
         "shipment-source-review",
         "metadata-29aaacaa-note-md"
       ],
-      "upstream_overlap": "The official Rust mount tree handles system and supported partition topology. Historical MODDIR/root expansion is a distinct module-author API and needs partition-by-partition migration tests, especially EROFS and namespace visibility.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use the documented existing-partition root API. Standard aliases are supported. Missing named OEM/dlkm roots are skipped with diagnostics; root/apex requires an APEX-aware module. Actual OEM layouts remain PR15 qualification.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `MODDIR/root` standard and expanded partition API.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use the documented existing-partition root API. Standard aliases are supported. Missing named OEM/dlkm roots are skipped with diagnostics; root/apex requires an APEX-aware module. Actual OEM layouts remain PR15 qualification.",
       "first_shipped": "metadata-29aaacaa-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3610,7 +3613,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-005",
@@ -3633,11 +3637,11 @@
         "metadata-c5d500af-note-md",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 has a newer Rust mount implementation and tool exposure. Historical PATH-dependent injection, hosts writability, mirror removal, shared tmpfs and APEX peer groups must be compared by resulting file/mount/namespace behavior, not by reapplying the old C++ patches.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Keep maintained conditional PATH exposure. Detect tools through PATH or magisk --path; do not assume the old hard-coded system/APEX locations.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on conditional Magisk binary injection when PATH already exposes tools.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Keep maintained conditional PATH exposure. Detect tools through PATH or magisk --path; do not assume the old hard-coded system/APEX locations.",
       "first_shipped": "metadata-bb4af859-note-md",
       "last_shipped": "metadata-c5d500af-note-md",
       "upstream_evidence": [
@@ -3648,7 +3652,8 @@
         "record": "shipment-source-review",
         "basis": "Original Full notes advertise the APEX/PATH choice; recovered Lite module.cpp contains env_path and the conditional injector. R65C33E4F reverts relocation. The endpoint uses separate dynamic SU mounts, not this conditional load_modules branch.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-006",
@@ -3679,11 +3684,11 @@
         "shipment-source-review",
         "metadata-bb4af859-note-md"
       ],
-      "upstream_overlap": "Official v31.0 has a newer Rust mount implementation and tool exposure. Historical PATH-dependent injection, hosts writability, mirror removal, shared tmpfs and APEX peer groups must be compared by resulting file/mount/namespace behavior, not by reapplying the old C++ patches.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Edit the systemless-hosts module file, not a read-only runtime mount. Selected namespaces must recover base hosts when all owned layers are removed.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on systemless-hosts read-only and visibility behavior.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Edit the systemless-hosts module file, not a read-only runtime mount. Selected namespaces must recover base hosts when all owned layers are removed.",
       "first_shipped": "metadata-bb4af859-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3694,7 +3699,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-007",
@@ -3728,11 +3734,11 @@
         "shipment-source-review",
         "metadata-51fad676-note-md"
       ],
-      "upstream_overlap": "Official v31.0 has a newer Rust mount implementation and tool exposure. Historical PATH-dependent injection, hosts writability, mirror removal, shared tmpfs and APEX peer groups must be compared by resulting file/mount/namespace behavior, not by reapplying the old C++ patches.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use the maintained Rust mount engine and public paths. No old mirror topology is reproduced merely for private-path consumers.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on mirrorless magic-mount topology and visibility.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use the maintained Rust mount engine and public paths. No old mirror topology is reproduced merely for private-path consumers.",
       "first_shipped": "metadata-51fad676-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3743,7 +3749,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-008",
@@ -3771,11 +3778,11 @@
         "shipment-source-review",
         "metadata-2976a6f5-note-md"
       ],
-      "upstream_overlap": "Official v31.0 has a newer Rust mount implementation and tool exposure. Historical PATH-dependent injection, hosts writability, mirror removal, shared tmpfs and APEX peer groups must be compared by resulting file/mount/namespace behavior, not by reapplying the old C++ patches.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Retain resulting visibility in later namespaces through the maintained mount engine. Do not require the old shared-tmpfs implementation details.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on shared tmpfs mount propagation to later namespaces.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retain resulting visibility in later namespaces through the maintained mount engine. Do not require the old shared-tmpfs implementation details.",
       "first_shipped": "metadata-2976a6f5-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3786,7 +3793,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-009",
@@ -3819,11 +3827,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official installation accepts REMOVE and .replace, and the Rust mount tree distinguishes filesystem node kinds. Historical whiteout/symlink behavior still needs paired fixtures, including upgrade from the shipped node-type bug; shared syntax alone is not acceptance.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use REMOVE for 0:0 whiteouts in ordinary modules; early v2 does not treat device nodes as deletions.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `REMOVE` char-device whiteout deletion.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use REMOVE for 0:0 whiteouts in ordinary modules; early v2 does not treat device nodes as deletions.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3834,7 +3842,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-010",
@@ -3858,11 +3867,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official installation accepts REMOVE and .replace, and the Rust mount tree distinguishes filesystem node kinds. Historical whiteout/symlink behavior still needs paired fixtures, including upgrade from the shipped node-type bug; shared syntax alone is not acceptance.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use .replace within ordinary partition subdirectories. Replacing a whole partition root remains unsupported.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `.replace` directory semantics.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use .replace within ordinary partition subdirectories. Replacing a whole partition root remains unsupported.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3873,7 +3882,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-011",
@@ -3904,11 +3914,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official code aggregates enabled module sepolicy.rule files into pre-init storage and parses policy rules. Historical live reload and empty-line failure behavior need separate assertions. Next System Mode regenerates its aggregate at boot, with byte/security-metadata checks retained in qualification.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Policy refresh is atomic and applies at the next clean policy load. System Mode uses its already-owned data policy file without requiring raw pre-init storage. Arbitrary live mutation cannot be undone by deleting a rule file, so automatic install-time live refresh is replaced by the explicit reboot contract.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on live `sepolicy.rule` application and pre-init refresh/synchronization.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Policy refresh is atomic and applies at the next clean policy load. System Mode uses its already-owned data policy file without requiring raw pre-init storage. Arbitrary live mutation cannot be undone by deleting a rule file, so automatic install-time live refresh is replaced by the explicit reboot contract.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3920,7 +3930,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-012",
@@ -3945,11 +3956,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official code aggregates enabled module sepolicy.rule files into pre-init storage and parses policy rules. Historical live reload and empty-line failure behavior need separate assertions. Next System Mode regenerates its aggregate at boot, with byte/security-metadata checks retained in qualification.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Retain the maintained empty-line/comment-safe parser; no legacy parser port is needed.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on empty-line-safe module policy parser.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retain the maintained empty-line/comment-safe parser; no legacy parser port is needed.",
       "first_shipped": "k27-2-1",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -3961,7 +3972,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-013",
@@ -3997,11 +4009,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official manager detects action.sh and supplies its action execution surface plus standard module installation. That does not cover the externally shipped Kitsune template guards, extended early-mount/root APIs or endpoint bytes; PR10 and PR14 retain separate ownership for that asset.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use the maintained action.sh backend and manager action surface. Actions remain explicit privileged user requests.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `action.sh` discovery and execution backend.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use the maintained action.sh backend and manager action surface. Actions remain explicit privileged user requests.",
       "first_shipped": "k27-2-2",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4013,7 +4025,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-014",
@@ -4066,7 +4079,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "MOD-015",
@@ -4089,11 +4102,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official boot_complete performs daemon housekeeping, pre-init setup and manager provisioning; it does not execute the Kitsune per-module boot-completed.sh stage. PR14 must preserve script ordering, disable/remove and recovery semantics explicitly.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Keep boot-completed.sh with one callback per boot, module-ID order, 10-second per-script and 120-second batch budgets, disable/remove rechecks and safe-mode exclusion. Long-running work belongs in service.sh.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on per-module `boot-completed.sh` stage.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Keep boot-completed.sh with one callback per boot, module-ID order, 10-second per-script and 120-second batch budgets, disable/remove rechecks and safe-mode exclusion. Long-running work belongs in service.sh.",
       "first_shipped": "k27-2-3",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4103,7 +4116,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-016",
@@ -4127,11 +4141,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Ordinary module install/update/disable/remove and boot/safe-mode processing exist upstream. The LDPlayer smoke covers the selected basic lifecycle only; interruption, rollback and safe-mode behavior remain the PR14/PR15 acceptance matrix.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Install via private staging and a complete pending directory. Failed activation preserves data and suppresses the old ordinary version while an update is still pending. Safe mode also disables pending modules; remove-modules inhibits early state.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on ordinary install/update/disable/remove/rollback, boot scripts, interruption, and safe mode.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Install via private staging and a complete pending directory. Failed activation preserves data and suppresses the old ordinary version while an update is still pending. Safe mode also disables pending modules; remove-modules inhibits early state.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4143,7 +4157,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-017",
@@ -4170,11 +4185,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official pre-init discovery and storage layout evolved after the old cache/persist preference and .magisk/device rename. Preserve observable storage availability and module compatibility; do not infer equivalence from the newer directory names.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Do not use persist for new selection or replay an unsynchronizable legacy persist snapshot. Preserve old bytes for recovery and repatch to a permitted device. Missing storage and low space are explicit failures; physical migration/slot/OTA breadth remains PR15.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on pre-init storage preference, no-`/persist` policy, and cache/metadata/data migration.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Do not use persist for new selection or replay an unsynchronizable legacy persist snapshot. Preserve old bytes for recovery and repatch to a permitted device. Missing storage and low space are explicit failures; physical migration/slot/OTA breadth remains PR15.",
       "first_shipped": "k27-2-1",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4186,7 +4201,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-018",
@@ -4224,11 +4240,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official pre-init discovery and storage layout evolved after the old cache/persist preference and .magisk/device rename. Preserve observable storage availability and module compatibility; do not infer equivalence from the newer directory names.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: The private .magisk/block layout is not a maintained API. Use magisk --preinit-device and the mapped .magisk/preinit interface; author scripts must stop assuming old device-node paths.",
+      "decision": "retired-with-evidence",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `.magisk/block` to `.magisk/device` layout compatibility.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "The private .magisk/block layout is not a maintained API. Use magisk --preinit-device and the mapped .magisk/preinit interface; author scripts must stop assuming old device-node paths.",
       "first_shipped": "b149cd26",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4240,7 +4256,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-019",
@@ -4262,11 +4279,11 @@
         "metadata-7fd85617-note-md",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 has a newer Rust mount implementation and tool exposure. Historical PATH-dependent injection, hosts writability, mirror removal, shared tmpfs and APEX peer groups must be compared by resulting file/mount/namespace behavior, not by reapplying the old C++ patches.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Retire the old APEX peer-group experiment and generic root/apex overlay. APEX activation and per-process namespaces need an APEX-aware implementation; Full history already records the experiment/reversion. No universal APEX hiding promise is made.",
+      "decision": "retired-with-evidence",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on `/apex` peer-group propagation and its namespace/detection behavior.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retire the old APEX peer-group experiment and generic root/apex overlay. APEX activation and per-process namespaces need an APEX-aware implementation; Full history already records the experiment/reversion. No universal APEX hiding promise is made.",
       "first_shipped": "metadata-96724b2e-note_lite-md",
       "last_shipped": "metadata-7fd85617-note-md",
       "upstream_evidence": [
@@ -4277,7 +4294,8 @@
         "record": "shipment-source-review",
         "basis": "Recovered Lite source resets the APEX peer group; Full R65B8FE82 explicitly stops doing so. This bounds the observed experiment/reversion; later Lite compiled-code correspondence is not established.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-020",
@@ -4311,11 +4329,11 @@
         "shipment-source-review",
         "metadata-bb4af859-note-md"
       ],
-      "upstream_overlap": "Official installation accepts REMOVE and .replace, and the Rust mount tree distinguishes filesystem node kinds. Historical whiteout/symlink behavior still needs paired fixtures, including upgrade from the shipped node-type bug; shared syntax alone is not acceptance.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Retain distinct symlink and 0:0 whiteout node types in the Rust engine. The historical defect misclassified a stored symlink while constructing the mount tree; valid symlinks need no on-disk conversion. A real 0:0 node remains a deletion, never a guessed symlink.",
+      "decision": "inherited-and-tested",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on correct symlink handling distinct from `REMOVE` whiteout character devices, including upgrade from the shipped bug.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retain distinct symlink and 0:0 whiteout node types in the Rust engine. The historical defect misclassified a stored symlink while constructing the mount tree; valid symlinks need no on-disk conversion. A real 0:0 node remains a deletion, never a guessed symlink.",
       "first_shipped": "metadata-bb4af859-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4326,7 +4344,8 @@
         "record": "shipment-source-review",
         "basis": "The first frozen Full note explicitly announces the symlink fix. The companion stable source archive also contains the relevant code, but that compiled stable APK relationship is unproven, so it does not backdate the published fix.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-021",
@@ -4340,11 +4359,11 @@
         "module-template",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official manager detects action.sh and supplies its action execution surface plus standard module installation. That does not cover the externally shipped Kitsune template guards, extended early-mount/root APIs or endpoint bytes; PR10 and PR14 retain separate ownership for that asset.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use tools/module-template and capability/runtime-route guards. The original archived ZIP remains provenance; its suffix/numeric guards and raw RC example are not a current SDK or download endpoint.",
+      "decision": "retired-with-evidence",
       "owner_pr": 14,
       "affected_users": "Module authors and users relying on the original early-mount, initrc.d, root/*, REMOVE and REQUIRED_KITSUNE_MAGISK template API.",
-      "migration": "PR10 preserves the historical template ZIP digest and immutable archive locator in docs/port-history/module-template.json; it is not advertised as a current-runtime template. PR14 owns its extended module API, timing guards and tested author migration.",
+      "migration": "Use tools/module-template and capability/runtime-route guards. The original archived ZIP remains provenance; its suffix/numeric guards and raw RC example are not a current SDK or download endpoint.",
       "first_shipped": "module-template",
       "last_shipped": "module-template",
       "upstream_evidence": [
@@ -4356,7 +4375,8 @@
         "record": "shipment-source-review",
         "basis": "One immutable recovered module-template ZIP at 05003cd3, with every member size and digest. No earlier publication date is inferred.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "MOD-022",
@@ -4376,11 +4396,11 @@
         "metadata-96724b2e-note_lite-md",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official Magisk supports modules; Lite advertised them as unsupported. Migration must not silently activate previously broken Lite modules. PR14 owns the explicit enablement and rollback guidance.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Preserve the PR12/PR13 Lite migration to one product with modules disabled and no provider. Enable only a verified module explicitly; updates do not silently remove disable state.",
+      "decision": "retired-with-evidence",
       "owner_pr": 14,
       "affected_users": "Published Kitsune Lite users.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Preserve the PR12/PR13 Lite migration to one product with modules disabled and no provider. Enable only a verified module explicitly; updates do not silently remove disable state.",
       "first_shipped": "metadata-96724b2e-note_lite-md",
       "last_shipped": "metadata-64403347-note_lite-md",
       "upstream_evidence": [
@@ -4391,7 +4411,8 @@
         "record": "shipment-source-review",
         "basis": "Both Lite publication notes specify the contract. Recovered source and exact packaged shell bindings supplement the notes. Modules-unsupported is a published support contract, not proof that module code was absent.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "SU-001",
@@ -4454,7 +4475,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "SU-002",
@@ -4495,7 +4516,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "SU-003",
@@ -4532,7 +4553,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "SU-004",
@@ -4743,7 +4764,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-002",
@@ -4781,7 +4802,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-003",
@@ -5053,7 +5074,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-008",
@@ -5094,7 +5115,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-009",
@@ -5135,7 +5156,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-010",
@@ -5175,7 +5196,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-011",
@@ -5230,7 +5251,7 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "APP-012",
@@ -5315,7 +5336,7 @@
         "basis": "Custom DispatcherExecutor is observed in the original archive and earlier tags, absent in the inherited k4 libsu 5.3.0 state, and restored in the moved k4 rollback. The range is discontinuous, as the per-observation source record shows.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "ID-002",
@@ -5569,7 +5590,7 @@
         "basis": "Original Full stable and R65/R66 channel families are archived separately from the later 1q23 product.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
       },
-      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14\u2013PR16 gates."
     },
     {
       "id": "DIST-004",
@@ -6479,11 +6500,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official mount cleanup and namespace isolation are reusable primitives. Their visible mount set is not proof of the historical daemon-internal visibility change or cleanup of Kitsune early mounts and injected paths. Measure both internal and app namespaces.",
-      "decision": "deferred-to-PR14",
+      "upstream_overlap": "PR14 disposition: Use the same checked namespace cleanup for early and root-API mounts. Rescan after parent overlays are detached so previously hidden early layers are also removed.",
+      "decision": "ported-and-tested-in-PR14",
       "owner_pr": 14,
       "affected_users": "Kitsune users relying on per-process cleanup of Magisk/module/early-mount/injected visibility.",
-      "migration": "PR14 must qualify every new early mount label/source against the PR12 cleanup contract before enabling the API.",
+      "migration": "Use the same checked namespace cleanup for early and root-API mounts. Rescan after parent overlays are detached so previously hidden early layers are also removed.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6495,7 +6516,8 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "parent_feature": "HID-010"
+      "parent_feature": "HID-010",
+      "acceptance_evidence": "docs/module-contract.md and docs/module-pr14.json: versioned behavior, exact source/artifact/runtime scopes, historical comparison, negative recovery cases and explicit PR15 device/PR16 release limits."
     },
     {
       "id": "HID-014-device",

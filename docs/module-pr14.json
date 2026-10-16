@@ -1,0 +1,411 @@
+{
+  "schema": 1,
+  "roadmap_pr": 14,
+  "code_candidate": "6233ac2a86573b51b66f72d01249ce4c576ee4dc",
+  "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+  "pull_request": "https://github.com/Jordan231111/KitsuneMagisk/pull/37",
+  "contract": "docs/module-contract.md",
+  "artifacts": {
+    "6233ac2a86573b51b66f72d01249ce4c576ee4dc": {
+      "debug": {
+        "sha256": "25248f1d8a062aedeb8e889fe9896c94c876efa6bc064044d51c7646fb871d70",
+        "size": 40997520,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027",
+        "build_id": "a0fb7a045e63003edf16381f034f394297c390fbc898a8bda73c10fb8530e9f4",
+        "source_digest": "e431872888e97910a4066c30ea17036b6dc73e4df3b196376e2d16bc4143ed56",
+        "variant": "debug"
+      },
+      "release": {
+        "sha256": "bb565bd98c02fa9766781d67bad3a3a802c5643e61d947c0a670b0f54ff8652b",
+        "size": 11585514,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371",
+        "build_id": "de3d947116fc0239fc009aa09c2e1b05d94b8501f687eabec2b3181013dac3e7",
+        "source_digest": "e431872888e97910a4066c30ea17036b6dc73e4df3b196376e2d16bc4143ed56",
+        "variant": "release"
+      },
+      "stub_debug": {
+        "sha256": "a003d0a6588b4d7c6e8e5086a50569382c41ed229ca23154dca35580f8db51ae",
+        "size": 103091,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "stub_release": {
+        "sha256": "907faf5812e45a169e1008f1c42cba2676f6375cf54621536c1302cd51af1e90",
+        "size": 45689,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      },
+      "test_debug": {
+        "sha256": "f4d16736d9732f7600670bd6e60858ef32ff98801cf5e2d6d7be37f92b0266a9",
+        "size": 11204720,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "test_release": {
+        "sha256": "cd9faec2823c5d41deb0e44ef7e3e4031bb15a75632e6d85f88eb05ec9ad2e79",
+        "size": 11204720,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      }
+    },
+    "2eeb0265b36667221e0d636980fb81ffa131dc77": {
+      "debug": {
+        "sha256": "4e80edd05ce68d4702ab6a1735967a9ba32c6a52b405b2840e4747a55bd5d723",
+        "size": 40993424,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "release": {
+        "sha256": "89e8fa8872340a311cb34ad95d439bf4319d86b2d9403e44009213432c4dd276",
+        "size": 11585514,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      },
+      "stub_debug": {
+        "sha256": "8efc520f76bc3b632668929e039cb4428c2b388a1c5f29d0ae19752887e04aa4",
+        "size": 103091,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "stub_release": {
+        "sha256": "18f576c16ffde5044fd6682f389dcd791358ca3227a78775bcabb9d2affde73c",
+        "size": 45689,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      },
+      "test_debug": {
+        "sha256": "e4fec306ec5db2efbe2488d2024ebbf8942643e26b135a21ad932e9febfb98b3",
+        "size": 11204720,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "test_release": {
+        "sha256": "237cbca7bcb43b54a29d7b9dafa9c3d2c862ceed5bcebe6443184dae3109c947",
+        "size": 11204720,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      }
+    },
+    "18d1f6003d81713461f9682a6507351b51f0e6ba": {
+      "debug": {
+        "sha256": "239611c6b84ed8251ea2632f25327f3f8dc3e3a31d33923a48665cb6763a6b8b",
+        "size": 40997520,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "release": {
+        "sha256": "a3bacdefc768be8641be2c0edfe1a371bcb182bfa60664e61787de5570e3a706",
+        "size": 11585514,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      },
+      "stub_debug": {
+        "sha256": "67ff23786ee771c7e422e47bb208b4106d88f530ee9ac5942615eee87eed89c0",
+        "size": 103091,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "stub_release": {
+        "sha256": "74b47cda0458aa3fb793271caa4a7faa7442a22da2aad5d48010b3fb0d953c6d",
+        "size": 45689,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      },
+      "test_debug": {
+        "sha256": "030986ac2b13e3408963f2db49d41c479aa262d561f6f7cd75a17c0b6204c54b",
+        "size": 11204720,
+        "certificate_sha256": "29b04c032802179a86374c8a13dba9ddbe8d9303f4909ac03766cb77de17c027"
+      },
+      "test_release": {
+        "sha256": "6b61f773a885295ef34d06170fa794e85a3a3e6759a4af015aa8b3d6ba93df02",
+        "size": 11204720,
+        "certificate_sha256": "e2d0ae7888122becf07823b1b902c83979b1fa9da16b0e855a1743f180f86371"
+      }
+    }
+  },
+  "native_runtime_candidate": "2eeb0265b36667221e0d636980fb81ffa131dc77",
+  "production_app_candidate": "18d1f6003d81713461f9682a6507351b51f0e6ba",
+  "final_test_only_delta": "The final commit only gives the new pending-state regression its own module.prop; production app/native code is unchanged.",
+  "final_app_delta": [
+    "app/core/src/main/java/com/topjohnwu/magisk/core/model/module/LocalModule.kt",
+    "app/core/src/main/java/com/topjohnwu/magisk/test/AdditionalTest.kt"
+  ],
+  "validation": {
+    "local_builds": "All four native ABIs, debug and disposable-key release APKs; source/artifact identity, signer separation, stub payloads, ELF and ZIP 16 KiB alignment checks passed.",
+    "host": "304 tests passed at the native runtime candidate, one Linux-only test skipped on macOS. All six module/manager host tests also passed after the final app-only fix. The exact native module-store, RC grammar, legacy persist classifier and capability template are executed by tests/test_module_contract.py.",
+    "checks": "Debug/release Clippy without warnings; apk/shared/stub Android lint; legacy APK assembly passed.",
+    "ci_checks": "https://github.com/Jordan231111/KitsuneMagisk/pull/37/checks",
+    "merge_gate": "The final PR head must pass its checks. The PR checks page retains exact CI run/job identities; local results are not a waiver."
+  },
+  "sdk": [
+    {
+      "source": "55c2244160298dfe68678ad0582a12763203b89d",
+      "image": "system-images;android-35;google_apis;arm64-v8a",
+      "selinux": "enforcing",
+      "variant": "debug",
+      "result": "passed",
+      "ordinary_lifecycle_phases": [
+        "install",
+        "first",
+        "disabled",
+        "updated_disabled",
+        "second",
+        "interrupted",
+        "removed",
+        "safe",
+        "recovered",
+        "clean"
+      ],
+      "runtime_build_id": "4583c53893422e04446250c29349a425e75dc15d54271e338ac12441b7337f50",
+      "runtime_source_digest": "de47041e20688b5c15b1d43175992f6db25f0f0bd6e0da8fcc0d4fbd796102d3"
+    },
+    {
+      "source": "6233ac2a86573b51b66f72d01249ce4c576ee4dc",
+      "image": "system-images;android-35;google_apis;arm64-v8a",
+      "selinux": "enforcing",
+      "variant": "debug",
+      "result": "passed",
+      "selected_instrumentation_tests": 29,
+      "global_unprivileged_reader_tests": 1,
+      "phases": [
+        "activation_block",
+        "activation_failed",
+        "activation_retried",
+        "activation_setup",
+        "clean",
+        "conflict",
+        "global_assert",
+        "global_clean",
+        "global_install",
+        "global_recovered",
+        "global_restored",
+        "historical_order",
+        "late_safe",
+        "late_safe_prepare",
+        "tampered"
+      ]
+    },
+    {
+      "source": "6233ac2a86573b51b66f72d01249ce4c576ee4dc",
+      "image": "system-images;android-37.0;google_apis_ps16k;arm64-v8a",
+      "image_revision": 6,
+      "api": 37,
+      "page_size": 16384,
+      "selinux": "enforcing",
+      "variant": "release",
+      "result": "passed",
+      "batches": {
+        "normal_manager": 55,
+        "hidden_manager": 30,
+        "update_faults": 20,
+        "ordinary_application_path": 1,
+        "restored_manager": 5
+      },
+      "additional_checks": [
+        "setup and Zygisk injection",
+        "hidden-manager creation/restoration",
+        "native crash gate"
+      ]
+    }
+  ],
+  "sdk_scope": "Fresh disposable AVDs from installed SDK images; ordinary ramdisk patch, cold boot, setup and subsequent cold boots preserving userdata. Read-only partition overlays and first-consumer timing were measured. No physical Direct Install, OTA, vendor_boot, recovery or EROFS device claim follows from these runs.",
+  "mumu": {
+    "adapter": "mumu-macos-v1",
+    "target": "Android Device-1, MuMu Pro 1.9.2 on Apple Silicon, API 32 arm64, permissive SELinux",
+    "source": "2eeb0265b36667221e0d636980fb81ffa131dc77",
+    "variant": "debug",
+    "vendor_root_during_installed_tests": false,
+    "qualification": "Fresh sealed qualification passed exact-target/source, init-domain, persistence, backup/restore challenges and stable reports. Every transition used CLI close/open; no adb reboot.",
+    "upgrade": "The exact debug APK consumed one-shot authorization through the manager System Mode UI and committed successfully.",
+    "cold_boots": [
+      {
+        "phase": "exact-upgrade",
+        "boot_id": "9dfff897-0d5d-47e0-b7a0-6c35ccc3950c",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "first",
+        "boot_id": "e6022d18-1343-4034-92e0-9e95038b6869",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "disabled",
+        "boot_id": "862846bd-1152-4edc-b0b2-cb8e93352f45",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "updated_disabled",
+        "boot_id": "8aadb92a-bd03-4d19-bea5-8741fc0891bb",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "second",
+        "boot_id": "3282f0dd-1f63-488d-94b1-fffcc51439ac",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "interrupted",
+        "boot_id": "01726875-d07f-45e4-bd4c-98e97a23b8aa",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "removed",
+        "boot_id": "86090f2c-9a99-4a16-8e43-65f3b1553f5f",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "safe",
+        "boot_id": "a55b08a9-9790-482b-92de-d2c88fd765d8",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "recovered",
+        "boot_id": "bb1331b8-8965-4dfe-a158-ba91bc345b39",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      },
+      {
+        "phase": "clean",
+        "boot_id": "c7b34768-8c26-4a85-989b-4f310a5fa0a4",
+        "state": "BOOT_VERIFIED",
+        "build_id": "0d88f3f382c69cc7266dab866a4d86397dd05f688073159264cba539d21e2313"
+      }
+    ],
+    "ordinary_lifecycle": "Install, policy application/removal, action, timeout/once-only boot-completed, Hide cleanup, disable, update while disabled, enable, interrupted customize, remove/uninstall script, safe-mode and remove-modules recovery passed.",
+    "early_route": "Managed System Mode cannot precede early Android init consumers and does not advertise runtime eligibility without MagiskInit/pre-init storage.",
+    "uninstall": {
+      "result": "passed",
+      "manager_complete_uninstall": true,
+      "cold_boot_with_vendor_root_disabled": true,
+      "shell_uid": 2000,
+      "manager_daemon_payload_init_and_su_absent": true,
+      "user_state_inspection": "passed",
+      "module_script_and_database_markers_preserved": true,
+      "inspection_root": "Vendor root enabled only after absence was proven with vendor root disabled; inspected copies of the preserved database."
+    },
+    "original_restoration": {
+      "result": "passed",
+      "original_bytes_verified_before_boot_and_final_stop": true,
+      "original_configuration": {
+        "vmRootEnable": true,
+        "customAdbPort": 0
+      },
+      "boot_completed": true,
+      "original_manager_version": "0.1.0-dev-kitsune.a9579504",
+      "verified_file_count": 7,
+      "state_at_restoration_completion": "stopped"
+    },
+    "manager_source": "18d1f6003d81713461f9682a6507351b51f0e6ba",
+    "manager_apk_sha256": "239611c6b84ed8251ea2632f25327f3f8dc3e3a31d33923a48665cb6763a6b8b",
+    "final_app_delta": "Only LocalModule and its Android regression test differ from the qualified native candidate; native and System Mode sources are unchanged.",
+    "pending_enable_recovery": {
+      "before_fix": "UI enabled installed module while pending disable remained",
+      "after_fix": "Both enable and disable UI actions updated installed and pending versions",
+      "fixture_removed": true
+    }
+  },
+  "behavioral_evidence": {
+    "early_timing_and_context": "An early-init namespaced service read distinct global/module hosts bytes before the post-fs marker. A real untrusted_app UID then read the global hosts inode. The private source has the original system_file label; public targets are read-only and marker ownership/mode is root/0600. Historical system/vendor input reaches the actual vendor build.prop mount.",
+    "ordinary_mounts": "AdditionalTest verifies ordinary new files, a deleted stock executable, .replace contents, root API file and symlink, systemless hosts and namespace cleanup. Later Hide namespaces remove ordinary overlays and then the previously covered early bind; base bytes remain visible.",
+    "module_lifecycle": "A versioned fixture installs, runs action.sh, applies a policy with blank lines/comments, disables, updates while disabled, explicitly enables, survives SIGKILL during customize.sh without activating a partial version, runs uninstall.sh, recovers through safe mode, and removes modules. Immutable old-module-directory injection forces real promotion failure; old ordinary scripts/mounts stay suppressed until the complete pending version can be retried.",
+    "boot_completed": "ID-ordered once-per-boot scripts, duplicate callback suppression, a sleeping script killed at its ten-second deadline followed by the next module, disable/remove checks and safe-mode exclusion.",
+    "snapshot_recovery": "Runtime tests cover failed cp, low-space df, sparse 40 MiB payload refusal, unchanged current generation after failure, durable disabled state, repaired refresh, nested payload named manifest, conflict/tampered hash refusal, policy suppression and safe-mode entry. Global remove-modules disable state survives an unrelated refresh.",
+    "late_safe_mode": "The early consumer can already have run before post-fs-data detects safe mode. The on-boot guarded service is then suppressed and global input remains disabled for the next boot. This is explicitly distinct from an early hardware-key bypass.",
+    "storage": "No new persist selection; extracted production pre-init C++ tests cover legacy persist spellings and read-only fallback. Actual wrong-device/encrypted-data/slot migration breadth remains PR15. Managed System Mode publishes policy through its owned data file and refuses the early route without MagiskInit/pre-init mapping.",
+    "ordering": "Ordinary module IDs sort bytewise; the first file wins. Within a module, system/ precedes root/. Early duplicate targets reject the full plan. The historical comparison below explains the intentional versioned conflict migration."
+  },
+  "historical_comparison": {
+    "archive_apk_sha256": "5a3e77d28d4ead274e39b83fa7a4c60d201c43b2d665b30955685179c77d53e7",
+    "arm64_binary_sha256": "164696f27ea7ba884da6cbce8367e07cd59412b81a8734ea0bbef6fc8ae3173d",
+    "provenance": "R6687BB53-kitsune archive in docs/port-history/assets.json; source-to-APK binding remains unverified.",
+    "scope": "Only the archived clone utility ran on disposable synthetic trees using the historical unsorted directory iteration. This is merge-order evidence, not a legacy full-boot or phone qualification.",
+    "results": {
+      "version": "R6687BB53-kitsune:MAGISK:R (27001)",
+      "cases": [
+        {
+          "global_first": false,
+          "creation_order": [
+            "a",
+            "b"
+          ],
+          "enumeration_order": [
+            "a",
+            "b"
+          ],
+          "visible": "a"
+        },
+        {
+          "global_first": false,
+          "creation_order": [
+            "b",
+            "a"
+          ],
+          "enumeration_order": [
+            "b",
+            "a"
+          ],
+          "visible": "b"
+        },
+        {
+          "global_first": true,
+          "creation_order": [
+            "a",
+            "b"
+          ],
+          "enumeration_order": [
+            "a",
+            "b"
+          ],
+          "visible": "global"
+        },
+        {
+          "global_first": true,
+          "creation_order": [
+            "b",
+            "a"
+          ],
+          "enumeration_order": [
+            "b",
+            "a"
+          ],
+          "visible": "global"
+        }
+      ]
+    },
+    "node_migration": "The old symlink defect was mount-tree classification; valid stored symlinks need no conversion. A genuine 0:0 deletion node stays a whiteout."
+  },
+  "explicit_replacements": {
+    "initrc": "Bounded namespaced services and documented events replace unrestricted imports, service overrides, blocking exec/insmod and property loops. Stable modern runtime paths only; movable legacy runtime RC is rejected.",
+    "early_nodes": "Existing regular-file replacement only. New files, symlinks, whiteouts and .replace remain ordinary-mount operations.",
+    "apex": "The historical peer-group experiment and generic root/apex overlay are retired. Use an APEX-aware implementation; no universal namespace/detection promise.",
+    "private_layout": "Private .magisk/block paths are not a module API. Use magisk --preinit-device and the mapped pre-init interface.",
+    "live_policy": "Atomic next-boot publication replaces implicit install-time live mutation, which cannot be reversed by removing the source rule file.",
+    "template": "tools/module-template replaces suffix/inflated-version guards with capability and running-route checks. Archived template bytes/endpoints remain provenance.",
+    "lite": "The single product preserves explicit no-provider/modules-disabled migration. Updating a disabled module never silently enables it."
+  },
+  "regressions_fixed": {
+    "layered_hide": "Rescan after detaching a parent overlay so an underlying early mount does not become visible in the hidden namespace.",
+    "policy_context_barrier": "Early sources previously became read-only before label restoration. Keep only private sources writable until contexts are applied, seal the backing tmpfs, and allow RC execution through a ready/safe-mode guard.",
+    "hidden_staging_path": "Stock debug ramdisk temporarily covers the final runtime path. Use the inherited relative staging path for filesystem operations and an explicit final runtime path only for RC consumers.",
+    "protobuf_codegen": "Concurrent ABI builds could read a partly generated shared mod.rs. Generate resetprop protobuf modules in each Cargo OUT_DIR.",
+    "pending_enable": "The real manager UI enabled the installed module but left a safe-mode-disabled pending update disabled. Both manager entry points now synchronize the markers; the pending directory also protects the legacy removal action before the update marker is written.",
+    "failed_activation": "Preserve complete pending updates and suppress the old ordinary module on activation failure; disable pending modules during safe-mode recovery."
+  },
+  "lab_failures_and_limits": [
+    "API 35 virtio input initialized after the early hook. A held emulator volume key did not qualify early hardware-key recovery; retain the durable marker and stock-image recovery path.",
+    "An earlier global RC fixture used raw shell dollar expansion rejected by Android init. The validator and tests now reject ambiguous expansion/line folding and use the documented grammar.",
+    "Earlier R8/R10 behavioral runs passed assertions but failed during optional log capture (missing file/ADB command quoting). Final capture uses correctly quoted fallback logging; neither earlier overall run is reported successful.",
+    "One earlier AVD run timed out during host lid sleep; it is not a product pass or failure. Owned temporary AVDs were removed.",
+    "An earlier MuMu qualification rejected a changing target description. The final lifecycle wrapper waits for boot-complete/root/BOOT_VERIFIED readiness and repeats the same checks; no validation condition was relaxed.",
+    "A parallel final-candidate lab run hit an ADB transport timeout and a MuMu guest RCU stall before acceptance. The instance engine was stopped after CLI close stalled, a verified test snapshot was restored, and device lanes were rerun sequentially.",
+    "The first automated pending-state regression tried to copy module.prop from the metadata-free synthetic mount fixture. It was corrected to create its own metadata before exercising the state transition.",
+    "One local full-suite attempt hit macOS EPERM while proving a canceled process group was dead. The host guard failed closed; the isolated regression and subsequent full suite passed. This code was unchanged by PR14.",
+    "No physical phone, real OTA, EROFS device, encrypted pre-init recovery, OEM/dlkm partition breadth, or actual SELinux-disabled/Waydroid runtime is inferred. These remain named PR15 qualification.",
+    "System Mode remains experimental and debug-only. PR16 owns production signing, historical certificate transitions, release qualification and promotion. No release/feed was published."
+  ],
+  "cleanup": {
+    "original_mumu_restored": true,
+    "temporary_avds_removed": true,
+    "initial_and_final_avd_inventory": [],
+    "task_apks_update_fixtures_probes_logs_and_snapshots_removed": true,
+    "disposable_signing_and_qualification_keys_removed": true,
+    "native_and_android_build_outputs_cleaned": true,
+    "test_python_caches_removed": true,
+    "owned_caffeinate_stopped": true,
+    "preexisting_output_artifacts_preserved": true
+  }
+}

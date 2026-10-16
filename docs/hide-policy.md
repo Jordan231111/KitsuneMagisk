@@ -157,10 +157,9 @@ remains PR15.
 
 Lite users can retain no injection, no enabled modules, and inverse SuList in the
 single maintained product. The CLI does not enable Zygisk or install modules.
-The separate obsolete Lite APK/update channel is not restored; PR13 owns its
-manager-facing migration and PR16 owns release delivery. PR14 still owns the
-separate early-mount/module APIs; PR12 cannot claim those mounts were tested
-before they are implemented.
+The separate obsolete Lite APK/update channel is not restored; PR13 supplies its
+manager-facing migration and PR16 owns release delivery. PR14 supplies the
+[versioned module APIs](module-contract.md) and [layered mount cleanup evidence](module-pr14.json).
 
 
 ## Qualified configurations and remaining gates
@@ -183,7 +182,8 @@ no-module/no-injection configuration. Do not infer Lite from a table name: Full
 also has a `sulist` table. Recheck broad legacy isolated prefixes against the new
 process-name boundary and select full process prefixes where needed.
 
-PR14 owns cleanup tests for its new early mounts. PR15 owns real phones and an
+PR14 verifies cleanup of its early mounts after ordinary parent overlays are detached.
+PR15 owns real phones and an
 actual SELinux-disabled/Waydroid target. Both installed AVD kernels stayed
 permissive despite disabled requests; only the absence/error/other-LSM guards
-are claimed tested for that branch. Manager screens and diagnostics remain PR13.
+are claimed tested for that branch. PR13 supplies [manager screens and diagnostics](manager-contract.md).

@@ -1,6 +1,8 @@
 # PR8 early-mount design and qualification fixtures
 
-Status: design input for PR14. The maintained runtime does not implement this contract yet.
+Status: historical design input. PR14 implements the [versioned module contract](module-contract.md)
+with [scoped runtime evidence](module-pr14.json). This proposed matrix remains a qualification
+input; its generated cases are not automatically passed by the implementation.
 The historical requirements remain MOD-001 through MOD-004, MOD-009 through MOD-012,
 MOD-017 through MOD-020, and their Hide/SuList interactions in the port ledger.
 

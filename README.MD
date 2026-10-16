@@ -21,7 +21,8 @@ production promotion remains gated.
   after machine qualification of the exact writable target and its external recovery copy. See
   [the qualification guide](docs/system-mode/pr7-machine-qualification.md).
 - [Hide/SuList core and migration](docs/hide-policy.md) are implemented and qualified on the
-  recorded emulator tuples. PR13 owns manager UI integration; early/pre-init mounting remains PR14.
+  recorded emulator tuples, with [manager integration](docs/manager-contract.md) and
+  [versioned module APIs](docs/module-contract.md). PR15 owns broader device qualification.
   [The provider decision](docs/adr/0001-zygisk-provider.md) retains maintained built-in Zygisk
   and an explicit, versioned external adapter boundary.
 - Normal upstream Select-and-Patch, Direct Install, inactive-slot, recovery, emulator live setup,

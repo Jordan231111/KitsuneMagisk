@@ -27,7 +27,8 @@
 > PR12 core/DB/provider qualification is complete in [GitHub #35](https://github.com/Jordan231111/KitsuneMagisk/pull/35);
 > [its contract and evidence](docs/hide-policy.md) retain the PR14/PR15 target dependencies. PR13's
 > manager implementation and local acceptance are complete in [GitHub #36](https://github.com/Jordan231111/KitsuneMagisk/pull/36),
-> with [scoped evidence](docs/manager-pr13.json), and is merged after passing its checks. PR14 is in progress.
+> with [scoped evidence](docs/manager-pr13.json), and is merged after passing its checks. PR14 is complete in [GitHub #37](https://github.com/Jordan231111/KitsuneMagisk/pull/37),
+> with [module acceptance and target limits](docs/module-pr14.json). PR15 is next.
 > Production promotion remains gated.
 >
 > Product charter: KitsuneMagisk provides reliable Magisk root on real phones and emulators while
@@ -89,11 +90,13 @@ execution order.
 | 15 | Roadmap PR11 / GitHub #34 — Zygisk architecture and adapter boundary | **Complete** | Preserve the [single-provider ADR](docs/adr/0001-zygisk-provider.md), native contract and [runtime evidence](docs/zygisk-pr11.json); PR12 owns Hide/SuList and external adapter integration. |
 | 16 | Roadmap PR12 / GitHub #35 — Hide/SuList core and DB migration | **Complete** | Preserve the [core contract](docs/hide-policy.md), [qualification](docs/hide-pr12.json), and named PR14/PR15 dependencies. |
 | 17 | Roadmap PR13 / GitHub #36 — manager UI and SU authorization | **Complete; merged by GitHub #36** | Preserve the [manager contract](docs/manager-contract.md), [runtime record](docs/manager-pr13.json), authenticated migration and explicit historical replacements. |
-| 18 | Roadmap PR14–PR16 — remaining module features, qualification, and release | **PR14 implementation and qualification in progress; PR15–PR16 not started** | Close every remaining feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
+| 18 | Roadmap PR14 / GitHub #37 — module compatibility and early-mount v2 | **Complete in GitHub #37** | Preserve the [module contract](docs/module-contract.md), [acceptance](docs/module-pr14.json), and explicit device limits. |
+| 19 | Roadmap PR15–PR16 — device qualification and release | **Not started** | Close every remaining feature-ledger row by PR16; no historical behavior may become an unnamed follow-up. |
 
-The next implementation task is **PR14**, on the maintained `next-system` foundation with PR8–PR12 complete
-and [PR13 manager acceptance in GitHub #36](https://github.com/Jordan231111/KitsuneMagisk/pull/36).
-PR13's exact head passed its checks and is merged. PR14 implements the [versioned module contract](docs/module-contract.md); qualification remains in progress.
+The next task is **PR15**, on the maintained `next-system` foundation with PR8–PR14 complete.
+PR14 implements the [versioned module contract](docs/module-contract.md) and closes its 22 historical
+ledger rows with [scoped evidence](docs/module-pr14.json). Physical phones, additional boot/storage
+layouts and release promotion retain their PR15/PR16 gates.
 PR8 selected the v31.0-based
 development foundation while retaining historical-feature and release qualification gates. PR7A completed the upstream
 update and inherited lifecycle gates. PR6 established the exact v30.7 baseline, and
@@ -1377,14 +1380,14 @@ repair; it does not turn live HideList behavior into a one-time action.
   and downgrade contract; a new public version is unnecessary and unsafe for older Kitsune daemons.
 - [x] Preserve existing user selections; never silently drop a hide list after upgrade.
 - [x] Define and test the conflict rule when both legacy tables contain divergent rows; make the migration backup/rollback behavior explicit.
-- [ ] PR13: finish Kotlin/UI terminology against the completed PR12 DB/CLI/log contract.
+- [x] PR13: finish Kotlin/UI terminology against the completed PR12 DB/CLI/log contract.
 - [x] Port against upstream’s current denylist/package tracking implementation instead of copying the 2024 C++ subsystem wholesale.
 - [x] Keep the SELinux-disabled/Waydroid behavior from `c30ba784`, but add tests proving the relaxed context check cannot be reached when SELinux is active.
 - [x] Audit ptrace lifecycle, PID reuse, zygote restart, app-zygote detection, locking, signal handling, and failure cleanup.
 - [x] Make external-provider table reads a versioned contract rather than a comment in `utils.cpp`.
 - [x] Add CLI commands that return structured, stable exit codes/output for add/remove/list/status/mode.
-- [ ] PR13: add UI handling for the core’s provider, namespace, security-mode and operation failures.
-- [ ] PR13: compose the redacted CLI/build/provider information and operation results into the manager diagnostic export.
+- [x] PR13: add UI handling for the core’s provider, namespace, security-mode and operation failures.
+- [x] PR13: compose the redacted CLI/build/provider information and operation results into the manager diagnostic export.
 
 ### Required tests
 
@@ -1413,19 +1416,19 @@ The historical Kitsune implementation supports global and per-module early mount
 and init RC injection through `native/src/init`, `native/src/core/module.cpp`, constants, and
 `scripts/util_functions.sh`. Official v31.0 pre-init storage and ordinary post-fs-data module mounting
 are not equivalent to that API. Preserve this useful capability as a required release-parity item;
-begin its design and timing/recovery fixtures with PR8, with implementation ownership in PR14.
+PR8 supplies the design inputs and PR14 supplies the [implementation and acceptance](docs/module-pr14.json).
 
 ### TODO
 
-- [ ] Document the boot stage, available partitions, SELinux context, file ownership, ordering, and failure policy.
-- [ ] Decide whether arbitrary `init.rc` injection remains supported; if so, define validation and collision rules.
-- [ ] Reimplement on current upstream pre-init/module abstractions.
-- [ ] Version the module API (`early-mount-v2` or successor) and expose capability detection.
-- [ ] Make ordering deterministic across modules.
-- [ ] Detect conflicting targets and report the responsible modules.
-- [ ] Ensure a broken early-mount module can be disabled through safe mode/remove-modules recovery.
-- [ ] Test A-only, A/B, SAR, 2SI, `init_boot`, `vendor_boot`, read-only partitions, overlayfs, and missing pre-init storage.
-- [ ] Add boot-time budgets and logs so a module cannot silently stall boot indefinitely.
+- [x] Document the boot stage, available partitions, SELinux context, file ownership, ordering, and failure policy.
+- [x] Decide whether arbitrary `init.rc` injection remains supported; if so, define validation and collision rules.
+- [x] Reimplement on current upstream pre-init/module abstractions.
+- [x] Version the module API (`early-mount-v2` or successor) and expose capability detection.
+- [x] Make ordering deterministic across modules.
+- [x] Detect conflicting targets and report the responsible modules.
+- [x] Ensure a broken early-mount module can be disabled through safe mode/remove-modules recovery.
+- [ ] PR15: complete A-only and A/B, SAR/2SI, `init_boot`/`vendor_boot`, EROFS, overlayfs, encrypted-data and OEM storage breadth. PR14 proves read-only SDK partitions, ordinary patched-ramdisk boot, and early-mount unavailability on managed System Mode; these do not qualify the remaining layouts.
+- [x] Add boot-time budgets and logs so a module cannot silently stall boot indefinitely.
 
 ## P1.6 Triage every other fork feature: keep, use upstream, or retire — L
 
@@ -2793,9 +2796,12 @@ PR14–PR16 retain their named module, physical-target and release gates.
 
 ## PR 14 — Module compatibility closure and early-mount v2
 
-**Implementation status: in progress on the selected v31.0 core. The [module contract](docs/module-contract.md)
-records the implementation and explicit migration boundaries; exact-candidate qualification and
-historical-ledger closure still gate completion.**
+**Implementation status: complete in [GitHub #37](https://github.com/Jordan231111/KitsuneMagisk/pull/37)
+on the selected v31.0 core. The [module contract](docs/module-contract.md) and
+[acceptance record](docs/module-pr14.json) close all 22 PR14-owned ledger rows. SDK patched-ramdisk
+boots and vendor-root-off MuMu System Mode cover the recorded emulator tuples; physical phones,
+EROFS/encrypted-data/OTA breadth and actual SELinux-disabled/Waydroid runtime remain PR15.
+The historical unrestricted RC/APEX/private-path mechanisms have explicit migrations.**
 
 - Port the documented global/per-module early-mount API, including the historical `initrc.d`
   injection use case, behind a versioned capability contract.
@@ -3019,7 +3025,7 @@ in the detail:
   comparisons; preserve the exact runtime and historical disposition evidence.
 - **Done — PR12:** Hide/SuList core, rollback-compatible migration and the pinned external source
   adapter are qualified; preserve their exact evidence and limits.
-- **Open — PR14:** finish early-mount/module qualification and ledger closure; PR13 is merged.
+- **Closed — PR14:** versioned module implementation, lifecycle/recovery qualification and all 22 owned ledger dispositions are recorded in [GitHub #37](https://github.com/Jordan231111/KitsuneMagisk/pull/37) and [module acceptance](docs/module-pr14.json).
 - **Open — PR15/PR16:** complete commercial-emulator and advertised physical-device recovery
   matrices, publish the exact tested candidate with checksum/certificate/source evidence, and
   promote only after all claimed support lanes pass.
