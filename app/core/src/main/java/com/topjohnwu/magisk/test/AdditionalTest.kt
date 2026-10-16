@@ -123,6 +123,23 @@ class AdditionalTest : BaseTest {
     }
 
     @Test
+    fun testNestedManifestPayloadIsHashed() {
+        assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
+        val module = modules.first { it.id == SEPOLICY_RULE }
+        val file = module.base.getChildFile("early-mount/system/etc/manifest")
+        try {
+            file.newOutputStream().use { it.write("hash-me\n".toByteArray()) }
+            assertTrue(Shell.cmd("copy_preinit_files").exec().isSuccess)
+            assertTrue(Shell.cmd(
+                "grep -qF /early-mount/system/etc/manifest \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current/manifest\""
+            ).exec().isSuccess)
+        } finally {
+            file.delete()
+            assertTrue(Shell.cmd("copy_preinit_files").exec().isSuccess)
+        }
+    }
+
+    @Test
     fun testPreinitPublicationFailure() {
         assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
         val module = modules.first { it.id == SEPOLICY_RULE }

@@ -15,6 +15,12 @@ fn main() {
     // Cargo runs this script concurrently for each target ABI. pb-rs appends
     // to mod.rs in several writes, so a shared source directory races readers.
     let output = std::env::var("OUT_DIR").unwrap();
+    // We include the message directly, not pb-rs's module index. Discard a
+    // possibly partial index left by an interrupted invocation.
+    let index = std::path::Path::new(&output).join("mod.rs");
+    if index.exists() {
+        std::fs::remove_file(index).unwrap();
+    }
     let output = output.as_str();
     let cb = ConfigBuilder::new(
         &["resetprop/proto/persistent_properties.proto"],
