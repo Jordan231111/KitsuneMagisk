@@ -67,9 +67,11 @@ class ManagerContractTest : BaseTest {
         }
         assertTrue(runCatching { HideStatus.parse("{\"schema\":2}") }.isFailure)
         val report = ManagerDiagnostics.collect()
-        val allowed = setOf("schema", "manager", "android_api", "system_mode", "transaction_state",
-            "last_hide_result", "last_system_operation", "last_system_success", "daemon", "zygisk", "hide")
-        assertEquals(allowed, report.keys().asSequence().toSet())
+        // Avoid the large vararg array after a suspension point: the API 23
+        // x86_64 runtime crashes in setOf here. Compare the same complete key set.
+        assertEquals("android_api,daemon,hide,last_hide_result,last_system_operation," +
+            "last_system_success,manager,schema,system_mode,transaction_state,zygisk",
+            report.keys().asSequence().sorted().joinToString(","))
         assertFalse(report.toString().contains("android_id"))
         assertFalse(report.toString().contains("serialno"))
     }
