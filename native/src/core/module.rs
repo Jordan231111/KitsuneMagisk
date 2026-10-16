@@ -510,13 +510,24 @@ fn inject_magisk_bins(system: &mut FsNode, is_emulator: bool) {
             && let Some(parent) = path.parent_dir()
         {
             let parent = Utf8CString::from(parent);
-            if let Ok(attr) = parent.follow_link().get_attr()
+            let item = strip_system_prefix(orig_item);
+            let parent_path = Path::new(&item).parent();
+            // commit() cannot rebuild a partition root as tmpfs. A missing bin
+            // immediately under a separate /product or /vendor would be dropped,
+            // so keep looking for a path the existing mount engine can publish.
+            let partition_root = parent_path == Some(Path::new("/"))
+                || SECONDARY_READ_ONLY_PARTITIONS.iter().any(|root| {
+                    parent_path == Some(Path::new(root.as_str()))
+                        && root.get_attr().is_ok_and(|attr| attr.is_dir())
+                });
+            if !partition_root
+                && let Ok(attr) = parent.follow_link().get_attr()
                 && attr.is_dir()
                 && attr.st.st_uid == 0
                 && attr.st.st_mode & 0o022 == 0
                 && attr.st.st_mode & 0o001 != 0
             {
-                candidates.push((strip_system_prefix(orig_item), 0));
+                candidates.push((item, 0));
                 continue;
             }
         }

@@ -87,18 +87,29 @@ class ManagerContractTest : BaseTest {
     @Test fun testWarmNavigationAndInstallDestination() {
         val component = MainActivity::class.java.cmp(appContext.packageName).flattenToString()
         fun launch(extra: String) {
-            AutoCloseInputStream(uiAutomation.executeShellCommand(
+            val output = AutoCloseInputStream(uiAutomation.executeShellCommand(
                 "am start -W -n $component -a android.intent.action.MAIN -c android.intent.category.LAUNCHER $extra"
             )).reader().use { it.readText() }
+            assertTrue("Cannot launch requested destination: $output",
+                output.contains("Status: ok") || output.contains("Status: timeout"))
+        }
+        fun shown(resource: Int, timeout: Long) {
+            val label = appContext.getString(resource)
+            val visible = device.wait(Until.hasObject(By.text(label)), timeout)
+            val hierarchy = if (visible) "" else java.io.ByteArrayOutputStream().use {
+                device.dumpWindowHierarchy(it)
+                it.toString("UTF-8")
+            }
+            assertTrue("Missing destination '$label': $hierarchy", visible)
         }
         try {
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.SETTINGS}")
-            assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.settings_customization))), 30000))
+            shown(CoreR.string.settings_customization, 30000)
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.INSTALL}")
-            assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.select_patch_file))), 10000))
+            shown(CoreR.string.select_patch_file, 10000)
             device.pressBack()
             launch("--es ${Const.Key.OPEN_SECTION} ${Const.Nav.SETTINGS}")
-            assertTrue(device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.settings_customization))), 10000))
+            shown(CoreR.string.settings_customization, 10000)
         } finally { device.pressHome() }
     }
 

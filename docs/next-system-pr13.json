@@ -114,6 +114,7 @@
     "app/test/src/main/cpp/zygisk_test.cpp",
     "app/test/src/main/java/com/topjohnwu/magisk/test/AppMigrationTest.kt",
     "app/test/src/main/java/com/topjohnwu/magisk/test/HideVisibilityTest.kt",
+    "app/test/src/main/java/com/topjohnwu/magisk/test/RootPathTest.kt",
     "app/test/src/main/java/com/topjohnwu/magisk/test/Runners.kt",
     "app/test/src/main/java/com/topjohnwu/magisk/test/ZygiskModuleTest.kt",
     "build.py",

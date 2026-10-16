@@ -202,6 +202,7 @@ run_tests() {
   adb push "$MAGISK_OUT_DIR/update-fixtures/." /data/local/tmp/kitsune-update-fixtures/ >/dev/null
   am_instrument '.UpdateServiceTest' $app
   am_instrument '.MagiskAppTest,.AdditionalTest,.TerminalTest,.FlashIntentTest,.ManagerContractTest,.BuildInfoTest,.ZygiskProviderTest,.HidePolicyTest,.VerifiedUpdatesTest' $app
+  am_instrument '.RootPathTest' $self
 
   # Test app hiding
   am_instrument '.AppMigrationTest#testAppHide' $self

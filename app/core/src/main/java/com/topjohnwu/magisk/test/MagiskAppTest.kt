@@ -114,7 +114,7 @@ class MagiskAppTest : BaseTest {
 
         // Check that the database is updated
         runBlocking {
-            // The response FIFO is written before the asynchronous policy update.
+            // A completed request must have a durable daemon-owned policy.
             var observed = ServiceLocator.policyDB.fetch(2000)
             withTimeoutOrNull(TimeUnit.SECONDS.toMillis(10)) {
                 while (observed?.policy != SuPolicy.ALLOW) {
