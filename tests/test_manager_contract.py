@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import re
+import subprocess
 import unittest
 import xml.etree.ElementTree as ET
 
@@ -9,6 +10,29 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ManagerContractTest(unittest.TestCase):
+    def test_installer_only_sets_supported_app_op_after_success(self):
+        script = r'''
+. "$1"
+cp() { :; }
+chmod() { :; }
+rm() { :; }
+su() { return "$INSTALL_RESULT"; }
+pm() { return "$INSTALL_RESULT"; }
+appops() { printf 'appops:%s\n' "$*"; }
+SDK_INT="$2"
+INSTALL_RESULT="$3"
+adb_pm_install fixture.apk fixture.package
+'''
+        for sdk in (23, 24, 25, 26, 35):
+            for status in (0, 1):
+                with self.subTest(sdk=sdk, status=status):
+                    result = subprocess.run(['bash', '-c', script, 'test',
+                                             str(ROOT / 'scripts/app_functions.sh'), str(sdk), str(status)],
+                                            text=True, capture_output=True, timeout=5)
+                    self.assertEqual(status, result.returncode, result.stderr)
+                    expected = 'appops:set fixture.package REQUEST_INSTALL_PACKAGES allow\n' if sdk >= 26 and status == 0 else ''
+                    self.assertEqual(expected, result.stdout)
+
     def test_transaction_and_doctor_vocabularies_match_the_contract(self):
         source = (ROOT / 'app/core/src/main/java/com/topjohnwu/magisk/core/model/ManagerDiagnostics.kt').read_text()
         states = re.search(r'val transactionStates = setOf\((.*?)\)', source, re.S).group(1)

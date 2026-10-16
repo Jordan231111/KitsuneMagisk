@@ -147,7 +147,8 @@ adb_pm_install() {
   su 2000 -c pm install -g $tmp || pm install -g $tmp || su 1000 -c pm install -g $tmp
   local res=$?
   rm -f $tmp
-  if [ $res = 0 ]; then
+  # Per-app install-source authorization exists only on Android O and later.
+  if [ $res = 0 ] && [ "${SDK_INT:-0}" -ge 26 ]; then
     appops set "$2" REQUEST_INSTALL_PACKAGES allow
   fi
   return $res
