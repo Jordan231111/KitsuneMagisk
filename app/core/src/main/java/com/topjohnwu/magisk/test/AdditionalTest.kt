@@ -151,6 +151,18 @@ class AdditionalTest : BaseTest {
             assertTrue(Shell.cmd("(cp() { return 1; }; ! copy_preinit_files)").exec().isSuccess)
             assertEquals(old, Shell.cmd("readlink \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current\"").exec().out)
             assertTrue(Shell.cmd("test -f \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/disabled\"").exec().isSuccess)
+            assertTrue(Shell.cmd(
+                "(df() { printf 'Filesystem 1024-blocks Used Available Capacity Mounted\\nfixture 16384 16380 4 100%% /metadata\\n'; }; ! copy_preinit_files)"
+            ).exec().isSuccess)
+            assertEquals(old, Shell.cmd("readlink \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current\"").exec().out)
+            val sparse = module.base.getChildFile("early-mount/system/etc/space-probe")
+            try {
+                assertTrue(Shell.cmd("truncate -s 41943040 $sparse").exec().isSuccess)
+                assertTrue(Shell.cmd("! copy_preinit_files").exec().isSuccess)
+                assertEquals(old, Shell.cmd("readlink \"\$MAGISKTMP/.magisk/preinit/kitsune-v2/current\"").exec().out)
+            } finally {
+                sparse.delete()
+            }
         } finally {
             assertTrue(module.updateEnabled(true))
         }
@@ -177,6 +189,7 @@ class AdditionalTest : BaseTest {
         assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
         assertEquals(listOf("# kitsune-early-v2", "early"), Shell.cmd("cat /dev/.kitsune-early").exec().out)
         assertTrue(Shell.cmd("test -f /dev/.kitsune-pfs").exec().isSuccess)
+        assertEquals(listOf("600 0"), Shell.cmd("stat -c '%a %u' \"\$MAGISKTMP/.magisk/early-mount-api\"").exec().out)
     }
 
     @Test

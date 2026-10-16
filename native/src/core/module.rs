@@ -769,6 +769,36 @@ fn inhibit_preinit() {
     }
 }
 
+pub fn has_active_preinit_modules() -> bool {
+    let global = cstr!("/data/adb/early-mount.d");
+    if global.get_attr().is_ok_and(|attr| attr.is_dir())
+        && !cstr!("/data/adb/early-mount.d/disable").exists()
+    {
+        return true;
+    }
+    for path in [cstr!(MODULEROOT), cstr!(MODULEUPGRADE)] {
+        let Ok(mut root) = Directory::open(path) else {
+            continue;
+        };
+        while let Ok(Some(e)) = root.read() {
+            if !e.is_dir() || e.name().starts_with('.') {
+                continue;
+            }
+            let Ok(dir) = e.open_as_dir() else {
+                continue;
+            };
+            if !dir.contains_path(cstr!("disable"))
+                && !dir.contains_path(cstr!("remove"))
+                && (dir.contains_path(cstr!("early-mount"))
+                    || dir.contains_path(cstr!("sepolicy.rule")))
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 pub fn disable_modules() {
     inhibit_preinit();
     // Safe mode must cover pending new modules too, or leaving safe mode would

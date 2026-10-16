@@ -596,6 +596,24 @@ copy_preinit_files() (
   mkdir -p "$STATE" || return 1
   exec 9>"$STATE/lock" || return 1
   flock -x 9 || return 1
+  local CURRENT= PREVIOUS= generation
+  if $EARLY; then
+    [ ! -e "$STATE/current" ] || [ -L "$STATE/current" ] || return 1
+    [ ! -e "$STATE/previous" ] || [ -L "$STATE/previous" ] || return 1
+    CURRENT=$(readlink "$STATE/current") || CURRENT=
+    PREVIOUS=$(readlink "$STATE/previous") || PREVIOUS=
+    for generation in "$CURRENT" "$PREVIOUS"; do
+      case "$generation" in ""|gen.????????) ;; *) return 1 ;; esac
+      case "$generation" in *[!a-zA-Z0-9.]*) return 1 ;; esac
+      [ -z "$generation" ] || { [ -d "$STATE/$generation" ] && [ ! -L "$STATE/$generation" ]; } || return 1
+    done
+    # Only unpublished generations are garbage. Keep both complete recovery
+    # points, including after a writer was killed while copying its payload.
+    for generation in "$STATE"/gen.????????; do
+      [ "${generation##*/}" = "$CURRENT" ] || [ "${generation##*/}" = "$PREVIOUS" ] ||
+        rm -rf "$generation" || return 1
+    done
+  fi
   local STAGE=
   trap 'rm -rf "$STAGE"; rm -f "$POLICY" "$STATE/link.$$" "$PREINITDIR/.policy.$$"' EXIT
   # A failed refresh must never resurrect a just-disabled module/policy. System
@@ -607,6 +625,49 @@ copy_preinit_files() (
     sync -f "$POLICY" && mv -Tf "$POLICY" "$PREINITDIR/sepolicy.rule" || return 1
     sync -f "$PREINITDIR" || return 1
   fi
+  # Account for logical file sizes (including sparse files) and directory
+  # metadata before allocating a persistent generation. Leave room for Android
+  # even if power loss strands the entire new staging tree.
+  local sizes totals bytes entries space total free needed reserve d id live
+  sizes=$(
+    for d in /data/adb/modules/* /data/adb/modules_update/*; do
+      [ -d "$d" ] && [ ! -L "$d" ] || continue
+      id=${d##*/}
+      case "$id" in .*|*[!a-zA-Z0-9._-]*) continue ;; esac
+      live=/data/adb/modules/$id
+      [ ! -e "$live/disable" ] && [ ! -e "$live/remove" ] || continue
+      [ ! -e "$d/disable" ] && [ ! -e "$d/remove" ] || continue
+      [ "$d" != "$live" ] || [ ! -d "/data/adb/modules_update/$id" ] || continue
+      [ ! -f "$d/sepolicy.rule" ] || stat -c %s "$d/sepolicy.rule" || exit 1
+      if $EARLY && [ -d "$d/early-mount" ] && [ ! -L "$d/early-mount" ]; then
+        find "$d/early-mount" -exec stat -c %s '{}' ';' || exit 1
+        stat -c %s "$d/module.prop" || exit 1
+      fi
+    done
+    if $EARLY && [ -d /data/adb/early-mount.d ] && [ ! -L /data/adb/early-mount.d ] &&
+       [ ! -e /data/adb/early-mount.d/disable ]; then
+      find /data/adb/early-mount.d -exec stat -c %s '{}' ';' || exit 1
+    fi
+  ) || return 1
+  totals=$(printf '%s\n' "$sizes" | awk 'NF { if ($0 !~ /^[0-9]+$/) exit 1; size += $1; count++ }
+    END { printf "%.0f %d\n", size, count }') || return 1
+  set -- $totals
+  bytes=$1 entries=$2
+  [ "$bytes" -le 33554432 ] && [ "$entries" -le 4096 ] || {
+    ui_print "! Pre-init input exceeds the snapshot budget"; return 1;
+  }
+  space=$(df -Pk "$PREINITDIR" | awk 'NR == 2 { print $2, $4 }') || return 1
+  set -- $space
+  [ "$#" = 2 ] || return 1
+  total=$1 free=$2
+  case "$total:$free" in *[!0-9:]*) return 1 ;; esac
+  reserve=$((total / 4))
+  [ "$reserve" -le 16384 ] || reserve=16384
+  [ "$reserve" -ge 1024 ] || reserve=1024
+  needed=$(((bytes + 1023) / 1024 + (entries + 32) * 8))
+  [ "$free" -ge $((needed * 2 + reserve)) ] || {
+    ui_print "! Insufficient pre-init space; the previous snapshot is preserved"; return 1;
+  }
   STAGE=$(mktemp -d "$STATE/gen.XXXXXXXX") || return 1
   mkdir "$STAGE/modules" || return 1
   printf '2\n' > "$STAGE/version" || return 1
@@ -651,8 +712,11 @@ copy_preinit_files() (
   # are unreachable; the prior complete generation remains available for recovery.
   (cd "$STAGE" && find . -type f ! -path ./manifest -exec sha256sum '{}' ';' > manifest) || return 1
   sync -f "$STAGE" || return 1
-  local OLD
-  OLD=$(readlink "$STATE/current") || OLD=
+  local OLD=$CURRENT
+  if [ -n "$OLD" ]; then
+    ln -s "$OLD" "$STATE/link.$$" || return 1
+    mv -Tf "$STATE/link.$$" "$STATE/previous" || return 1
+  fi
   ln -s "${STAGE##*/}" "$STATE/link.$$" || return 1
   mv -Tf "$STATE/link.$$" "$STATE/current" || return 1
   STAGE=
@@ -808,6 +872,18 @@ install_module() {
 
   if [ -d "$MODPATH/early-mount" ] && ! magisk --early-mount-status >/dev/null 2>&1; then
     abort "! Early mounting is unavailable on this boot route"
+  fi
+  if [ -d "$MODPATH/early-mount" ] || [ -d "$FINALPATH/early-mount" ] ||
+     [ -d "/data/adb/modules/$MODID/early-mount" ]; then
+    # Inhibit the old early plan before making a different ordinary version
+    # pending. A failed refresh leaves a recoverable safe-mode boundary.
+    (
+      umask 077
+      state=$MAGISKTMP/.magisk/preinit/kitsune-v2
+      [ ! -L "$state" ] && mkdir -p "$state" || exit 1
+      exec 9>"$state/lock" || exit 1
+      flock -x 9 && touch "$state/disabled" && sync -f "$state"
+    ) || abort "! Cannot inhibit the previous early snapshot"
   fi
 
   # Publish only after extraction and customization completed successfully.

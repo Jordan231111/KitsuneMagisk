@@ -17,6 +17,15 @@ const PAYLOAD: &str = ".magisk/early-mount";
 const MAX_BYTES: usize = 32 * 1024 * 1024;
 const MAX_FILES: usize = 512;
 
+fn write_control(path: &str, bytes: &[u8]) -> std::io::Result<()> {
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(path)?;
+    std::io::Write::write_all(&mut file, bytes)
+}
+
 fn checked_file(path: &str, budget: &mut usize) -> Option<Vec<u8>> {
     for parent in std::path::Path::new(path).ancestors().skip(1) {
         if !parent.as_os_str().is_empty()
@@ -84,12 +93,12 @@ fn target_path(path: &str) -> Option<String> {
 
 impl MagiskInit {
     pub(crate) fn load_early_mount(&mut self) -> Vec<String> {
-        fs::write(".magisk/early-mount-api", b"2\n").log_ok();
+        write_control(".magisk/early-mount-api", b"2\n").log_ok();
         if !std::path::Path::new(STATE).exists() {
             return Vec::new();
         }
         if check_safe_mode_key() {
-            fs::write(".magisk/early-safe-mode", b"1\n").log_ok();
+            write_control(".magisk/early-safe-mode", b"1\n").log_ok();
             return Vec::new();
         }
         if std::path::Path::new(&format!("{STATE}/disabled")).exists() {
@@ -99,7 +108,7 @@ impl MagiskInit {
         match self.prepare_early_mount() {
             Some(rc) => rc,
             None => {
-                fs::write(".magisk/early-snapshot-invalid", b"1\n").log_ok();
+                write_control(".magisk/early-snapshot-invalid", b"1\n").log_ok();
                 warn!("early-mount: rejected incomplete or unsupported snapshot");
                 Vec::new()
             }

@@ -63,7 +63,9 @@ configuration directories cannot be replaced through the early-file interface.
 The publisher builds a private generation with a source hash manifest and module
 metadata, syncs it and atomically switches `current`. A disabled marker is made
 durable first. Failure leaves early modules inhibited and the previous complete
-generation available. One previous generation is retained. Native init validates
+generation available. One previous generation is retained; unpublished generations are removed under
+the publication lock. Preflight accounts for logical file sizes and directories
+and reserves free space for Android, including after an interrupted copy. Native init validates
 hashes, root ownership, non-writable-to-others files, path types, a 512-file/32-MiB
 limit and a two-second processing budget. An invalid snapshot also suppresses its module policy. Global/module conflicts reject the
 complete plan and name both owners. No ambiguous last-writer-wins rule survives.
@@ -71,7 +73,9 @@ complete plan and name both owners. No ambiguous last-writer-wins rule survives.
 Payloads are copied into a private tmpfs, given the existing target's ownership,
 permissions and SELinux context, then bound before Android init continues. The
 payload tmpfs is remounted read-only. A failed publication detaches already
-published mounts in reverse order. The underlying partition remains unchanged.
+published mounts in reverse order. If an enabled module or global input needs a
+failed/disabled early snapshot, post-fs-data enters safe mode and disables modules
+before running their scripts. Re-enable repaired input explicitly. The underlying partition remains unchanged.
 Hide/SuList sees these as `magisk` mounts and removes them in selected namespaces.
 
 Hold volume-down for three seconds during MagiskInit to bypass the early snapshot

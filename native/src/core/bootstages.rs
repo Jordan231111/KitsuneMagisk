@@ -5,7 +5,7 @@ use crate::ffi::{
     get_magisk_tmp, initialize_denylist,
 };
 use crate::logging::setup_logfile;
-use crate::module::disable_modules;
+use crate::module::{disable_modules, has_active_preinit_modules};
 use crate::mount::{clean_mounts, setup_preinit_dir};
 use crate::resetprop::get_prop;
 use crate::selinux::restorecon;
@@ -134,6 +134,15 @@ impl MagiskD {
         // persisting safe-mode disable markers; never remount its block device.
         setup_preinit_dir();
 
+        let early_failed = cstr::buf::default()
+            .join_path(get_magisk_tmp())
+            .join_path(".magisk/early-snapshot-invalid")
+            .exists()
+            || cstr::buf::default()
+                .join_path(get_magisk_tmp())
+                .join_path(".magisk/preinit/kitsune-v2/disabled")
+                .exists();
+
         // Check safe mode
         let boot_cnt = self.get_db_setting(DbEntryKey::BootloopCount);
         self.set_db_setting(DbEntryKey::BootloopCount, boot_cnt + 1)
@@ -143,6 +152,7 @@ impl MagiskD {
             .join_path(get_magisk_tmp())
             .join_path(".magisk/early-safe-mode")
             .exists()
+            || (early_failed && has_active_preinit_modules())
             || boot_cnt >= 2
             || get_prop(cstr!("persist.sys.safemode")) == "1"
             || get_prop(cstr!("ro.sys.safemode")) == "1"
