@@ -82,3 +82,83 @@ abort() { echo "$*" >&2; exit 42; }
                 result = subprocess.run(["/bin/sh", "-c", script], capture_output=True, text=True,
                                         env=dict(env, CAPABILITIES=capabilities, ROUTE_STATUS=route))
                 self.assertEqual(expected, result.returncode, result.stderr)
+
+
+class PreinitStorageTest(unittest.TestCase):
+    def test_legacy_persist_aliases_and_read_only_fallback(self):
+        source=(ROOT/'native/src/init/mount.cpp').read_text()
+        start=source.index('void MagiskInit::mount_preinit_dir() noexcept {')
+        end=source.index('\nbool MagiskInit::mount_system_root()',start)
+        program=r'''
+#include <cassert>
+#include <cstdio>
+#include <cstdint>
+#include <string>
+#include <vector>
+#include <strings.h>
+using namespace std;
+#define LOGE(...) ((void)0)
+#define LOGW(...) ((void)0)
+#define LOGD(...) ((void)0)
+#define PLOGE(...) ((void)0)
+#define S_IFBLK 060000
+#define MS_RDONLY 1
+#define MS_BIND 4096
+#define MNT_DETACH 2
+#define F_OK 0
+#define PREINITDEV "device/preinit"
+#define MIRRDIR "mirror"
+#define PREINITMIRR "preinit"
+uint64_t makedev(int major,int minor) { return (uint64_t(major)<<32)|minor; }
+int nodes=0, mounts=0, binds=0;
+bool mounted=false;
+uint64_t device=makedev(8,1);
+struct devinfo { int major,minor; char partname[32],dmname[32]; };
+vector<devinfo> dev_list;
+int strscpy(char *out,const char *in,size_t size) { return snprintf(out,size,"%s",in); }
+int xmknod(const char*,int,uint64_t) { ++nodes; return 0; }
+int xmkdir(const char*,int) { return 0; }
+int xmkdirs(const char*,int) { return 0; }
+int xmount(const char*,const char*,const char*,unsigned long flags,const void*) {
+    assert(flags==MS_BIND); ++binds; return 0;
+}
+int mount(const char*,const char*,const char*,unsigned long flags,const void*) {
+    assert(flags==MS_RDONLY); ++mounts; return -1;
+}
+int access(const char*,int) { return -1; }
+int xumount2(const char*,int) { return 0; }
+string resolve_preinit_dir(const char*) { return "owned/magisk"; }
+namespace rust { bool is_device_mounted(uint64_t,string &path) { path="/data"; return mounted; } }
+struct MagiskInit {
+    string preinit_dev="sda1";
+    uint64_t find_block(const char*) { return device; }
+    void mount_preinit_dir() noexcept;
+};
+''' + source[start:end] + r'''
+int main() {
+    MagiskInit init;
+    for (auto entry : vector<devinfo>{{8,1,"persist",""},{8,1,"PERSIST_A",""},{8,1,"","persist"}}) {
+        dev_list={entry}; nodes=mounts=binds=0;
+        init.mount_preinit_dir();
+        assert(nodes==1 && mounts==0 && binds==0);
+    }
+    // An unrelated persist disk must not block the selected metadata device.
+    dev_list={{8,2,"persist",""},{8,1,"metadata",""}};
+    nodes=mounts=binds=0;
+    init.mount_preinit_dir();
+    assert(nodes==1 && mounts==2 && binds==0);
+    mounted=true; nodes=mounts=binds=0;
+    init.mount_preinit_dir();
+    assert(nodes==1 && mounts==0 && binds==1);
+    mounted=false; device=0; nodes=mounts=binds=0;
+    init.mount_preinit_dir();
+    assert(nodes==0 && mounts==0 && binds==0);
+}
+'''
+        with tempfile.TemporaryDirectory(prefix='kitsune-preinit-storage-') as temporary:
+            path=Path(temporary); cpp=path/'main.cpp'; binary=path/'test'
+            cpp.write_text(program)
+            result=subprocess.run(['c++','-std=c++20',str(cpp),'-o',str(binary)],capture_output=True,text=True)
+            self.assertEqual(0,result.returncode,result.stderr)
+            result=subprocess.run([str(binary)],capture_output=True,text=True,timeout=10)
+            self.assertEqual(0,result.returncode,result.stderr)

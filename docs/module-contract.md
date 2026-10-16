@@ -93,7 +93,11 @@ versioned grammar. Service names start with `kitsune_<module-id>_` (or
 must include `disabled`, `oneshot` and `timeout_period 10`. Optional root user/group
 and `seclabel u:r:magisk:s0` are supported. Allowed action events are `early-init`,
 `init`, `post-fs` and `boot`; actions may start a service declared in the same file
-or set a `sys.kitsune.*` property. Duplicate service names reject the plan.
+or set a `sys.kitsune.*` property. Duplicate service names reject the plan. RC input is limited to 16 KiB per file,
+64 KiB in total and 32 services. Use balanced double quotes, `$$` for a literal
+shell dollar, or a simple `${property.name}` expansion. Backslash escapes and
+line folding are rejected so they cannot absorb required service options.
+`${MAGISKTMP}` remains the explicit temporary-directory template.
 
 Arbitrary imports, property-trigger loops, service overrides, critical/restarting
 services and synchronous `exec`/`insmod` are not carried into v2. Move work into a

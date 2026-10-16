@@ -131,6 +131,7 @@ impl MagiskInit {
         let manifest = std::str::from_utf8(&manifest).ok()?;
         let mut mounts = BTreeMap::new();
         let mut scripts = BTreeMap::new();
+        let mut script_bytes = 0;
         let mut seen = BTreeSet::new();
         let mut services = BTreeSet::new();
         for line in manifest.lines() {
@@ -165,6 +166,10 @@ impl MagiskInit {
             };
             if let Some(name) = path.strip_prefix("initrc.d/") {
                 let text = String::from_utf8(data).ok()?;
+                script_bytes += text.len();
+                if script_bytes > 64 * 1024 {
+                    return None;
+                }
                 if !name.ends_with(".rc") || !validate_rc(&text, owner) {
                     return None;
                 }
@@ -179,6 +184,9 @@ impl MagiskInit {
                     {
                         return None;
                     }
+                }
+                if services.len() > 32 {
+                    return None;
                 }
                 scripts.insert(format!("{owner}/{name}"), text);
                 continue;
