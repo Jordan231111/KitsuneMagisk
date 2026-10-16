@@ -49,9 +49,23 @@ stop_emulator() {
     return
   fi
   if kill -0 "$emu_pid" >/dev/null 2>&1; then
-    # Flush guest writes before terminating QEMU, including installed APK data.
-    adb shell sync >/dev/null 2>&1 || true
-    adb emu kill >/dev/null 2>&1 || true
+    # Console commands require the emulator serial, not its ADB TCP alias.
+    # Verify ownership before flushing and closing that console.
+    python3 - "$emu_port" "$avd_name" <<'PY'
+import subprocess
+import sys
+
+command = ["adb", "-s", f"emulator-{sys.argv[1]}"]
+try:
+    result = subprocess.run(command + ["emu", "avd", "name"],
+                            capture_output=True, text=True, timeout=5)
+    names = result.stdout.splitlines()
+    if result.returncode == 0 and names and names[0].strip() == sys.argv[2]:
+        subprocess.run(command + ["shell", "sync"], capture_output=True, timeout=10)
+        subprocess.run(command + ["emu", "kill"], capture_output=True, timeout=5)
+except (OSError, subprocess.TimeoutExpired):
+    pass
+PY
     local count=0
     while kill -0 "$emu_pid" >/dev/null 2>&1 && [ "$count" -lt 30 ]; do
       sleep 1
