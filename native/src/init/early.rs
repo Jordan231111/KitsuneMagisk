@@ -99,6 +99,7 @@ impl MagiskInit {
         match self.prepare_early_mount() {
             Some(rc) => rc,
             None => {
+                fs::write(".magisk/early-snapshot-invalid", b"1\n").log_ok();
                 warn!("early-mount: rejected incomplete or unsupported snapshot");
                 Vec::new()
             }

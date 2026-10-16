@@ -2,7 +2,8 @@
 
 PR14 implements module-root v2, early-mount v2 and the bounded boot-completed
 stage on the maintained Magisk core. Runtime qualification is recorded separately;
-compiled capabilities do not qualify a device or an installation route.
+compiled capabilities do not qualify a device or an installation route. Authors can
+start from the [capability-checked template](../tools/module-template/README.md).
 
 ## Installation and ordinary mounts
 
@@ -60,7 +61,7 @@ metadata, syncs it and atomically switches `current`. A disabled marker is made
 durable first. Failure leaves early modules inhibited and the previous complete
 generation available. One previous generation is retained. Native init validates
 hashes, root ownership, non-writable-to-others files, path types, a 512-file/32-MiB
-limit and a two-second processing budget. Global/module conflicts reject the
+limit and a two-second processing budget. An invalid snapshot also suppresses its module policy. Global/module conflicts reject the
 complete plan and name both owners. No ambiguous last-writer-wins rule survives.
 
 Payloads are copied into a private tmpfs, given the existing target's ownership,
@@ -114,7 +115,8 @@ storage is unreadable. SELinux absence never creates a fake enforcing result.
 
 New storage selection excludes `/persist` and `/mnt/vendor/persist`; device
 calibration is not module storage. Existing explicitly configured pre-init devices
-remain readable for recovery. Selection retains upstream encryption/filesystem
+remain readable for recovery; the daemon does not expose a writable persist link.
+An empty runtime placeholder does not count as persistent pre-init storage. Selection retains upstream encryption/filesystem
 checks and never mounts a block device writable. Migration requires publishing to
 the currently selected location and repatching the relevant boot image; old storage
 is retained until that boot and recovery are verified. Missing storage means early

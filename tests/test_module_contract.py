@@ -54,3 +54,31 @@ fn publication_and_recovery() {{
             self.assertEqual(0, result.returncode, result.stderr)
             result = subprocess.run([str(binary)], capture_output=True, text=True, timeout=15)
             self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+class ModuleTemplateTest(unittest.TestCase):
+    def test_capabilities_and_runtime_route_both_gate_installation(self):
+        with tempfile.TemporaryDirectory(prefix="kitsune-template-") as temporary:
+            module = Path(temporary)
+            (module / "root").mkdir()
+            (module / "early-mount").mkdir()
+            (module / "boot-completed.sh").touch()
+            script = '''
+magisk() {
+  case "$1" in
+    --features) printf '%s\\n' "$CAPABILITIES" ;;
+    --early-mount-status) return "$ROUTE_STATUS" ;;
+    *) return 1 ;;
+  esac
+}
+abort() { echo "$*" >&2; exit 42; }
+. "$TEMPLATE"
+'''
+            caps = "kitsune.module-root.v2\nkitsune.early-mount.v2\nkitsune.boot-completed.v1"
+            env = dict(os.environ, MODPATH=str(module),
+                       TEMPLATE=str(ROOT / "tools/module-template/customize.sh"))
+            for capabilities, route, expected in ((caps, "0", 0), (caps, "1", 42),
+                                                  ("", "0", 42),
+                                                  (caps.replace("kitsune.module-root.v2", "kitsune.module-root.v1"), "0", 42)):
+                result = subprocess.run(["/bin/sh", "-c", script], capture_output=True, text=True,
+                                        env=dict(env, CAPABILITIES=capabilities, ROUTE_STATUS=route))
+                self.assertEqual(expected, result.returncode, result.stderr)

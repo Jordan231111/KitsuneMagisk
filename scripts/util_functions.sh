@@ -588,6 +588,7 @@ copy_preinit_files() (
   umask 077
   local EARLY=false STATE="$MAGISKTMP/.magisk/module-policy" POLICY=
   if [ "$(cat "$MAGISKTMP/.magisk/early-mount-api" 2>/dev/null)" = 2 ]; then
+    [ -L "$PREINITDIR" ] || { ui_print "! Pre-init storage is not mapped"; return 1; }
     EARLY=true
     STATE="$PREINITDIR/kitsune-v2"
   fi

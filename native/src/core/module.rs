@@ -724,7 +724,7 @@ fn for_each_module(mut func: impl FnMut(&DirEntry) -> LoggedResult<()>) -> Logge
 fn inhibit_preinit() {
     let mut preinit = std::path::PathBuf::from(get_magisk_tmp().as_str()).join(".magisk/preinit");
     if !preinit.is_dir()
-        && std::fs::read_to_string(concat!("/data/adb/magisk", "/config"))
+        && std::fs::read_to_string("/data/adb/magisk/config")
             .is_ok_and(|text| text.lines().any(|line| line == "SYSTEMMODE=true"))
     {
         preinit = std::path::PathBuf::from("/data/adb");

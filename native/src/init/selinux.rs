@@ -94,6 +94,7 @@ impl MagiskInit {
         let rule_file = cstr!(concatcp!("/data/", PREINITMIRR, "/sepolicy.rule"));
         if rule_file.exists()
             && !cstr!("/data/.magisk/early-safe-mode").exists()
+            && !cstr!("/data/.magisk/early-snapshot-invalid").exists()
             && !cstr!("/data/.magisk/preinit/kitsune-v2/disabled").exists()
         {
             debug!("Loading custom sepolicy patch: [{}]", rule_file);

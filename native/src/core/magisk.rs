@@ -336,7 +336,9 @@ impl MagiskAction {
                 let tmp = get_magisk_tmp();
                 let api = std::fs::read_to_string(format!("{tmp}/.magisk/early-mount-api"))
                     .is_ok_and(|s| s.trim() == "2");
-                let preinit = std::path::Path::new(&format!("{tmp}/.magisk/preinit")).is_dir();
+                let path = std::path::PathBuf::from(tmp.as_str()).join(".magisk/preinit");
+                let preinit = path.is_dir()
+                    && std::fs::symlink_metadata(&path).is_ok_and(|attr| attr.is_symlink());
                 println!(
                     "{{\"version\":2,\"magiskinit_route\":{api},\"preinit_available\":{preinit}}}"
                 );

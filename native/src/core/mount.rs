@@ -42,6 +42,10 @@ pub fn setup_preinit_dir() {
                     // Only care about rw mounts
                     continue;
                 }
+                if matches!(info.target.as_str(), "/persist" | "/mnt/vendor/persist") {
+                    warn!("mount: legacy persist pre-init is read-only; repatch the boot image");
+                    continue;
+                }
                 let mut target = info.target;
                 let target = Utf8CStr::from_string(&mut target);
                 let mut preinit_dir = resolve_preinit_dir(target);
@@ -61,6 +65,13 @@ pub fn setup_preinit_dir() {
         }
     }
 
+    // Do not leave an empty tmpfs placeholder looking like persistent storage.
+    let placeholder = cstr::buf::default()
+        .join_path(magisk_tmp)
+        .join_path(PREINITMIRR);
+    if placeholder.get_attr().is_ok_and(|attr| attr.is_dir()) {
+        placeholder.remove().ok();
+    }
     warn!("mount: preinit dir not found");
 }
 
