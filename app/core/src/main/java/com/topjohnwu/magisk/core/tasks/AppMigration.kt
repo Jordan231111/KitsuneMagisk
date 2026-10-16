@@ -225,14 +225,19 @@ object AppMigration {
 
         // Check and patch the test APK
         try {
-            val info = context.packageManager.getApplicationInfo(TEST_PKG_NAME, 0)
-            val testApk = File(info.sourceDir)
-            val testRepack = File(context.cacheDir, "test.apk")
-            if (!patchTest(testApk, testRepack, pkg))
-                return false
-            val cmd = "adb_pm_install $testRepack $pkg.test"
-            if (!Shell.cmd(cmd).exec().isSuccess)
-                return false
+            val pm = context.packageManager
+            // Never give an unrelated APK the hidden manager's generated signer
+            // merely because it claimed the instrumentation package name.
+            if (pm.checkSignatures(APP_PACKAGE_NAME, TEST_PKG_NAME) == PackageManager.SIGNATURE_MATCH) {
+                val info = pm.getApplicationInfo(TEST_PKG_NAME, 0)
+                val testApk = File(info.sourceDir)
+                val testRepack = File(context.cacheDir, "test.apk")
+                if (!patchTest(testApk, testRepack, pkg))
+                    return false
+                val cmd = "adb_pm_install $testRepack $pkg.test"
+                if (!Shell.cmd(cmd).exec().isSuccess)
+                    return false
+            }
         } catch (e: PackageManager.NameNotFoundException) {
         }
 
