@@ -579,6 +579,11 @@ copy_preinit_files() (
   # Serialize manager toggles and installers. A crash releases the descriptor;
   # a directory lock would strand future refreshes after SIGKILL or power loss.
   local PREINITDIR=$MAGISKTMP/.magisk/preinit
+  if [ ! -d "$PREINITDIR" ] && grep -qxF 'SYSTEMMODE=true' /data/adb/magisk/config 2>/dev/null; then
+    # The managed launcher already runs after /data is available. This file is
+    # in its existing transaction contract; it is not raw pre-init storage.
+    PREINITDIR=/data/adb
+  fi
   [ -d "$PREINITDIR" ] || { ui_print "- Unable to find preinit dir"; return 1; }
   umask 077
   local EARLY=false STATE="$MAGISKTMP/.magisk/module-policy" POLICY=

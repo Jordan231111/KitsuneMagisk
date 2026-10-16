@@ -722,7 +722,13 @@ fn for_each_module(mut func: impl FnMut(&DirEntry) -> LoggedResult<()>) -> Logge
 }
 
 fn inhibit_preinit() {
-    let preinit = std::path::PathBuf::from(get_magisk_tmp().as_str()).join(".magisk/preinit");
+    let mut preinit = std::path::PathBuf::from(get_magisk_tmp().as_str()).join(".magisk/preinit");
+    if !preinit.is_dir()
+        && std::fs::read_to_string(concat!("/data/adb/magisk", "/config"))
+            .is_ok_and(|text| text.lines().any(|line| line == "SYSTEMMODE=true"))
+    {
+        preinit = std::path::PathBuf::from("/data/adb");
+    }
     let temporary = preinit.join(format!(".policy-disabled-{}", std::process::id()));
     let mut created = false;
     let result = (|| -> std::io::Result<()> {
@@ -749,16 +755,30 @@ fn inhibit_preinit() {
 
 pub fn disable_modules() {
     inhibit_preinit();
-    for_each_module(|e| {
-        let dir = e.open_as_dir()?;
-        dir.open_as_file_at(
-            cstr!("disable"),
-            OFlag::O_RDONLY | OFlag::O_CREAT | OFlag::O_CLOEXEC,
-            0,
-        )?;
-        Ok(())
-    })
-    .log_ok();
+    // Safe mode must cover pending new modules too, or leaving safe mode would
+    // activate a module that was never disabled in the installed directory.
+    for path in [cstr!(MODULEROOT), cstr!(MODULEUPGRADE)] {
+        let Ok(mut root) = Directory::open(path) else {
+            continue;
+        };
+        let _ = (|| -> LoggedResult<()> {
+            while let Some(e) = root.read()? {
+                if !e.is_dir() || e.name().starts_with('.') {
+                    continue;
+                }
+                let dir = e.open_as_dir()?;
+                let file = dir.open_as_file_at(
+                    cstr!("disable"),
+                    OFlag::O_RDONLY | OFlag::O_CREAT | OFlag::O_CLOEXEC,
+                    0,
+                )?;
+                file.sync_all().log()?;
+            }
+            nix::unistd::fsync(&root).log()?;
+            Ok(())
+        })()
+        .log();
+    }
 }
 
 fn run_uninstall_script(module_name: &Utf8CStr) {

@@ -235,44 +235,53 @@ pub fn revert_unmount_checked(pid: i32) -> bool {
         debug!("denylist: handling PID=[{}]", pid);
     }
 
-    let mut targets = Vec::new();
+    // Detaching an ordinary directory overlay can reveal older early mounts
+    // beneath it. Rescan the namespace instead of declaring those files hidden.
+    // Fail closed if a privileged actor keeps stacking new mounts concurrently.
+    for _ in 0..16 {
+        let mut targets = Vec::new();
 
-    // Unmount Magisk tmpfs and mounts from module files
-    let mounts = parse_mount_info("self");
-    if mounts.is_empty() {
-        return false;
-    }
-    for info in mounts {
-        if info.source == "magisk" || info.root.starts_with("/adb/modules") {
-            targets.push(info.target);
-        }
-    }
-
-    if targets.is_empty() {
-        return true;
-    }
-
-    let mut prev: Option<PathBuf> = None;
-    targets.sort();
-    targets.retain(|target| {
-        if let Some(prev) = &prev
-            && Path::new(target).starts_with(prev)
-        {
+        // Unmount Magisk tmpfs and mounts from module files
+        let mounts = parse_mount_info("self");
+        if mounts.is_empty() {
             return false;
         }
-        prev = Some(PathBuf::from(target.clone()));
-        true
-    });
+        for info in mounts {
+            if info.source == "magisk" || info.root.starts_with("/adb/modules") {
+                targets.push(info.target);
+            }
+        }
 
-    let mut clean = true;
-    for mut target in targets {
-        let target = Utf8CStr::from_string(&mut target);
-        if target.unmount().is_ok() {
-            debug!("denylist: Unmounted ({})", target);
-        } else {
-            warn!("denylist: Cannot unmount ({})", target);
-            clean = false;
+        if targets.is_empty() {
+            return true;
+        }
+
+        let mut prev: Option<PathBuf> = None;
+        targets.sort();
+        targets.retain(|target| {
+            if let Some(prev) = &prev
+                && Path::new(target).starts_with(prev)
+            {
+                return false;
+            }
+            prev = Some(PathBuf::from(target.clone()));
+            true
+        });
+
+        let mut clean = true;
+        for mut target in targets {
+            let target = Utf8CStr::from_string(&mut target);
+            if target.unmount().is_ok() {
+                debug!("denylist: Unmounted ({})", target);
+            } else {
+                warn!("denylist: Cannot unmount ({})", target);
+                clean = false;
+            }
+        }
+        if !clean {
+            return false;
         }
     }
-    clean
+    warn!("denylist: mount stack did not converge");
+    false
 }

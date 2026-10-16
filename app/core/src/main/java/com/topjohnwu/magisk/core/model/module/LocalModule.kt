@@ -83,7 +83,9 @@ data class LocalModule(
     }
 
     private fun refreshPreinit(): Boolean = Shell.cmd(
-        "[ ! -d \"\$MAGISKTMP/.magisk/preinit\" ] || copy_preinit_files"
+        "if [ -d \"\$MAGISKTMP/.magisk/preinit\" ] || " +
+            "grep -qxF SYSTEMMODE=true /data/adb/magisk/config 2>/dev/null; " +
+            "then copy_preinit_files; fi"
     ).exec().isSuccess
 
     @Throws(NumberFormatException::class)

@@ -11,7 +11,7 @@ with a dot. Installation/customization uses a private staging directory. The
 published pending update is complete and synced; a previous pending update is
 recoverable after an interrupted rename. At boot, the old installed directory is
 retained until its replacement has been renamed and synced. Disabled state survives
-updates. Hidden staging and rollback directories are never loaded as modules.
+updates. Safe mode also disables pending modules before they can be activated. Hidden staging and rollback directories are never loaded as modules.
 
 Modules run and contribute files in bytewise module-ID order. The first ordinary
 file wins a collision; `system/` files take precedence over `root/` files at the
@@ -102,7 +102,9 @@ markers are rechecked before each script. Safe mode runs none of them. Use
 
 ## Policy and pre-init storage
 
-Policy publication is atomic and reflects install/update/disable/remove. Update
+Policy publication is atomic and reflects install/update/disable/remove. Managed
+System Mode uses its transaction-owned `/data/adb/sepolicy.rule` after data becomes
+available, even when no raw pre-init partition is eligible. Update
 selection never mixes a partly extracted replacement with an old module. A failed
 copy cannot leave a truncated active rule file. Disabling a module takes effect
 at the next clean policy load: arbitrary live policy changes are not reversible,

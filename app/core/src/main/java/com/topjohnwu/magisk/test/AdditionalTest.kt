@@ -147,6 +147,15 @@ class AdditionalTest : BaseTest {
     }
 
     @Test
+    fun testEarlyMountCleanup() {
+        assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
+        val result = Shell.cmd("magisk --hide exec /system/bin/sh -c 'head -n1 /system/etc/hosts'").exec()
+        assertTrue(result.isSuccess)
+        assertFalse("A hidden early mount became visible after removing its overlay",
+            result.out.any { it.contains("kitsune-early-v2") })
+    }
+
+    @Test
     fun testEarlyConsumer() {
         assumeTrue(Environment.preinit() && Build.VERSION.SDK_INT >= 30)
         assertEquals(listOf("# kitsune-early-v2", "early"), Shell.cmd("cat /dev/.kitsune-early").exec().out)
