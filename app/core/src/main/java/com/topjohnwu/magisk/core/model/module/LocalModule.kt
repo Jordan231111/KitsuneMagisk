@@ -32,7 +32,8 @@ data class LocalModule(
     private val updateFile = base.getChildFile("update")
     val zygiskFolder = base.getChildFile("zygisk")
 
-    val updated get() = updateFile.exists()
+    val updated get() = updateFile.exists() ||
+        RootUtils.fs.getFile("${Const.MODULE_PATH}_update").getChildFile(base.name).exists()
     val isRiru = (id == "riru-core") || base.getChildFile("riru").exists()
     val isZygisk = zygiskFolder.exists()
     val zygiskUnloaded = zygiskFolder.getChildFile("unloaded").exists()
@@ -82,11 +83,15 @@ data class LocalModule(
         return refreshPreinit()
     }
 
-    private fun refreshPreinit(): Boolean = Shell.cmd(
-        "if [ -d \"\$MAGISKTMP/.magisk/preinit\" ] || " +
-            "grep -qxF SYSTEMMODE=true /data/adb/magisk/config 2>/dev/null; " +
-            "then copy_preinit_files; fi"
-    ).exec().isSuccess
+    private fun refreshPreinit(): Boolean {
+        val needsStorage = base.getChildFile("sepolicy.rule").exists() ||
+            base.getChildFile("early-mount").exists()
+        return Shell.cmd(
+            "if [ -d \"\$MAGISKTMP/.magisk/preinit\" ] || " +
+                "grep -qxF SYSTEMMODE=true /data/adb/magisk/config 2>/dev/null; " +
+                "then copy_preinit_files; else ${if (needsStorage) "false" else "true"}; fi"
+        ).exec().isSuccess
+    }
 
     @Throws(NumberFormatException::class)
     private fun parseProps(props: List<String>) {

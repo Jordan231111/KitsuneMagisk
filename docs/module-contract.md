@@ -11,7 +11,9 @@ Module IDs contain ASCII letters, digits, `.`, `_` and `-`, and cannot begin
 with a dot. Installation/customization uses a private staging directory. The
 published pending update is complete and synced; a previous pending update is
 recoverable after an interrupted rename. At boot, the old installed directory is
-retained until its replacement has been renamed and synced. Disabled state survives
+retained until its replacement has been renamed and synced. Failed activation
+skips the old ordinary module while a new version is pending; it does not mix
+old scripts with a new early plan. Disabled state survives
 updates. Safe mode also disables pending modules before they can be activated. Hidden staging and rollback directories are never loaded as modules.
 
 Modules run and contribute files in bytewise module-ID order. The first ordinary
@@ -52,7 +54,7 @@ remove it explicitly before re-enabling global input.
 Do not copy a historical cache tree into a newly selected partition automatically.
 
 V2 publishes only existing regular files below system, vendor, product, system_ext
-and odm. Standard partition aliases are recognized. Other symlink traversal,
+and odm. Standard partition aliases are recognized. Paths use ASCII letters/digits and `._-+@` within components. Other symlink traversal,
 new files/directories, `.replace`, device nodes and early whiteouts are unsupported;
 use ordinary mounts for these operations. The historical early implementation also
 only bound existing non-symlink targets. Init binaries, linkers and the init/SELinux
@@ -116,8 +118,9 @@ loaded in the kernel. The core's own root policy must still load if module polic
 storage is unreadable. SELinux absence never creates a fake enforcing result.
 
 New storage selection excludes `/persist` and `/mnt/vendor/persist`; device
-calibration is not module storage. Existing explicitly configured pre-init devices
-remain readable for recovery; the daemon does not expose a writable persist link.
+calibration is not module storage. Existing persist contents remain untouched for recovery, but are not replayed
+as module policy or early input. Repatch the boot image to select permitted storage.
+The daemon does not expose a writable persist link.
 An empty runtime placeholder does not count as persistent pre-init storage. Selection retains upstream encryption/filesystem
 checks and never mounts a block device writable. Migration requires publishing to
 the currently selected location and repatching the relevant boot image; old storage

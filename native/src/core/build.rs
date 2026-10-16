@@ -14,12 +14,12 @@ fn main() {
 
     // Cargo runs this script concurrently for each target ABI. pb-rs appends
     // to mod.rs in several writes, so a shared source directory races readers.
-    let output = std::env::var("OUT_DIR").unwrap();
+    let output = std::env::var("OUT_DIR").expect("Cargo did not provide OUT_DIR");
     // We include the message directly, not pb-rs's module index. Discard a
     // possibly partial index left by an interrupted invocation.
     let index = std::path::Path::new(&output).join("mod.rs");
     if index.exists() {
-        std::fs::remove_file(index).unwrap();
+        std::fs::remove_file(index).expect("Cannot remove incomplete protobuf module index");
     }
     let output = output.as_str();
     let cb = ConfigBuilder::new(

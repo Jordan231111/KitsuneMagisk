@@ -127,11 +127,18 @@ class ModuleViewModel : AsyncLoadViewModel() {
         if (!changingModules.add(item.module.id)) return
         viewModelScope.launch {
             try {
-                val success = withContext(Dispatchers.IO) {
-                    runCatching(change).getOrDefault(false)
+                val (success, refreshed) = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val success = change()
+                        success to item.copy(isEnabled = item.module.enable, isRemoved = item.module.remove)
+                    }.getOrElse { false to item }
+                }
+                _uiState.update { state ->
+                    state.copy(modules = state.modules.map {
+                        if (it.module.id == item.module.id) refreshed else it
+                    })
                 }
                 if (!success) showSnackbar(CoreR.string.module_update_failed)
-                startLoading()
             } finally {
                 changingModules.remove(item.module.id)
             }

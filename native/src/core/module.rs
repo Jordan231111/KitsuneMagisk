@@ -1030,6 +1030,15 @@ fn collect_modules(zygisk_enabled: bool, open_zygisk: bool) -> Vec<ModuleInfo> {
     #[allow(unused_mut)] // It's possible that z32 and z64 are unused
     for_each_module(|e| {
         let name = e.name();
+        let pending = cstr::buf::default()
+            .join_path(MODULEUPGRADE)
+            .join_path(name);
+        if pending.get_attr().is_ok() {
+            // Failed activation must not mix the old ordinary module with its
+            // completely staged new early plan. Retain both versions for retry.
+            warn!("{name}: update still pending, skip old module");
+            return Ok(());
+        }
         let dir = e.open_as_dir()?;
         if dir.contains_path(cstr!("remove")) {
             info!("{name}: remove");

@@ -110,6 +110,20 @@ void MagiskInit::mount_preinit_dir() noexcept {
         return;
     }
     xmknod(PREINITDEV, S_IFBLK | 0600, dev);
+    // A legacy persist snapshot cannot be kept in sync after disabling modules.
+    // Leave calibration storage untouched and require a newly patched image.
+    auto is_persist = [](const char *name) {
+        char prefix[8];
+        strscpy(prefix, name, sizeof(prefix));
+        return strcasecmp(prefix, "persist") == 0;
+    };
+    for (const auto &info : dev_list) {
+        if (makedev(info.major, info.minor) == dev &&
+            (is_persist(info.partname) || is_persist(info.dmname) || is_persist(preinit_dev.c_str()))) {
+            LOGW("Legacy persist pre-init disabled; repatch the boot image\n");
+            return;
+        }
+    }
     xmkdir(MIRRDIR, 0);
     bool mounted = false;
     // First, find if it is already mounted
