@@ -149,6 +149,65 @@
         }
       ],
       "validation": "PR7A final build/artifact/ordinary matrix run 34476924390; PR8 host suite and exact Windows APK results, within their documented scope."
+    },
+    {
+      "feature": "SU-001",
+      "decision": "Retire only the separate BIOMETRIC_WEAK manager mode. Its availability fallback could silently remove the requirement after enrollment/hardware changes. Preserve nonzero legacy settings as an Android-controlled authentication requirement; unavailable credentials, cancellation and lockout deny new grants.",
+      "migration": "Mode 0 remains disabled. Every nonzero legacy su_biometric mode requires Android authentication; the separate weak manager biometric prompt is replaced. Existing saved grants remain policy decisions; new grants and policy edits require authentication when enabled.",
+      "source_evidence": [
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "app/core/src/main/java/com/topjohnwu/magisk/core/Config.kt",
+          "sha256": "d479beb9fec5e6e1de51efec12fe8c6dee762ac1e628894184d93762373665f7"
+        },
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "app/core/src/main/java/com/topjohnwu/magisk/core/utils/RequestAuthentication.kt",
+          "sha256": "7166fc14fdf476dacf21b926d985e80401c6116217c275d84162d7f2e7c14958"
+        },
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "native/src/core/su/connect.rs",
+          "sha256": "e5cc702e5529c067f8dde9a63d5d904be1d3219e13158d4a5ba2ecadd4257a71"
+        }
+      ],
+      "validation": "docs/manager-pr13.json and docs/manager-contract.md. PR15/PR16 retain physical-device, production signer and release acceptance."
+    },
+    {
+      "feature": "APP-009",
+      "decision": "Replace historical module-action close/focus/auto-close variants with retained terminal output and explicit dismissal. Configuration changes preserve the session; process restoration reports interruption without replaying the action.",
+      "migration": "The maintained action terminal keeps output visible until explicit dismissal. The older close/focus/automatic-close variants are replaced; do not rerun an interrupted action automatically.",
+      "source_evidence": [
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "app/apk/src/main/java/com/topjohnwu/magisk/ui/module/ActionViewModel.kt",
+          "sha256": "d5c3279ae19d5f69d32316d36ad4ea7c943d4ed4076c9818a69f003b3ba87945"
+        },
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "app/apk/src/main/java/com/topjohnwu/magisk/ui/module/ActionScreen.kt",
+          "sha256": "142b564eb50deea0ad6bf0acdf9eea5485f0dcc198ca504c66b23b1a5441f43a"
+        }
+      ],
+      "validation": "docs/manager-pr13.json and docs/manager-contract.md. PR15/PR16 retain physical-device, production signer and release acceptance."
+    },
+    {
+      "feature": "DIST-003",
+      "decision": "Retire original Full stable/R65/R66 channels as Next update authorities. Archived metadata and binaries cannot establish an owned current signing chain or a safe cross-package upgrade. Preserve the useful manager/root use cases through an explicit clean migration and the owned PR10 update service.",
+      "migration": "Original Full stable/R65/R66 manager/stub channels are provenance, not trusted Next update endpoints. Back up first, restore the original full manager before changing lines, install the owned Next manager/core through the supported route, reconfigure app preferences, and hide afresh. No automatic cross-package or cross-signer handoff is claimed; PR16 owns production-certificate transition acceptance.",
+      "source_evidence": [
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "app/core/src/main/java/com/topjohnwu/magisk/core/tasks/AppMigration.kt",
+          "sha256": "592ac87e7ebfef2f9d893b347ff66688df9be389f1adcc38ef1eba0bf54b8650"
+        },
+        {
+          "commit": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+          "path": "app/core/src/main/java/com/topjohnwu/magisk/core/tasks/ManagerMigration.kt",
+          "sha256": "edf808fac8d9cdffd2a0d6276a5b128c79c6ad4d5cdc3e0e1d1deca42f6cbebf"
+        }
+      ],
+      "validation": "docs/manager-pr13.json and docs/manager-contract.md. PR15/PR16 retain physical-device, production signer and release acceptance."
     }
   ]
 }

@@ -55,10 +55,10 @@ selects the development foundation while retaining these explicit product gates.
 | `SYS-010` | E | Historical API 23-24 System Mode availability/claim | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
 | `HID-001` | E | Classic MagiskHide enable/disable/status independent of SuList and built-in Zygisk | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `HID-002` | E | Per-package/process add/remove/list persistence and CLI | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
-| `HID-003` | E | Manager list/filter/system-app/expansion/per-process selection UI | `original-stable` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `HID-003` | E | Manager list/filter/system-app/expansion/per-process selection UI | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `HID-004` | E | `magiskhide exec` isolated mount-namespace command | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `HID-005` | E | SuList enable/disable, Hide dependency, reboot-only transition, and live-disable refusal | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
-| `HID-006` | E | SuList settings/list UI and reboot-mismatch messaging | `original-stable` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `HID-006` | E | SuList settings/list UI and reboot-mismatch messaging | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `HID-007` | E | Inverse root/module visibility plus automatic manager/SystemUI/Settings enrollment | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `HID-008` | E | Ptrace zygote/fork monitor, USAP, preinitialized processes, app zygotes, and restarts | `original-stable` → `k31-25fa2159` | `retired-with-evidence` | PR12 |
 | `HID-009` | E | Isolated/prefix matching, shared UID, secondary users/work profiles, and package rescans | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
@@ -96,7 +96,7 @@ selects the development foundation while retaining these explicit product gates.
 | `MOD-011` | E | Live `sepolicy.rule` application and pre-init refresh/synchronization | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
 | `MOD-012` | E | Empty-line-safe module policy parser | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
 | `MOD-013` | E | `action.sh` discovery and execution backend | `k27-2-2` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
-| `MOD-014` | E | Module Action manager surface | `k27-2-2` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `MOD-014` | E | Module Action manager surface | `k27-2-2` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `MOD-015` | E | Per-module `boot-completed.sh` stage | `k27-2-3` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
 | `MOD-016` | E | Ordinary install/update/disable/remove/rollback, boot scripts, interruption, and safe mode | `original-stable` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
 | `MOD-017` | E | Pre-init storage preference, no-`/persist` policy, and cache/metadata/data migration | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
@@ -105,30 +105,30 @@ selects the development foundation while retaining these explicit product gates.
 | `MOD-020` | E | Correct symlink handling distinct from `REMOVE` whiteout character devices, including upgrade from the shipped bug | `metadata-bb4af859-note-md` → `k31-25fa2159` | `deferred-to-PR14` | PR14 |
 | `MOD-021` | O | Historical module-template ZIP bytes, endpoint, guards, extended APIs and author migration | `module-template` → `module-template` | `deferred-to-PR14` | PR14 |
 | `MOD-022` | O | Lite product's published modules-unsupported contract and user migration | `metadata-96724b2e-note_lite-md` → `metadata-64403347-note_lite-md` | `deferred-to-PR14` | PR14 |
-| `SU-001` | E | Disabled, system-credential, and manager biometric authentication modes | `metadata-51fad676-note-md` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `SU-002` | E | Prompt/allow/deny/revoke/timeout, namespace, shared UID, multiuser, and no-manager lifecycle | `original-stable` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `SU-003` | E | Deterministic manager policy-row retrieval (`LIMIT 1`) | `k27-2-4-inherited` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `SU-001` | E | Disabled, system-credential, and manager biometric authentication modes | `metadata-51fad676-note-md` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
+| `SU-002` | E | Prompt/allow/deny/revoke/timeout, namespace, shared UID, multiuser, and no-manager lifecycle | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
+| `SU-003` | E | Deterministic manager policy-row retrieval (`LIMIT 1`) | `k27-2-4-inherited` → `k31-25fa2159` | `inherited-and-tested` | PR13 |
 | `SU-004` | E | Core authorization/restorecon behavior and SELinux-absence checks; exact disabled targets are SU-004-device | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `ID-001` | E | Kitsune package/application identity and upgrade path from `io.github.huskydg.magisk` | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR9` | PR9 |
-| `APP-001` | E | Kitsune Mask name, labels, logos/colors, attribution, and unofficial-build warning | `original-stable` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `APP-002` | E | Hidden-manager create/launch/upgrade/restore plus `com.*` random package generation | `k27-2-4-inherited` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `APP-001` | E | Kitsune Mask name, labels, logos/colors, attribution, and unofficial-build warning | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
+| `APP-002` | E | Hidden-manager create/launch/upgrade/restore plus `com.*` random package generation | `k27-2-4-inherited` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `APP-003` | E | Manager/stub signature enforcement and retirement of the global bypass | `metadata-29aaacaa-note-md` → `k31-25fa2159` | `retired-with-evidence` | PR10 |
 | `APP-004` | E | API 34 download engine, user-initiated jobs, foreground-service behavior, and suspendable I/O | `k27-2-1` → `k31-25fa2159` | `ported-and-tested-in-PR10` | PR10 |
 | `APP-005` | E | Stub API 34 loading, expected-version self-repair, and manager-driven stub upgrade | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR10` | PR10 |
 | `APP-006` | E | HuskyDG/1q23 endpoints, channels, full-manager/stub URL migration, and failure behavior | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR10` | PR10 |
-| `APP-007` | E | FakeGMS ProviderInstaller restricted to system GMS | `b149cd26` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `APP-008` | E | Inactive-slot OTA prompt requiring the System Updates Restart action | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `APP-009` | E | Module-action close/focus/auto-close behavior | `k27-2-3` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `APP-010` | E | Flash/action orientation-lock behavior | `k27-2-3` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
-| `APP-011` | E | Maintained zh-CN, zh-TW, Vietnamese, Russian, and Turkish fork strings/locales | `original-stable` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `APP-007` | E | FakeGMS ProviderInstaller restricted to system GMS | `b149cd26` → `k31-25fa2159` | `inherited-and-tested` | PR13 |
+| `APP-008` | E | Inactive-slot OTA prompt requiring the System Updates Restart action | `k27-2-1` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
+| `APP-009` | E | Module-action close/focus/auto-close behavior | `k27-2-3` → `k31-25fa2159` | `retired-with-evidence` | PR13 |
+| `APP-010` | E | Flash/action orientation-lock behavior | `k27-2-3` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
+| `APP-011` | E | Maintained zh-CN, zh-TW, Vietnamese, Russian, and Turkish fork strings/locales | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
 | `APP-012` | E | Historical non-obfuscated manager/stub disposition | `k31-70068d25` → `k31-25fa2159` | `retired-with-evidence` | PR10 |
-| `APP-013` | E | libsu `5.3.0` transition, `5.2.2` rollback and custom `DispatcherExecutor` task semantics | `original-stable` → `k31-25fa2159` | `deferred-to-PR13` | PR13 |
+| `APP-013` | E | libsu `5.3.0` transition, `5.2.2` rollback and custom `DispatcherExecutor` task semantics | `original-stable` → `k31-25fa2159` | `inherited-and-tested` | PR13 |
 | `ID-002` | E | Fake `29999`/`31000` identity and migration to truthful compatibility fields | `k31-70068d25` → `k31-25fa2159` | `retired-with-evidence` | PR9 |
 | `SEC-001` | E | Debug ADB-shell automatic root, confined to a non-publishable lab flavor or retired | `metadata-51fad676-note-md` → `k31-25fa2159` | `retired-with-evidence` | PR15 |
 | `SEC-002` | E | Public `TestKey-2024.jks`, runtime signature bypass, and production-signer migration | `metadata-29aaacaa-note-md` → `k31-25fa2159` | `retired-with-evidence` | PR10 |
 | `DIST-001` | E | v31 debug/release manager-and-stub four-APK asset surface and source/tag provenance | `k31-70068d25` → `k31-25fa2159` | `ported-and-tested-in-PR10` | PR10 |
 | `DIST-002` | E | Both observed `v27.2-kitsune-4` source/release incarnations and intervening behavior | `k27-2-4-inherited` → `k27-2-4-archive` | `ported-and-tested-in-PR10` | PR10 |
-| `DIST-003` | O | Original Full stable/R65/R66 manager-stub channels, assets and upgrade migration | `original-stable` → `metadata-05003cd3-note-md` | `deferred-to-PR13` | PR13 |
+| `DIST-003` | O | Original Full stable/R65/R66 manager-stub channels, assets and upgrade migration | `original-stable` → `metadata-05003cd3-note-md` | `retired-with-evidence` | PR13 |
 | `DIST-004` | O | Original Lite always-SuList/no-Zygisk/no-modules/log-monitoring product and migration/retirement | `metadata-96724b2e-note_lite-md` → `metadata-64403347-note_lite-md` | `retired-with-evidence` | PR12 |
 | `BOOT-001` | E | P-521 boot-image signing and verification | `k27-2-4-inherited` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
 | `BOOT-002` | E | 16 KiB binary/ZIP/runtime support, including disable/re-enable history | `k27-2-4-inherited` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |

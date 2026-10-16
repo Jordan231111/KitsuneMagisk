@@ -4,6 +4,9 @@ PR13 connects the maintained Compose manager to PR7 and PR12. System Mode remain
 experimental and debug-only. Production promotion, real phones, early mounting
 and release migration retain their PR14–PR16 gates.
 
+The [PR13 acceptance record](manager-pr13.json) identifies tested commits,
+artifacts, emulator lanes and limits. The final PR checks are required before merge.
+
 ## Hide and SuList
 
 The list and settings use `magisk --hide`, never raw SQL or the upstream negative
@@ -46,6 +49,14 @@ that cache. Manager policy edits and database settings confirm the persisted val
 before reporting success; failed writes reload policy or reset the settings view.
 Legacy fingerprint migration retains its requirement if persistence fails. Root and the verified manager retain their existing recovery paths.
 
+The policy cache owns its `Arc` references under a mutex and serializes publication
+with CLI invalidation. It never holds that mutex while waiting for consent. Launcher
+children clear the daemon worker's blocked signal mask before `app_process`, matching
+the existing C++ execution helper. Signal masks survive [fork and exec](https://man7.org/linux/man-pages/man7/signal.7.html);
+the controlled Android 15 probe reproduced eight crashes with the inherited mask
+and eight successful launches with a cleared mask. Repeated manager decisions and
+240 concurrent shell-UID requests exercise the corrected paths.
+
 Authentication protects **new grants and manager policy edits**. It does not
 retroactively revoke existing grants or authenticate every command under a saved
 grant. Disabled authentication still requires explicit consent unless the user
@@ -62,8 +73,8 @@ authentication. The separate `BIOMETRIC_WEAK` manager prompt is retired: the old
 helper's availability check could silently disable it after enrollment/hardware
 changes, while a separate weak-authenticator path added fallback state without
 strengthening the daemon's authorization boundary. Existing nonzero values stay
-nonzero until the user authenticates a settings change. Android owns credential,
-biometric fallback and lockout behavior. Its [credential confirmation contract](https://developer.android.com/reference/android/app/KeyguardManager#createConfirmDeviceCredentialIntent(java.lang.CharSequence,java.lang.CharSequence))
+nonzero until the user authenticates a settings change. Android owns confirmation
+of the device PIN, pattern or password and its lockout behavior. Its [credential confirmation contract](https://developer.android.com/reference/android/app/KeyguardManager#createConfirmDeviceCredentialIntent(java.lang.CharSequence,java.lang.CharSequence))
 returns no intent when a credential is unavailable; the manager denies that case.
 
 Shared UIDs retain one policy row per Linux UID. Owner-managed requests display
@@ -101,9 +112,27 @@ launch and restore remain mandatory. Without root, the hidden launcher renders
 its recovery dialog and uses Android's installer to restore the full APK. It
 checks the installed signer before asking Android to remove the old hidden app;
 installation or uninstall cancellation does not silently claim restored root.
+Rootless restoration uses default app preferences. Rooted hide/restore transfers
+only the existing permitted preference subset through a root-authorized nonce bound
+to the target UID and the sender's package, UID and signing certificate. Atomic
+consumption rejects replay. Ordinary exported intents cannot supply migration
+authority or trigger package-migration cleanup. Automatic-response, tapjacking,
+reauthentication, request-timeout and shortcut-prompt preferences retain their
+existing migration exclusions.
 Stub revision 42 carries the launcher/preferences and uninstall-permission changes;
 older stubs upgrade through the existing signed self-update path when root is
 available, or open their Android app settings for cleanup after rootless restore. The global signature bypass remains retired.
+Optional instrumentation is re-signed only when its installed APK shares the full
+manager's signing identity; claiming the test package name is not sufficient.
+The root service is connected before rendering rooted UI, including the old-stub
+upgrade path; the signed self-update is requested from the initialized activity.
+
+For original Full stable/R65/R66 installations, back up first and restore the old
+full manager before changing development lines. Install the owned Next manager and
+core through the supported route, reconfigure app preferences, then hide afresh.
+Old publisher channels and arbitrary cross-signer handoffs are not Next update
+authorities. The v12 core data migration and retained root policy/module data are
+separate from app preferences; PR16 still owns the production-certificate transition.
 
 The separate obsolete Lite distribution remains retired. Its usable configuration
 is SuList, no enabled modules and Zygisk off. Users must persist SuList before
@@ -137,3 +166,12 @@ system/vendor/product/system_ext parents. It creates them through the existing
 mount machinery, never by writing the persistent partition or adding a second
 late unmount engine. Existing symlinks and writable/unowned parents do not qualify
 for this new candidate path. Application-PATH root is a required runtime test.
+Missing children directly beneath a separate partition root are excluded: the
+existing mount engine deliberately will not replace that root with tmpfs. The
+ordinary-app fixture does not inherit the manager's `/debug_ramdisk` PATH addition,
+so it detects a missing injection that a manager-only root test would miss.
+
+The rooted installer sets per-app install-source authorization only on API 26+,
+matching [Android's install-source contract](https://developer.android.com/reference/android/content/pm/PackageManager#canRequestPackageInstalls()).
+The obsolete call on API 24 was unnecessary and exposed the native `appops`
+client's Binder-shutdown crash. The crash check remains enabled.

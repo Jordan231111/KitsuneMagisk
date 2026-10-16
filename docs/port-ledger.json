@@ -845,11 +845,11 @@
     {
       "id": "retirement-review",
       "kind": "archive",
-      "label": "Evidence-backed retirement of six historical mechanisms",
+      "label": "Evidence-backed historical mechanism replacements through PR13",
       "path": "docs/port-history/retirements.json",
-      "size": 8806,
-      "sha256": "07a31d44eb8949ec22da3c3ac755a7462bdbae4a14d8e0a89c5bc5ae59c46cc3",
-      "origin": "Pinned maintained source, PR7A CI and PR8 lab evidence"
+      "size": 13120,
+      "sha256": "9617e5f9d8cd454ec17e29dde70fd00bc160f9a10c32ac9fb68e55112f5fcf28",
+      "origin": "Pinned maintained source, PR7A/PR8 evidence and PR13 manager acceptance"
     }
   ],
   "features": [
@@ -1709,11 +1709,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The Compose manager provides DenyList filtering and per-process selection. It has no historical SuList settings or reboot-mismatch state. PR13 must connect the selected core policy to these maintained screens and preserve system-app/filter semantics.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Use the maintained list and filters. Selection is read from the running Hide/SuList backend; failed batches reload actual state.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on manager list/filter/system-app/expansion/per-process selection UI.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use the maintained list and filters. Selection is read from the running Hide/SuList backend; failed batches reload actual state.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1724,7 +1724,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "HID-004",
@@ -1951,11 +1952,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The Compose manager provides DenyList filtering and per-process selection. It has no historical SuList settings or reboot-mismatch state. PR13 must connect the selected core policy to these maintained screens and preserve system-app/filter semantics.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Persist the desired mode/provider, then cold boot. A pending mismatch makes the current selection read-only; former Lite users choose SuList, disable modules and leave Zygisk off.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on suList settings/list UI and reboot-mismatch messaging.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Persist the desired mode/provider, then cold boot. A pending mismatch makes the current selection read-only; former Lite users choose SuList, disable modules and leave Zygisk off.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1966,7 +1967,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "HID-007",
@@ -4047,11 +4049,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official manager detects action.sh and supplies its action execution surface plus standard module installation. That does not cover the externally shipped Kitsune template guards, extended early-mount/root APIs or endpoint bytes; PR10 and PR14 retain separate ownership for that asset.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Run action.sh from the module card. Output stays until explicitly closed; an interrupted action is not automatically replayed. The full module lifecycle remains PR14.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on module Action manager surface.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Run action.sh from the module card. Output stays until explicitly closed; an interrupted action is not automatically replayed. The full module lifecycle remains PR14.",
       "first_shipped": "k27-2-2",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4063,7 +4065,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "MOD-015",
@@ -4434,11 +4437,11 @@
         "shipment-source-review",
         "metadata-51fad676-note-md"
       ],
-      "upstream_overlap": "Official manager/daemon retain the SU request, policy and authentication flow. Historical disabled/system-credential/manager-biometric modes and shared-UID/multiuser/no-manager transitions require separate UI/daemon tests; successful shell root is only one case.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Mode 0 remains disabled. Every nonzero legacy su_biometric mode requires Android authentication; the separate weak manager biometric prompt is replaced. Existing saved grants remain policy decisions; new grants and policy edits require authentication when enabled.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on disabled, system-credential, and manager biometric authentication modes.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Mode 0 remains disabled. Every nonzero legacy su_biometric mode requires Android authentication; the separate weak manager biometric prompt is replaced. Existing saved grants remain policy decisions; new grants and policy edits require authentication when enabled.",
       "first_shipped": "metadata-51fad676-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4450,7 +4453,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "SU-002",
@@ -4474,11 +4478,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official manager/daemon retain the SU request, policy and authentication flow. Historical disabled/system-credential/manager-biometric modes and shared-UID/multiuser/no-manager transitions require separate UI/daemon tests; successful shell root is only one case.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Update manager and core together for the versioned consent endpoint. Shared UID grants remain per Linux UID, owner-managed requests show the actual user, and only the daemon maps policy ownership. PR15 repeats this matrix on physical targets.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on prompt/allow/deny/revoke/timeout, namespace, shared UID, multiuser, and no-manager lifecycle.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Update manager and core together for the versioned consent endpoint. Shared UID grants remain per Linux UID, owner-managed requests show the actual user, and only the daemon maps policy ownership. PR15 repeats this matrix on physical targets.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4490,7 +4494,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "SU-003",
@@ -4512,11 +4517,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official PolicyDao uses WHERE uid=... LIMIT 1. The deterministic query overlaps the historical fix directly; duplicate/schema/migration behavior and the manager-driven result remain PR13 acceptance work.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Keep deterministic LIMIT 1 policy lookup and daemon-side persistence. Expired rows are filtered from the UI; unresolved profile rows are retained by UID.",
+      "decision": "inherited-and-tested",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on deterministic manager policy-row retrieval (`LIMIT 1`).",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Keep deterministic LIMIT 1 policy lookup and daemon-side persistence. Expired rows are filtered from the UI; unresolved profile rows are retained by UID.",
       "first_shipped": "k27-2-4-inherited",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4526,7 +4531,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "SU-004",
@@ -4721,11 +4727,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official branding and attribution are for Magisk. Next has an explicit experimental Kitsune identity; PR13 must retain fork attribution, labels and unofficial-build messaging while completing the product UI.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Use the established KitsuneMagisk Next development identity, historical red accent, experimental notice, and separate fork/upstream attribution. PR16 controls production promotion.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on kitsune Mask name, labels, logos/colors, attribution, and unofficial-build warning.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Use the established KitsuneMagisk Next development identity, historical red accent, experimental notice, and separate fork/upstream attribution. PR16 controls production promotion.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4736,7 +4742,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-002",
@@ -4758,11 +4765,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official AppMigration and generated stubs implement hidden-manager migration. Historical com.* random package naming and create/launch/upgrade/restore behavior need comparison across both managers and signers; merely producing a renamed APK is insufficient.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Random com.* manager packages and generated signing keys remain supported. Revision-41 stubs update through the signed revision-42 path. Rooted preference transfer requires an authenticated, single-use handoff; rootless recovery reinstalls the full signed app with default app preferences and Android-controlled removal of the old stub.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on hidden-manager create/launch/upgrade/restore plus `com.*` random package generation.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Random com.* manager packages and generated signing keys remain supported. Revision-41 stubs update through the signed revision-42 path. Rooted preference transfer requires an authenticated, single-use handoff; rootless recovery reinstalls the full signed app with default app preferences and Android-controlled removal of the old stub.",
       "first_shipped": "k27-2-4-inherited",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -4773,7 +4780,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-003",
@@ -5030,11 +5038,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official ProviderInstaller checks ApplicationInfo.FLAG_SYSTEM before loading GMS code. That directly overlaps the FakeGMS restriction; PR13 still needs the non-system-package rejection regression on the selected app.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Only system GMS may supply ProviderInstaller code. A user-installed package with the same name is rejected, with an executable positive-control fixture.",
+      "decision": "inherited-and-tested",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on fakeGMS ProviderInstaller restricted to system GMS.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Only system GMS may supply ProviderInstaller code. A user-installed package with the same name is rejected, with an executable positive-control fixture.",
       "first_shipped": "b149cd26",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5044,7 +5052,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-008",
@@ -5070,11 +5079,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official postOTA prints the instruction to return to System Updates and press Restart. Keep this behavior when adding boot-layout guidance; validate actual inactive-slot and OTA completion rather than substituting a generic reboot prompt.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: After inactive-slot installation, use Restart in Android System Updates to finish the OTA. Real OTA and slot qualification remains PR15.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on inactive-slot OTA prompt requiring the System Updates Restart action.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "After inactive-slot installation, use Restart in Android System Updates to finish the OTA. Real OTA and slot qualification remains PR15.",
       "first_shipped": "k27-2-1",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5084,7 +5093,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-009",
@@ -5109,11 +5119,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official Compose actions and terminal execution replace the historical fragment implementation. Focus/auto-close and orientation semantics are observable UI behavior, so PR13 must compare them explicitly instead of mechanically porting fragment lifecycle code.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: The maintained action terminal keeps output visible until explicit dismissal. The older close/focus/automatic-close variants are replaced; do not rerun an interrupted action automatically.",
+      "decision": "retired-with-evidence",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on module-action close/focus/auto-close behavior.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "The maintained action terminal keeps output visible until explicit dismissal. The older close/focus/automatic-close variants are replaced; do not rerun an interrupted action automatically.",
       "first_shipped": "k27-2-3",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5124,7 +5134,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-010",
@@ -5148,11 +5159,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official Compose actions and terminal execution replace the historical fragment implementation. Focus/auto-close and orientation semantics are observable UI behavior, so PR13 must compare them explicitly instead of mechanically porting fragment lifecycle code.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Flash and action screens lock orientation, retain the terminal across configuration changes, and prevent implicit operation replay after process death.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on flash/action orientation-lock behavior.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Flash and action screens lock orientation, retain the terminal across configuration changes, and prevent implicit operation replay after process death.",
       "first_shipped": "k27-2-3",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5163,7 +5174,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-011",
@@ -5203,11 +5215,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official translations cover upstream concepts; they do not supply Kitsune Hide/SuList/System Mode terminology. PR13 must preserve the named fork locales and check missing/stale translations against the final settings and recovery UI.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Maintained product additions cover Simplified and Traditional Chinese, Vietnamese, Russian and Turkish. Other locales use Android default-language fallback for missing keys.",
+      "decision": "ported-and-tested-in-PR13",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on maintained zh-CN, zh-TW, Vietnamese, Russian, and Turkish fork strings/locales.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Maintained product additions cover Simplified and Traditional Chinese, Vietnamese, Russian and Turkish. Other locales use Android default-language fallback for missing keys.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5217,7 +5229,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "APP-012",
@@ -5286,11 +5299,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official uses its maintained libsu dependency and coroutine task structure. The historical 5.3.0-to-5.2.2 rollback and custom DispatcherExecutor cannot be inferred from a version number; PR13 must prove cancellation, root-service transport and task lifecycle on the selected dependency.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Keep the maintained libsu and Dispatchers.IO executor. Root-service startup, verified database writes, concurrent native requests, manager death and hidden migration exercise the replacement. Cancelling an await does not promise that an already-running privileged command stopped; durable transactions own their recovery.",
+      "decision": "inherited-and-tested",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on libsu `5.3.0` transition, `5.2.2` rollback and custom `DispatcherExecutor` task semantics.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Keep the maintained libsu and Dispatchers.IO executor. Root-service startup, verified database writes, concurrent native requests, manager death and hidden migration exercise the replacement. Cancelling an await does not promise that an already-running privileged command stopped; durable transactions own their recovery.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5301,7 +5314,8 @@
         "record": "shipment-source-review",
         "basis": "Custom DispatcherExecutor is observed in the original archive and earlier tags, absent in the inherited k4 libsu 5.3.0 state, and restored in the moved k4 rollback. The range is discontinuous, as the per-observation source record shows.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "ID-002",
@@ -5539,11 +5553,11 @@
         "metadata-05003cd3-note-md",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official update endpoints serve official Magisk. PR10 supplies owned signed metadata, package/signer checks and immutable assets for Next. Archived Full/Lite labels do not prove source commits or provide automatic cross-package/signer migration; the remaining feature/state gates retain their named owners.",
-      "decision": "deferred-to-PR13",
+      "upstream_overlap": "PR13 disposition: Original Full stable/R65/R66 manager/stub channels are provenance, not trusted Next update endpoints. Back up first, restore the original full manager before changing lines, install the owned Next manager/core through the supported route, reconfigure app preferences, and hide afresh. No automatic cross-package or cross-signer handoff is claimed; PR16 owns production-certificate transition acceptance.",
+      "decision": "retired-with-evidence",
       "owner_pr": 13,
       "affected_users": "Kitsune users relying on original Full stable/R65/R66 manager-stub channels, assets and upgrade migration.",
-      "migration": "PR10 closes endpoint ownership, signed distribution and the clean Next stub/manager flow. Original Full packages/signers require a verified backup and explicit reinstall, never an automatic trust bypass. PR13 owns historical/hidden-manager state transition qualification, with PR16 release acceptance; retain the qualified existing setup until then.",
+      "migration": "Original Full stable/R65/R66 manager/stub channels are provenance, not trusted Next update endpoints. Back up first, restore the original full manager before changing lines, install the owned Next manager/core through the supported route, reconfigure app preferences, and hide afresh. No automatic cross-package or cross-signer handoff is claimed; PR16 owns production-certificate transition acceptance.",
       "first_shipped": "original-stable",
       "last_shipped": "metadata-05003cd3-note-md",
       "upstream_evidence": [
@@ -5554,7 +5568,8 @@
         "record": "shipment-source-review",
         "basis": "Original Full stable and R65/R66 channel families are archived separately from the later 1q23 product.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/manager-contract.md and docs/manager-pr13.json: exact source/artifact/runtime scopes, negative cases, replacement decisions and retained PR14–PR16 gates."
     },
     {
       "id": "DIST-004",

@@ -1,0 +1,280 @@
+{
+  "schema": 1,
+  "roadmap_pr": 13,
+  "code_candidate": "d94eda80b7248a2e836f1d7bfb97d80cf20f44b0",
+  "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+  "pull_request": "https://github.com/Jordan231111/KitsuneMagisk/pull/36",
+  "contract": "docs/manager-contract.md",
+  "artifacts": {
+    "978b05406": {
+      "app-debug.apk": {
+        "sha256": "c1f509514e9b1aca5f95cdf45d1afdce5b521fc43c27abf193e4e3b6fa9e3c77",
+        "bytes": 40751760
+      },
+      "app-release.apk": {
+        "sha256": "1749fb1e405529b9aaf07df9e6fef3ff62fc2ee115efa933a115f5639a69ccd2",
+        "bytes": 11409386
+      }
+    },
+    "e3c3a6231": {
+      "app-debug.apk": {
+        "sha256": "b0ae30c46dec3d5867aa72232ef91a036305ada25a198373a83938dbfd539743",
+        "bytes": 40784528
+      },
+      "app-release.apk": {
+        "sha256": "1952be20d3ed5dd162504b862544807ee9a6e27213ad89cd798a572730a2253a",
+        "bytes": 11417578
+      }
+    },
+    "2bbdffac5": {
+      "app-debug.apk": {
+        "sha256": "9c8cea35ca3f3e5328e109497f9982742be7489043ff478adeeb0927f47d344b",
+        "bytes": 40792720
+      },
+      "app-release.apk": {
+        "sha256": "3f805631ae126ec4e544eb1daf1b63a3b8526eaad0b1991e0123d665509f9953",
+        "bytes": 11421674
+      }
+    },
+    "7adc6aa34": {
+      "app-release.apk": {
+        "sha256": "d9cc9ccc73e54ad0b63b7df5ddb8a1f23951069274586021d1ef071156e19d3f",
+        "bytes": 11421674
+      }
+    },
+    "684a8fc73": {
+      "app-debug.apk": {
+        "sha256": "e5467f3fb6931aa049c4998bdda930a2b1cc514464ea8d09eaefbc6286d18dca",
+        "bytes": 40800912
+      },
+      "app-release.apk": {
+        "sha256": "b96207ee999c9ece6acebe932064259132967ae606bd2e92f439c9dcdccfe51f",
+        "bytes": 11425770
+      }
+    }
+  },
+  "validation": {
+    "local_builds": "All four native ABIs, debug and disposable-key release APKs.",
+    "host": "300-test suite passed with one Linux-only skip on macOS; the added installer API-boundary regression also passed (301 total on the final tree).",
+    "checks": "Debug/release Clippy and Android lint; legacy Kotlin compilation; source/artifact identity, signer and ELF checks.",
+    "latest_checks": "The final PR head must pass its GitHub checks before merge. The PR checks page retains the exact run and job identities.",
+    "ci_checks": "https://github.com/Jordan231111/KitsuneMagisk/pull/36/checks"
+  },
+  "ordinary_boot_matrix": [
+    {
+      "source": "2bbdffac5606e1b8c681c6d50a311cd4430e7ee9",
+      "image": "system-images;android-23;google_apis;arm64-v8a",
+      "variants": [
+        "debug",
+        "release"
+      ],
+      "result": "passed",
+      "batches": {
+        "normal_manager": 46,
+        "hidden_manager": 29,
+        "update_faults": 20,
+        "ordinary_application_path": 1,
+        "restored_manager": 5
+      }
+    },
+    {
+      "source": "684a8fc735390ba7cc94b253dc80c3ec7d671b39",
+      "image": "system-images;android-35;google_apis;arm64-v8a",
+      "variants": [
+        "debug",
+        "release"
+      ],
+      "result": "passed",
+      "batches": {
+        "normal_manager": 47,
+        "hidden_manager": 30,
+        "update_faults": 20,
+        "ordinary_application_path": 1,
+        "restored_manager": 5
+      }
+    }
+  ],
+  "ordinary_boot_scope": "Disposable SDK ramdisk patch, cold boot, setup, cold boot preserving userdata, instrumentation, hidden create/restore and native crash checks. These are ordinary boot-image fixtures, not physical-device Direct Install or OTA claims.",
+  "supplemental_scope": {
+    "authentication_shared_uid_profile_actions": "e3c3a6231 release on enforcing API 35. Shared UID/profile fixtures used the explicit MagiskSU endpoint to isolate policy; their initial ordinary-PATH failure led to the separate-partition fix and the independent plain-application RootPathTest.",
+    "hidden_upgrade": "Owned 978b05406 release stub revision 41, then 7adc6aa34 release payload. The same generated signer updated the stub to revision 42 and the preferences launcher worked.",
+    "rootless_recovery": "684a8fc73 release payload on the held API 35 VM. Stock ramdisk preserved userdata and removed the Magisk daemon. Android install and uninstall confirmations restored the full app with default preferences; a patched cold boot restored canonical-manager root recognition.",
+    "concurrency": "240 requests, 12 workers, actual client UID 2000, with 21 concurrent SQL cache invalidations on the 2bbdffac native core; native source is unchanged in the later app fixes.",
+    "gms_guard": "6e9b44123 debug on a separate unprivileged API 35 ATD. A differently signed user GMS fixture was rejected; explicitly loading its provider was the positive control. The production guard is unchanged in subsequent candidates."
+  },
+  "supplemental_results": {
+    "credential_success": {
+      "exit": 0,
+      "output": "uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0",
+      "policy": "uid=2000|policy=2|until=0"
+    },
+    "credential_cancel": {
+      "exit": 13,
+      "output": "Permission denied",
+      "policy": ""
+    },
+    "credential_lockout_and_deadline": {
+      "exit": 13,
+      "output": "Permission denied",
+      "policy": ""
+    },
+    "authentication_disabled_through_android_confirmation": {
+      "credential_removed": true,
+      "grant": "uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0"
+    },
+    "shared_uid_grant": {
+      "uid": 10212,
+      "first": {
+        "exit": 0,
+        "output": "INSTRUMENTATION_RESULT: exit=0\nINSTRUMENTATION_RESULT: output=uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0\n\nINSTRUMENTATION_RESULT: uid=10212\nINSTRUMENTATION_CODE: -1"
+      },
+      "second": {
+        "exit": 0,
+        "output": "INSTRUMENTATION_RESULT: exit=0\nINSTRUMENTATION_RESULT: output=uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0\n\nINSTRUMENTATION_RESULT: uid=10212\nINSTRUMENTATION_CODE: -1"
+      },
+      "policy": "uid=10212|policy=2"
+    },
+    "shared_uid_revoke": {
+      "first": {
+        "exit": 0,
+        "output": "INSTRUMENTATION_RESULT: exit=13\nINSTRUMENTATION_RESULT: output=Permission denied\n\nINSTRUMENTATION_RESULT: uid=10212\nINSTRUMENTATION_CODE: -1"
+      },
+      "second": {
+        "exit": 0,
+        "output": "INSTRUMENTATION_RESULT: exit=13\nINSTRUMENTATION_RESULT: output=Permission denied\n\nINSTRUMENTATION_RESULT: uid=10212\nINSTRUMENTATION_CODE: -1"
+      }
+    },
+    "profile_owner_only": {
+      "exit": 0,
+      "output": "INSTRUMENTATION_RESULT: exit=13\nINSTRUMENTATION_RESULT: output=Permission denied\n\nINSTRUMENTATION_RESULT: uid=1010212\nINSTRUMENTATION_CODE: -1"
+    },
+    "profile_owner_managed": {
+      "exit": 0,
+      "output": "INSTRUMENTATION_RESULT: exit=0\nINSTRUMENTATION_RESULT: output=uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0\n\nINSTRUMENTATION_RESULT: uid=1010212\nINSTRUMENTATION_CODE: -1",
+      "policy": "uid=10212|policy=2"
+    },
+    "profile_without_manager": {
+      "exit": 0,
+      "output": "INSTRUMENTATION_RESULT: exit=13\nINSTRUMENTATION_RESULT: output=Permission denied\n\nINSTRUMENTATION_RESULT: uid=1010212\nINSTRUMENTATION_CODE: -1"
+    },
+    "manager_process_death": {
+      "exit": 13,
+      "output": "Permission denied",
+      "policy": ""
+    },
+    "manager_unavailable": {
+      "exit": 13,
+      "output": "Permission denied",
+      "elapsed_seconds": 70.14
+    },
+    "module_action_orientation_and_retained_output": {
+      "count": 1,
+      "orientation": [
+        "requestedOrientation=SCREEN_ORIENTATION_LOCKED",
+        "requestedOrientation=SCREEN_ORIENTATION_NOSENSOR"
+      ]
+    },
+    "module_action_process_death_no_replay": {
+      "count": 2
+    },
+    "random_hidden_create_stub41": {
+      "package": "com.jjrfqfz.cpqbl.ij",
+      "legacy_stub_contract": true,
+      "original_manager_present": false
+    },
+    "hidden_stub_41_to_42": {
+      "package": "com.jjrfqfz.cpqbl.ij",
+      "updated_manifest": true,
+      "source": "7adc6aa34",
+      "root": "{\"schema\":1,\"unmount\":false,\"su_eligible\":true,\"manager\":true}"
+    },
+    "hidden_payload_wrong_signer": {
+      "decision": {
+        "schema": 1,
+        "unmount": false,
+        "su_eligible": true,
+        "manager": false
+      },
+      "root_request": "Permission denied"
+    },
+    "hidden_payload_restored": {
+      "schema": 1,
+      "unmount": false,
+      "su_eligible": true,
+      "manager": true
+    },
+    "rootless_restore_cancel": {
+      "old_hidden_present": true,
+      "full_app_installed": false
+    },
+    "rootless_restore_success": {
+      "old_hidden_present": false,
+      "full_apk_sha256": "b96207ee999c9ece6acebe932064259132967ae606bd2e92f439c9dcdccfe51f",
+      "magisk_daemon_present": false,
+      "default_doh": true
+    },
+    "root_after_rootless_restore": {
+      "manager": "{\"schema\":1,\"unmount\":false,\"su_eligible\":true,\"manager\":true}",
+      "daemon": "0.1.0-dev-kitsune.2bbdffac:MAGISK:R"
+    },
+    "concurrent_shell_uid_requests": {
+      "requests": 240,
+      "parallelism": 12,
+      "cache_invalidations": 21,
+      "client_uid": 2000,
+      "elapsed_seconds": 1.46
+    }
+  },
+  "mumu": {
+    "adapter": "mumu-macos-v1",
+    "target": "Android Device-1, MuMu Pro on Apple Silicon, Android API 32 arm64, permissive SELinux",
+    "source": "2bbdffac5606e1b8c681c6d50a311cd4430e7ee9",
+    "variant": "debug",
+    "vendor_root_during_installed_tests": false,
+    "qualification": "Fresh external backup, five identical stable-target descriptions, both init-domain probes, persistence and exact restore challenges passed.",
+    "lifecycle": [
+      "qualified upgrade",
+      "BOOT_VERIFIED after CLI close/open",
+      "ordinary application PATH root",
+      "Hide namespace removes injected /product/bin/su",
+      "Hide/SuList pending read-only UI and cold-boot mode application",
+      "managed recovery UI",
+      "read-only doctor import",
+      "complete managed uninstall and cold boot",
+      "manager/core/overlay absent after uninstall; policy database, module/script directories and unrelated sentinel remained"
+    ],
+    "lab_failures": "Earlier qualification attempts failed closed on a target-description mismatch or transport closure. An orphan from one failed attempt was removed by its exact UUID before a fresh qualification. The final wrapper disconnected stale ADB transport, required a new boot ID and checked root readiness; no qualification check was relaxed.",
+    "restoration": {
+      "original_system_and_userdata_bytes_verified_before_boot": true,
+      "original_configuration_verified": true,
+      "boot_completed": true,
+      "original_manager_version": "0.1.0-dev-kitsune.a9579504"
+    }
+  },
+  "regressions": {
+    "su_launcher": "Eight controlled app_process launches with inherited blocked signals exited 139; eight with a cleared mask exited 0. Child-only signal reset and repeated consent tests close the failure.",
+    "policy_cache": "Mutex-protected Arc cloning/publication prevents concurrent cache invalidation from freeing an Arc before a reader owns it.",
+    "path_exposure": "The mount engine rejects missing children directly beneath a separate partition root. Candidate selection now skips those paths, while retaining protected nested-directory injection on the qualified MuMu layout.",
+    "hidden_navigation": "Single-task self-relaunch closed the hidden launcher; recreation and explicit destination state replace it. Optional pin-shortcut prompts no longer cover requested navigation.",
+    "stub_upgrade": "Revision-41 upgrade initially rendered before the root service connected and crashed on the main thread. Initialization now completes before the upgrade is requested from the initialized activity.",
+    "legacy_sqlite": "Consent persistence uses atomic INSERT OR REPLACE with preserved notification/log flags; no unsupported UPSERT syntax.",
+    "migration": "A root-authorized nonce binds target UID, sender package/UID/certificate and single-use consumption. Existing security-preference migration exclusions remain. Unauthenticated extras cannot import preferences or trigger migration cleanup.",
+    "legacy_install_source": "The installer no longer invokes REQUEST_INSTALL_PACKAGES appops before API 26. API 24 x86 exposed a native Binder shutdown crash in that unnecessary command after successful installation; the actual shell function is tested across API 23–26 and installation failures, and the native-crash gate remains enabled.",
+    "instrumentation_identity": "Only instrumentation signed with the full manager identity is eligible for hidden repackaging; an APK name alone is not trust."
+  },
+  "limits": [
+    "System Mode remains experimental and debug-only.",
+    "No physical phone, real OTA, recovery ZIP or OEM-specific qualification is inferred from these emulator results.",
+    "PR14 retains module and early-mount closure; PR15 repeats full lifecycles on exact additional targets and phones; PR16 owns production signing, historical certificate transition and release promotion.",
+    "Historical Full/Lite publisher assets are provenance, not automatically trusted migration payloads."
+  ],
+  "cleanup": {
+    "original_mumu_restored": true,
+    "temporary_profiles_and_fixture_apps_removed": true,
+    "final_avd_artifact_and_key_cleanup": "Required before task completion; no generated APK or private signing key belongs in the repository."
+  },
+  "ci_predecessor": {
+    "run": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/38827343892",
+    "result": "Cuttlefish and 25 emulator configurations passed. API 23 x86_64 crashed in a test-only large vararg expected-set construction (replaced by equivalent sorted-key comparison); API 37 google_apis_ps16k release timed out during cold-boot readiness. These results do not waive final-head checks."
+  }
+}
