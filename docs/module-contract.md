@@ -78,10 +78,12 @@ two-second processing budget. A snapshot rejected at this validation stage also 
 its module policy. Global/module conflicts reject the complete plan and name both owners.
 No ambiguous last-writer-wins rule survives.
 
-Payloads are copied into a private tmpfs, given the existing target's ownership,
-permissions and SELinux context, then bound before Android init continues. Public bind
-targets are read-only immediately. The policy worker restores the original inode labels
-through private writable sources, then seals the backing tmpfs. Guarded RC services
+Payloads are copied into a private tmpfs with the existing target's ownership and
+permissions, then bound read-only before Android init continues. The original files remain
+open through read-only, close-on-exec descriptors. After SELinux policy loading, the worker
+reads their resolved contexts and applies them through the private writable sources, then
+seals the backing tmpfs. This avoids the pre-policy `unlabeled` placeholder returned by some
+older kernels. Guarded RC services
 execute only after this barrier succeeds. A failed publication detaches already published
 mounts in reverse order. If an enabled module or global input needs a failed/disabled
 early snapshot, post-fs-data enters safe mode and disables modules before running their

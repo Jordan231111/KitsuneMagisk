@@ -1,7 +1,6 @@
 {
   "schema": 1,
   "roadmap_pr": 14,
-  "code_candidate": "6233ac2a86573b51b66f72d01249ce4c576ee4dc",
   "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
   "pull_request": "https://github.com/Jordan231111/KitsuneMagisk/pull/37",
   "contract": "docs/module-contract.md",
@@ -109,13 +108,7 @@
       }
     }
   },
-  "native_runtime_candidate": "2eeb0265b36667221e0d636980fb81ffa131dc77",
   "production_app_candidate": "18d1f6003d81713461f9682a6507351b51f0e6ba",
-  "final_test_only_delta": "The final commit only gives the new pending-state regression its own module.prop; production app/native code is unchanged.",
-  "final_app_delta": [
-    "app/core/src/main/java/com/topjohnwu/magisk/core/model/module/LocalModule.kt",
-    "app/core/src/main/java/com/topjohnwu/magisk/test/AdditionalTest.kt"
-  ],
   "validation": {
     "local_builds": "All four native ABIs, debug and disposable-key release APKs; source/artifact identity, signer separation, stub payloads, ELF and ZIP 16 KiB alignment checks passed.",
     "host": "304 tests passed at the native runtime candidate, one Linux-only test skipped on macOS. All six module/manager host tests also passed after the final app-only fix. The exact native module-store, RC grammar, legacy persist classifier and capability template are executed by tests/test_module_contract.py.",
@@ -407,5 +400,93 @@
     "test_python_caches_removed": true,
     "owned_caffeinate_stopped": true,
     "preexisting_output_artifacts_preserved": true
+  },
+  "local_artifact_candidate": "6233ac2a86573b51b66f72d01249ce4c576ee4dc",
+  "system_mode_runtime_candidate": "2eeb0265b36667221e0d636980fb81ffa131dc77",
+  "manager_follow_up_delta": [
+    "app/core/src/main/java/com/topjohnwu/magisk/core/model/module/LocalModule.kt",
+    "app/core/src/main/java/com/topjohnwu/magisk/test/AdditionalTest.kt"
+  ],
+  "pre_ci_test_only_delta": "Commit 6233ac2a8 only gives the new pending-state regression its own module.prop; production app/native code is unchanged.",
+  "ci_context_follow_up": {
+    "failing_run": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/38970846752",
+    "ci_result_before_fix": "31 jobs passed; API 30 x86 and x86_64 failed the early-context assertion.",
+    "baseline_reproduction": {
+      "source": "8c0c52bb74a581cb46bfed7bc61972c5fc4e308b",
+      "kind": "CI merge of PR head 329abe5b1094614795a0b6b6219840a27d78b67a",
+      "image": "system-images;android-30;aosp_atd;arm64-v8a revision 2",
+      "result": "Pre-policy context was the literal unlabeled; setting it after policy load failed with EINVAL, removed the snapshot and entered safe mode. On the x86 images the unmapped context was accepted but failed the label assertion."
+    },
+    "fix": "Retain close-on-exec read-only descriptors for original target inodes. Copy owner/mode without pre-policy labels, resolve original contexts after policy loading, then label private sources and seal the payload. Unavailable contexts still remove the plan.",
+    "test_contract": "The standard hosts module intentionally overrides the early file later. The strengthened test compares the original context and checks the unprivileged effective view; a separate cold boot disables ordinary hosts to test direct early-file readability.",
+    "local_developer_build": {
+      "base_commit": "329abe5b1094614795a0b6b6219840a27d78b67a",
+      "source_dirty": true,
+      "source_digest": "6a90ffc85bfcc5d99bd56fd7559d33c74f594892f62b6205e8faab811f07d0e6",
+      "build_id": "e276bd41b109b14bb44f751ca2eec9a57c12b95a7ff1497cb457de2e77a45e5f",
+      "code_files_sha256": {
+        "app/core/src/main/java/com/topjohnwu/magisk/test/AdditionalTest.kt": "a22763a66447bc705c14a6839555a1e5a0c57bbacd8de1dea62bf96454dbcf48",
+        "app/core/src/main/java/com/topjohnwu/magisk/test/Environment.kt": "ea8e2741dfe88be994a9c5a11516cd5b9a47664f8e5a2d08b1f06e5905aea938",
+        "native/src/init/early.rs": "add75e9cdace6dccd80a8fffc0b68baedaa1b33c95c669dc0ae4f6e31b75ba23",
+        "native/src/init/init.rs": "34a342f2878ea3f40584435e8e8c0adde912d207bfe260ffbe3792f859f11a46",
+        "native/src/init/lib.rs": "3bfc6d128f4f9c9d088f60686f3db2e8daebd357a27149a96aa168d85d810271",
+        "native/src/init/rootdir.rs": "60b07f366de737438e01fc269c457a8616a914f797b5fed8122c9163b7adab70"
+      },
+      "artifacts_sha256": {
+        "app-debug.apk": "e77c4e923b850d5fff3788aff04c81f51e2013b2f99f0548387e588881e8d60f",
+        "test-debug.apk": "19615d753b78955789e89e64c936b3ffd77b804f2063a8c519fa6ffb0bf28609"
+      },
+      "scope": "Developer worktree fixture on disposable SDK devices, not an authorized persistent System Mode or release artifact."
+    },
+    "local_runs": [
+      {
+        "api": 30,
+        "image": "system-images;android-30;aosp_atd;arm64-v8a",
+        "revision": 2,
+        "page_size": 4096,
+        "result": "passed",
+        "cases": [
+          "original-context equality and unprivileged effective hosts read with ordinary hosts module",
+          "cold boot with ordinary hosts disabled; unprivileged early-file read"
+        ],
+        "avd_removed": true,
+        "embedded_source_properties_revision": 1,
+        "revision_basis": "SDK package.xml and downloaded arm64-v8a-30_r02.zip; bundled source.properties still reports revision 1."
+      },
+      {
+        "api": 35,
+        "image": "system-images;android-35;google_apis;arm64-v8a",
+        "revision": 9,
+        "page_size": 4096,
+        "result": "passed",
+        "cases": [
+          "original-context equality and unprivileged effective hosts read with ordinary hosts module",
+          "cold boot with ordinary hosts disabled; unprivileged early-file read"
+        ],
+        "avd_removed": true
+      },
+      {
+        "api": 37,
+        "image": "system-images;android-37.0;google_apis_ps16k;arm64-v8a",
+        "revision": 6,
+        "page_size": 16384,
+        "result": "passed",
+        "cases": [
+          "original-context equality and unprivileged effective hosts read with ordinary hosts module",
+          "cold boot with ordinary hosts disabled; unprivileged early-file read"
+        ],
+        "avd_removed": true
+      }
+    ],
+    "checks": "All four ABI debug builds and release MagiskInit compilation; all-profile Clippy; Android lint and legacy Kotlin compilation; six focused module/manager host tests passed.",
+    "final_gate": "The final clean PR head must pass every configured CI device, including both API 30 architectures, before merge. See the PR checks link above.",
+    "cleanup": {
+      "temporary_avds_removed": true,
+      "new_api30_sdk_package_removed": true,
+      "downloaded_ci_artifacts_logs_and_probes_removed": true,
+      "local_build_outputs_removed": true,
+      "owned_sleep_assertion_stopped": true,
+      "original_mumu_untouched_during_follow_up": true
+    }
   }
 }

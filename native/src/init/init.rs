@@ -15,6 +15,7 @@ impl MagiskInit {
             overlay_con: Vec::new(),
             early_dir: String::new(),
             early_targets: Vec::new(),
+            early_contexts: Vec::new(),
             argv,
             config: BootConfig {
                 skip_initramfs: false,

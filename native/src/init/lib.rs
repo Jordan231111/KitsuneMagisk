@@ -1,5 +1,6 @@
 #![allow(clippy::missing_safety_doc)]
 
+use early::EarlyContext;
 use logging::setup_klog;
 // Has to be pub so all symbols in that crate is included
 pub use magiskpolicy;
@@ -48,6 +49,7 @@ pub mod ffi {
         overlay_con: Vec<OverlayAttr>,
         early_dir: String,
         early_targets: Vec<String>,
+        early_contexts: Vec<EarlyContext>,
     }
 
     unsafe extern "C++" {
@@ -88,6 +90,7 @@ pub mod ffi {
     // MagiskInit
     extern "Rust" {
         type OverlayAttr;
+        type EarlyContext;
         fn load_early_mount(self: &mut MagiskInit, tmp_dir: Utf8CStrRef) -> Vec<String>;
         fn parse_config_file(self: &mut MagiskInit);
         fn mount_overlay(self: &mut MagiskInit, dest: Utf8CStrRef);

@@ -228,9 +228,18 @@ class AdditionalTest : BaseTest {
                 it.contains(" ${target.out.single()} ") && it.contains(" - tmpfs magisk ")
             })
         }
-        val label = Shell.cmd("ls -Z \"\$MAGISKTMP/.magisk/early-mount/0\"").exec()
-        assertTrue("Early payload must retain its system label", label.isSuccess &&
-            label.out.any { it.contains("u:object_r:system_file:s0") })
+        val expected = Shell.cmd("cat /data/adb/modules/$SEPOLICY_RULE/test_hosts_context").exec()
+        val label = Shell.cmd("/system/bin/ls -Z \"\$MAGISKTMP/.magisk/early-mount/0\"").exec()
+        assertTrue("Early context read failed: ${label.err}", expected.isSuccess && label.isSuccess)
+        assertEquals("Early payload must retain the original system label", expected.out.single(),
+            label.out.single().trim().substringBefore(' '))
+        assertTrue("The reader must be an application UID", android.os.Process.myUid() >= 10000)
+        assertTrue(java.io.File("/proc/self/attr/current").readText().startsWith("u:r:untrusted_app"))
+        // The ordinary hosts module intentionally overrides the early file later.
+        val hosts = modules.find { it.id == "hosts" && it.enable && !it.remove }
+        val visible = hosts?.base?.getChildFile("system/etc/hosts")?.newInputStream()
+            ?.bufferedReader()?.use { it.readLine() } ?: "# kitsune-early-v2"
+        assertEquals(visible, java.io.File("/system/etc/hosts").bufferedReader().use { it.readLine() })
     }
 
     @Test

@@ -37,7 +37,7 @@ on property:sys.boot_completed=1
     mem::forget(file)
 }
 
-pub struct OverlayAttr(pub(crate) Utf8CString, pub(crate) Utf8CString);
+pub struct OverlayAttr(Utf8CString, Utf8CString);
 
 impl MagiskInit {
     pub(crate) fn parse_config_file(&mut self) {
@@ -98,15 +98,9 @@ impl MagiskInit {
     }
 
     pub(crate) fn restore_overlay_contexts(&self) {
-        let mut early_ready = true;
-        let prefix = format!("{}/", self.early_dir);
         for OverlayAttr(path, con) in &self.overlay_con {
-            let result = path.set_secontext(con);
-            if !self.early_dir.is_empty() && path.starts_with(&prefix) && result.is_err() {
-                early_ready = false;
-            }
-            result.log_ok();
+            path.set_secontext(con).log_ok();
         }
-        self.finish_early_mounts(early_ready);
+        self.finish_early_mounts();
     }
 }

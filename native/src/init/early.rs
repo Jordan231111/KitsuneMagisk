@@ -3,12 +3,16 @@
 //! to the ordinary module engine; it must not silently change early timing.
 use crate::early_contract::{guard_services, safe_path, validate_rc};
 use crate::ffi::{MagiskInit, check_safe_mode_key};
-use crate::rootdir::OverlayAttr;
+use base::nix::fcntl::OFlag;
 use base::nix::mount::{MsFlags, mount};
-use base::{LoggedResult, ResultExt, Utf8CStr, Utf8CString, clone_attr, cstr, debug, warn};
+use base::{
+    FileAttr, LoggedResult, ResultExt, Utf8CStr, Utf8CString, cstr, debug, fd_get_attr,
+    fd_get_secontext, fd_set_attr, warn,
+};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
+use std::os::fd::AsRawFd;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::time::{Duration, Instant};
 
@@ -16,6 +20,8 @@ const STATE: &str = "/data/.magisk/preinit/kitsune-v2";
 const PAYLOAD: &str = ".magisk/early-mount";
 const MAX_BYTES: usize = 32 * 1024 * 1024;
 const MAX_FILES: usize = 512;
+
+pub struct EarlyContext(Utf8CString, fs::File);
 
 fn write_control(path: &str, bytes: &[u8]) -> std::io::Result<()> {
     let mut file = fs::OpenOptions::new()
@@ -256,15 +262,20 @@ impl MagiskInit {
                     .open(source.as_str())
                     .log()?;
                 std::io::Write::write_all(&mut file, bytes).log()?;
-                clone_attr(&target, &source)?;
-                let mut context = cstr::buf::default();
-                target.get_secontext(&mut context)?;
+                // Some kernels return "unlabeled" until the first policy load.
+                // Keep the original inode open across the bind mount and read
+                // its resolved context after policy loading has completed.
+                let original =
+                    target.open(OFlag::O_RDONLY | OFlag::O_CLOEXEC | OFlag::O_NOFOLLOW)?;
+                let mut attr = FileAttr::new();
+                attr.st = fd_get_attr(original.as_raw_fd())?.st;
+                fd_set_attr(file.as_raw_fd(), &attr)?;
                 source.bind_mount_to(&target, false)?;
                 mounted.push(target.to_owned());
                 // Public targets are immutable immediately. Relabel the same inode
                 // through its private writable source once SELinux has loaded.
                 target.remount_mount_point_flags(MsFlags::MS_RDONLY)?;
-                contexts.push(OverlayAttr(source.to_owned(), context.to_owned()));
+                contexts.push(EarlyContext(source.to_owned(), original));
                 debug!("early-mount: {} published {}", _owner, source);
             }
             Ok(())
@@ -278,7 +289,7 @@ impl MagiskInit {
         }
         self.early_dir = PAYLOAD.to_string();
         self.early_targets = mounted.iter().map(|p| p.to_string()).collect();
-        self.overlay_con.extend(contexts);
+        self.early_contexts = contexts;
         debug!(
             "early-mount: {} files, {} init scripts before init",
             mounts.len(),
@@ -289,10 +300,29 @@ impl MagiskInit {
             .map(|text| guard_services(&text, &format!("{}/exec.sh", runtime_dir)))
             .collect()
     }
-    pub(crate) fn finish_early_mounts(&self, contexts_ready: bool) {
+    pub(crate) fn finish_early_mounts(&self) {
         if self.early_dir.is_empty() {
             return;
         }
+        let contexts_ready = self
+            .early_contexts
+            .iter()
+            .all(|EarlyContext(path, original)| {
+                let mut context = cstr::buf::default();
+                if fd_get_secontext(original.as_raw_fd(), &mut context)
+                    .log()
+                    .is_err()
+                    || !context.as_str().contains(':')
+                {
+                    warn!(
+                        "early-mount: invalid original context [{}] for {}",
+                        context, path
+                    );
+                    return false;
+                }
+                debug!("early-mount: {} context [{}]", path, context);
+                path.set_secontext(&context).log().is_ok()
+            });
         let directory = Utf8CString::from(self.early_dir.as_str());
         if contexts_ready
             && write_control(&format!("{}/ready", self.early_dir), b"1\n")

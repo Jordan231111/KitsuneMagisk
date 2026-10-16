@@ -169,6 +169,11 @@ class Environment : BaseTest {
         // The consumer records both the early bytes and whether post-fs-data
         // had already begun. A root-shell read after boot cannot pass this test.
         if (Build.VERSION.SDK_INT >= 30) {
+            val context = Shell.cmd("/system/bin/ls -Z /system/etc/hosts").exec()
+            assertTrue(error, context.isSuccess)
+            path.getChildFile("test_hosts_context").newOutputStream().use {
+                it.write(context.out.single().trim().substringBefore(' ').toByteArray())
+            }
             path.getChildFile("module.prop").newOutputStream().use {
                 it.write("id=sepolicy_rule\nversion=1\nversionCode=1\n".toByteArray())
             }
@@ -497,6 +502,14 @@ class Environment : BaseTest {
         setupUnloadZygiskModule(update)
         setupRemoveModule(root)
         setupUpgradeModule(root, update)
+    }
+
+    @Test
+    fun prepareEarlyReader() {
+        // A separate cold-boot fixture isolates the early inode from the normal
+        // hosts module used by the full compatibility suite.
+        assertTrue(LocalModule(RootUtils.fs.getFile("${Const.MODULE_PATH}/hosts"))
+            .updateEnabled(false))
     }
 
     @Test
