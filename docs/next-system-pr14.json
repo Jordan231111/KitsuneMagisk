@@ -302,6 +302,7 @@
     "native/src/init/Cargo.toml",
     "native/src/init/early.rs",
     "native/src/init/early_contract.rs",
+    "native/src/init/init.rs",
     "native/src/init/lib.rs",
     "native/src/init/mount.cpp",
     "native/src/init/rootdir.cpp",

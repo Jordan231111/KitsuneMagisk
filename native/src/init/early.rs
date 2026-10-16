@@ -1,11 +1,11 @@
 //! Early-mount v2: publish a bounded, complete snapshot before Android init.
 //! Only existing regular files are replaced. Directory reconstruction belongs
 //! to the ordinary module engine; it must not silently change early timing.
-use crate::early_contract::{safe_path, validate_rc};
+use crate::early_contract::{guard_services, safe_path, validate_rc};
 use crate::ffi::{MagiskInit, check_safe_mode_key};
 use crate::rootdir::OverlayAttr;
 use base::nix::mount::{MsFlags, mount};
-use base::{LoggedResult, ResultExt, Utf8CString, clone_attr, cstr, debug, warn};
+use base::{Directory, LoggedResult, ResultExt, Utf8CString, clone_attr, cstr, debug, warn};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -218,12 +218,22 @@ impl MagiskInit {
         }
         let mut mounted: Vec<Utf8CString> = Vec::new();
         let mut contexts = Vec::new();
+        let mut early_dir = cstr::buf::default();
         let result = (|| -> LoggedResult<()> {
+            Directory::open(payload)?.resolve_path(&mut early_dir)?;
+            if !scripts.is_empty() && early_dir.starts_with("/magisk/tmp/") {
+                return base::log_err!("early-mount: RC requires a stable runtime path");
+            }
+            let guard = format!(
+                "#!/system/bin/sh\n[ -f '{0}/ready' ] && [ ! -e '{0}/../early-safe-mode' ] || exit 1\nexec \"$@\"\n",
+                early_dir
+            );
+            write_control(&format!("{}/exec.sh", early_dir), guard.as_bytes()).log()?;
             for (index, (target, (_owner, bytes))) in mounts.iter().enumerate() {
                 if start.elapsed() > Duration::from_secs(2) {
                     return base::log_err!("early-mount: publication budget exceeded");
                 }
-                let source = Utf8CString::from(format!("{PAYLOAD}/{index}"));
+                let source = Utf8CString::from(format!("{}/{index}", early_dir));
                 let target = Utf8CString::from(target.as_str());
                 let mut file = fs::OpenOptions::new()
                     .write(true)
@@ -237,10 +247,12 @@ impl MagiskInit {
                 target.get_secontext(&mut context)?;
                 source.bind_mount_to(&target, false)?;
                 mounted.push(target.to_owned());
-                contexts.push(OverlayAttr(target, context.to_owned()));
+                // Public targets are immutable immediately. Relabel the same inode
+                // through its private writable source once SELinux has loaded.
+                target.remount_mount_point_flags(MsFlags::MS_RDONLY)?;
+                contexts.push(OverlayAttr(source.to_owned(), context.to_owned()));
                 debug!("early-mount: {} published {}", _owner, source);
             }
-            payload.remount_mount_flags(MsFlags::MS_RDONLY)?;
             Ok(())
         })();
         if result.is_err() {
@@ -250,12 +262,40 @@ impl MagiskInit {
             payload.unmount().log_ok();
             return None;
         }
+        self.early_dir = early_dir.to_string();
+        self.early_targets = mounted.iter().map(|p| p.to_string()).collect();
         self.overlay_con.extend(contexts);
         debug!(
             "early-mount: {} files, {} init scripts before init",
             mounts.len(),
             scripts.len()
         );
-        Some(scripts.into_values().collect())
+        scripts
+            .into_values()
+            .map(|text| guard_services(&text, &format!("{}/exec.sh", early_dir)))
+            .collect()
+    }
+    pub(crate) fn finish_early_mounts(&self, contexts_ready: bool) {
+        if self.early_dir.is_empty() {
+            return;
+        }
+        let directory = Utf8CString::from(self.early_dir.as_str());
+        if contexts_ready
+            && write_control(&format!("{}/ready", self.early_dir), b"1\n")
+                .log()
+                .is_ok()
+            && directory
+                .remount_mount_flags(MsFlags::MS_RDONLY)
+                .log()
+                .is_ok()
+        {
+            return;
+        }
+        for target in self.early_targets.iter().rev() {
+            Utf8CString::from(target.as_str()).unmount().log_ok();
+        }
+        directory.unmount().log_ok();
+        write_control(".magisk/early-snapshot-invalid", b"1\n").log_ok();
+        warn!("early-mount: policy context publication failed; plan removed");
     }
 }

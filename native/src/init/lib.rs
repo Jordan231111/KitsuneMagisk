@@ -46,6 +46,8 @@ pub mod ffi {
         argv: *mut *mut c_char,
         config: BootConfig,
         overlay_con: Vec<OverlayAttr>,
+        early_dir: String,
+        early_targets: Vec<String>,
     }
 
     unsafe extern "C++" {

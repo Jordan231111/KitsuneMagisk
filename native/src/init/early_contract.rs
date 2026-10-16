@@ -46,6 +46,32 @@ fn valid_rc_line(line: &str) -> bool {
     true
 }
 
+pub fn guard_services(text: &str, guard: &str) -> Option<String> {
+    if !guard.starts_with('/') || !safe_path(guard.trim_start_matches('/')) {
+        return None;
+    }
+    let mut output = String::new();
+    for line in text.lines() {
+        let trimmed = line.trim_start();
+        if let Some(rest) = trimmed.strip_prefix("service")
+            && rest.starts_with(|c: char| c.is_ascii_whitespace())
+        {
+            let rest = rest.trim_start();
+            let split = rest.find(|c: char| c.is_ascii_whitespace())?;
+            output.push_str(&format!(
+                "service {} /system/bin/sh {} {}\n",
+                &rest[..split],
+                guard,
+                rest[split..].trim_start()
+            ));
+        } else {
+            output.push_str(line);
+            output.push('\n');
+        }
+    }
+    Some(output)
+}
+
 // This deliberately excludes arbitrary init commands, imports, critical services,
 // blocking exec/insmod and overrides of Android services. A v2 service is namespaced,
 // explicitly started, oneshot and bounded by Android init's timeout_period.
@@ -64,6 +90,7 @@ pub fn validate_rc(text: &str, owner: &str) -> bool {
     let mut bounded = false;
     let mut oneshot = false;
     let mut disabled = false;
+    let mut labelled = false;
     let mut action = false;
     for line in text
         .lines()
@@ -76,7 +103,7 @@ pub fn validate_rc(text: &str, owner: &str) -> bool {
         let words: Vec<_> = line.split_whitespace().collect();
         match words.as_slice() {
             ["service", name, exe, ..] => {
-                if service && !(bounded && oneshot && disabled) {
+                if service && !(bounded && oneshot && disabled && labelled) {
                     return false;
                 }
                 if !name.starts_with(&prefix)
@@ -93,9 +120,10 @@ pub fn validate_rc(text: &str, owner: &str) -> bool {
                 bounded = false;
                 oneshot = false;
                 disabled = false;
+                labelled = false;
             }
             ["on", "early-init" | "init" | "post-fs" | "boot"] => {
-                if service && !(bounded && oneshot && disabled) {
+                if service && !(bounded && oneshot && disabled && labelled) {
                     return false;
                 }
                 service = false;
@@ -104,7 +132,8 @@ pub fn validate_rc(text: &str, owner: &str) -> bool {
             ["oneshot"] if service => oneshot = true,
             ["disabled"] if service => disabled = true,
             ["timeout_period", "10"] if service => bounded = true,
-            ["user", "root"] | ["group", "root"] | ["seclabel", "u:r:magisk:s0"] if service => (),
+            ["user", "root"] | ["group", "root"] if service => (),
+            ["seclabel", "u:r:magisk:s0"] if service => labelled = true,
             ["start", name] if action => starts.push(*name),
             ["setprop", name, _]
                 if action
@@ -118,7 +147,8 @@ pub fn validate_rc(text: &str, owner: &str) -> bool {
             _ => return false,
         }
     }
-    (!service || (bounded && oneshot && disabled)) && starts.iter().all(|n| services.contains(n))
+    (!service || (bounded && oneshot && disabled && labelled))
+        && starts.iter().all(|n| services.contains(n))
 }
 
 #[cfg(test)]
@@ -141,9 +171,14 @@ mod tests {
     }
     #[test]
     fn bounded_namespaced_service() {
-        let rc = "service kitsune_demo_probe /system/bin/sh /system/etc/probe.sh\n oneshot\n disabled\n timeout_period 10\non early-init\n start kitsune_demo_probe\n setprop sys.kitsune.probe ready\n";
+        let rc = "service kitsune_demo_probe /system/bin/sh /system/etc/probe.sh\n oneshot\n disabled\n timeout_period 10\n seclabel u:r:magisk:s0\non early-init\n start kitsune_demo_probe\n setprop sys.kitsune.probe ready\n";
         assert!(validate_rc(rc, "demo"));
-        for old in ["oneshot", "disabled", "timeout_period 10"] {
+        for old in [
+            "oneshot",
+            "disabled",
+            "timeout_period 10",
+            "seclabel u:r:magisk:s0",
+        ] {
             assert!(!validate_rc(&rc.replace(old, ""), "demo"));
         }
         for replacement in [
@@ -168,7 +203,7 @@ mod tests {
     }
     #[test]
     fn init_lexing_cannot_hide_required_options() {
-        let rc = "service kitsune_demo_probe /system/bin/sh -c \"echo ok\"\n oneshot\n disabled\n timeout_period 10\n";
+        let rc = "service kitsune_demo_probe /system/bin/sh -c \"echo ok\"\n oneshot\n disabled\n timeout_period 10\n seclabel u:r:magisk:s0\n";
         assert!(validate_rc(rc, "demo"));
         assert!(!validate_rc(
             &rc.replace("echo ok\"", "echo ok\" \\"),
@@ -190,6 +225,17 @@ mod tests {
             "demo"
         ));
         assert!(!validate_rc(&"#".repeat(16385), "demo"));
+    }
+
+    #[test]
+    fn service_guard_preserves_arguments_and_options() {
+        let rc = "service\tkitsune_demo_probe /system/bin/sh -c \"echo $$(id)\"\n oneshot\n disabled\n timeout_period 10\n seclabel u:r:magisk:s0\n";
+        assert!(validate_rc(rc, "demo"));
+        let guarded =
+            guard_services(rc, "/debug_ramdisk/.magisk/early-mount/exec.sh").expect("guard");
+        assert!(guarded.starts_with("service kitsune_demo_probe /system/bin/sh /debug_ramdisk/.magisk/early-mount/exec.sh /system/bin/sh -c \"echo $$(id)\""));
+        assert!(validate_rc(&guarded, "demo"));
+        assert!(guard_services(rc, "/bad path/script").is_none());
     }
 
     #[test]

@@ -13,6 +13,8 @@ impl MagiskInit {
             preinit_dev: String::new(),
             mount_list: Vec::new(),
             overlay_con: Vec::new(),
+            early_dir: String::new(),
+            early_targets: Vec::new(),
             argv,
             config: BootConfig {
                 skip_initramfs: false,

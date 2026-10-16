@@ -98,9 +98,15 @@ impl MagiskInit {
     }
 
     pub(crate) fn restore_overlay_contexts(&self) {
-        self.overlay_con.iter().for_each(|attr| {
-            let OverlayAttr(path, con) = attr;
-            path.set_secontext(con).log_ok();
-        })
+        let mut early_ready = true;
+        let prefix = format!("{}/", self.early_dir);
+        for OverlayAttr(path, con) in &self.overlay_con {
+            let result = path.set_secontext(con);
+            if !self.early_dir.is_empty() && path.starts_with(&prefix) && result.is_err() {
+                early_ready = false;
+            }
+            result.log_ok();
+        }
+        self.finish_early_mounts(early_ready);
     }
 }

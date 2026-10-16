@@ -190,6 +190,17 @@ class AdditionalTest : BaseTest {
         assertEquals(listOf("# kitsune-early-v2", "early"), Shell.cmd("cat /dev/.kitsune-early").exec().out)
         assertTrue(Shell.cmd("test -f /dev/.kitsune-pfs").exec().isSuccess)
         assertEquals(listOf("600 0"), Shell.cmd("stat -c '%a %u' \"\$MAGISKTMP/.magisk/early-mount-api\"").exec().out)
+        val label = Shell.cmd("ls -Z \"\$MAGISKTMP/.magisk/early-mount/0\"").exec()
+        assertTrue("Early payload must retain its system label", label.isSuccess &&
+            label.out.any { it.contains("u:object_r:system_file:s0") })
+    }
+
+    @Test
+    fun testGlobalEarlyApplicationRead() {
+        assumeTrue(Shell.cmd("test \"$(getprop sys.kitsune.pfsglobal)\" = reached").exec().isSuccess)
+        assertTrue("The reader must be an application UID", android.os.Process.myUid() >= 10000)
+        assertTrue(java.io.File("/proc/self/attr/current").readText().startsWith("u:r:untrusted_app"))
+        assertEquals("# global-early-v2", java.io.File("/system/etc/hosts").bufferedReader().use { it.readLine() })
     }
 
     @Test

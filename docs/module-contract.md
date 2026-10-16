@@ -71,15 +71,20 @@ limit and a two-second processing budget. An invalid snapshot also suppresses it
 complete plan and name both owners. No ambiguous last-writer-wins rule survives.
 
 Payloads are copied into a private tmpfs, given the existing target's ownership,
-permissions and SELinux context, then bound before Android init continues. The
-payload tmpfs is remounted read-only. A failed publication detaches already
+permissions and SELinux context, then bound before Android init continues. Public bind targets are read-only immediately. The policy worker restores the
+original inode labels through private writable sources, then seals the backing
+tmpfs. Guarded RC services execute only after this barrier succeeds. A failed publication detaches already
 published mounts in reverse order. If an enabled module or global input needs a
 failed/disabled early snapshot, post-fs-data enters safe mode and disables modules
 before running their scripts. Re-enable repaired input explicitly. The underlying partition remains unchanged.
 Hide/SuList sees these as `magisk` mounts and removes them in selected namespaces.
 
-Hold volume-down for three seconds during MagiskInit to bypass the early snapshot
-and module policy, then disable modules in the ordinary safe-mode path. A durable
+Where the input driver is already available, hold volume-down for three seconds
+during MagiskInit to bypass the early snapshot and module policy. This is not a
+universal early recovery input: the tested API 35 AVD loads virtio input after the
+hook, so its console volume event cannot provide that bypass. Retain a verified
+marker/stock-image recovery route. Later safe mode disables modules and blocks
+remaining guarded RC work for the current boot. A durable
 `kitsune-v2/disabled` file in the selected pre-init directory also inhibits it and
 can be created from recovery while data is encrypted. Removing modules or entering
 safe mode inhibits the stored snapshot. Stock boot-image restoration remains the
@@ -87,11 +92,11 @@ external recovery path if the device cannot reach its early key check.
 
 ## Init RC and boot-completed scripts
 
-Modern MagiskInit routes accept `early-mount/initrc.d/*.rc` with a restricted,
+Modern MagiskInit routes with a stable runtime path accept `early-mount/initrc.d/*.rc` with a restricted,
 versioned grammar. Service names start with `kitsune_<module-id>_` (or
 `kitsune_global_`), executable paths start with `/system/bin/`, and every service
-must include `disabled`, `oneshot` and `timeout_period 10`. Optional root user/group
-and `seclabel u:r:magisk:s0` are supported. Allowed action events are `early-init`,
+must include `disabled`, `oneshot`, `timeout_period 10` and
+`seclabel u:r:magisk:s0`. Root user/group options are supported. Allowed action events are `early-init`,
 `init`, `post-fs` and `boot`; actions may start a service declared in the same file
 or set a `sys.kitsune.*` property. Duplicate service names reject the plan. RC input is limited to 16 KiB per file,
 64 KiB in total and 32 services. Use balanced double quotes, `$$` for a literal

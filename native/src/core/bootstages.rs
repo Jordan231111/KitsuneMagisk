@@ -160,6 +160,11 @@ impl MagiskD {
 
         if safe_mode {
             info!("* Safe mode triggered");
+            cstr::buf::default()
+                .join_path(get_magisk_tmp())
+                .join_path(".magisk/early-safe-mode")
+                .create(OFlag::O_WRONLY | OFlag::O_CREAT | OFlag::O_CLOEXEC, 0o600)
+                .log_ok();
             // Disable all modules and zygisk so next boot will be clean
             disable_modules();
             self.set_db_setting(DbEntryKey::ZygiskConfig, 0).log_ok();
