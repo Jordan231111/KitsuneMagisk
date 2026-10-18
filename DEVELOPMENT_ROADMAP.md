@@ -1,6 +1,6 @@
 # KitsuneMagisk development roadmap
 
-> Roadmap last reconciled: 2026-10-16 UTC
+> Roadmap last reconciled: 2026-10-18 UTC
 >
 > Post-PR2 audit snapshot (not the fidelity boundary): `kitsune` at
 > `cf149fcf734539f6077cd6b349d9ffc2496c56ca`
@@ -28,7 +28,7 @@
 > [its contract and evidence](docs/hide-policy.md) retain the PR14/PR15 target dependencies. PR13's
 > manager implementation and local acceptance are complete in [GitHub #36](https://github.com/Jordan231111/KitsuneMagisk/pull/36),
 > with [scoped evidence](docs/manager-pr13.json), and is merged after passing its checks. PR14 is complete in [GitHub #37](https://github.com/Jordan231111/KitsuneMagisk/pull/37),
-> with [module acceptance and target limits](docs/module-pr14.json). PR15 is in progress.
+> with [module acceptance and target limits](docs/module-pr14.json). PR15 available-lab qualification is complete and merged by [#38](https://github.com/Jordan231111/KitsuneMagisk/pull/38); PR16 is active.
 > Production promotion remains gated.
 >
 > Product charter: KitsuneMagisk provides reliable Magisk root on real phones and emulators while
@@ -71,7 +71,7 @@ This section is the authoritative answer to “where am I now?” The detailed P
 below remain the source of acceptance criteria; their historical audit statements are not a second
 execution order.
 
-| Order | Work unit | State on 2026-10-16 | Required next decision or exit |
+| Order | Work unit | State on 2026-10-18 | Required next decision or exit |
 |---:|---|---|---|
 | 1 | Roadmap PR1 / GitHub #22 — product charter and release freeze | **Merged** | Preserve the product charter and experimental-release boundary. |
 | 2 | Roadmap PR2 / GitHub #23 — CI product gate | **Merged** | Keep pull-request build/test publication gates green. |
@@ -91,10 +91,10 @@ execution order.
 | 16 | Roadmap PR12 / GitHub #35 — Hide/SuList core and DB migration | **Complete** | Preserve the [core contract](docs/hide-policy.md), [qualification](docs/hide-pr12.json), and named PR14/PR15 dependencies. |
 | 17 | Roadmap PR13 / GitHub #36 — manager UI and SU authorization | **Complete; merged by GitHub #36** | Preserve the [manager contract](docs/manager-contract.md), [runtime record](docs/manager-pr13.json), authenticated migration and explicit historical replacements. |
 | 18 | Roadmap PR14 / GitHub #37 — module compatibility and early-mount v2 | **Complete in GitHub #37** | Preserve the [module contract](docs/module-contract.md), [acceptance](docs/module-pr14.json), and explicit device limits. |
-| 19 | Roadmap PR15 — emulator and device qualification | **In progress** | Follow the [exact-target contract](docs/device-qualification.md); AVDs, MuMu Android Device-1 and a fresh BlueStacks instance are available. Physical phones remain unqualified. |
-| 20 | Roadmap PR16 — candidate qualification and release | **Not started** | Close every remaining feature-ledger row and physical-release gate before production promotion. |
+| 19 | Roadmap PR15 / GitHub #38 — emulator and device qualification | **Available-lab qualification complete; merged** | Preserve the [exact-target contract](docs/device-qualification.md), acceptance and cleanup records. Physical targets remain tracked in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39). |
+| 20 | Roadmap PR16 — candidate qualification and release | **In progress** | Qualify updated Rust dependencies and exact candidate bytes through the [release pipeline](docs/release.md). Stable promotion requires issues [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39), [#40](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and [#41](https://github.com/Jordan231111/KitsuneMagisk/issues/41) to have acceptance evidence. |
 
-The active task is **PR15**, on the maintained `next-system` foundation with PR8–PR14 complete.
+The active task is **PR16**, on the maintained `next-system` foundation with PR8–PR15 available-lab work complete.
 PR14 implements the [versioned module contract](docs/module-contract.md) and closes its 22 historical
 ledger rows with [scoped evidence](docs/module-pr14.json). Physical phones, additional boot/storage
 layouts and release promotion retain their PR15/PR16 gates.
@@ -2907,8 +2907,14 @@ or physical-phone support.
 
 ## PR 16 — Candidate qualification and release pipeline
 
-**Implementation status: not started. This is the first point at which “production release” may be
-considered.**
+**Implementation status: in progress. The [release pipeline](docs/release.md) binds source,
+production signer, exact APKs, local runtime results, dependency audits and complete CI acceptance.
+The requested Rust refresh includes CXX and both host build tools. Unavailable physical targets,
+four historical archive dispositions and independent key backup are tracked in issues
+[#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39),
+[#40](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and
+[#41](https://github.com/Jordan231111/KitsuneMagisk/issues/41). Stable promotion remains blocked;
+merging candidate tooling does not close those evidence gaps.**
 
 - Run the full emulator/physical matrix, upgrade/uninstall/recovery tests, and publish the exact tested APK with release notes and a checksum.
 - Re-resolve official stable and dependency advisories, publish the exact upstream/fork/SBOM ledger,

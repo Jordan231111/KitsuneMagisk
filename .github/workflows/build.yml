@@ -7,39 +7,21 @@ on:
       - "app/**"
       - "native/**"
       - "scripts/**"
-      - "tests/system_mode/**"
-      - "tools/system_mode/**"
-      - "tools/next_system_baseline.py"
-      - "tools/port_ledger.py"
-      - "tools/early_mount_fixtures.py"
-      - "tools/boot_qualification.py"
-      - "tools/property_qualification.py"
-      - "tools/device_qualification.py"
-      - "tools/avd_composer_fixture.py"
-      - "tools/adb_root.py"
-      - "tests/test_adb_root.py"
-      - "tests/test_device_qualification.py"
-      - "tests/test_live_setup.py"
-      - "tests/test_preinit_module_environment.py"
-      - "docs/device-pr15*"
-      - "compatibility/**"
-      - "tests/test_port_ledger.py"
+      - "tests/**"
+      - "tools/**"
+      - "docs/next-system-*.json"
       - "docs/port-ledger*"
       - "docs/port-history/**"
-      - "docs/early-mount-pr8.*"
-      - "docs/next-system-*.json"
+      - "docs/device-pr15*"
+      - "docs/release*"
+      - "compatibility/**"
       - "build.py"
       - "kitsune-build.json"
-      - "tools/build_info.py"
-      - "tools/update_service.py"
-      - "tools/UpdateSigner.java"
       - "updates/**"
-      - "tests/test_update_service.py"
-      - "tests/test_build_info.py"
       - ".gitmodules"
       - ".github/workflows/build.yml"
   pull_request:
-    branches: [master, next-system, codex/pr8-parity, codex/pr9-build-info]
+    branches: [next-system]
   workflow_dispatch:
 
 jobs:
@@ -90,8 +72,12 @@ jobs:
         run: python3 tools/device_qualification.py render --check
 
   security-audit:
-    name: Audit native Rust dependencies
+    name: Audit Rust dependencies (${{ matrix.directory }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: [native/src, tools/elf-cleaner, tools/rustup-wrapper]
     permissions:
       checks: write
       contents: read
@@ -104,8 +90,9 @@ jobs:
         uses: rustsec/audit-check@v2.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: native/src
-          ignore: RUSTSEC-2023-0071
+          working-directory: ${{ matrix.directory }}
+          # Local MagiskBoot signing; no fixed release. See issue #42.
+          ignore: ${{ matrix.directory == 'native/src' && 'RUSTSEC-2023-0071' || '' }}
 
   build:
     name: Build Magisk artifacts
@@ -146,7 +133,7 @@ jobs:
       - name: Verify next-system source baseline
         run: >-
           python tools/next_system_baseline.py
-          --manifest docs/next-system-pr15.json --source
+          --manifest docs/next-system-pr16.json --source
 
       - name: Create disposable release signer
         shell: bash
@@ -167,6 +154,13 @@ jobs:
           } > "$RUNNER_TEMP/next-system-release.prop"
           echo "NEXT_SYSTEM_CONFIG=$RUNNER_TEMP/next-system-release.prop" >> "$GITHUB_ENV"
 
+      - name: Lint native code and build tools
+        run: |
+          ./build.py gen
+          ./build.py clippy
+          scripts/env.py cargo clippy --locked --manifest-path tools/elf-cleaner/Cargo.toml -- -D warnings
+          scripts/env.py cargo clippy --locked --manifest-path tools/rustup-wrapper/Cargo.toml -- -D warnings
+
       - name: Build release
         run: ./build.py -vr -c "$NEXT_SYSTEM_CONFIG" all
 
@@ -183,7 +177,7 @@ jobs:
       - name: Verify next-system artifacts
         run: >-
           python tools/next_system_baseline.py
-          --manifest docs/next-system-pr15.json --source --artifacts out
+          --manifest docs/next-system-pr16.json --source --artifacts out
           --report out/next-system-baseline-report.json
 
       - name: Stop gradle daemon
@@ -224,7 +218,7 @@ jobs:
         run: python build.py -v -c .github/ci.prop all
 
       - name: Stop gradle daemon
-        run: ./app/gradlew --stop
+        run: python scripts/env.py ./app/gradlew --stop
 
   avd-test:
     name: Test API ${{ matrix.version }} ${{ matrix.type }} (x86_64)
@@ -430,3 +424,22 @@ jobs:
           path: |
             /home/runner/aosp_cf_phone/cuttlefish/instances/cvd-1/logs
             /home/runner/aosp_cf_phone/cuttlefish/instances/cvd-1/cuttlefish_config.json
+
+  product-gate:
+    name: Product gate
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    needs: [historical-inventory, host-contract, security-audit, build, test-build, avd-test, avd-test-32, cf-test]
+    steps:
+      - name: Require the complete product matrix
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          for name, job in json.loads(os.environ["RESULTS"]).items():
+              expected = "skipped" if os.environ["EVENT"] == "push" and name in {"avd-test", "avd-test-32", "cf-test"} else "success"
+              if job["result"] != expected:
+                  raise SystemExit(f"{name}: {job['result']} (required {expected})")
+          PY

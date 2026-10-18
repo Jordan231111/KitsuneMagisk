@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2024"
 
 [dependencies]
-object = { version = "0.36", features = ["build"] }
+object = { version = "0.40", features = ["build"] }
 anyhow = "1.0"
 
 [profile.release]

@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "production_blockers": [
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/39",
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/40",
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/41"
+  ],
+  "runtime": {
+    "avd-29-4k-debug": {
+      "variant": "debug",
+      "guest": {
+        "api": 29,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-29-4k-release": {
+      "variant": "release",
+      "guest": {
+        "api": 29,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-35-4k-debug": {
+      "variant": "debug",
+      "guest": {
+        "api": 35,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-35-4k-release": {
+      "variant": "release",
+      "guest": {
+        "api": 35,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-35-16k-debug": {
+      "variant": "debug",
+      "guest": {
+        "api": 35,
+        "abi": "arm64-v8a",
+        "page_size": 16384,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-35-16k-release": {
+      "variant": "release",
+      "guest": {
+        "api": 35,
+        "abi": "arm64-v8a",
+        "page_size": 16384,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-36-4k-debug": {
+      "variant": "debug",
+      "guest": {
+        "api": 36,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "avd-36-4k-release": {
+      "variant": "release",
+      "guest": {
+        "api": 36,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Enforcing"
+      },
+      "cold_boots": 2
+    },
+    "mumu-device-1-debug": {
+      "variant": "debug",
+      "guest": {
+        "api": 32,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Permissive"
+      },
+      "cold_boots": 3
+    }
+  }
+}

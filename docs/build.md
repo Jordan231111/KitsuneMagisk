@@ -1,12 +1,9 @@
 # Building and Development
 
-Development uses `next-system`. PR7A ports the qualified System Mode slice onto official
-**v31.0 prerelease**, including its Compose manager. See the
-[execution checkpoint](../DEVELOPMENT_ROADMAP.md#current-execution-checkpoint--start-here) and
-[current source contract](next-system-pr11.json). PR7's v30.7 artifacts remain historical evidence;
-PR8 selected this foundation; [PR9 build identity](build-info.md) separates the product, Android
-upgrade, module compatibility and protocol fields. Builds report the actual base
-and source commit; physical-phone and full historical-feature qualification remain release gates.
+Development uses `next-system`, based on official **v31.0 prerelease** with maintained Kitsune
+Hide/SuList, module APIs and experimental System Mode. See the
+[current source contract](next-system-pr16.json), [build identity](build-info.md) and
+[release qualification](release.md). Physical-device support requires matching runtime and recovery evidence.
 
 System Mode supports clean installs and current-format upgrades. Remove older installations with
 their original manager before installing; modules and user settings left by a successful uninstall

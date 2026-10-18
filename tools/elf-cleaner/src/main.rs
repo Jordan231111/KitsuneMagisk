@@ -4,12 +4,7 @@ use std::{env, fs};
 
 // Implementation adapted from https://github.com/termux/termux-elf-cleaner
 
-// Missing ELF constants
-const DT_AARCH64_BTI_PLT: u32 = elf::DT_LOPROC + 1;
-const DT_AARCH64_PAC_PLT: u32 = elf::DT_LOPROC + 3;
-const DT_AARCH64_VARIANT_PCS: u32 = elf::DT_LOPROC + 5;
-
-const SUPPORTED_DT_FLAGS: u32 = elf::DF_1_NOW | elf::DF_1_GLOBAL;
+const SUPPORTED_DT_FLAGS: u64 = elf::DF_1_NOW.0 | elf::DF_1_GLOBAL.0;
 
 fn print_remove_dynamic(name: &str, path: &str) {
     println!("Removing dynamic section entry {} in '{}'", name, path);
@@ -38,15 +33,15 @@ fn process_elf(path: &str) -> anyhow::Result<()> {
                 }
                 if is_aarch64 {
                     match tag {
-                        DT_AARCH64_BTI_PLT => {
+                        elf::DT_AARCH64_BTI_PLT => {
                             print_remove_dynamic("DT_AARCH64_BTI_PLT", path);
                             return false;
                         }
-                        DT_AARCH64_PAC_PLT => {
+                        elf::DT_AARCH64_PAC_PLT => {
                             print_remove_dynamic("DT_AARCH64_PAC_PLT", path);
                             return false;
                         }
-                        DT_AARCH64_VARIANT_PCS => {
+                        elf::DT_AARCH64_VARIANT_PCS => {
                             print_remove_dynamic("DT_AARCH64_VARIANT_PCS", path);
                             return false;
                         }
@@ -57,18 +52,18 @@ fn process_elf(path: &str) -> anyhow::Result<()> {
             });
             // Remove unsupported flags
             for entry in entries.iter_mut() {
-                if let Dynamic::Integer { tag, val } = entry {
-                    if *tag == elf::DT_FLAGS_1 {
-                        let new_flags = *val & SUPPORTED_DT_FLAGS as u64;
-                        if new_flags != *val {
-                            println!(
-                                "Replacing unsupported DT_FLAGS_1 {:#x} with {:#x} in '{}'",
-                                *val, new_flags, path
-                            );
-                            *val = new_flags;
-                        }
-                        break;
+                if let Dynamic::Integer { tag, val } = entry
+                    && *tag == elf::DT_FLAGS_1
+                {
+                    let new_flags = *val & SUPPORTED_DT_FLAGS;
+                    if new_flags != *val {
+                        println!(
+                            "Replacing unsupported DT_FLAGS_1 {:#x} with {:#x} in '{}'",
+                            *val, new_flags, path
+                        );
+                        *val = new_flags;
                     }
+                    break;
                 }
             }
         }

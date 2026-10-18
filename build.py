@@ -250,7 +250,7 @@ def strip_cargo_cxx_runtime(archive: Path):
 def clean_elf():
     ensure_cargo()
     cargo_toml = Path("tools", "elf-cleaner", "Cargo.toml")
-    cmds = ["cargo", "run", "--release", "--manifest-path", cargo_toml]
+    cmds = ["cargo", "run", "--locked", "--release", "--manifest-path", cargo_toml]
     if args.verbose == 0:
         cmds.append("-q")
     elif args.verbose > 1:
@@ -338,7 +338,7 @@ def build_rust_src(targets: set[str]):
     os.chdir(Path("native", "src"))
 
     # Start building the build commands
-    cmds = ["cargo", "build", "-p", ""]
+    cmds = ["cargo", "build", "-p", "", "--locked"]
     if args.release:
         cmds.append("-r")
         profile = "release"
@@ -596,7 +596,7 @@ def gen_ide():
 
     # Run build.rs to generate Rust/C++ FFI bindings
     os.chdir(Path("native", "src"))
-    execv(["cargo", "check", "--target", build_abis[args.abi]])
+    execv(["cargo", "check", "--locked", "--target", build_abis[args.abi]])
     os.chdir(Path("..", ".."))
 
     # Generate compilation database
@@ -630,7 +630,7 @@ def clippy_cli():
         args.debug = True
 
     os.chdir(Path("native", "src"))
-    cmds = ["cargo", "clippy", "--no-deps", "--target"]
+    cmds = ["cargo", "clippy", "--locked", "--no-deps", "--target"]
     for triple in build_abis.values():
         if args.debug:
             execv(cmds + [triple])
@@ -687,7 +687,7 @@ def setup_rustup():
     # Build rustup-wrapper
     wrapper_src = Path("tools", "rustup-wrapper")
     cargo_toml = wrapper_src / "Cargo.toml"
-    cmds = ["cargo", "build", "--release", f"--manifest-path={cargo_toml}"]
+    cmds = ["cargo", "build", "--locked", "--release", f"--manifest-path={cargo_toml}"]
     if args.verbose > 1:
         cmds.append("--verbose")
     execv(cmds)

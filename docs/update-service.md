@@ -2,8 +2,7 @@
 
 PR10 replaces the inherited manager/stub update routes with one authenticated contract. The
 experimental beta and canary feeds are active; the [acceptance record](update-service-acceptance.json)
-binds the public APKs, hosted checks and clean-stub installation. Remaining root, hiding, module
-and physical-device production gates stay with PR11–PR16.
+binds the public APKs, hosted checks and clean-stub installation. The [release gate](release.md) records current qualification and remaining production blockers.
 
 ## Ownership and identity
 
@@ -94,15 +93,16 @@ requires the legacy flag to collect and verify certificates even when modern sig
 ## Candidate preparation and publication
 
 1. Review and commit the source, increase `kitsune-build.json`'s Android upgrade code for new bytes,
-   and build/test the exact candidate with the external production config. PR10 uses code `31002`
-   and stub revision `41`. Preserve the PR9 module epoch `31000` and manager/daemon protocol `1`.
-2. Run `scripts/release.sh verify`. The artifact check also binds the manager/stub trust assets to
+   and build/test the exact candidate with the external production config. Preserve the module
+   epoch `31000` and manager/daemon protocol `1`. Follow the [release gate](release.md).
+2. Run `scripts/release.sh verify --acceptance /path/to/evidence/acceptance.json`. The artifact check also binds the manager/stub trust assets to
    the reviewed trust root and their actual signers. Retain the tests and artifact report.
 3. Prepare the signed metadata without publishing or rebuilding:
 
    ```sh
    scripts/env.py python3 tools/update_service.py prepare \
      --config "$HOME/.config/kitsune-magisk/signing/production.prop" \
+     --qualification out/release-info.json \
      --channel beta --sequence 1 --notes /path/to/reviewed-release-notes.md \
      --output out/update-feed/v1/io.github.jordan231111.magisk/beta.json
    ```

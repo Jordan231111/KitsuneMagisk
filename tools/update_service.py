@@ -20,10 +20,11 @@ import urllib.request
 import zipfile
 
 try:
-    from tools import build_info, next_system_baseline as baseline
+    from tools import build_info, next_system_baseline as baseline, release
 except ImportError:
     import build_info
     import next_system_baseline as baseline
+    import release
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_METADATA = 131072
@@ -261,9 +262,14 @@ def prepare(args, trust: dict) -> None:
     info = build_info.variant_info(build_info.identity(), "release")
     if info["source_dirty"]:
         raise ValueError("Production metadata requires the exact clean, committed source")
+    receipt = strict_json(args.qualification.read_bytes())
+    release.verify_receipt(receipt, build_info.identity(), args.apk, args.stub, args.channel)
     if args.channel == "stable":
-        raise ValueError("Stable promotion remains gated by roadmap PR16")
-    manifest = baseline.read_manifest(ROOT / "docs/next-system-pr14.json")
+        policy = strict_json((ROOT / "docs/release-policy.json").read_bytes())
+        ledger = release.port_ledger.audit(ROOT, release.port_ledger.read_json(ROOT / "docs/port-ledger.json"), release=True)
+        if policy["production_blockers"] or not ledger["passed"]:
+            raise ValueError("Stable promotion still has unresolved release gates")
+    manifest = baseline.read_manifest(release.MANIFEST)
     baseline.verify_source(ROOT, manifest)
     aapt = baseline.find_build_tool("aapt", None)
     apksigner = baseline.find_build_tool("apksigner", None)
@@ -367,6 +373,8 @@ def main() -> None:
     commands = parser.add_subparsers(dest="command", required=True)
     prepare_parser = commands.add_parser("prepare")
     prepare_parser.add_argument("--config", type=Path, required=True)
+    prepare_parser.add_argument("--qualification", type=Path, required=True,
+                                help="release.py verification receipt for the tested bytes")
     prepare_parser.add_argument("--apk", type=Path, default=ROOT / "out/app-release.apk")
     prepare_parser.add_argument("--stub", type=Path, default=ROOT / "out/stub-release.apk")
     prepare_parser.add_argument("--channel", choices=sorted(CHANNELS), default="beta")
