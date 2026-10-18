@@ -218,7 +218,7 @@ jobs:
         run: python build.py -v -c .github/ci.prop all
 
       - name: Stop gradle daemon
-        run: python scripts/env.py ./app/gradlew --stop
+        run: python scripts/env.py bash ./app/gradlew --stop
 
   avd-test:
     name: Test API ${{ matrix.version }} ${{ matrix.type }} (x86_64)

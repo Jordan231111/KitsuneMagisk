@@ -4,7 +4,7 @@
   "phase": "PR16",
   "resolved_at": "2026-10-18",
   "identity": {
-    "version_code": 31019
+    "version_code": 31020
   },
   "submodules": {
     "native/src/external/cxx-rs": "598ccd932ffb9f758b359177ab3a2ba67aa7e021"

@@ -93,7 +93,8 @@ def ensure_toolchain():
         "riscv64-linux-android": "riscv64-linux-android35",
     }.items():
         normalized = triple.replace("-", "_")
-        os.environ[f"CXX_{normalized}"] = str(llvm_bin / f"{target}-clang++")
+        suffix = ".cmd" if is_windows else ""
+        os.environ[f"CXX_{normalized}"] = str(llvm_bin / f"{target}-clang++{suffix}")
         os.environ[f"AR_{normalized}"] = str(llvm_bin / f"llvm-ar{EXE_EXT}")
 
 
