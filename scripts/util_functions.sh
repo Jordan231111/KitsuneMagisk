@@ -576,6 +576,9 @@ run_migrations() {
 }
 
 copy_preinit_files() (
+  # customize.sh may change IFS. Budget and df output contain space-separated
+  # numeric fields; parse them independently of the module's shell settings.
+  local IFS=' '
   # Serialize manager toggles and installers. A crash releases the descriptor;
   # a directory lock would strand future refreshes after SIGKILL or power loss.
   local PREINITDIR=$MAGISKTMP/.magisk/preinit

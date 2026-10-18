@@ -8,8 +8,8 @@ overrides in `config.prop` or `magisk.versionCode` are rejected.
 | Field | Current contract |
 |---|---|
 | Product version | `0.1.0-dev`; the new maintained Kitsune product sequence |
-| Android app code | `31002` in PR10; PR9 established `31001` above inherited `31000`; increase for new distributed bytes |
-| Package | `io.github.huskydg.magisk.next`; retain the installed Next package |
+| Android app code | `31013` in PR15; increase for new distributed bytes |
+| Package | `io.github.jordan231111.magisk`; see the one-time namespace migration below |
 | Upstream | Official `v31.0`, commit `96221b69fae9910b1c0c75c2f92a4ebb2c2dc698` |
 | Module compatibility epoch | `31000`, matching that actual upstream implementation |
 | Manager/daemon protocol | `1`; independent of both upgrade and module codes |
@@ -61,7 +61,38 @@ already been ported. The PR7A module profiles retain their exact historical qual
 not claim new universal module/provider compatibility. Future upstream updates must change the
 base and its tested compatibility epoch together.
 
-## Upgrade rules
+## PR15 namespace migration
+
+PR15 moves the maintained manager to `io.github.jordan231111.magisk` at the
+maintainer's request. Both the previous and new IDs follow Android's application
+ID rules; the number of dots was not a compatibility defect. Android treats this
+as a separate application, with a new UID, private settings and permissions.
+It is not an in-place APK update. Historical evidence below retains its original
+package names and artifact hashes.
+
+Restore a hidden manager using that manager before migrating. Keep an external
+recovery copy and the previous APK. For ordinary patched-boot installs, install
+the new manager, approve its root request using the old manager, and explicitly
+install the matching new backend using the normal supported installation route.
+After a cold boot, verify root requests reach the new manager before removing
+the old manager application. Do not use Complete uninstall merely to remove the
+old application: that operation removes the root backend.
+
+For managed System Mode, use the old manager's Complete uninstall and its
+qualified recovery procedure first. Then qualify and install the new package
+against the resulting clean target. Old transaction receipts do not authorize
+new package bytes. Module files and daemon policy data follow the existing
+backend preservation rules; private manager preferences are not copied across
+UIDs. Review grants, notifications, shortcuts, and third-party manager allowlists.
+
+The new signed feed is isolated under
+`update-feed/v1/io.github.jordan231111.magisk/`. The previously published `v1/`
+feed remains the old package's domain. A new-package feed must be published and
+qualified separately; an old package manifest must fail identity validation.
+Neither certificate checks nor hidden-manager authorization are relaxed for
+this migration.
+
+## Historical upgrade rules
 
 1. A Next manager at code `31000` can update in place to `31001` **with the same signer**.
    Package, app UID, settings and permissions remain Android's existing update domain. A newer

@@ -127,12 +127,14 @@ impl ResetProp {
         let mut skip_svc = self.skip_svc;
         let mut info = SYS_PROP.find_mut(key);
 
-        // Delete existing read-only properties if they are or will be long properties,
-        // which cannot directly go through __system_property_update
+        // Recreate long properties and appcompat overrides. Update cannot handle
+        // long values or translate the appcompat prefix into the shadow tree.
         if key.starts_with("ro.") {
             skip_svc = true;
             if let Some(pi) = &info
-                && (pi.is_long() || val.len() >= PROP_VALUE_MAX as usize)
+                && (pi.is_long()
+                    || val.len() >= PROP_VALUE_MAX as usize
+                    || key.starts_with("ro.appcompat_override."))
             {
                 // Skip pruning nodes as we will add it back ASAP
                 SYS_PROP.delete(key, false);

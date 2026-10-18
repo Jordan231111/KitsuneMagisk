@@ -1,0 +1,151 @@
+{
+  "current_build": {
+    "app_version_code": 31011,
+    "application_id": "io.github.jordan231111.magisk",
+    "build_id": "38140120a6c116e0eae10bac62b5299ff950eb1da32b48f6d931d6735edf0b38",
+    "capabilities": [
+      "kitsune.boot-completed.v1",
+      "kitsune.build-info.v1",
+      "kitsune.early-mount.v2",
+      "kitsune.hide.v1",
+      "kitsune.module-root.v2",
+      "kitsune.su-consent.v1",
+      "kitsune.system-mode.transaction.v1",
+      "kitsune.zygisk-provider.v1"
+    ],
+    "channel": "next-system-experimental",
+    "compat_version_code": 31000,
+    "product_name": "KitsuneMagisk Next",
+    "product_version": "0.1.0-dev",
+    "protocol_version": 1,
+    "release_tag": "kitsune-canary-3b62046b661f9b1d6bc366e3226d6584f4f073e8",
+    "schema": 1,
+    "source_commit": "3b62046b661f9b1d6bc366e3226d6584f4f073e8",
+    "source_digest": "cd47a07f53a732c15fdee9bf59bcf94fa2539a38fd2521fbe92208351c10c547",
+    "source_dirty": false,
+    "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+    "upstream_version": "31.0",
+    "variant": "debug",
+    "version_name": "0.1.0-dev-kitsune.3b62046b"
+  },
+  "guest": {
+    "fingerprint": "HUAWEI/ALN-AL00/ALN-AL00:12/W528JS/1136:user/release-keys",
+    "target": "MuMuPlayer Pro Android Device-1"
+  },
+  "legacy_apk_sha256": "fac319d2de262fcfff1684e13e1a5c61c486d2a773a7a8ffcfdbfe6f763a7fd4",
+  "rows": [
+    {
+      "implementation": "current",
+      "new_value": "after!",
+      "before": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 959,
+        "area_after": 959,
+        "wait_changed": -1,
+        "value": "before"
+      },
+      "waiter": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 959,
+        "area_after": 960,
+        "wait_changed": 0,
+        "value": "after!"
+      },
+      "after": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 960,
+        "area_after": 960,
+        "wait_changed": -1,
+        "value": "after!"
+      }
+    },
+    {
+      "implementation": "current",
+      "new_value": "longer-value",
+      "before": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 961,
+        "area_after": 961,
+        "wait_changed": -1,
+        "value": "before"
+      },
+      "waiter": {
+        "serial_before": 100663296,
+        "serial_after": 201326592,
+        "area_before": 961,
+        "area_after": 962,
+        "wait_changed": 1,
+        "value": "longer-value"
+      },
+      "after": {
+        "serial_before": 201326592,
+        "serial_after": 201326592,
+        "area_before": 962,
+        "area_after": 962,
+        "wait_changed": -1,
+        "value": "longer-value"
+      }
+    },
+    {
+      "implementation": "legacy",
+      "new_value": "after!",
+      "before": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 963,
+        "area_after": 963,
+        "wait_changed": -1,
+        "value": "before"
+      },
+      "waiter": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 963,
+        "area_after": 963,
+        "wait_changed": 0,
+        "value": "after!"
+      },
+      "after": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 963,
+        "area_after": 963,
+        "wait_changed": -1,
+        "value": "after!"
+      }
+    },
+    {
+      "implementation": "legacy",
+      "new_value": "longer-value",
+      "before": {
+        "serial_before": 100663296,
+        "serial_after": 100663296,
+        "area_before": 963,
+        "area_after": 963,
+        "wait_changed": -1,
+        "value": "before"
+      },
+      "waiter": {
+        "serial_before": 100663296,
+        "serial_after": 201326592,
+        "area_before": 963,
+        "area_after": 963,
+        "wait_changed": 0,
+        "value": "longer-value"
+      },
+      "after": {
+        "serial_before": 201326592,
+        "serial_after": 201326592,
+        "area_before": 963,
+        "area_after": 963,
+        "wait_changed": -1,
+        "value": "longer-value"
+      }
+    }
+  ],
+  "scope": "Virtual Android 12 read-only property comparison; Android appcompat override contexts require separate coverage"
+}

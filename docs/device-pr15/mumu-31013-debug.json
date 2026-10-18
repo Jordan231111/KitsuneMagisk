@@ -1,0 +1,60 @@
+{
+  "schema": "kitsune.device-qualification.v1",
+  "artifact": {
+    "sha256": "aef48ce19ede12d35d6d4643bd03895f2795609311db0e40d03027a74d18d437",
+    "build": {
+      "app_version_code": 31013,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "1d2ce40932265720009f8138c83b6369ea44503795639f438faef97eb01495e8",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+      "schema": 1,
+      "source_commit": "95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+      "source_digest": "6eb346bb05672c02badedb8c99bd86259c486eb95d67b015591ce02951089def",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.95f6f1fd"
+    }
+  },
+  "guest": {
+    "fingerprint": "HUAWEI/ALN-AL00/ALN-AL00:12/W528JS/1136:user/release-keys",
+    "api": 32,
+    "abi": "arm64-v8a",
+    "page_size": 4096,
+    "kernel": "4.19.195-android-arm64-gedae1315d023",
+    "selinux": "Permissive"
+  },
+  "boots": [
+    {
+      "id": "712bbcbd-999d-48bc-b8f3-65b067542b28",
+      "phase": "setup",
+      "at": "2026-10-17T10:30:28.422739+00:00"
+    },
+    {
+      "id": "9914da68-9223-47ff-b71d-7983ca2e5a98",
+      "phase": "accepted",
+      "at": "2026-10-17T10:33:21.133694+00:00"
+    },
+    {
+      "id": "d0ede397-e025-46bb-a25a-580ea1018b94",
+      "phase": "accepted",
+      "at": "2026-10-17T10:37:28.016843+00:00"
+    }
+  ]
+}

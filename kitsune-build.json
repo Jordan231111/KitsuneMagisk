@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "product_version": "0.1.0-dev",
-  "app_version_code": 31004,
-  "application_id": "io.github.huskydg.magisk.next",
+  "app_version_code": 31017,
+  "application_id": "io.github.jordan231111.magisk",
   "product_name": "KitsuneMagisk Next",
   "channel": "next-system-experimental",
   "upstream_version": "31.0",

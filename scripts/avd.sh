@@ -3,8 +3,13 @@
 set -e
 . scripts/test_common.sh
 
-emu_args_base="-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -cores $core_count"
-log_args="-show-kernel -logcat ''"
+gpu_mode="${AVD_GPU_MODE:-swiftshader_indirect}"
+case "$gpu_mode" in
+  auto|host|software|swiftshader|swangle|swiftshader_indirect) ;;
+  *) print_error "! Unsupported AVD graphics mode"; exit 1 ;;
+esac
+emu_args_base="-no-window -no-audio -no-boot-anim -gpu $gpu_mode -no-snapshot -cores $core_count"
+log_args=(-show-kernel -logcat '*:V')
 emu_args=
 emu_pid=
 wait_pid=
@@ -96,6 +101,29 @@ test_error() {
   trap - EXIT
   set +e
   print_error "! An error occurred"
+  if [ -n "${AVD_TEST_LOG:-}" ] && [ -n "${ANDROID_SERIAL:-}" ]; then
+    python3 - "$ANDROID_SERIAL" "$test_dir/logcat-failure.log" <<'PY'
+from pathlib import Path
+import subprocess
+import sys
+
+try:
+    with Path(sys.argv[2]).open("w") as log:
+        subprocess.run(["adb", "-s", sys.argv[1], "logcat", "-d", "-b", "all", "-v", "threadtime"],
+                       stdout=log, stderr=subprocess.STDOUT, timeout=10)
+except (OSError, subprocess.TimeoutExpired):
+    pass
+
+# These are disposable SDK guests. Preserve Android's own ANR stacks when
+# a system dialog obscures a test, without changing or dismissing that dialog.
+try:
+    with Path(sys.argv[2]).with_name("anr-failure.log").open("w") as log:
+        subprocess.run(["adb", "-s", sys.argv[1], "shell", "cat /data/anr/*"],
+                       stdout=log, stderr=subprocess.STDOUT, timeout=10)
+except (OSError, subprocess.TimeoutExpired):
+    pass
+PY
+  fi
   if [ -n "$wait_pid" ]; then
     kill "$wait_pid" >/dev/null 2>&1 || true
     wait "$wait_pid" 2>/dev/null || true
@@ -272,7 +300,7 @@ validate_emu_port() {
 wait_emu() {
   start_boot_waiter
   local started now status
-  started=$(date +%s)
+  started=$(python3 -c 'import time; print(int(time.monotonic()))')
 
   while kill -0 "$wait_pid" >/dev/null 2>&1; do
     if ! kill -0 "$emu_pid" >/dev/null 2>&1; then
@@ -281,7 +309,7 @@ wait_emu() {
       wait_pid=
       return 1
     fi
-    now=$(date +%s)
+    now=$(python3 -c 'import time; print(int(time.monotonic()))')
     if [ $((now - started)) -ge "$boot_timeout" ]; then
       kill "$wait_pid" >/dev/null 2>&1 || true
       wait "$wait_pid" 2>/dev/null || true
@@ -381,7 +409,11 @@ setup_emu() {
     return 1
   fi
   owned_avd=1
-  echo no | "$avd" create avd -f -n "$avd_name" -k "$avd_pkg"
+  local profile=()
+  if [ -n "${MAGISK_AVD_DEVICE:-}" ]; then
+    profile=(--device "$MAGISK_AVD_DEVICE")
+  fi
+  echo no | "$avd" create avd -f -n "$avd_name" -k "$avd_pkg" "${profile[@]}"
 
   # avdmanager is outdated, it might not set the proper target.
   local ini="$ANDROID_AVD_HOME/$avd_name.ini"
@@ -393,7 +425,7 @@ launch_emulator() {
   local image_args=$1
   if [ -n "${AVD_TEST_LOG:-}" ]; then
     rm -f "$kernel_log" "$logcat_log"
-    "$emu" "@$avd_name" $emu_args $log_args -logcat-output "$logcat_log" \
+    "$emu" "@$avd_name" $emu_args "${log_args[@]}" -logcat-output "$logcat_log" \
       $image_args >"$kernel_log" 2>&1 &
   else
     "$emu" "@$avd_name" $emu_args $image_args >/dev/null 2>&1 &
@@ -419,6 +451,15 @@ if name != expected or str(uuid.UUID(boot)) != boot or boot == previous:
 print(boot)
 PY
   )
+  if [ "${AVD_DISABLE_STORE_UPDATES:-0}" = 1 ]; then
+    # Each variant wipes userdata, so restore this test setting on every boot.
+    # Play Services updates kill dependent hidden-manager test processes.
+    printf 'boot=%s\n' "$prior_boot_id" >> "$test_dir/store-updater-state.txt"
+    adb shell pm disable-user --user 0 com.android.vending \
+      >> "$test_dir/store-updater-state.txt"
+    adb shell pm list packages -d --user 0 | tr -d '\r' | \
+      grep -Fx 'package:com.android.vending' >> "$test_dir/store-updater-state.txt"
+  fi
 }
 
 test_emu() {
@@ -433,12 +474,181 @@ test_emu() {
   # Each signer/variant gets clean userdata; reboot coverage happens inside the lane.
   launch_emulator "-wipe-data -ramdisk $image -feature -SystemAsRoot"
   run_setup "$variant"
+  if [ -n "${AVD_QUALIFICATION_DIR:-}" ]; then
+    python3 tools/device_qualification.py capture --serial "$ANDROID_SERIAL" \
+      --apk "$MAGISK_OUT_DIR/app-$variant.apk" --phase setup \
+      --output "$AVD_QUALIFICATION_DIR/$avd_name-$variant.json"
+  fi
+  if [ -n "${AVD_BOOT_FIXTURES:-}" ]; then
+    python3 tools/boot_qualification.py --serial "$ANDROID_SERIAL" \
+      --apk "$MAGISK_OUT_DIR/app-$variant.apk" \
+      --output "$test_dir/boot-fixtures-$variant.json"
+  fi
 
   # Restart the owned process, preserving userdata and the patched boot image.
   stop_emulator
   launch_emulator "-ramdisk $image -feature -SystemAsRoot"
   run_tests
+  if [ "${AVD_BOOT_FIXTURES:-0}" = 1 ]; then
+    python3 tools/property_qualification.py --serial "$ANDROID_SERIAL" \
+      --apk "$MAGISK_OUT_DIR/app-$variant.apk" \
+      --output "$test_dir/property-fixtures-$variant.json"
+    assert_no_native_crashes
+  fi
+  if [ -n "${AVD_QUALIFICATION_DIR:-}" ]; then
+    python3 tools/device_qualification.py capture --serial "$ANDROID_SERIAL" \
+      --apk "$MAGISK_OUT_DIR/app-$variant.apk" --phase accepted \
+      --output "$AVD_QUALIFICATION_DIR/$avd_name-$variant.json"
+  fi
   stop_emulator
+}
+
+capture_stock_controls() {
+  local count=${AVD_STOCK_BOOT_COUNT:-0} index=1 directory="$test_dir/stock-controls"
+  case "$count" in 0) return ;; [1-8]) ;; *) return 1 ;; esac
+  mkdir -p "$directory"
+  python3 - "$1" > "$directory/ramdisk.sha256" <<'PYHASH'
+import hashlib
+from pathlib import Path
+import sys
+print(hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())
+PYHASH
+  if [ "${AVD_STOCK_PROVISIONING_BARRIER:-0}" = 1 ]; then
+    # Android 6 delays this PackageManager write for ten seconds. Boot completion
+    # alone does not prove SdkSetup's disabled component survived to disk.
+    local stock_uid
+    stock_uid=$(adb shell id -u | tr -d '\r')
+    adb root > "$directory/provisioning-adb.txt"
+    adb wait-for-device
+    [ "$(adb shell id -u | tr -d '\r')" = 0 ] || return 1
+    python3 - "$ANDROID_SERIAL" "$directory/provisioning.json" <<'PYPROVISION'
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+command = ["adb", "-s", sys.argv[1], "exec-out", "cat",
+           "/data/system/users/0/package-restrictions.xml"]
+started = time.monotonic()
+while time.monotonic() - started < 45:
+    try:
+        result = subprocess.run(command, capture_output=True, timeout=5)
+        if result.returncode == 0:
+            document = ET.fromstring(result.stdout)
+            package = next((p for p in document.findall("pkg")
+                            if p.get("name") == "com.android.sdksetup"), None)
+            if package is not None and any(
+                    item.get("name") == "com.android.sdksetup.DefaultActivity"
+                    for item in package.findall("disabled-components/item")):
+                Path(sys.argv[2]).write_text(json.dumps({
+                    "schema": 1, "sdk_setup_disabled_on_disk": True,
+                    "package_restrictions_sha256": hashlib.sha256(result.stdout).hexdigest(),
+                    "wait_seconds": round(time.monotonic() - started, 3),
+                }, indent=2) + "\n")
+                break
+    except (subprocess.TimeoutExpired, ET.ParseError):
+        pass
+    time.sleep(0.2)
+else:
+    raise SystemExit("SDK setup state was not persisted before stock shutdown")
+PYPROVISION
+    if [ "$stock_uid" != 0 ]; then
+      adb unroot >> "$directory/provisioning-adb.txt"
+      adb wait-for-device
+    fi
+  fi
+  while [ "$index" -le "$count" ]; do
+    adb shell getprop > "$directory/boot-$index.properties"
+    adb shell cat /proc/sys/kernel/random/boot_id > "$directory/boot-$index.id"
+    if [ "${AVD_STOCK_AM_ITERATIONS:-0}" != 0 ]; then
+      # Compare ART command startup/shutdown before installing any Magisk code.
+      adb root > "$directory/boot-$index-am-root.txt"
+      adb wait-for-device
+      [ "$(adb shell id -u | tr -d '\r')" = 0 ] || return 1
+      python3 - "$ANDROID_SERIAL" "$AVD_STOCK_AM_ITERATIONS" \
+        "$directory/boot-$index-am.json" <<'PYAM'
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+serial, raw_count, output = sys.argv[1:]
+count = int(raw_count)
+if not 1 <= count <= 100:
+    raise SystemExit("Invalid stock AM control count")
+command = ["adb", "-s", serial, "shell",
+           "CLASSPATH=/system/framework/am.jar /system/bin/app_process "
+           "/system/bin com.android.commands.am.Am help"]
+results = []
+try:
+    for index in range(count):
+        result = subprocess.run(command, capture_output=True, text=True, timeout=30)
+        results.append({"iteration": index + 1, "exit_code": result.returncode,
+                        "stderr": result.stderr[-4096:]})
+        if result.returncode:
+            raise SystemExit("Stock app_process control failed")
+finally:
+    Path(output).write_text(json.dumps(results, indent=2) + "\n")
+PYAM
+      adb logcat -d -b crash -v threadtime > "$directory/boot-$index-am.crash"
+      assert_no_native_crashes
+      adb unroot >> "$directory/boot-$index-am-root.txt"
+      adb wait-for-device
+    fi
+    adb logcat -d -b all -v threadtime > "$directory/boot-$index.log"
+    adb logcat -d -b crash -v threadtime > "$directory/boot-$index.crash"
+    if [ "${AVD_STOCK_FRAMEWORK_RESTART:-0}" = 1 ]; then
+      # Exercise the stock graphics service across a framework restart, too.
+      # Retain the preceding untouched cold-boot logs separately. No Magisk
+      # payload or patched image has been installed at this point.
+      adb root > "$directory/boot-$index-framework.txt"
+      adb wait-for-device
+      [ "$(adb shell id -u | tr -d '\r')" = 0 ] || return 1
+      adb shell setprop sys.boot_completed 0
+      adb shell stop
+      # stop returns after sending init's control messages. Older init can
+      # still be reaping zygote and running its onrestart actions at this
+      # point; starting immediately can leave the new services stopped.
+      python3 - "$ANDROID_SERIAL" <<'PYSTOP'
+import subprocess
+import sys
+import time
+
+command = ["adb", "-s", sys.argv[1], "shell",
+           "getprop init.svc.zygote; getprop init.svc.zygote_secondary; "
+           "getprop init.svc.surfaceflinger; getprop init.svc.netd"]
+deadline = time.monotonic() + 30
+while time.monotonic() < deadline:
+    result = subprocess.run(command, capture_output=True, text=True, timeout=5)
+    states = result.stdout.replace("\r", "").splitlines()
+    if result.returncode == 0 and len(states) == 4 and states[0] == "stopped" \
+            and all(state in ("", "stopped") for state in states[1:]):
+        break
+    time.sleep(0.2)
+else:
+    raise SystemExit("Stock framework services did not stop")
+PYSTOP
+      adb shell start
+      wait_emu
+      adb shell am start -W -a android.settings.DISPLAY_SETTINGS \
+        >> "$directory/boot-$index-framework.txt"
+      sleep 3
+      adb shell input keyevent KEYCODE_HOME
+      adb shell dumpsys display > "$directory/boot-$index-display.txt"
+      adb logcat -d -b all -v threadtime > "$directory/boot-$index-framework.log"
+      adb logcat -d -b crash -v threadtime > "$directory/boot-$index-framework.crash"
+      adb unroot >> "$directory/boot-$index-framework.txt"
+      adb wait-for-device
+    fi
+    if [ "$index" -lt "$count" ]; then
+      stop_emulator
+      launch_emulator ""
+    fi
+    index=$((index + 1))
+  done
 }
 
 test_main() {
@@ -453,6 +663,7 @@ test_main() {
 
   print_title "* Launching $avd_pkg"
   launch_emulator ""
+  capture_stock_controls "$ramdisk"
 
   # The emulator resolves modem profiles beside the selected ramdisk.
   # Preserve that SDK layout without writing into the shared system image.

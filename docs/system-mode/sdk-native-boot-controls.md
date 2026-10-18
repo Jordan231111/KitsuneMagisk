@@ -29,6 +29,15 @@ message. The corresponding Binder service must be available after the tests. A n
 failure still fails the lane. No device policy, seccomp rule, framework binary or crash log is
 modified to obtain a pass.
 
+PR15 repeated four unmodified cold boots per Android 9 ABI in the
+[2026-10-17 control run](https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39003612501).
+The x86_64 fourth boot reproduced the existing `Composer::getActiveConfig` signature; the four
+x86 samples did not crash. Both rooted debug/release lanes then passed the unchanged crash gate.
+The run retains stock ramdisk hashes, boot IDs, properties and complete boot/crash logs in its
+`device-28--x86_64` and `device-28-x86` artifacts. Other earlier rooted-lane HWC failures in
+`Composer::Composer` and `Composer::getColorModes` were not reproduced by these controls and
+remain failures rather than new exceptions.
+
 The separate emulator modem failure was fixed in the harness. The emulator derives its modem
 profile directory from the selected ramdisk directory; placing a patched ramdisk elsewhere lost
 its SDK companion data. Patched images now live in an owned temporary directory with a link to

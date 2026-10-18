@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "scope": "Stock SDK Android 15 ARM64 ATD, before installing Magisk; these are negative capability checks, not disabled-SELinux qualification.",
+  "source_image": "system-images;android-35;aosp_atd;arm64-v8a",
+  "cases": [
+    {
+      "requested": "-selinux disabled",
+      "measured_getenforce": "Permissive",
+      "selinuxfs_present": true,
+      "stock_observation_sha256": "baea7c228de8c5acbd0cecdaf56b3993ea84f69bcdd5cd3789a1d5924ce9a578",
+      "kernel_log_sha256": "b9f749ea753141d1fadc8c87f5fa5a650b77f14dd8e4ab14c6c64ef01f2c0101",
+      "kernel_evidence": [
+        "INFO         |   androidboot.selinux=permissive",
+        "[    0.000000][    T0] Kernel command line: console=ttynull stack_depot_disable=on cgroup_disable=pressure kasan.stacktrace=off kvm-arm.mode=protected bootconfig ioremap_guard 8250.nr_uarts=1 no_timer_check console=ttyAMA0,38400 keep_bootcon earlyprintk=ttyAMA0 ndns=2 loop.max_part=7 printk.devkmsg=on bootconfig ndns=2 mac80211_hwsim.radios=0",
+        "[    0.000000][    T0] Unknown kernel command line parameters \"no_timer_check earlyprintk=ttyAMA0 ndns=2\", will be passed to user space.",
+        "[    0.007917][    T0] SELinux:  Initializing."
+      ],
+      "qualification": "not-satisfied"
+    },
+    {
+      "requested": "-qemu -append selinux=0",
+      "measured_getenforce": "Enforcing",
+      "selinuxfs_present": true,
+      "stock_observation_sha256": "01c2faf6852a873ce12d37fb3751faf038c72b266feddfe8d6db58d3334119a2",
+      "kernel_log_sha256": "b30bfaf42ed780afc29f7b7c9eaf71e9fbbb013aeb03b992f88b3da7b2d9e515",
+      "kernel_evidence": [
+        "[    0.000000][    T0] Kernel command line: console=ttynull stack_depot_disable=on cgroup_disable=pressure kasan.stacktrace=off kvm-arm.mode=protected bootconfig ioremap_guard 8250.nr_uarts=1 no_timer_check console=ttyAMA0,38400 keep_bootcon earlyprintk=ttyAMA0 ndns=2 loop.max_part=7 printk.devkmsg=on bootconfig selinux=0 ndns=2 mac80211_hwsim.radios=0",
+        "[    0.000000][    T0] Unknown kernel command line parameters \"no_timer_check earlyprintk=ttyAMA0 ndns=2 selinux=0\", will be passed to user space.",
+        "[    0.007886][    T0] SELinux:  Initializing."
+      ],
+      "qualification": "not-satisfied"
+    }
+  ],
+  "conclusion": "The emulator disabled option supplies permissive policy. The stock kernel reports selinux=0 as an unknown parameter and still initializes SELinux. Neither run exercises an absent SELinux subsystem; a suitable kernel/container is still required."
+}

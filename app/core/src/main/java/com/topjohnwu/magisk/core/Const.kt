@@ -18,6 +18,8 @@ object Const {
     const val MODULE_PATH  = "/data/adb/modules"
     const val TMPDIR = "/dev/tmp"
     const val SYSTEM_MODE_INSTALL_DIR = "system-install"
+    const val PATCH_INSTALL_DIR = "patch-file"
+    const val PATCH_TMPDIR = "/dev/kitsune-patch"
     const val MAGISK_LOG = "/cache/magisk.log"
 
     // Misc

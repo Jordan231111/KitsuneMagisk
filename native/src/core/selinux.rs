@@ -28,12 +28,77 @@ pub(crate) fn selinux_disabled() -> bool {
         Err(_) => return false,
     }
     match std::fs::read_to_string("/proc/self/attr/current") {
-        Ok(context) => context.trim_matches(['\0', '\n']).is_empty(),
+        Ok(context) => {
+            let context = context.trim_matches(['\0', '\n']);
+            if context.is_empty() {
+                return true;
+            }
+            // Waydroid can hide securityfs while retaining AppArmor labels.
+            // Require the named AppArmor context and a complete filesystem
+            // list without selinuxfs, which enabled SELinux registers at boot.
+            let Ok(apparmor) = std::fs::read_to_string("/proc/self/attr/apparmor/current") else {
+                return false;
+            };
+            if context.contains(':') || apparmor.trim_matches(['\0', '\n']) != context {
+                return false;
+            }
+            let Ok(filesystems) = std::fs::read_to_string("/proc/filesystems") else {
+                return false;
+            };
+            let mut proc_seen = false;
+            for line in filesystems.lines() {
+                let mut fields = line.split_ascii_whitespace();
+                let Some(first) = fields.next() else {
+                    return false;
+                };
+                let nodev = first == "nodev";
+                let name = if nodev {
+                    let Some(name) = fields.next() else {
+                        return false;
+                    };
+                    name
+                } else {
+                    first
+                };
+                if fields.next().is_some()
+                    || name == "selinuxfs"
+                    || !name.bytes().all(|b| {
+                        b.is_ascii_lowercase()
+                            || b.is_ascii_digit()
+                            || matches!(b, b'_' | b'-' | b'.' | b'+')
+                    })
+                {
+                    return false;
+                }
+                proc_seen |= nodev && name == "proc";
+            }
+            proc_seen
+        }
         Err(e) => matches!(
             e.raw_os_error(),
             Some(libc::ENOENT | libc::EINVAL | libc::ENODEV)
         ),
     }
+}
+
+pub(crate) fn unlabeled_permissive() -> bool {
+    // Some emulator images load a policy but leave init and its descendants in
+    // the kernel domain. This is not disabled SELinux, and never covers enforcing.
+    let Ok(context) = std::fs::read_to_string("/proc/1/attr/current") else {
+        return false;
+    };
+    if context.trim_matches(['\0', '\n']) != "u:r:kernel:s0" {
+        return false;
+    }
+    let mut found = false;
+    for path in ["/sys/fs/selinux/enforce", "/selinux/enforce"] {
+        match std::fs::read_to_string(path) {
+            Ok(mode) if mode.trim() == "0" => found = true,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            _ => return false,
+        }
+    }
+    found
 }
 
 const UNLABEL_CON: &Utf8CStr = cstr!("u:object_r:unlabeled:s0");

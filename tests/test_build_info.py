@@ -201,7 +201,8 @@ class BuildInfoTest(unittest.TestCase):
     @unittest.skipUnless(shutil.which("rustc"), "Requires Rust for the native APK parser regression")
     def test_native_manager_compatibility_is_distinct_from_bad_signature(self):
         source = (build_info.ROOT / "native/src/core/package.rs").read_text()
-        parser = source[source.index("fn read_certificate("):source.index("fn find_apk_path(")]
+        start = source.index("fn read_certificate(")
+        parser = source[start:source.index("\nfn ", start)]
         # Compile the production parser with standard-I/O adapters for its two
         # base reader traits; fixtures exercise real APK block/comment offsets.
         program = r'''

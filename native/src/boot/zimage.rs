@@ -120,17 +120,29 @@ impl<'a> ZImage<'a> {
         let table_magic = read_u32(zimg, 0x34);
         let table_offset = read_u32(zimg, 0x38);
 
-        // Step 2: Locate the start of compressed piggy payload by scanning forward from 0x28
+        // Step 2: Locate the start of compressed piggy payload by scanning forward from 0x28.
+        // Compressed payload sections (.piggydata) are 4-byte aligned in Linux kernel linker scripts.
         let mut piggy_ptr = None;
-        for curr in 0x28..zimg.len() {
-            if check_fmt(&zimg[curr..]) != FileFormat::UNKNOWN {
-                piggy_ptr = Some(curr);
+        for curr in (0x28..zimg.len()).step_by(4) {
+            let fmt = check_fmt(&zimg[curr..]);
+            if fmt.is_compressed() {
+                piggy_ptr = Some((curr, fmt));
                 break;
             }
         }
+        // Fallback to unaligned scan if 4-byte aligned scan yields no candidate
+        if piggy_ptr.is_none() {
+            for curr in 0x28..zimg.len() {
+                let fmt = check_fmt(&zimg[curr..]);
+                if fmt.is_compressed() {
+                    piggy_ptr = Some((curr, fmt));
+                    break;
+                }
+            }
+        }
 
-        let piggy_off = match piggy_ptr {
-            Some(off) => off,
+        let (piggy_off, fmt) = match piggy_ptr {
+            Some((off, fmt)) => (off, fmt),
             None => {
                 eprintln!("! Could not find zImage piggy, keeping raw kernel");
                 return None;
@@ -138,7 +150,6 @@ impl<'a> ZImage<'a> {
         };
 
         let head = &zimg[..piggy_off];
-        let fmt = check_fmt(&zimg[piggy_off..]);
 
         // Step 3: Scan for the LC0 position table (arch/arm/boot/compressed/head.S)
         // LC0 contains position-independent runtime pointers: _start, _got_start, _got_end, _edata, etc.
@@ -315,6 +326,7 @@ impl<'a> ZImage<'a> {
         let orig_got_start = (orig_piggy_end + 3) & !3;
         let new_piggy_end = (self.head.len() as u32).wrapping_add(payload_sz as u32).wrapping_add(start);
         let new_got_start = (new_piggy_end + 3) & !3;
+        let delta_piggy = new_piggy_end.wrapping_sub(orig_piggy_end);
         let delta_got = new_got_start.wrapping_sub(orig_got_start);
 
         // Step 2: Patch zimage_hdr->end (offset 0x2C) with new total image end address
@@ -325,7 +337,8 @@ impl<'a> ZImage<'a> {
         if self.off_inflated_size != 0 {
             let off = self.off_inflated_size as usize;
             let val = read_u32(&head_stub, off);
-            write_u32(&mut head_stub, off, val.wrapping_add(delta_got));
+            // This literal points into the payload, before GOT alignment padding.
+            write_u32(&mut head_stub, off, val.wrapping_add(delta_piggy));
         }
 
         // Step 4: Patch the LC0 position table (arch/arm/boot/compressed/head.S)
@@ -356,8 +369,7 @@ impl<'a> ZImage<'a> {
         // Step 6: Patch .table (_magic_table) TagKernelSize entry
         if self.off_table != 0 {
             let off = self.off_table as usize;
-            let val = read_u32(&head_stub, off);
-            write_u32(&mut head_stub, off, val.wrapping_add(delta_got));
+            write_u32(&mut head_stub, off, new_piggy_end.wrapping_sub(4));
         }
 
         // Step 7: Disassemble and patch R_ARM_GOTPC PC-relative literal pool entries in .text

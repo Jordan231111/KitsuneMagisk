@@ -176,14 +176,19 @@ int su_client_main(int argc, char *argv[]) {
                 break;
             case 'g':
             case 'G': {
-                vector<gid_t> gids;
                 if (int gid = parse_int(optarg); gid >= 0) {
-                    gids.insert(c == 'g' ? gids.begin() : gids.end(), gid);
+                    if (c == 'g' && !req.gids.empty()) {
+                        // Vec can reallocate; do not pass a reference into itself.
+                        const auto previous = req.gids[0];
+                        req.gids[0] = gid;
+                        req.gids.push_back(previous);
+                    } else {
+                        req.gids.push_back(gid);
+                    }
                 } else {
                     fprintf(stderr, "Invalid GID: %s\n", optarg);
                     usage(EXIT_FAILURE);
                 }
-                ranges::copy(gids, std::back_inserter(req.gids));
                 break;
             }
             default:

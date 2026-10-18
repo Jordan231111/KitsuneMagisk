@@ -46,7 +46,7 @@ from tools.system_mode.qualification import (  # noqa: E402
 )
 
 
-MANAGER_APPLICATION_ID = "io.github.huskydg.magisk.next"
+MANAGER_APPLICATION_ID = "io.github.jordan231111.magisk"
 MANAGER_COMPONENT = f"{MANAGER_APPLICATION_ID}/com.topjohnwu.magisk.ui.MainActivity"
 
 

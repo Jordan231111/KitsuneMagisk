@@ -15,7 +15,7 @@ from tools import update_service as update
 
 
 def fixture():
-    trust = {"repository": "Jordan231111/KitsuneMagisk", "application_id": "io.github.huskydg.magisk.next",
+    trust = {"repository": "Jordan231111/KitsuneMagisk", "application_id": "io.github.jordan231111.magisk",
              "certificate_sha256": "a" * 64}
     data = {
         "schema": 1, "channel": "beta", "build_channel": "next-system-experimental", "sequence": 2, "issued_at": 1000, "expires_at": 2000,

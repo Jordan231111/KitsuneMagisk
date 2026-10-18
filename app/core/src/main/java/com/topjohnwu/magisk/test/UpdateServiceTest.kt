@@ -39,6 +39,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
@@ -310,6 +311,31 @@ class UpdateServiceTest : BaseTest {
 
     @Test fun metadataServiceUnavailableDoesNotFallBack() {
         rejects { client("unavailable").fetch("https://raw.githubusercontent.com/fixture/beta.json", "beta") }
+    }
+
+    @Test fun concurrentClientsCreateStateDirectory() {
+        val workers = Executors.newFixedThreadPool(8)
+        try {
+            repeat(32) {
+                assertTrue(File(isolated.filesDir, "updates").deleteRecursively())
+                val ready = CountDownLatch(8)
+                val start = CountDownLatch(1)
+                val clients = List(8) {
+                    workers.submit<UpdateClient> {
+                        ready.countDown()
+                        assertTrue(start.await(10, TimeUnit.SECONDS))
+                        client()
+                    }
+                }
+                assertTrue(ready.await(10, TimeUnit.SECONDS))
+                start.countDown()
+                clients.forEach { assertNotNull(it.get(10, TimeUnit.SECONDS)) }
+                assertTrue(File(isolated.filesDir, "updates").isDirectory)
+            }
+        } finally {
+            workers.shutdownNow()
+            assertTrue(workers.awaitTermination(10, TimeUnit.SECONDS))
+        }
     }
 
     @Test fun verifiesCurrentManagerBeforeDynamicLoading() {

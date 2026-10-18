@@ -2,14 +2,24 @@ mod daemon;
 mod provider;
 
 use crate::thread::ThreadPool;
-use base::{fd_get_attr, libc};
+use base::{LibcReturn, libc};
 pub use daemon::{ZygiskState, zygisk_should_load_module};
+use std::mem::MaybeUninit;
 use std::os::fd::RawFd;
 
 #[unsafe(no_mangle)]
 extern "C" fn exec_companion_entry(client: RawFd, companion_handler: extern "C" fn(RawFd)) {
     ThreadPool::exec_task(move || {
-        let Ok(s1) = fd_get_attr(client) else {
+        let identity = |fd| {
+            let mut st = MaybeUninit::<libc::stat>::uninit();
+            unsafe { libc::fstat(fd, st.as_mut_ptr()) }.check_err().ok()?;
+            let st = unsafe { st.assume_init() };
+            Some((st.st_dev, st.st_ino))
+        };
+        // Socket identity does not require a SELinux label. Context queries
+        // can fail with EOPNOTSUPP on otherwise valid sockets in containers.
+        let Some(before) = identity(client) else {
+            unsafe { libc::close(client) };
             return;
         };
 
@@ -19,10 +29,7 @@ extern "C" fn exec_companion_entry(client: RawFd, companion_handler: extern "C" 
         // accidentally close a re-used file descriptor.
         // This check is required because the module companion
         // handler could've closed the file descriptor already.
-        if let Ok(s2) = fd_get_attr(client)
-            && s1.st.st_dev == s2.st.st_dev
-            && s1.st.st_ino == s2.st.st_ino
-        {
+        if identity(client) == Some(before) {
             unsafe { libc::close(client) };
         }
     });

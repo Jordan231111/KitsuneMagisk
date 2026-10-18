@@ -12,6 +12,14 @@ on:
       - "tools/next_system_baseline.py"
       - "tools/port_ledger.py"
       - "tools/early_mount_fixtures.py"
+      - "tools/boot_qualification.py"
+      - "tools/property_qualification.py"
+      - "tools/device_qualification.py"
+      - "tests/test_device_qualification.py"
+      - "tests/test_live_setup.py"
+      - "tests/test_preinit_module_environment.py"
+      - "docs/device-pr15*"
+      - "compatibility/**"
       - "tests/test_port_ledger.py"
       - "docs/port-ledger*"
       - "docs/port-history/**"
@@ -75,6 +83,9 @@ jobs:
           TMPDIR="$HOME/.kitsune-host-tests" \
             python3 -m unittest discover -s tests -v
 
+      - name: Verify generated compatibility records
+        run: python3 tools/device_qualification.py render --check
+
   security-audit:
     name: Audit native Rust dependencies
     runs-on: ubuntu-24.04
@@ -117,10 +128,22 @@ jobs:
       - name: Test module staging and early parser
         run: scripts/env.py python3 -m unittest discover -s tests -p test_module_contract.py -v
 
+      - name: Test managed boot update protection
+        run: scripts/env.py python3 -m unittest discover -s tests -p test_boot_update.py -v
+
+      - name: Test zygote peer identity guards
+        run: scripts/env.py python3 -m unittest discover -s tests -p test_zygote_identity.py -v
+
+      - name: Test package lookup during manager migration
+        run: scripts/env.py python3 -m unittest discover -s tests -p test_package_lookup.py -v
+
+      - name: Test compressed image format detection
+        run: scripts/env.py python3 -m unittest discover -s tests -p test_boot_format.py -v
+
       - name: Verify next-system source baseline
         run: >-
           python tools/next_system_baseline.py
-          --manifest docs/next-system-pr14.json --source
+          --manifest docs/next-system-pr15.json --source
 
       - name: Create disposable release signer
         shell: bash
@@ -157,7 +180,7 @@ jobs:
       - name: Verify next-system artifacts
         run: >-
           python tools/next_system_baseline.py
-          --manifest docs/next-system-pr14.json --source --artifacts out
+          --manifest docs/next-system-pr15.json --source --artifacts out
           --report out/next-system-baseline-report.json
 
       - name: Stop gradle daemon
@@ -201,7 +224,7 @@ jobs:
         run: ./app/gradlew --stop
 
   avd-test:
-    name: Test API ${{ matrix.version }} (x86_64)
+    name: Test API ${{ matrix.version }} ${{ matrix.type }} (x86_64)
     runs-on: ubuntu-24.04
     needs: build
     if: ${{ github.event_name != 'push' }}
@@ -233,20 +256,47 @@ jobs:
       - name: Enable KVM group perms
         run: .github/kvm.sh
 
+      - name: Download SDK image
+        timeout-minutes: 30
+        run: scripts/avd.sh dl ${{ matrix.version }} ${{ matrix.type }}
+
       - name: Run AVD test
         timeout-minutes: 30
         env:
+          AVD_TEST_SKIP_DOWNLOAD: 1
           AVD_TEST_LOG: 1
+          ANDROID_EMULATOR_FEATURES: ${{ matrix.version == 23 && '-GLDMA,-GLDMA2,-GLESDynamicVersion' || ((matrix.version == 24 || matrix.version == 25) && '-GLDMA,-GLDMA2' || '') }}
+          AVD_QUALIFICATION_DIR: out/device-qualification
+          AVD_STOCK_BOOT_COUNT: ${{ (matrix.version == 23 || matrix.version == 28 || matrix.version == 29) && '4' || (startsWith(matrix.version, '37.') && '1' || '0') }}
+          AVD_STOCK_PROVISIONING_BARRIER: ${{ matrix.version == 23 && '1' || '0' }}
+          AVD_STOCK_FRAMEWORK_RESTART: ${{ (matrix.version == 23 || matrix.version == 28 || matrix.version == 29) && '1' || '0' }}
+          AVD_STOCK_AM_ITERATIONS: ${{ startsWith(matrix.version, '37.') && '50' || '0' }}
+          AVD_GPU_MODE: ${{ (matrix.version == 23 || matrix.version == 28 || matrix.version == 29) && 'swiftshader' || 'swiftshader_indirect' }}
+          AVD_BOOT_FIXTURES: ${{ matrix.version == 35 && '1' || '' }}
         run: scripts/avd.sh test ${{ matrix.version }} ${{ matrix.type }}
+
+      - name: Retain exact guest and boot fixture evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "device-${{ matrix.version }}-${{ matrix.type }}-x86_64"
+          path: |
+            out/device-qualification
+            boot-fixtures-*.json
+            property-fixtures-*.json
+            stock-controls
+          if-no-files-found: warn
 
       - name: Upload logs on error
         if: ${{ failure() }}
         uses: actions/upload-artifact@v6
         with:
-          name: "avd-logs-${{ matrix.version }}"
+          name: "avd-logs-${{ matrix.version }}-${{ matrix.type }}"
           path: |
             kernel.log
             logcat.log
+            logcat-failure.log
+            anr-failure.log
 
   avd-test-32:
     name: Test API ${{ matrix.version }} (x86)
@@ -271,12 +321,40 @@ jobs:
       - name: Enable KVM group perms
         run: .github/kvm.sh
 
+      - name: Download SDK image
+        timeout-minutes: 30
+        env:
+          FORCE_32_BIT: 1
+        run: scripts/avd.sh dl ${{ matrix.version }}
+
       - name: Run AVD test
         timeout-minutes: 30
         env:
           FORCE_32_BIT: 1
+          AVD_TEST_SKIP_DOWNLOAD: 1
           AVD_TEST_LOG: 1
+          # Old Goldfish kernels can panic in goldfish_pipe_dma_clear_lock.
+          # Use the emulator's ordinary copy path; keep all guest crash checks.
+          ANDROID_EMULATOR_FEATURES: ${{ matrix.version == 23 && '-GLDMA,-GLDMA2,-GLESDynamicVersion' || ((matrix.version == 24 || matrix.version == 25) && '-GLDMA,-GLDMA2' || '') }}
+          AVD_QUALIFICATION_DIR: out/device-qualification
+          AVD_STOCK_BOOT_COUNT: ${{ (matrix.version == 23 || matrix.version == 28 || matrix.version == 29) && '4' || '0' }}
+          AVD_STOCK_PROVISIONING_BARRIER: ${{ matrix.version == 23 && '1' || '0' }}
+          AVD_STOCK_FRAMEWORK_RESTART: ${{ (matrix.version == 23 || matrix.version == 28 || matrix.version == 29) && '1' || '0' }}
+          AVD_GPU_MODE: ${{ (matrix.version == 23 || matrix.version == 28 || matrix.version == 29) && 'swiftshader' || 'swiftshader_indirect' }}
+          AVD_BOOT_FIXTURES: ${{ matrix.version == 29 && '1' || '' }}
         run: scripts/avd.sh test ${{ matrix.version }}
+
+      - name: Retain exact guest and boot fixture evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "device-${{ matrix.version }}-x86"
+          path: |
+            out/device-qualification
+            boot-fixtures-*.json
+            property-fixtures-*.json
+            stock-controls
+          if-no-files-found: warn
 
       - name: Upload logs on error
         if: ${{ failure() }}
@@ -286,6 +364,8 @@ jobs:
           path: |
             kernel.log
             logcat.log
+            logcat-failure.log
+            anr-failure.log
 
   cf-test:
     name: Test ${{ matrix.device }}
@@ -295,6 +375,8 @@ jobs:
     env:
       CF_HOME: /home/runner/aosp_cf_phone
       AVD_INSTRUMENT_TIMEOUT: 240
+      AVD_QUALIFICATION_DIR: out/device-qualification
+      AVD_TIMEOUT_DIAGNOSTICS: 1
     strategy:
       fail-fast: false
       matrix:
@@ -323,6 +405,14 @@ jobs:
       - name: Run Cuttlefish test
         timeout-minutes: 30
         run: sudo -E -u $USER scripts/cuttlefish.sh test
+
+      - name: Retain Cuttlefish Direct Install evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "device-${{ matrix.device }}"
+          path: out/device-qualification
+          if-no-files-found: warn
 
       - name: Upload logs on error
         if: ${{ failure() }}

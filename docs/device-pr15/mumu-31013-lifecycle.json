@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "target": "MuMuPlayer Pro Android Device-1",
+  "source_commit": "95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+  "app_version_code": 31013,
+  "runtime_record": "docs/device-pr15/mumu-31013-debug.json",
+  "full_suite": {
+    "junit_tests": 117,
+    "passed": true,
+    "whiteout_transaction_checks": true,
+    "root_stress_requests": 48
+  },
+  "viper": {
+    "build": {
+      "app_version_code": 31013,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "1d2ce40932265720009f8138c83b6369ea44503795639f438faef97eb01495e8",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+      "schema": 1,
+      "source_commit": "95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+      "source_digest": "6eb346bb05672c02badedb8c99bd86259c486eb95d67b015591ce02951089def",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.95f6f1fd"
+    },
+    "module_sha256": "4dea5d0a5e1b99041398aabea52f14df3db401e7a37bbec877251452f17f4cfb",
+    "installed": true,
+    "enabled_after_cold_boot": true,
+    "audio_configuration": "v4a_fx {\n    path /system/vendor/lib/soundfx/libv4a_fx.so\n  v4a_standard_fx {\n    library v4a_fx",
+    "hardware_audio_processing_qualified": false
+  },
+  "uninstall": {
+    "build": {
+      "app_version_code": 31013,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "1d2ce40932265720009f8138c83b6369ea44503795639f438faef97eb01495e8",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+      "schema": 1,
+      "source_commit": "95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+      "source_digest": "6eb346bb05672c02badedb8c99bd86259c486eb95d67b015591ce02951089def",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.95f6f1fd"
+    },
+    "uninstall": "passed",
+    "cold_boot_without_kitsune": "passed",
+    "vendor_root_off_adb_uid": 2000,
+    "user_sentinel_preserved": true,
+    "database_integrity": "ok",
+    "database_version": 12
+  },
+  "external_restore": {
+    "device": "Android Device-1",
+    "state": "stopped",
+    "restored_disk_sha256": {
+      "system.qcow2": "5a6bcb206a71039b6e212124e888a76a78acc8181bda18fc279e36c7ba3437ec",
+      "data.qcow2": "d1f204adabe8c6973d7787c6067e4227dab45dc98303e9b6fee4afcc8c67734f"
+    },
+    "settings_match_original": true,
+    "file_modes_match_original": true
+  },
+  "limits": [
+    "Hardware audio output is unqualified.",
+    "Physical phones are unqualified.",
+    "This record accepts candidate 31013 only."
+  ]
+}

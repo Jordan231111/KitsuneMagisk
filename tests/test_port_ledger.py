@@ -91,6 +91,30 @@ class PortLedgerTest(unittest.TestCase):
         self.assertFalse(release["passed"])
         self.assertEqual([{ "kind": "deferred-feature", "feature": "SYS-001" }], release["gaps"])
 
+    def test_unavailable_target_remains_a_release_blocker(self) -> None:
+        self.review()
+        row = self.ledger["features"][0]
+        row.update(decision="unqualified-target", owner_pr=16, qualification_blocker={
+            "target": "Physical recovery target", "reason": "No matching target available",
+            "evidence": "docs/device-qualification.md", "implementation_retained": True,
+        })
+        evidence = self.root / "docs/device-qualification.md"
+        evidence.parent.mkdir()
+        evidence.write_text("No matching recovery target was available.\n")
+        self.assertTrue(audit(self.root, self.ledger)["passed"])
+        release = audit(self.root, self.ledger, release=True)
+        self.assertFalse(release["passed"])
+        self.assertEqual([{"kind": "unqualified-target", "feature": "SYS-001"}], release["gaps"])
+        for update in ({"owner_pr": 15}, {"qualification_blocker": {}},
+                       {"acceptance_evidence": "claimed pass"}):
+            with self.subTest(update=update):
+                ledger = copy.deepcopy(self.ledger)
+                ledger["features"][0].update(update)
+                with self.assertRaises(LedgerError):
+                    validate_ledger(ledger, SEED)
+        evidence.unlink()
+        self.assertFalse(audit(self.root, self.ledger)["passed"])
+
     def test_archive_digest_must_survive_git_text_conversion(self) -> None:
         self.review()
         (self.root / ".gitattributes").write_bytes(b"* text eol=lf\n")

@@ -99,9 +99,9 @@ class MagiskAppTest : BaseTest {
         }
         try {
             AutoCloseInputStream(uiAutomation.executeShellCommand(cmd)).reader().use {
-                // Cold Cuttlefish can take over ten seconds to create the UI.
+                // Include the bounded cold-framework launch attempts in this wait.
                 // Stay below the daemon's seventy-second response deadline.
-                val suRequest = monitor.waitForActivityWithTimeout(TimeUnit.SECONDS.toMillis(30))
+                val suRequest = monitor.waitForActivityWithTimeout(TimeUnit.SECONDS.toMillis(60))
                 assertNotNull("SuRequestActivity is not launched", suRequest)
                 assertTrue(
                     "Cannot grant root permission from shell",

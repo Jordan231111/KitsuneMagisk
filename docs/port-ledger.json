@@ -898,11 +898,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 supplies boot-image installation and init/policy primitives, but no persistent Direct-System transaction or its manifest-owned recovery UI. PR7/PR7A provide the maintained implementation; the paired emulator evidence and unsupported-layout boundaries determine retention.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Qualified writable MuMu Android12 only; retain exact host recovery authorization. Other layouts remain capability-gated.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on direct-System core install on a writable system layout.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Qualified writable MuMu Android12 only; retain exact host recovery authorization. Other layouts remain capability-gated.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -914,7 +914,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-002",
@@ -962,11 +963,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 supplies boot-image installation and init/policy primitives, but no persistent Direct-System transaction or its manifest-owned recovery UI. PR7/PR7A provide the maintained implementation; the paired emulator evidence and unsupported-layout boundaries determine retention.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Explicit manager consent, qualification, upgrade, recovery and uninstall exercised on the qualified MuMu instance.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on manager entry, eligibility, warning, results, and recovery UI.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Explicit manager consent, qualification, upgrade, recovery and uninstall exercised on the qualified MuMu instance.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -978,7 +979,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-003",
@@ -1025,11 +1027,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 supplies boot-image installation and init/policy primitives, but no persistent Direct-System transaction or its manifest-owned recovery UI. PR7/PR7A provide the maintained implementation; the paired emulator evidence and unsupported-layout boundaries determine retention.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Persistent MuMu bootstrap and separate BlueStacks host-image bootstrap exercised; their ownership and pre-init limits remain distinct.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on persistent payload, ABI binaries, config, init triggers, tmpfs/applet bootstrap.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Persistent MuMu bootstrap and separate BlueStacks host-image bootstrap exercised; their ownership and pre-init limits remain distinct.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1041,7 +1043,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-004",
@@ -1088,11 +1091,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 supplies boot-image installation and init/policy primitives, but no persistent Direct-System transaction or its manifest-owned recovery UI. PR7/PR7A provide the maintained implementation; the paired emulator evidence and unsupported-layout boundaries determine retention.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: MuMu policy backup/load/restoration and enforcing AVD ordinary-root policy exercised. Other policy subcontexts remain unqualified.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on live/offline SELinux policy selection, backup, patch, load, and restoration.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "MuMu policy backup/load/restoration and enforcing AVD ordinary-root policy exercised. Other policy subcontexts remain unqualified.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1104,7 +1107,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-005",
@@ -1151,11 +1155,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 supplies boot-image installation and init/policy primitives, but no persistent Direct-System transaction or its manifest-owned recovery UI. PR7/PR7A provide the maintained implementation; the paired emulator evidence and unsupported-layout boundaries determine retention.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Owned-source upgrade preserves data and module whiteouts. Legacy/unowned or cross-package transitions use uninstall, verified restore and fresh qualification, not automatic payload adoption.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on upgrade/reinstall and migration from legacy payload, RC, config, sidecar, and addon layouts.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Owned-source upgrade preserves data and module whiteouts. Legacy/unowned or cross-package transitions use uninstall, verified restore and fresh qualification, not automatic payload adoption.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1167,7 +1171,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-006",
@@ -1214,11 +1219,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 supplies boot-image installation and init/policy primitives, but no persistent Direct-System transaction or its manifest-owned recovery UI. PR7/PR7A provide the maintained implementation; the paired emulator evidence and unsupported-layout boundaries determine retention.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Complete MuMu uninstall preserves declared user data and DB integrity, removes the owned runtime, then restores original disk/settings bytes.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on exact System Mode uninstall and restoration of init/policy/runtime state.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Complete MuMu uninstall preserves declared user data and DB integrity, removes the owned runtime, then restores original disk/settings bytes.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1230,7 +1235,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-007",
@@ -1277,11 +1283,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The official recovery entry installs through boot images and has no SYSTEMMODE or systemmagisk-filename dispatch. Preserve ordinary ZIP installation. The implicit filename privilege trigger is intentionally unavailable in Next; the explicit recovery adapter needs its PR15 decision and migration guidance.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Retire recovery ZIP SYSTEMMODE dispatch: it cannot supply the live target and external recovery authorization. Use ordinary patched-image recovery where supported, or boot Android and qualify the writable target.",
+      "decision": "retired-with-evidence",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on explicit recovery/ZIP `SYSTEMMODE` entry.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retire recovery ZIP SYSTEMMODE dispatch: it cannot supply the live target and external recovery authorization. Use ordinary patched-image recovery where supported, or boot Android and qualify the writable target.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1291,7 +1297,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-008",
@@ -1401,11 +1408,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official addon.d updates a boot-image installation. That does not establish survival of an init/policy payload in /system through a changed system image. Require an actual OTA cycle before retaining the historical System Mode claim.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Retire automatic System Mode addon.d replay across replaced system images. Restore/requalify the changed image before reinstalling. Ordinary Magisk addon.d remains separate and retained.",
+      "decision": "retired-with-evidence",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on custom-ROM OTA/`addon.d` survival.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retire automatic System Mode addon.d replay across replaced system images. Restore/requalify the changed image before reinstalling. Ordinary Magisk addon.d remains separate and retained.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1415,7 +1422,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-010",
@@ -1462,11 +1470,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official ordinary installation retains Android 6 support. It does not provide the independent persistent System Mode launcher needed for API 23-24; those routes remain separately gated.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Retire the unqualified API23\u201324 System Mode claim; the installer rejects it. Ordinary Android6 boot-image root remains covered by its CI lanes.",
+      "decision": "retired-with-evidence",
       "owner_pr": 15,
       "affected_users": "Users of Android 6 and 7 relying on the historical System Mode option.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Retire the unqualified API23\u201324 System Mode claim; the installer rejects it. Ordinary Android6 boot-image root remains covered by its CI lanes.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -1477,7 +1485,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "HID-001",
@@ -3071,10 +3080,10 @@
         "metadata-bb4af859-note-md"
       ],
       "upstream_overlap": "PR11 defines the provider boundary; this separately named behavior remains behind its original integration/device qualification gate.",
-      "decision": "deferred-to-PR15",
-      "owner_pr": 15,
+      "decision": "unqualified-target",
+      "owner_pr": 16,
       "affected_users": "Kitsune users relying on grapheneOS Android 14/QPR2 specialization compatibility.",
-      "migration": "The four restored JNI descriptors are tested in PR11; do not advertise physical GrapheneOS support from descriptor fixtures. PR15 must qualify the exact OS/device and recovery route.",
+      "migration": "Implementation retained; do not advertise this target as qualified. PR16 requires matching runtime and recovery evidence before production promotion. No matching physical phone is available; descriptor tests do not qualify that OS/device combination.",
       "first_shipped": "metadata-bb4af859-note-md",
       "last_shipped": "k27-2-4-archive",
       "upstream_evidence": [
@@ -3087,7 +3096,13 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "parent_feature": "ZYG-003"
+      "parent_feature": "ZYG-003",
+      "qualification_blocker": {
+        "target": "Physical GrapheneOS Android 14/QPR2 device and recovery route",
+        "reason": "No matching physical phone is available; descriptor tests do not qualify that OS/device combination.",
+        "evidence": "docs/device-qualification.md",
+        "implementation_retained": true
+      }
     },
     {
       "id": "ZYG-004",
@@ -5673,11 +5688,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official boot signing imports p521 ECDSA support. Reuse it, but retain positive/negative image-signature fixtures before declaring the historical P-521 behavior inherited-and-tested.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: P-521 and other supported AVB1 algorithms independently verified with OpenSSL; DER ECDSA and certificate/key mismatch checks corrected. Physical bootloader acceptance remains separate.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on p-521 boot-image signing and verification.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "P-521 and other supported AVB1 algorithms independently verified with OpenSSL; DER ECDSA and certificate/key mismatch checks corrected. Physical bootloader acceptance remains separate.",
       "first_shipped": "k27-2-4-inherited",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5687,7 +5702,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "BOOT-002",
@@ -5721,11 +5737,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The maintained build has 16 KiB alignment and PR7A real-page-size runtime evidence. Historical enable/disable/re-enable incarnations remain separate source observations; a 4 KiB emulator cannot qualify real 16 KiB behavior.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Four-ABI ELF packaging plus real ARM64 4KiB/16KiB debug/release AVD boots. Do not infer physical ARM32 or arbitrary third-party 16KiB module support.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on 16 KiB binary/ZIP/runtime support, including disable/re-enable history.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Four-ABI ELF packaging plus real ARM64 4KiB/16KiB debug/release AVD boots. Do not infer physical ARM32 or arbitrary third-party 16KiB module support.",
       "first_shipped": "k27-2-4-inherited",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5736,7 +5752,8 @@
         "record": "shipment-source-review",
         "basis": "Inherited k4 enables flexible page sizes, moved k4 disables them, and k31 re-enables them. A source flag is not a runtime or ZIP-alignment pass.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "BOOT-003",
@@ -5762,11 +5779,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official tar output sets BIGNUMBER_STAR and LONGFILE_GNU and handles boot entries as streams. This overlaps large archive support; an actual greater-than-8-GiB entry/round-trip fixture remains required before acceptance.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Actual manager patches a tar entry larger than8GiB; headers, input preservation, restored init and following managed cold boot checked.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on tar input/output with entries larger than 8 GiB.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Actual manager patches a tar entry larger than8GiB; headers, input preservation, restored init and following managed cold boot checked.",
       "first_shipped": "k27-2-1",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5776,7 +5793,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "BOOT-004",
@@ -5803,11 +5821,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The official MagiskBoot command implementation is the maintained reference for split/unpack behavior. PR15 must test compressed-kernel preservation and exact command compatibility against the historical split -n behavior.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Native magiskboot split-n fixture preserves compressed kernel and DTB; ordinary split decompresses as expected.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on `magiskboot split -n` compressed-kernel preservation.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Native magiskboot split-n fixture preserves compressed kernel and DTB; ordinary split decompresses as expected.",
       "first_shipped": "k27-2-1",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5817,7 +5835,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "BOOT-005",
@@ -5846,11 +5865,11 @@
         "original-lite-bundle",
         "metadata-96724b2e-note_lite-md"
       ],
-      "upstream_overlap": "Official init now uses maintained Rust layout/SELinux handling and still recognizes /init.real as an input path. That does not justify reinstating the removed Sony trick or old /init hexpatch. PR15 must compare the resulting 2SI/Sony boot behavior on exact image fixtures.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Maintained 2SI path boots actual SDK images and restores original fixture init. The separate Sony-specific qualification remains open.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on 2SI transition avoiding `/init` hexpatch when possible.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance. The recovered Lite source already contains the 2SI transition before the first frozen Full tag; its source-to-release relation must be included when closing the first-shipment range.",
+      "migration": "Maintained 2SI path boots actual SDK images and restores original fixture init. The separate Sony-specific qualification remains open.",
       "first_shipped": "metadata-96724b2e-note_lite-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5861,7 +5880,8 @@
         "record": "shipment-source-review",
         "basis": "Recovered first-Lite source contains the 2SI handoff; later Full tags retain it. This is a source-associated range with the partial binding limit from lite-source-bindings, not a native APK reproduction.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "BOOT-006",
@@ -5891,10 +5911,10 @@
         "shipment-source-review"
       ],
       "upstream_overlap": "Official init now uses maintained Rust layout/SELinux handling and still recognizes /init.real as an input path. That does not justify reinstating the removed Sony trick or old /init hexpatch. PR15 must compare the resulting 2SI/Sony boot behavior on exact image fixtures.",
-      "decision": "deferred-to-PR15",
-      "owner_pr": 15,
+      "decision": "unqualified-target",
+      "owner_pr": 16,
       "affected_users": "Kitsune users relying on sony `init.real` handling removal and resulting legacy-Sony compatibility.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Implementation retained; do not advertise this target as qualified. PR16 requires matching runtime and recovery evidence before production promotion. No matching Sony image/device and stock recovery route are available.",
       "first_shipped": "k27-2-1",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5905,6 +5925,12 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
+      },
+      "qualification_blocker": {
+        "target": "Legacy Sony boot/recovery target using init.real",
+        "reason": "No matching Sony image/device and stock recovery route are available.",
+        "evidence": "docs/device-qualification.md",
+        "implementation_retained": true
       }
     },
     {
@@ -5938,11 +5964,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official tmpfs and tool exposure supply the maintained base. Historical missing-/sbin creation and PATH behavior remains a layout regression owned by PR15, without a vendor-specific testing requirement.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Default application PATH, su aliases and existing debug_ramdisk behavior tested on owned emulator routes; no arbitrary sbin creation is assumed.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Emulator users relying on /sbin PATH and missing-directory creation.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Default application PATH, su aliases and existing debug_ramdisk behavior tested on owned emulator routes; no arbitrary sbin creation is assumed.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5953,7 +5979,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "DEV-002",
@@ -5977,11 +6004,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official boot_patch.sh includes the Samsung PROCA rename, while the historical Vivo do_mount_check patch is not present there. Preserve separate vendor/image decisions and regression fixtures; emulator root does not qualify either physical-phone workaround.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Exact historical Vivo encoded-system patch restored and verified against minimized native kernel fixture. No physical Vivo support claim.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on vivo `do_mount_check` kernel workaround.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Exact historical Vivo encoded-system patch restored and verified against minimized native kernel fixture. No physical Vivo support claim.",
       "first_shipped": "k27-2-2",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -5991,7 +6018,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "DEV-003",
@@ -6015,11 +6043,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official boot_patch.sh includes the Samsung PROCA rename, while the historical Vivo do_mount_check patch is not present there. Preserve separate vendor/image decisions and regression fixtures; emulator root does not qualify either physical-phone workaround.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Independent Samsung PROCA byte fixture passes without depending on the Vivo patch. No physical Samsung boot claim.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on historical Samsung PROCA disable/rename workaround.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Independent Samsung PROCA byte fixture passes without depending on the Vivo patch. No physical Samsung boot claim.",
       "first_shipped": "k27-2-2",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6029,7 +6057,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "ORD-001",
@@ -6071,11 +6100,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official supplies ordinary patch-file, direct, inactive-slot, recovery and restoration routes. Next retains that base and PR7A ordinary emulator evidence; System Mode success cannot replace phone-specific boot/init_boot/vendor_boot/recovery and OTA qualification.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Native boot/init_boot/vendor_boot fixture formats and real manager file/tar processing verified; physical flashability and recovery remain separate gates.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on select-and-Patch for `boot`, `init_boot`, `vendor_boot`, recovery, and supported archives.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Native boot/init_boot/vendor_boot fixture formats and real manager file/tar processing verified; physical flashability and recovery remain separate gates.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6088,7 +6117,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "ORD-002",
@@ -6112,11 +6142,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official supplies ordinary patch-file, direct, inactive-slot, recovery and restoration routes. Next retains that base and PR7A ordinary emulator evidence; System Mode success cannot replace phone-specific boot/init_boot/vendor_boot/recovery and OTA qualification.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Actual Cuttlefish virtual init_boot Direct Install passed in both variants in CI run39019753847. Physical partition/OTA behavior remains separately unqualified.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on ordinary Direct Install.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Actual Cuttlefish virtual init_boot Direct Install passed in both variants in CI run39019753847. Physical partition/OTA behavior remains separately unqualified.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6129,7 +6159,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "ORD-003",
@@ -6154,10 +6185,10 @@
         "shipment-source-review"
       ],
       "upstream_overlap": "Official supplies ordinary patch-file, direct, inactive-slot, recovery and restoration routes. Next retains that base and PR7A ordinary emulator evidence; System Mode success cannot replace phone-specific boot/init_boot/vendor_boot/recovery and OTA qualification.",
-      "decision": "deferred-to-PR15",
-      "owner_pr": 15,
+      "decision": "unqualified-target",
+      "owner_pr": 16,
       "affected_users": "Kitsune users relying on inactive-slot installation and OTA completion.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Implementation retained; do not advertise this target as qualified. PR16 requires matching runtime and recovery evidence before production promotion. AVDs do not supply the requested OEM bootloader, slot lifecycle and recovery evidence.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6170,6 +6201,12 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
+      },
+      "qualification_blocker": {
+        "target": "Physical A/B device and complete OEM OTA cycle",
+        "reason": "AVDs do not supply the requested OEM bootloader, slot lifecycle and recovery evidence.",
+        "evidence": "docs/device-qualification.md",
+        "implementation_retained": true
       }
     },
     {
@@ -6195,10 +6232,10 @@
         "shipment-source-review"
       ],
       "upstream_overlap": "Official supplies ordinary patch-file, direct, inactive-slot, recovery and restoration routes. Next retains that base and PR7A ordinary emulator evidence; System Mode success cannot replace phone-specific boot/init_boot/vendor_boot/recovery and OTA qualification.",
-      "decision": "deferred-to-PR15",
-      "owner_pr": 15,
+      "decision": "unqualified-target",
+      "owner_pr": 16,
       "affected_users": "Kitsune users relying on ordinary recovery ZIP install/uninstall and stock restoration.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Implementation retained; do not advertise this target as qualified. PR16 requires matching runtime and recovery evidence before production promotion. No matching recovery environment and physical stock-restore target are available.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6211,6 +6248,12 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
+      },
+      "qualification_blocker": {
+        "target": "Physical recovery ZIP install/uninstall and stock restoration target",
+        "reason": "No matching recovery environment and physical stock-restore target are available.",
+        "evidence": "docs/device-qualification.md",
+        "implementation_retained": true
       }
     },
     {
@@ -6235,11 +6278,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official emulator live setup is an independent transient runtime lane. It is useful for ordinary core regression testing but does not establish persistent System Mode or external-recovery parity.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Stock SDK cold boot removes temporary live root. Rooted reinjection, full release suite, and non-root PATH bootstrap with daemon-independent completion passed; no persistent System Mode claim.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on emulator live setup independent of persistent System Mode.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Stock SDK cold boot removes temporary live root. Rooted reinjection, full release suite, and non-root PATH bootstrap with daemon-independent completion passed; no persistent System Mode claim.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6249,7 +6292,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "ORD-006",
@@ -6296,11 +6340,11 @@
         "k31-25fa2159",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The maintained multicall tools retain ordinary root, property, policy and boot-image interfaces. Historical behavior-specific differences need separate assertions; a successful --version invocation does not cover each applet or BusyBox invocation contract.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Real MagiskBoot fixtures, policy application, property comparison, SU/app PATH and BusyBox/script execution cover the declared emulator routes. Behavior-specific property/override and physical layout gates remain separate.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Kitsune users relying on magiskBoot, `resetprop`, `magiskpolicy`, multicall applets, and bundled BusyBox compatibility.",
-      "migration": "Keep the historical implementation available until the numbered owner supplies tested retention or explicit affected-user migration guidance.",
+      "migration": "Real MagiskBoot fixtures, policy application, property comparison, SU/app PATH and BusyBox/script execution cover the declared emulator routes. Behavior-specific property/override and physical layout gates remain separate.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6313,7 +6357,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "ORD-007",
@@ -6341,10 +6386,10 @@
         "shipment-source-review"
       ],
       "upstream_overlap": "Official v31.0 restores the property serial after notifying waiters and handles override contexts. Historical 14b35941 returns early for ro. properties without the ordinary notification path. Compare observable wait/global-counter behavior before declaring equivalence.",
-      "decision": "deferred-to-PR15",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Root applications and modules reading or waiting on Android system properties, including compatibility-sensitive read-only properties.",
-      "migration": "Keep the observed semantics explicit. Do not reapply the old early return if it regresses maintained property waiters or override contexts; publish any intentional behavior change with exact CLI fixtures.",
+      "migration": "Retain v31 property-area notifications and serial restoration; do not restore the old no-notification early return. Existing appcompat override values use delete/add so the shadow-tree name is translated correctly. These are property-format/runtime tests, not an OEM rollout claim.",
       "first_shipped": "metadata-02ba306e-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6354,7 +6399,8 @@
         "record": "shipment-source-review",
         "basis": "Explicit read-only serial semantics in the published note; pinned historical system_properties implementation and official v31 comparison are retained.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/device-pr15/resetprop-comparison.json records the legacy/current serial, area counter and waiter differences. docs/device-pr15/property-overrides.json reproduces the inherited override crash on candidate 31015 and official 30.7, then verifies the repaired CLI with independent platform readers; tools/property_qualification.py repeats the isolated test on final APKs."
     },
     {
       "id": "BOOT-007",
@@ -6381,11 +6427,11 @@
         "k31-70068d25",
         "shipment-source-review"
       ],
-      "upstream_overlap": "Official v31.0 rootdir.cpp retains access(NEW_INITRC_DIR \"/\" INIT_RC, F_OK), rather than testing only the directory. Retain the full-file check and qualify the existing-directory/missing-file fallback.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Compiled production full-file selection block covers existing-directory/missing-init fallback; native boot fixtures preserve original init.",
+      "decision": "inherited-and-tested",
       "owner_pr": 15,
       "affected_users": "Devices whose /system/etc/init/hw directory exists without an init.rc file, and recovery or vendor layouts needing the alternate init path.",
-      "migration": "Use the maintained full-path check. PR15 must show correct fallback when the directory exists but init.rc is absent, and preserve the selected original init through patch/unpatch.",
+      "migration": "Compiled production full-file selection block covers existing-directory/missing-init fallback; native boot fixtures preserve original init.",
       "first_shipped": "metadata-51fad676-note-md",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6395,7 +6441,8 @@
         "record": "shipment-source-review",
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "SYS-011",
@@ -6414,11 +6461,11 @@
         "metadata-64403347-note_lite-md",
         "shipment-source-review"
       ],
-      "upstream_overlap": "The maintained live-setup route selects its runtime tmpfs by layout. The Lite APK contains an independently observed fallback change absent from the recovered earlier Lite source; test missing-/sbin layouts explicitly rather than relying on the old directory-creation behavior.",
-      "decision": "deferred-to-PR15",
+      "upstream_overlap": "PR15 disposition: Existing debug_ramdisk bootstrap observed on the host-image emulator route without creating an unrelated sbin.",
+      "decision": "ported-and-tested-in-PR15",
       "owner_pr": 15,
       "affected_users": "Users of the later Lite build on system-as-root layouts without an existing /sbin, including emulator images.",
-      "migration": "Use a qualified existing runtime location and reject layouts without a supported hook. Do not create or remove an unrelated /sbin entry to imitate the older installer. Preserve the before/after APK-script evidence when reviewing this route.",
+      "migration": "Existing debug_ramdisk bootstrap observed on the host-image emulator route without creating an unrelated sbin.",
       "first_shipped": "metadata-64403347-note_lite-md",
       "last_shipped": "metadata-64403347-note_lite-md",
       "upstream_evidence": [
@@ -6428,7 +6475,8 @@
         "record": "shipment-source-review",
         "basis": "Directly recovered later Lite manager shell has two changed fallback blocks relative to the first Lite script; no source commit is invented.",
         "limit": "Observed publication/source bounds; no runtime acceptance or globally earliest release is inferred."
-      }
+      },
+      "acceptance_evidence": "docs/device-qualification.md, docs/device-pr15.json and linked exact runtime/lifecycle/fixture records; docs/module-compatibility.md bounds third-party claims. Hardware-only gates are not cleared by these observations."
     },
     {
       "id": "HID-010-early",
@@ -6547,10 +6595,10 @@
         "shipment-source-review"
       ],
       "upstream_overlap": "Official matching includes app IDs and isolated-process prefixes and has built-in Zygisk plus logcat-based monitoring. Historical ptrace/USAP/app-zygote and disabled-SELinux behavior is a separate contract; shared UID, secondary users, restart and namespace timing require PR12/PR15 tests.",
-      "decision": "deferred-to-PR15",
-      "owner_pr": 15,
+      "decision": "unqualified-target",
+      "owner_pr": 16,
       "affected_users": "Kitsune users relying on enforcing/permissive/disabled-SELinux and Waydroid-style zygote operation.",
-      "migration": "Core guards are tested; both available AVD kernels remained permissive despite disabled requests. Qualify an actual disabled/container target before claiming support.",
+      "migration": "Implementation retained; do not advertise this target as qualified. PR16 requires matching runtime and recovery evidence before production promotion. Available SDK and commercial guests provide enforcing or permissive SELinux, not a verified disabled/container target.",
       "first_shipped": "k31-70068d25",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6563,7 +6611,13 @@
         "basis": "The older disabled-SELinux daemon/SU path belongs to SU-004. The context-optional zygote/Waydroid variant is first located in the frozen k31 sources; do not backdate that fix to the original stable release.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "parent_feature": "HID-014"
+      "parent_feature": "HID-014",
+      "qualification_blocker": {
+        "target": "Kernel with SELinux disabled or matching Waydroid container",
+        "reason": "Available SDK and commercial guests provide enforcing or permissive SELinux, not a verified disabled/container target.",
+        "evidence": "docs/device-qualification.md",
+        "implementation_retained": true
+      }
     },
     {
       "id": "SU-004-device",
@@ -6601,10 +6655,10 @@
         "shipment-source-review"
       ],
       "upstream_overlap": "Official daemon authorization, restorecon and SU execution are maintained implementations. They do not establish the fork's SELinux-disabled compatibility. The current-line restorecon failure in the paired LDPlayer run is a concrete reason to keep this row separate from ordinary permissive-root success.",
-      "decision": "deferred-to-PR15",
-      "owner_pr": 15,
+      "decision": "unqualified-target",
+      "owner_pr": 16,
       "affected_users": "Kitsune users relying on daemon/client authorization, `restorecon`, and SU execution with SELinux disabled.",
-      "migration": "Retain the tested refusal guards and qualify actual disabled-kernel authorization and restoration under PR15.",
+      "migration": "Implementation retained; do not advertise this target as qualified. PR16 requires matching runtime and recovery evidence before production promotion. Available guests do not provide a verified SELinux-disabled kernel/container for this lifecycle.",
       "first_shipped": "original-stable",
       "last_shipped": "k31-25fa2159",
       "upstream_evidence": [
@@ -6617,7 +6671,13 @@
         "basis": "Reviewed source signatures and, where earlier, the preserved published contract.",
         "limit": "Bounds cover the frozen observations, not an exhaustive first release date. A matching source locator is not compiled-APK or runtime attestation. Variants and gaps within the range remain in the review record."
       },
-      "parent_feature": "SU-004"
+      "parent_feature": "SU-004",
+      "qualification_blocker": {
+        "target": "SELinux-disabled/container SU authorization and restorecon target",
+        "reason": "Available guests do not provide a verified SELinux-disabled kernel/container for this lifecycle.",
+        "evidence": "docs/device-qualification.md",
+        "implementation_retained": true
+      }
     }
   ],
   "path_reviews": [

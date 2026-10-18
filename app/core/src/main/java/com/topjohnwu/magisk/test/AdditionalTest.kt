@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
 import com.topjohnwu.magisk.core.model.module.LocalModule
+import com.topjohnwu.magisk.core.model.module.OnlineModule
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.test.Environment.Companion.EMPTY_ZYGISK
 import com.topjohnwu.magisk.test.Environment.Companion.INVALID_ZYGISK
@@ -60,6 +61,36 @@ class AdditionalTest : BaseTest {
     @After
     fun teardown() {
         device.pressHome()
+    }
+
+    @Test
+    fun testPrimaryGroupOverridesSupplementaryOrder() {
+        val result = Shell.cmd("su -G 3002 -g 3001 -c " +
+            "'/data/adb/magisk/busybox id -g; /data/adb/magisk/busybox id -G'").exec()
+        assertTrue("Explicit group request failed", result.isSuccess)
+        assertEquals("Primary group must follow -g", "3001", result.out.firstOrNull())
+        assertEquals(setOf("3001", "3002"),
+            result.out.getOrNull(1)?.substringBefore(" context=")?.split(' ')?.toSet())
+    }
+
+    @Test
+    fun testRepeatedPrimaryGroupsSurviveVectorGrowth() {
+        val options = (3001..3016).joinToString(" ") { "-g $it" }
+        val result = Shell.cmd("su -G 3000 $options -c " +
+            "'/data/adb/magisk/busybox id -g; /data/adb/magisk/busybox id -G'").exec()
+        assertTrue("Repeated group request failed", result.isSuccess)
+        assertEquals("3016", result.out.firstOrNull())
+        assertEquals((3000..3016).map { it.toString() }.toSet(),
+            result.out.getOrNull(1)?.substringBefore(" context=")?.split(' ')?.toSet())
+    }
+
+    @Test
+    fun testModuleFilenamePreservesLettersAndRejectsControls() {
+        val module = OnlineModule("fixture", "ViPER ABC", "v1.2", 1, "", "")
+        assertEquals("ViPER_ABC-v1.2(1).zip", module.downloadFilename)
+        for (invalid in listOf('\u0000', '\n', '\r', '\u001F', '\u007F', ':', '<', '>', '?', '|')) {
+            assertEquals("A_Z-v1.2(1).zip", module.copy(name = "A${invalid}Z").downloadFilename)
+        }
     }
 
     @Test

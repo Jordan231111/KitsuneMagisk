@@ -222,6 +222,10 @@ done
 
 if [ -f kernel ]; then
   PATCHEDKERNEL=false
+  # Disable Vivo's encoded /system mount check (wuxianlin).
+  ./magiskboot hexpatch kernel \
+  0092CFC2C9CDDDDA00 0092CFC2C9CEC0DB00 && PATCHEDKERNEL=true
+
   # Remove Samsung RKP
   ./magiskboot hexpatch kernel \
   49010054011440B93FA00F71E9000054010840B93FA00F7189000054001840B91FA00F7188010054 \

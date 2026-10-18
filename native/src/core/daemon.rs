@@ -207,10 +207,7 @@ impl MagiskD {
 
         let is_root = cred.uid == 0;
         let is_shell = cred.uid == 2000;
-        let is_zygote = &context == "u:r:zygote:s0"
-            || (is_root
-                && crate::selinux::selinux_disabled()
-                && is_disabled_selinux_zygote(cred.pid.unwrap_or(-1)));
+        let is_zygote = is_zygote_peer(cred.uid, cred.pid.unwrap_or(-1), context.as_str());
 
         if !is_root && !is_zygote && !self.is_client(cred.pid.unwrap_or(-1)) {
             // Unsupported client state
@@ -283,39 +280,66 @@ impl MagiskD {
     }
 }
 
-fn is_disabled_selinux_zygote(pid: i32) -> bool {
-    if pid <= 1 {
-        return false;
+fn is_zygote_peer(uid: u32, pid: i32, context: &str) -> bool {
+    context == "u:r:zygote:s0"
+        || (uid == 0
+            && (crate::selinux::selinux_disabled()
+                || (context == "u:r:kernel:s0" && crate::selinux::unlabeled_permissive()))
+            && is_unlabeled_zygote(pid))
+}
+
+fn is_unlabeled_zygote(pid: i32) -> bool {
+    fn identity(pid: i32) -> Option<(std::path::PathBuf, i32, bool)> {
+        if pid <= 1 {
+            return None;
+        }
+        let path = format!("/proc/{pid}");
+        let name = std::fs::read(format!("{path}/cmdline")).ok()?;
+        let name = name.split(|b| *b == 0).next()?;
+        let zygote = matches!(name, b"zygote" | b"zygote32" | b"zygote64");
+        if !zygote && !matches!(name, b"usap32" | b"usap64") {
+            return None;
+        }
+        let status = std::fs::read_to_string(format!("{path}/status")).ok()?;
+        let uid = status.lines().find_map(|line| line.strip_prefix("Uid:"))?;
+        if uid.split_whitespace().collect::<Vec<_>>() != ["0", "0", "0", "0"] {
+            return None;
+        }
+        let exe = std::fs::read_link(format!("{path}/exe")).ok()?;
+        if !matches!(
+            exe.to_str(),
+            Some(
+                "/system/bin/app_process32"
+                    | "/system/bin/app_process64"
+                    | "/system/bin/app_process"
+                    | "/apex/com.android.art/bin/app_process32"
+                    | "/apex/com.android.art/bin/app_process64"
+            )
+        ) {
+            return None;
+        }
+        let stat = std::fs::read_to_string(format!("{path}/stat")).ok()?;
+        let parent = stat
+            .rsplit_once(") ")?
+            .1
+            .split_whitespace()
+            .nth(1)?
+            .parse()
+            .ok()?;
+        Some((exe, parent, zygote))
     }
-    let path = format!("/proc/{pid}");
-    let Ok(name) = std::fs::read(format!("{path}/cmdline")) else {
+
+    let Some((exe, parent, zygote)) = identity(pid) else {
         return false;
     };
-    let name = name.split(|b| *b == 0).next().unwrap_or_default();
-    if !matches!(name, b"zygote" | b"zygote32" | b"zygote64") {
-        return false;
+    if parent == 1 {
+        return zygote;
     }
-    let Ok(exe) = std::fs::read_link(format!("{path}/exe")) else {
-        return false;
-    };
-    if !matches!(
-        exe.to_str(),
-        Some(
-            "/system/bin/app_process32"
-                | "/system/bin/app_process64"
-                | "/system/bin/app_process"
-                | "/apex/com.android.art/bin/app_process32"
-                | "/apex/com.android.art/bin/app_process64"
-        )
-    ) {
-        return false;
-    }
-    let Ok(stat) = std::fs::read_to_string(format!("{path}/stat")) else {
-        return false;
-    };
-    stat.rsplit_once(") ")
-        .and_then(|(_, fields)| fields.split_whitespace().nth(1))
-        == Some("1")
+    // Zygisk requests module descriptors after fork but before specialization.
+    // Accept only a root child of an init-owned zygote running the same image.
+    identity(parent).is_some_and(|(parent_exe, parent_pid, parent_zygote)| {
+        parent_zygote && parent_pid == 1 && parent_exe == exe
+    })
 }
 
 fn switch_cgroup(cgroup: &str, pid: i32) {

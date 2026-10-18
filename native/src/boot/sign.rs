@@ -15,6 +15,7 @@ use rsa::pkcs1v15::{
     Signature as RsaSignature, SigningKey as RsaSigningKey, VerifyingKey as RsaVerifyingKey,
 };
 use rsa::pkcs8::SubjectPublicKeyInfoRef;
+use rsa::pkcs8::spki::DynSignatureAlgorithmIdentifier;
 use rsa::signature::SignatureEncoding;
 use rsa::signature::hazmat::{PrehashSigner, PrehashVerifier};
 use rsa::{RsaPrivateKey, RsaPublicKey};
@@ -125,6 +126,16 @@ impl Verifier {
         self.digest.update(data)
     }
 
+    fn algorithm_identifier(&self) -> LoggedResult<AlgorithmIdentifier<Any>> {
+        match &self.key {
+            VerifyingKey::SHA256withRSA(key) => key.signature_algorithm_identifier(),
+            VerifyingKey::SHA256withECDSA(key) => key.signature_algorithm_identifier(),
+            VerifyingKey::SHA384withECDSA(key) => key.signature_algorithm_identifier(),
+            VerifyingKey::SHA521withECDSA(key) => key.signature_algorithm_identifier(),
+        }
+        .log()
+    }
+
     fn verify(mut self, signature: &[u8]) -> LoggedResult<()> {
         let hash = self.digest.finalize_reset();
         match &self.key {
@@ -133,15 +144,15 @@ impl Verifier {
                 key.verify_prehash(hash.as_ref(), &sig).log()
             }
             VerifyingKey::SHA256withECDSA(key) => {
-                let sig = P256Signature::from_slice(signature)?;
+                let sig = P256Signature::from_der(signature)?;
                 key.verify_prehash(hash.as_ref(), &sig).log()
             }
             VerifyingKey::SHA384withECDSA(key) => {
-                let sig = P384Signature::from_slice(signature)?;
+                let sig = P384Signature::from_der(signature)?;
                 key.verify_prehash(hash.as_ref(), &sig).log()
             }
             VerifyingKey::SHA521withECDSA(key) => {
-                let sig = P521Signature::from_slice(signature)?;
+                let sig = P521Signature::from_der(signature)?;
                 key.verify_prehash(hash.as_ref(), &sig).log()
             }
         }
@@ -190,6 +201,16 @@ impl Signer {
         self.digest.update(data)
     }
 
+    fn algorithm_identifier(&self) -> LoggedResult<AlgorithmIdentifier<Any>> {
+        match &self.key {
+            SigningKey::SHA256withRSA(key) => key.signature_algorithm_identifier(),
+            SigningKey::SHA256withECDSA(key) => key.signature_algorithm_identifier(),
+            SigningKey::SHA384withECDSA(key) => key.signature_algorithm_identifier(),
+            SigningKey::SHA521withECDSA(key) => key.signature_algorithm_identifier(),
+        }
+        .log()
+    }
+
     fn sign(mut self) -> LoggedResult<Vec<u8>> {
         let hash = self.digest.finalize_reset();
         let v = match &self.key {
@@ -199,15 +220,15 @@ impl Signer {
             }
             SigningKey::SHA256withECDSA(key) => {
                 let sig: P256Signature = key.sign_prehash(hash.as_ref())?;
-                sig.to_vec()
+                sig.to_der().as_bytes().to_vec()
             }
             SigningKey::SHA384withECDSA(key) => {
                 let sig: P384Signature = key.sign_prehash(hash.as_ref())?;
-                sig.to_vec()
+                sig.to_der().as_bytes().to_vec()
             }
             SigningKey::SHA521withECDSA(key) => {
                 let sig: P521Signature = key.sign_prehash(hash.as_ref())?;
-                sig.to_vec()
+                sig.to_der().as_bytes().to_vec()
             }
         };
         Ok(v)
@@ -246,7 +267,10 @@ struct BootSignature {
 }
 
 impl BootSignature {
-    fn verify(self, payload: &[u8]) -> LoggedResult<()> {
+    fn verify(&self, payload: &[u8]) -> LoggedResult<()> {
+        if self.format_version != 1 {
+            return log_err!("Unsupported boot signature version");
+        }
         if self.authenticated_attributes.length as usize != payload.len() {
             return log_err!("Invalid image size");
         }
@@ -256,6 +280,9 @@ impl BootSignature {
                 .subject_public_key_info()
                 .owned_to_ref(),
         )?;
+        if self.algorithm_identifier.oid != verifier.algorithm_identifier()?.oid {
+            return log_err!("Unsupported boot signature algorithm for this key");
+        }
         verifier.update(payload);
         let attr = self.authenticated_attributes.to_der()?;
         verifier.update(attr.as_slice());
@@ -330,10 +357,12 @@ pub fn sign_boot_image(
     };
     signer.update(payload);
     signer.update(attr.to_der()?.as_slice());
+    // The certificate issuer can use a different key and digest. AVB1 describes
+    // this image's signature, not the signature on its certificate.
+    let alg_id = signer.algorithm_identifier()?;
     let sig = signer.sign()?;
 
     // Create BootSignature DER
-    let alg_id = cert.signature_algorithm().clone();
     let sig = BootSignature {
         format_version: 1,
         certificate: cert,
@@ -341,6 +370,8 @@ pub fn sign_boot_image(
         authenticated_attributes: attr,
         signature: OctetString::new(sig)?,
     };
+    // Refuse a mismatched certificate/key before sign_cmd opens the image to write.
+    sig.verify(payload)?;
     sig.to_der().log()
 }
 

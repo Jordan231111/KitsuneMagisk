@@ -1,0 +1,667 @@
+{
+  "schema": 1,
+  "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+  "app_version_code": 31016,
+  "kind": "third-party-16k-compatibility-limits",
+  "controls": [
+    {
+      "module": "RikkaApps/Sui",
+      "module_tag": "v13.5.1",
+      "module_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "core": "kitsune",
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "stock": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "setup_boot": "a40c9a2e-5e72-4816-88d7-80fb6c6589c7",
+      "prepared_boot": "6fc6be8a-87a7-4907-aa36-8595d4741582",
+      "module_boot": "15c30c62-64aa-433e-834f-cab079748d24",
+      "removal_boot": "56618b31-6eb4-448e-a66b-613da28051cf",
+      "runtime": {
+        "module_registered": true,
+        "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+        "root": true,
+        "boot_completed": true,
+        "flags": "/data/adb/modules/zygisk-sui/zygisk/unloaded",
+        "sui_process": ""
+      },
+      "removed": true,
+      "root_after_removal": true
+    },
+    {
+      "module": "RikkaApps/Sui",
+      "module_tag": "v13.5.1",
+      "module_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "core": "stable",
+      "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+      "stock": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "setup_boot": "b8c60fbf-2318-4549-978b-a859068d3acc",
+      "prepared_boot": "37ae0192-342e-493d-beb3-86ab0ec2f9eb",
+      "module_boot": "e72faff2-73e4-406a-b17d-29d39514d426",
+      "removal_boot": "c85920ba-82f7-4a43-91ec-4242047b6afc",
+      "runtime": {
+        "module_registered": true,
+        "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+        "root": true,
+        "boot_completed": true,
+        "flags": "/data/adb/modules/zygisk-sui/zygisk/unloaded",
+        "sui_process": ""
+      },
+      "removed": true,
+      "root_after_removal": true
+    },
+    {
+      "module": "JingMatrix/NeoZygisk",
+      "module_tag": "v2.4",
+      "module_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+      "core": "kitsune",
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "stock": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "setup_boot": "68bcb84a-e17d-47be-901b-b93321382d08",
+      "prepared_boot": "529ee711-434b-4609-a1f6-3fa6e0f7dac7",
+      "module_boot": "22bc4c39-04ae-456d-b6d0-8ff0fba2ea1c",
+      "removal_boot": "9a03a6d8-5c83-4543-b106-e6cfc3de929f",
+      "runtime": {
+        "module_registered": true,
+        "description": "Zygote injection with ptrace.",
+        "root": true,
+        "boot_completed": true,
+        "flags": "",
+        "provider_status": ""
+      },
+      "api_probe": {
+        "version": 5,
+        "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+        "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+        "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+        "passed": false,
+        "removed": true
+      },
+      "removed": true,
+      "root_after_removal": true
+    },
+    {
+      "module": "JingMatrix/NeoZygisk",
+      "module_tag": "v2.4",
+      "module_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+      "core": "stable",
+      "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+      "stock": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "setup_boot": "df6e7432-b8b7-4286-b3e9-28f5592b99f8",
+      "prepared_boot": "89f7651a-e9b2-487c-88d9-5f0239b2a488",
+      "module_boot": "136cff33-fe7b-4ee7-84a9-1139060b67f9",
+      "removal_boot": "0c538273-fc8c-4a6c-a68d-66f008674e17",
+      "runtime": {
+        "module_registered": true,
+        "description": "Zygote injection with ptrace.",
+        "root": true,
+        "boot_completed": true,
+        "flags": "",
+        "provider_status": ""
+      },
+      "api_probe": {
+        "version": 5,
+        "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+        "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+        "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+        "passed": false,
+        "removed": true
+      },
+      "removed": true,
+      "root_after_removal": true
+    }
+  ],
+  "elf_layouts": [
+    {
+      "module": "RikkaApps/Sui",
+      "zip_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "file": "lib/arm64-v8a/libadbd_preload.so",
+      "sha256": "f43113624ed06c58d1eefde6f651e6172b6c8edff884dbeefc73e206af5cec25",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 2624,
+          "vaddr": 6720,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 3208,
+          "vaddr": 11400,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "RikkaApps/Sui",
+      "zip_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "file": "lib/arm64-v8a/libadbd_wrapper.so",
+      "sha256": "43de8a910f07a599ead06bf613b0739f7eb2f76bcdb298919bcd9416e645820a",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 3424,
+          "vaddr": 7520,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 4112,
+          "vaddr": 12304,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "RikkaApps/Sui",
+      "zip_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "file": "lib/arm64-v8a/libmain.so",
+      "sha256": "b690f22a67c0ad362f9dc3ea3f9e774551ab70b842bf5bdb41369300606247ef",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 17520,
+          "vaddr": 21616,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 18576,
+          "vaddr": 26768,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "RikkaApps/Sui",
+      "zip_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "file": "lib/arm64-v8a/librish.so",
+      "sha256": "bfbc9a26a61ad6a8e7c9f5c95cb1b936b3919e343c8438081352f4f03fe83540",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 16640,
+          "vaddr": 20736,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 17864,
+          "vaddr": 26056,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "RikkaApps/Sui",
+      "zip_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "file": "lib/arm64-v8a/libsui.so",
+      "sha256": "ebf0d7d0e662fdd03e5ffa43ba464dd9b3c4efdf2a8184a93f12afa91cd701cb",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 22656,
+          "vaddr": 26752,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 23496,
+          "vaddr": 31688,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "JingMatrix/NeoZygisk",
+      "zip_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+      "file": "bin/arm64-v8a/zygiskd",
+      "sha256": "0ba62777930788c3d053f12b53f3b063df889981c9d319ca25e965ac4fd200a1",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 140316,
+          "vaddr": 144412,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 479584,
+          "vaddr": 487776,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 502328,
+          "vaddr": 514616,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "JingMatrix/NeoZygisk",
+      "zip_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+      "file": "lib/arm64-v8a/libzygisk.so",
+      "sha256": "1d986c5fba27fb7725b6c0aa2e88c65a3a329f6f8bbd201967605bd1004af6b4",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 519552,
+          "vaddr": 523648,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 541376,
+          "vaddr": 549568,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    },
+    {
+      "module": "JingMatrix/NeoZygisk",
+      "zip_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+      "file": "lib/arm64-v8a/libzygisk_ptrace.so",
+      "sha256": "852d65a4a5fe30f2df2550763394fcb2af9e4299a769ae7a48f4551dc5c1a051",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "align": 4096,
+          "congruent16k": true
+        },
+        {
+          "offset": 450832,
+          "vaddr": 454928,
+          "align": 4096,
+          "congruent16k": false
+        },
+        {
+          "offset": 471360,
+          "vaddr": 479552,
+          "align": 4096,
+          "congruent16k": false
+        }
+      ]
+    }
+  ],
+  "findings": {
+    "sui": "The unmodified 13.5.1 module is marked unloaded and its server is absent on both cores. The linker reports empty/missing DT_HASH/DT_GNU_HASH while loading its memfd library. ARM64 PT_LOAD segments have 4096-byte alignment and noncongruent 16 KiB offsets.",
+    "neozygisk": "The unmodified 2.4 provider does not inject the same API v5 fixture on either core at 16 KiB; it passes at 4 KiB. Its ARM64 executable and libraries also have noncongruent 16 KiB PT_LOAD layouts.",
+    "busybox": "The unmodified busybox-ndk 13614 ARM64 SELinux binary segfaults when executing true on this 16 KiB guest under both cores. Installed bytes match across controls and have noncongruent 16 KiB PT_LOAD layouts. The 4 KiB run works; this does not affect the separately qualified BusyBox bundled with Kitsune."
+  },
+  "limits": "These exact ZIPs fail the named 16 KiB functions. Install/removal and root recovery pass. This is not a failure of the builtin API v5 probe, Zygisk Next or ReZygisk, which pass on the same page size. Alternative-loader Sui combinations are evaluated separately.",
+  "alternative_loader_combinations": [
+    {
+      "name": "zygisknext",
+      "modules": [
+        "LSPosed/ZygiskNext",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "0a7f68dd-2798-4e59-b281-509a2376f1d7",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "module_boot": "038af58c-5c38-4294-9a04-c673ad69e925",
+      "runtime": {
+        "LSPosed/ZygiskNext": {
+          "module_registered": true,
+          "description": "[\u2705zygote, \u26a0\ufe0f1 module(s) with issue: zygisk-sui, Root: \u2705Magisk (31000), ZL] Standalone implementation of Zygisk.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": "version_local:1.5.2-864-a4a72ce-release\nabi:arm64-v8a (primary)\nuname:6.6.30-android15-8-gdd9c02ccfe27-ab11987101 aarch64\nandroid_sdk:35\nversion:1.5.2-864-a4a72ce-release\nzygote_states:1\nzygote_state_0:1,0,398,zygote,3,0\ninject_state:1\nroot_status:\u2705Magisk (31000)\ndenylist_policy:0\nenforce_denylist:0\nmemory_type:0\nlinker:1\nhook_mode:255\nroot_impl:4\nroot_ver:31000\nmodules64:2,zygisk_vector,zygisk-sui\nmodules32:0\nmodules_with_issue:1,zygisk-sui=2"
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": true,
+          "manager_text": [
+            "Take part",
+            "Review a change",
+            "Discussions",
+            "Try a canary",
+            "Report a problem",
+            "Recent activity",
+            "No commits in the last six months.",
+            "Taking a rest \u2014 saved activity. Pull to refresh.",
+            "Vector",
+            "Active",
+            "2.2 (3080)  \u00b7  API 102",
+            "Home",
+            "Modules",
+            "Store",
+            "Logs"
+          ],
+          "manager_active": true
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": ""
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "6b7ccc42-6f39-41b2-9554-68978b923b5a",
+      "root_after_removal": true,
+      "all_removed": true
+    },
+    {
+      "name": "rezygisk",
+      "modules": [
+        "PerformanC/ReZygisk",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "6c2a590a-70f2-4e84-9094-1fc4c41bc0d1",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "module_boot": "8d26a231-a6b9-46ef-ab09-4919a3f11850",
+      "runtime": {
+        "PerformanC/ReZygisk": {
+          "module_registered": true,
+          "description": "Standalone implementation of Zygisk.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": ""
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": false,
+          "manager_text": [
+            "Sat, Oct 17",
+            "Phone",
+            "Messages",
+            "Chrome",
+            "KitsuneMagisk Next"
+          ],
+          "manager_active": false
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": ""
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "2f3c6c03-9c1c-4a42-9824-63d61dfcccc7",
+      "root_after_removal": true,
+      "all_removed": true
+    }
+  ],
+  "alternative_loader_result": "No Sui server was observed with Zygisk Next or ReZygisk either. Vector remained Active with Zygisk Next; its Active UI was not observed in the ReZygisk/Vector/Sui combination. Root consent and clean removal passed in both cases. These combinations do not establish a Sui workaround.",
+  "busybox_controls": [
+    {
+      "module": "Magisk-Modules-Repo/busybox-ndk",
+      "module_tag": "13614",
+      "module_sha256": "d6b0baeb4f224e994113d29c2d47e6df2413b6cd65fd8b88c2b7d53e0db26c09",
+      "core": "kitsune",
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "stock": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "17e5f669-25f1-4e8f-9a8d-5dc0d14878d3",
+      "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+      "prepared_boot": "a1247b5a-2337-45c0-9ec6-7432d92723aa",
+      "install_exit": 0,
+      "module_boot": "4f830648-d8c7-47b1-a5cb-a198f2c1e4fc",
+      "runtime": {
+        "module_registered": true,
+        "description": "Static busybox binary for all Android architectures built with the NDK",
+        "root": true,
+        "boot_completed": true,
+        "flags": "",
+        "busybox": "",
+        "binary_exec_exit": 139,
+        "binary_exec_output": "-rwxr-xr-x 1 root root 2143584 2026-10-17 17:39 /system/xbin/busybox\nSegmentation fault \n",
+        "installed_binary_sha256": "77572806ccb8c29b84b7ce6b7c742cc727c49c4163d402d91038c06341f216b7"
+      },
+      "removal_boot": "3792b7d1-9450-480f-bd57-baa089a97110",
+      "removed": true,
+      "root_after_removal": true
+    },
+    {
+      "module": "Magisk-Modules-Repo/busybox-ndk",
+      "module_tag": "13614",
+      "module_sha256": "d6b0baeb4f224e994113d29c2d47e6df2413b6cd65fd8b88c2b7d53e0db26c09",
+      "core": "stable",
+      "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+      "stock": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim",
+      "setup_boot": "31c4b05a-14a9-4314-8e06-30a493a50cbd",
+      "runtime_version": "30.7:MAGISK:R",
+      "prepared_boot": "bd66095c-cbde-48eb-b189-ab0774683f31",
+      "install_exit": 0,
+      "module_boot": "20d76995-ad26-4b41-ad1d-6e73408f223a",
+      "runtime": {
+        "module_registered": true,
+        "description": "Static busybox binary for all Android architectures built with the NDK",
+        "root": true,
+        "boot_completed": true,
+        "flags": "",
+        "busybox": "",
+        "binary_exec_exit": 139,
+        "binary_exec_output": "-rwxr-xr-x 1 root root 2143584 2026-10-17 17:40 /system/xbin/busybox\nSegmentation fault \n",
+        "installed_binary_sha256": "77572806ccb8c29b84b7ce6b7c742cc727c49c4163d402d91038c06341f216b7"
+      },
+      "removal_boot": "6ee8651f-8b38-4f8f-8e15-d68d292e28eb",
+      "removed": true,
+      "root_after_removal": true
+    }
+  ],
+  "busybox_installed_elf_layout": [
+    {
+      "offset": 0,
+      "vaddr": 2097152,
+      "align": 4096,
+      "congruent16k": true
+    },
+    {
+      "offset": 2112536,
+      "vaddr": 4213784,
+      "align": 4096,
+      "congruent16k": false
+    },
+    {
+      "offset": 2133568,
+      "vaddr": 4238912,
+      "align": 4096,
+      "congruent16k": false
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "schema": 1,
+  "scope": "Shamiko 1.2.5 root-implementation signing-identity diagnosis; not device acceptance or a modified-module release",
+  "candidate": {
+    "apk_sha256": "8069d605cd19fef64bd503b723c0964b6d01a4d728fa05079ea303d954db6cd8",
+    "build": {
+      "app_version_code": 31014,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "29f1624657a3373018bd963047cbfbdbc125c83b489ccded5cf4c88f53649c8c",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-aeb14601677f09e8dd22ab35bcae4518c0e1254f",
+      "schema": 1,
+      "source_commit": "aeb14601677f09e8dd22ab35bcae4518c0e1254f",
+      "source_digest": "240e38a02a0e34a6da305a38ca42aa76c99655145b5ecb04b780d4ab57c789ed",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "release",
+      "version_name": "0.1.0-dev-kitsune.aeb14601"
+    }
+  },
+  "module": {
+    "repository": "LSPosed/LSPosed.github.io",
+    "tag": "shamiko-414",
+    "sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+    "unmodified": true
+  },
+  "guest": {
+    "image": "android-35/aosp_atd/arm64-v8a",
+    "fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+    "page_size": 4096,
+    "profile": "pixel_6",
+    "selinux": "Enforcing"
+  },
+  "conclusion": "The unmodified module rejects an unrecognized embedded-stub signing identity before hiding initialization. Re-signing both manager and stub preserves working verified-manager root but does not satisfy Shamiko. This is independent of Kitsune native changes, application ID and version-code separation.",
+  "certificates": {
+    "official_sha256": "b4cb83b4dad99f997dbe872f013aa16c14eec41d167021f371f7e1330f273ee6",
+    "kitsune_production_sha256": "9b09eb317c96036185884700d9584e63cc4a2a288825a0172633ba7bfe222ec6",
+    "disposable_diagnostic_sha256": "878c46673f0be182e424850e5600cc02840c9b66395f14d74bee9081a4ca3d05"
+  },
+  "signer_control": {
+    "zip_comment": "version=30.7\nversionCode=30700\nstubVersion=40\n",
+    "non_signature_entries_unchanged": true,
+    "official_stub_sha256": "f0230e0864be255d963befa929ae1c0bb85c4df3e3578bb6cecc3049b6881eb0",
+    "resigned_stub_sha256": "d802cb487c52798aab21b1297b9c42a0b7cc1396ac713fda5ecc83d08b20ce7c",
+    "carrier_is_not_installable_apk": "Only used to supply unchanged native payloads and the re-signed stub to the disposable ramdisk patcher; the installed full manager remains official.",
+    "signature_schemes_unchanged": {
+      "v1": true,
+      "v2": true,
+      "v3": false,
+      "v4": false
+    },
+    "key_algorithm_and_size_unchanged": "RSA 2048"
+  },
+  "matched_payload_control": {
+    "non_signing_entries_preserved": 681,
+    "zip_comment_unchanged": true,
+    "native_payloads": {
+      "lib/arm64-v8a/libbusybox.so": "4d60ab3f5a59ebb2ca863f2f514e6924401b581e9b64f602665c008177626651",
+      "lib/arm64-v8a/libinit-ld.so": "c71e69780bb7ce6d6c26b2d794a3c631689bed130519762716fee285a10417f0",
+      "lib/arm64-v8a/libmagisk.so": "2d8419018dda41f7d9aca94c0ca8f926f3b8447ca5cf7fb71faeb8d05e29694e",
+      "lib/arm64-v8a/libmagiskboot.so": "d7440e2cd89899426e809554bf793baef9804ccbe5a52ce34a8b6242725d3c77",
+      "lib/arm64-v8a/libmagiskinit.so": "383670a7ba3a6a4b79e5f3467e1da4b66a5df66a9b356ab9f70916854dd6b468",
+      "lib/arm64-v8a/libmagiskpolicy.so": "9837db9db475eb74b6715f081768cb6a1f2fb5a2b2ac15755686062501bace27",
+      "lib/armeabi-v7a/libbusybox.so": "7edf6024ed2305dc7bc5d91bad6a8f0ebffbecdd41b8a861d0ced297a5ea1b6d",
+      "lib/armeabi-v7a/libinit-ld.so": "84204214b18f020b9bd35306a1cac19245a386e3e069b4e35f6683fc096dc8cd",
+      "lib/armeabi-v7a/libmagisk.so": "750da5f48869be0dd90ed268e06ae5c324008b3342fba0e501f52ec0ce8e3b32",
+      "lib/armeabi-v7a/libmagiskboot.so": "0b19472b291ce9033c29a83155ff4c1b18be9d1d17d901d63e50f57436378762",
+      "lib/armeabi-v7a/libmagiskinit.so": "992245a7327481dff7a791b5b4db46d80b730c7aebfe992247d8bc785fc54c0b",
+      "lib/armeabi-v7a/libmagiskpolicy.so": "e5fafc1fa9486950ce9ba476f5723754d260014515ced72b4560238e6c560f3a",
+      "lib/x86/libbusybox.so": "52def0088cd6e55a6fec699e92c5952b4539f7fb68d7be847d8a82003ed21b7b",
+      "lib/x86/libinit-ld.so": "01682fab73467176075d95cc0ccf161403bf53582852a8e1efaa3555253f5fcd",
+      "lib/x86/libmagisk.so": "f994daf845f841b3d6f539112ea7726b944a0acc305e4294fc2114955977949a",
+      "lib/x86/libmagiskboot.so": "4b4eb3d98c073ecd3c4b16a907e879f5f7cae9885617bbcafa85ff0838898032",
+      "lib/x86/libmagiskinit.so": "b42ee83afae2aa8f606fb5ebe4b23d52d70d1101748c581b7d10bf73df8cb7ff",
+      "lib/x86/libmagiskpolicy.so": "97c022da3832c1db16fb4dedb430eac21e0aada4eb61f86a7f9b28c4f7c7752d",
+      "lib/x86_64/libbusybox.so": "060844b0769f7a50262854af027c4d6076a212d160a51309b53057cfb7122900",
+      "lib/x86_64/libinit-ld.so": "54c9f44f160d822c0d0ee9b5f816dfc8be5210f5a3e45b2cebf7404108a74759",
+      "lib/x86_64/libmagisk.so": "a1cc6bea9e8618f8e3dea95a9068b161a256c9e19985fb7dc33c15a50a73e0cb",
+      "lib/x86_64/libmagiskboot.so": "a18ecbd7981179494b7d281453d6c4e25b5c719e7d2ef7f6eba3c6be3043c58e",
+      "lib/x86_64/libmagiskinit.so": "24557786f59662376cc9bf204a025d8beb505b9a86cc50a4d1227b34ef2464b6",
+      "lib/x86_64/libmagiskpolicy.so": "0021aaefac5f5a49dfa5996df44a8a67cd6ec014ade72c2358802bd2cc82650f"
+    }
+  },
+  "controls": [
+    {
+      "case": "official",
+      "module_sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+      "setup_boot": "e7c9ffc8-fdb7-4bf5-8c6e-7e6e7f7ef3a0",
+      "module_boot": "0e8f7af6-17af-454f-9a26-f2381f613e09",
+      "version": "30.7:MAGISK:R\n30700",
+      "runtime": {
+        "module_registered": true,
+        "description": "[😋 Shamiko is working as blacklist mode] これで勝ったと思うなよ―――!!",
+        "root": true,
+        "boot_completed": true,
+        "flags": ""
+      },
+      "source_apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+      "patched_ramdisk_sha256": "3d99a832eeb6aeeee210e998b7ea6370b108883fb231389d6e46ca84d571ea14",
+      "manager_and_stub_signers_match": true
+    },
+    {
+      "case": "resigned-stub",
+      "module_sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+      "setup_boot": "e41ab63f-56c0-4830-8ac1-32ad4ab2f2ef",
+      "module_boot": "dee5b230-842d-4028-b4ed-2797ba39436f",
+      "version": "30.7:MAGISK:R\n30700",
+      "runtime": {
+        "module_registered": true,
+        "description": "[❌ Unsupported environment] これで勝ったと思うなよ―――!!",
+        "root": true,
+        "boot_completed": true,
+        "flags": ""
+      },
+      "source_apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+      "patched_ramdisk_sha256": "0b01455af3840eef7234b51d3443763049a10ccbfa0d538588f4f1d73d434dc5",
+      "manager_and_stub_signers_match": false
+    },
+    {
+      "case": "matched-signers",
+      "module_sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+      "setup_boot": "82477646-4abe-4dba-83bb-195d3ae4fbf9",
+      "module_boot": "afe6af25-05ec-473d-b831-311adecbf520",
+      "version": "30.7:MAGISK:R\n30700",
+      "runtime": {
+        "module_registered": true,
+        "description": "[❌ Unsupported environment] これで勝ったと思うなよ―――!!",
+        "root": true,
+        "boot_completed": true,
+        "flags": ""
+      },
+      "manager_uid_root": "uid=0(root) gid=0(root) groups=0(root) context=u:r:magisk:s0",
+      "source_apk_sha256": "985b0989971a4d0fd7b652662b7c13e6c0616762c431dc23abba7f3c25b2b6c3",
+      "patched_ramdisk_sha256": "0b01455af3840eef7234b51d3443763049a10ccbfa0d538588f4f1d73d434dc5",
+      "manager_and_stub_signers_match": true
+    }
+  ],
+  "trace": {
+    "tool": "AVD system strace 4.25 attached to magiskd, following children; observer stopped before log retrieval",
+    "source": "shamiko-trace-v13",
+    "changed_native_or_module_bytes": false,
+    "framework_restart_is_not_a_cold_boot": true,
+    "runs": [
+      {
+        "core": "kitsune",
+        "setup_boot": "8d3662b5-cba9-45ce-a598-8cb112fbe57e",
+        "module_boot": "bba7712d-6eee-4779-a75d-d8ba8fa26cef",
+        "before_trace": {
+          "module_registered": true,
+          "description": "[❌ Unsupported environment] これで勝ったと思うなよ―――!!",
+          "root": true,
+          "boot_completed": true,
+          "flags": ""
+        },
+        "strace_version": "strace -- version 4.25\nCopyright (c) 1991-2018 The strace developers <https://strace.io>.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nOptional features enabled: no-m32-mpers",
+        "strace_start": "/system/bin/strace: Process 342 attached with 4 threads\n/system/bin/strace: Process 1720 attached",
+        "after_trace": {
+          "module_registered": true,
+          "description": "[❌ Unsupported environment] これで勝ったと思うなよ―――!!",
+          "root": true,
+          "boot_completed": true,
+          "flags": ""
+        }
+      },
+      {
+        "core": "stable",
+        "setup_boot": "a62927d5-fc36-48ce-8e09-fa59e5e983d8",
+        "module_boot": "3e373162-988d-400c-93a4-07916ace31cb",
+        "before_trace": {
+          "module_registered": true,
+          "description": "[😋 Shamiko is working as blacklist mode] これで勝ったと思うなよ―――!!",
+          "root": true,
+          "boot_completed": true,
+          "flags": ""
+        },
+        "strace_version": "strace -- version 4.25\nCopyright (c) 1991-2018 The strace developers <https://strace.io>.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nOptional features enabled: no-m32-mpers",
+        "strace_start": "/system/bin/strace: Process 340 attached with 4 threads\n/system/bin/strace: Process 1761 attached",
+        "after_trace": {
+          "module_registered": true,
+          "description": "[😋 Shamiko is working as blacklist mode] これで勝ったと思うなよ―――!!",
+          "root": true,
+          "boot_completed": true,
+          "flags": ""
+        }
+      }
+    ],
+    "observations": [
+      {
+        "core": "kitsune",
+        "compatibility_code": 31000,
+        "preserved_stub": "/debug_ramdisk/stub.apk (deleted), opened through magiskd file descriptor",
+        "certificate_bytes_read": 1076,
+        "response_bytes_hex": "ffffffff",
+        "result": "Unsupported environment"
+      },
+      {
+        "core": "official30.7",
+        "compatibility_code": 30700,
+        "preserved_stub": "/debug_ramdisk/stub.apk (deleted), opened through magiskd file descriptor",
+        "certificate_bytes_read": 773,
+        "response_bytes_hex": "00000000",
+        "result": "Shamiko is working as blacklist mode"
+      }
+    ]
+  },
+  "resolution": "Shamiko must accept the fork signing identity. Preserve the project signer, verified-manager authorization and genuine hidden stub; do not ship borrowed official stubs, fake identity responses or modified module ZIPs as compatibility.",
+  "limits": [
+    "The module implementation is not open source; this establishes the signing-identity boundary, not an exhaustive reconstruction of its internal trust policy.",
+    "Diagnostic keys and re-signed official artifacts are disposable test inputs, never shipping artifacts."
+  ],
+  "disposition": {
+    "date": "2026-10-17",
+    "user_accepted_fallback": true,
+    "fallback": "Kitsune Hide / Zygisk Assistant",
+    "shamiko_supported": false,
+    "remaining_merge_condition": "Complete remaining PR15 qualification and checks."
+  }
+}

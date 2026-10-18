@@ -9,7 +9,7 @@ export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$ANDROID_EMULATOR_HOME/avd}"
 export PATH="$PATH:$ANDROID_HOME/platform-tools"
 
 MAGISK_OUT_DIR="${MAGISK_OUT_DIR:-out}"
-MAGISK_APP_PACKAGE="${MAGISK_APP_PACKAGE:-io.github.huskydg.magisk.next}"
+MAGISK_APP_PACKAGE="${MAGISK_APP_PACKAGE:-io.github.jordan231111.magisk}"
 MAGISK_TEST_PACKAGE="${MAGISK_TEST_PACKAGE:-$MAGISK_APP_PACKAGE.test}"
 
 emu="$ANDROID_HOME/emulator/emulator"
@@ -95,6 +95,29 @@ except OSError:
 try:
     output, _ = process.communicate(timeout=timeout)
 except subprocess.TimeoutExpired:
+    if os.environ.get("AVD_TIMEOUT_DIAGNOSTICS") == "1":
+        # Capture blocked fork/exec workers before closing the test process.
+        # Never collect process environments or command-line arguments.
+        diagnostics = r'''
+count=0
+for path in /proc/[0-9]*; do
+  name=$(cat "$path/comm" 2>/dev/null) || continue
+  case "$name" in su|magiskd) ;; *) continue ;; esac
+  pid=${path##*/}
+  printf '\nNative worker %s (%s)\n' "$pid" "$name"
+  cat "$path/status" "$path/wchan" "$path/stack" "$path/syscall" 2>/dev/null
+  timeout 3 debuggerd -b "$pid" 2>&1 || true
+  count=$((count + 1))
+  [ "$count" -lt 4 ] || break
+done
+'''
+        try:
+            result = subprocess.run(["adb", "-s", serial, "shell", diagnostics],
+                                    capture_output=True, text=True, timeout=15)
+            sys.stdout.write(result.stdout)
+            sys.stdout.write(result.stderr)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            print(f"Native timeout diagnostics unavailable: {type(error).__name__}")
     stopped, output = stop_process(process)
     sys.stdout.write(output)
     raise SystemExit(124 if stopped else 125)
@@ -203,6 +226,7 @@ run_tests() {
   am_instrument '.UpdateServiceTest' $app
   am_instrument '.MagiskAppTest,.AdditionalTest,.TerminalTest,.FlashIntentTest,.ManagerContractTest,.BuildInfoTest,.ZygiskProviderTest,.HidePolicyTest,.VerifiedUpdatesTest' $app
   am_instrument '.RootPathTest' $self
+  run_transaction_fixtures
 
   # Test app hiding
   am_instrument '.AppMigrationTest#testAppHide' $self
@@ -218,6 +242,23 @@ run_tests() {
 
   run_root_stress
   assert_no_native_crashes
+}
+
+run_transaction_fixtures() {
+  local remote status=0
+  local nonce
+  nonce=$(python3 -c 'import uuid; print(uuid.uuid4().hex)') || return 1
+  case "$nonce" in ''|*[!0-9a-f]*) return 1 ;; esac
+  remote="/data/local/tmp/kitsune-transaction.$nonce"
+  # Old SDK images do not consistently provide a working shell mktemp.
+  # mkdir still creates the private directory exclusively for this run.
+  adb shell "umask 077; mkdir '$remote'" || return 1
+  adb push scripts/system_mode_transaction.sh tests/system_mode/whiteouts.sh "$remote/" || status=$?
+  if [ "$status" = 0 ]; then
+    adb shell "PATH=\$PATH:/sbin:/debug_ramdisk su -c 'ASH_STANDALONE=1 /data/adb/magisk/busybox sh $remote/whiteouts.sh $remote/system_mode_transaction.sh /data/adb/magisk/busybox'" || status=$?
+  fi
+  adb shell rm -rf "$remote" || return 1
+  return "$status"
 }
 
 assert_no_native_crashes() {

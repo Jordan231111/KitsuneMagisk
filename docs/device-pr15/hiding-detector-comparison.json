@@ -1,0 +1,588 @@
+{
+  "schema": 1,
+  "detector": {
+    "repository": "reveny/Android-Native-Root-Detector",
+    "tag": "v7.7.0",
+    "sha256": "1033d24102af2632fe5c379e28c9ea9a20bc1d570e171ac3e50f8afd35fc4bd6",
+    "source": "https://github.com/reveny/Android-Native-Root-Detector/releases/download/v7.7.0/native-root-detector-v7.7.0.apk",
+    "scope": "Independent detector observations; emulator/ROM signals are not equivalent to root leakage and the detector native implementation is not fully public."
+  },
+  "build": {
+    "app_version_code": 31016,
+    "application_id": "io.github.jordan231111.magisk",
+    "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+    "capabilities": [
+      "kitsune.boot-completed.v1",
+      "kitsune.build-info.v1",
+      "kitsune.early-mount.v2",
+      "kitsune.hide.v1",
+      "kitsune.module-root.v2",
+      "kitsune.su-consent.v1",
+      "kitsune.zygisk-provider.v1"
+    ],
+    "channel": "next-system-experimental",
+    "compat_version_code": 31000,
+    "product_name": "KitsuneMagisk Next",
+    "product_version": "0.1.0-dev",
+    "protocol_version": 1,
+    "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+    "schema": 1,
+    "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+    "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+    "source_dirty": false,
+    "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+    "upstream_version": "31.0",
+    "variant": "release",
+    "version_name": "0.1.0-dev-kitsune.57c9c908"
+  },
+  "candidate_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+  "official_30_7_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+  "cases": [
+    {
+      "name": "stock",
+      "boot": "758af0c7-733b-4254-a951-c9a2b6ae6323",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 486\nWaitTime: 491\nComplete"
+    },
+    {
+      "name": "kitsune-unhidden-no-zygisk",
+      "boot": "27cd5a3b-8992-4713-bdfd-a86082e28d26",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Magisk",
+          "Found SU Binary",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "Debug Fingerprint detected (1)",
+          "Detected Magisk",
+          "Found SU Binary",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 197\nWaitTime: 199\nComplete"
+    },
+    {
+      "name": "kitsune-hide-builtin",
+      "boot": "c7daf483-4cd3-4db7-8edd-218fa2afad30",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "Detected Zygisk (Magisk built-in) (2)",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "Detected Mount Gap",
+          "Detected Zygisk (Magisk built-in) (2)",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 239\nWaitTime: 240\nComplete"
+    },
+    {
+      "name": "kitsune-sulist-builtin",
+      "boot": "01fbfe2b-85f6-4dd2-9b0d-82b6c08a9a81",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "Detected Zygisk (Magisk built-in) (2)",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "Detected Mount Gap",
+          "Detected Zygisk (Magisk built-in) (2)",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 245\nWaitTime: 246\nComplete"
+    },
+    {
+      "name": "kitsune-assistant-builtin",
+      "boot": "01d558d6-ee7d-4b99-8d00-cb6e6fbebd62",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 308\nWaitTime: 309\nComplete"
+    },
+    {
+      "name": "official-30.7-denylist",
+      "boot": "1a484b1b-f3b3-4743-aab8-e8b7c3366ab1",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "Detected Risky App (1)",
+          "Detected Risky App (3)",
+          "Detected Zygisk (Magisk built-in) (2)",
+          "Detected Suspicious Mount",
+          "System :",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "Detected Risky App (3)",
+          "Detected Zygisk (Magisk built-in) (2)",
+          "Detected Suspicious Mount",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 270\nWaitTime: 271\nComplete"
+    },
+    {
+      "name": "stock",
+      "boot": "89d7a4e9-7602-4ade-8c17-ed7010d9b233",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 289\nWaitTime: 290\nComplete"
+    },
+    {
+      "name": "kitsune-hide-without-zygisk",
+      "boot": "605a2faa-ce59-43ce-bf73-1f1ea76aae8d",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 223\nWaitTime: 225\nComplete"
+    },
+    {
+      "name": "kitsune-sulist-without-zygisk",
+      "boot": "500cd337-68d0-4bfc-9454-577bf119f520",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 285\nWaitTime: 286\nComplete"
+    },
+    {
+      "name": "kitsune-zygisknext-assistant",
+      "boot": "0535079b-5700-4da9-9f13-2e0c69d33017",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+        "ro.build.version.sdk": "29",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "4.14.175-gd7103c943974-dirty",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "pages": [
+        [
+          "The Environment is abnormal",
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ],
+        [
+          "Modifications to the environment are detected.",
+          "Debug Fingerprint detected (1)",
+          "Detected Mount Gap",
+          "System :",
+          "Device: Google Google Android SDK built for arm64 ",
+          "Android Version: 10",
+          "Kernel Version: 4.14.175",
+          "App :",
+          "App Version: 7.7.0",
+          "App Signature: 63c5c229ebd0badf1c784f8988bb2884193abddcfe3e400c71c7980a29e763ee",
+          "Signature Valid: true",
+          "Experimental Detections: false",
+          "Custom ROM Detections: false",
+          "Support Us",
+          "Native Detector",
+          "Home",
+          "Settings"
+        ]
+      ],
+      "launch": "Starting: Intent { cmp=com.reveny.nativecheck/.ui.activity.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.reveny.nativecheck/.ui.activity.MainActivity\nTotalTime: 278\nWaitTime: 279\nComplete"
+    }
+  ],
+  "policy_observations": {
+    "b6e57c4b-56cd-4ad1-88d3-5eea3d3e060d": {
+      "schema": 1,
+      "database_version": 12,
+      "boot_ready": true,
+      "enabled": true,
+      "mode": "hide",
+      "configured_mode": "hide",
+      "reboot_required": false,
+      "selection_table": "denylist",
+      "engine": "logcat",
+      "configured_provider": "core",
+      "external_sulist_supported": false
+    },
+    "0535079b-5700-4da9-9f13-2e0c69d33017": {
+      "schema": 1,
+      "database_version": 12,
+      "boot_ready": true,
+      "enabled": false,
+      "mode": "hide",
+      "configured_mode": "hide",
+      "reboot_required": false,
+      "selection_table": "denylist",
+      "engine": "logcat",
+      "configured_provider": "core",
+      "external_sulist_supported": false
+    }
+  },
+  "limits": [
+    "Android 10 Google APIs ARM64 SDK image only; no physical OEM or banking/attestation claim.",
+    "Unmodified detector defaults: experimental and custom-ROM detections disabled. Its native implementation is not fully public.",
+    "A configured provider is not an injection-health proof. The additional API29 Zygisk Next comparison records the installed configuration and detector output; independent API v5 activation proofs remain the separately recorded API35 4/16 KiB lanes.",
+    "The no-Zygisk engine is asynchronous. These passing detector observations do not promise cleanup before every app instruction.",
+    "Results identify this detector version and environment; they are not a universal hiding guarantee."
+  ]
+}

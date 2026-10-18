@@ -7,7 +7,15 @@ and physical-device production gates stay with PR11–PR16.
 
 ## Ownership and identity
 
-The service is a small static feed in `Jordan231111/KitsuneMagisk`, on the `update-feed` branch:
+The PR10 feed below belongs to the previous `io.github.huskydg.magisk.next`
+package. PR15 isolates the new `io.github.jordan231111.magisk` package under
+`v1/io.github.jordan231111.magisk/` on the same `update-feed` branch. It requires
+a separate publication and acceptance run before activation; automatic checks
+remain off. See the [namespace migration](build-info.md#pr15-namespace-migration).
+The schema and signing certificate remain unchanged. Never publish a new-package
+manifest over an old-package channel.
+
+Historical PR10 feed:
 
 ```
 https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/beta.json
@@ -96,7 +104,7 @@ requires the legacy flag to collect and verify certificates even when modern sig
    scripts/env.py python3 tools/update_service.py prepare \
      --config "$HOME/.config/kitsune-magisk/signing/production.prop" \
      --channel beta --sequence 1 --notes /path/to/reviewed-release-notes.md \
-     --output out/update-feed/v1/beta.json
+     --output out/update-feed/v1/io.github.jordan231111.magisk/beta.json
    ```
 
 4. Enable [GitHub release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes)
@@ -118,7 +126,7 @@ requires the legacy flag to collect and verify certificates even when modern sig
 
    ```sh
    scripts/env.py python3 tools/update_service.py verify-published \
-     --url https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/beta.json \
+     --url https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/io.github.jordan231111.magisk/beta.json \
      --channel beta --output out/published-update-verification
    ```
 

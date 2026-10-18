@@ -28,6 +28,13 @@ bitflags! {
     }
 }
 
+fn managed_runtime() -> bool {
+    // A receipt, including a malformed or redirected one, must never permit an
+    // ordinary manager inbox to replace transaction-owned files at boot.
+    std::fs::symlink_metadata("/data/adb/kitsune/system-mode/transaction.env")
+        .map_or_else(|err| err.kind() != std::io::ErrorKind::NotFound, |_| true)
+}
+
 impl MagiskD {
     fn setup_magisk_env(&self) -> bool {
         info!("* Initializing Magisk environment");
@@ -46,14 +53,18 @@ impl MagiskD {
             cstr!("/data/magisk"),
             app_bin_dir,
         ];
-        for dir in alt_bin_dirs {
-            if dir.exists() {
-                cstr!(DATABIN).remove_all().ok();
-                dir.copy_to(cstr!(DATABIN)).ok();
-                dir.remove_all().ok();
+        if managed_runtime() {
+            info!("System Mode: preserving transaction-owned binaries");
+        } else {
+            for dir in alt_bin_dirs {
+                if dir.exists() {
+                    cstr!(DATABIN).remove_all().ok();
+                    dir.copy_to(cstr!(DATABIN)).ok();
+                    dir.remove_all().ok();
+                }
             }
+            cstr!("/cache/data_adb").remove_all().ok();
         }
-        cstr!("/cache/data_adb").remove_all().ok();
 
         // Directories in /data/adb
         cstr!(SECURE_DIR).follow_link().chmod(0o700).log_ok();

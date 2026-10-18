@@ -1,12 +1,12 @@
 use crate::consts::{APP_PACKAGE_NAME, APP_VERSION_CODE, PROTOCOL_VERSION};
 use crate::daemon::{AID_APP_END, AID_APP_START, AID_USER_OFFSET, MagiskD, to_app_id};
 use crate::ffi::{DbEntryKey, get_magisk_tmp, install_apk, uninstall_pkg};
-use base::WalkResult::{Abort, Continue, Skip};
 use base::{
     BufReadExt, Directory, FsPathBuilder, LoggedResult, ReadExt, ResultExt, Utf8CStrBuf,
     Utf8CString, cstr, error, fd_get_attr, warn,
 };
 use bit_set::BitSet;
+use nix::errno::Errno;
 use nix::fcntl::OFlag;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -156,27 +156,37 @@ fn read_certificate(apk: &mut File, version: i32) -> io::Result<Vec<u8>> {
     }
 }
 
-fn find_apk_path(pkg: &str) -> LoggedResult<Utf8CString> {
+fn find_apk_path_in(dir: &mut Directory, pkg: &str) -> LoggedResult<Utf8CString> {
     let mut buf = cstr::buf::default();
-    Directory::open(cstr!("/data/app"))?.pre_order_walk(|e| {
+    while let Some(e) = dir.read()? {
         if !e.is_dir() {
-            return Ok(Skip);
+            continue;
         }
         let name_bytes = e.name().as_bytes();
-        if name_bytes.starts_with(pkg.as_bytes()) && name_bytes[pkg.len()] == b'-' {
-            // Found the APK path, we can abort now
+        if name_bytes.starts_with(pkg.as_bytes()) && name_bytes.get(pkg.len()) == Some(&b'-') {
             e.resolve_path(&mut buf)?;
-            return Ok(Abort);
+            buf.push_str("/base.apk");
+            return Ok(buf.to_owned());
         }
         if name_bytes.starts_with(b"~~") {
-            return Ok(Continue);
+            // PackageManager can remove another package between readdir and
+            // openat, especially while hiding/restoring the manager itself.
+            let mut child = match e.open_as_dir() {
+                Ok(child) => child,
+                Err(err) if err.errno == Errno::ENOENT => continue,
+                Err(err) => return Err(err.into()),
+            };
+            let apk = find_apk_path_in(&mut child, pkg)?;
+            if !apk.is_empty() {
+                return Ok(apk);
+            }
         }
-        Ok(Skip)
-    })?;
-    if !buf.is_empty() {
-        buf.push_str("/base.apk");
     }
     Ok(buf.to_owned())
+}
+
+fn find_apk_path(pkg: &str) -> LoggedResult<Utf8CString> {
+    find_apk_path_in(&mut Directory::open(cstr!("/data/app"))?, pkg)
 }
 
 enum Status {
@@ -184,6 +194,7 @@ enum Status {
     NotInstalled,
     CertMismatch,
     Incompatible,
+    Unavailable,
 }
 
 pub struct ManagerInfo {
@@ -285,8 +296,11 @@ impl ManagerInfo {
 
     fn check_stub(&mut self, user: i32, pkg: &str) -> Status {
         let Ok(apk) = find_apk_path(pkg) else {
-            return Status::NotInstalled;
+            return Status::Unavailable;
         };
+        if apk.is_empty() {
+            return Status::NotInstalled;
+        }
 
         let cert = match apk.open(OFlag::O_RDONLY | OFlag::O_CLOEXEC) {
             Ok(mut fd) => read_certificate(&mut fd, -1).log().unwrap_or_default(),
@@ -308,8 +322,11 @@ impl ManagerInfo {
 
     fn check_orig(&mut self, user: i32) -> Status {
         let Ok(apk) = find_apk_path(APP_PACKAGE_NAME) else {
-            return Status::NotInstalled;
+            return Status::Unavailable;
         };
+        if apk.is_empty() {
+            return Status::NotInstalled;
+        }
 
         let cert = match apk.open(OFlag::O_RDONLY | OFlag::O_CLOEXEC) {
             Ok(mut fd) => match read_certificate(&mut fd, APP_VERSION_CODE) {
@@ -428,7 +445,7 @@ impl ManagerInfo {
                     install = true;
                     daemon.rm_db_string(DbEntryKey::SuManager).ok();
                 }
-                Status::Incompatible => return (-1, ""),
+                Status::Incompatible | Status::Unavailable => return (-1, ""),
             }
         }
 
@@ -446,7 +463,7 @@ impl ManagerInfo {
             }
             Status::CertMismatch => install = true,
             // A valid but incompatible manager must not be uninstalled or replaced.
-            Status::Incompatible => return (-1, ""),
+            Status::Incompatible | Status::Unavailable => return (-1, ""),
             Status::NotInstalled => {}
         }
 

@@ -11,6 +11,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import shlex
 import shutil
 import signal
@@ -628,14 +629,27 @@ def _boot_critical_roots(selected_init: str) -> tuple[str, ...]:
     return tuple(sorted(set((*_BOOT_CRITICAL_STATIC_PATHS, *dynamic))))
 
 
+def _module_content_path(path: str) -> bool:
+    if os.path.normpath(path) != path:
+        return False
+    for root in ("/data/adb/modules/", "/data/adb/modules_update/"):
+        if path.startswith(root):
+            module, separator, _ = path[len(root):].partition("/")
+            return bool(separator and module and not module.startswith(".")
+                        and re.fullmatch(r"[A-Za-z0-9_.-]+", module))
+    return False
+
+
 def _remote_node_evidence(client: AdbClient, path: str) -> dict[str, Any]:
     quoted = shlex.quote(path)
     output = _root_checked(
         client,
         "set -o pipefail && "
         f"if [ -L {quoted} ]; then echo symlink; "
+        f"{{ printf 'link:'; readlink -n {quoted}; }} | sha256sum; "
         f"elif [ -f {quoted} ]; then echo file; sha256sum {quoted}; "
         f"elif [ -d {quoted} ]; then echo directory; "
+        f"elif [ -c {quoted} ] && [ \"$(stat -c '%t:%T' {quoted})\" = 0:0 ]; then echo whiteout; "
         f"elif [ -e {quoted} ]; then echo special; "
         "else echo absent; exit 0; fi; "
         f"stat -c '%s\t%a\t%u\t%g\t%Y' {quoted}; "
@@ -660,12 +674,12 @@ def _remote_node_evidence(client: AdbClient, path: str) -> dict[str, Any]:
             "mtime_epoch": None,
             "selinux_context": None,
         }
-    if kind in {"symlink", "special"}:
+    if kind == "special" or kind in {"symlink", "whiteout"} and not _module_content_path(path):
         raise ProbeError(f"boot-critical path is an unsupported {kind}: {path}")
-    if kind not in {"file", "directory"}:
+    if kind not in {"file", "directory", "symlink", "whiteout"}:
         raise ProbeError("boot-critical inventory returned an invalid node type")
-    digest_index = 1 if kind == "file" else None
-    metadata_index = 2 if kind == "file" else 1
+    digest_index = 1 if kind in {"file", "symlink"} else None
+    metadata_index = 2 if digest_index is not None else 1
     context_index = metadata_index + 1
     if len(lines) not in {context_index, context_index + 1}:
         raise ProbeError("boot-critical inventory metadata is incomplete")
@@ -1212,11 +1226,15 @@ def _validate_inventory(
         if not matching_roots:
             raise ValueError("qualification boot-critical inventory escaped its allowlist")
         kind = item["kind"]
+        if kind in {"symlink", "whiteout"} and not _module_content_path(path):
+            raise ValueError("special module metadata escaped its module directory")
+        if kind == "whiteout" and item["size"] != 0:
+            raise ValueError("invalid module whiteout metadata")
         if kind == "absent" and path not in roots:
             raise ValueError("only a boot-critical root may be recorded as absent")
-        if kind == "file" and item["sha256"] is None:
+        if kind in {"file", "symlink"} and item["sha256"] is None:
             raise ValueError("boot-critical file is missing its byte digest")
-        if kind != "file" and item["sha256"] is not None:
+        if kind not in {"file", "symlink"} and item["sha256"] is not None:
             raise ValueError("non-file boot-critical node unexpectedly has a byte digest")
         metadata = (
             item["size"],

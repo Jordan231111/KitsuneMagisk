@@ -16,7 +16,7 @@ use std::io::Write as IoWrite;
 use std::os::fd::AsFd;
 use std::os::unix::net::{UCred, UnixListener, UnixStream};
 use std::os::unix::process::CommandExt;
-use std::process::{Command, Stdio, exit};
+use std::process::{Child, Command, Stdio, exit};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
@@ -46,6 +46,24 @@ fn app_process() -> Command {
         });
     }
     cmd
+}
+
+fn wait_for_launcher(child: &mut Child, action: &str) -> bool {
+    // Cold ART startup can exceed three seconds before reaching ActivityManager.
+    // Three request attempts still leave time in the 70-second consent budget.
+    let seconds = if action == "request" { 15 } else { 3 };
+    let deadline = Instant::now() + Duration::from_secs(seconds);
+    loop {
+        if let Ok(Some(_)) = child.try_wait() {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            child.kill().ok();
+            child.wait().ok();
+            return false;
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
 }
 
 impl Extra<'_> {
@@ -185,34 +203,25 @@ impl SuAppContext<'_> {
             let Ok(mut child) = cmd.spawn().log() else {
                 continue;
             };
-            let launch_deadline = Instant::now() + Duration::from_secs(3);
-            loop {
-                if let Ok(Some(_)) = child.try_wait() {
-                    if let Ok(output) = child.wait_with_output().log() {
-                        if output.status.success()
-                            && !output.stdout.is_empty()
-                            && !output.stdout.contains(b"Error")
-                            && !output.stderr.contains(b"Error")
-                        {
-                            return;
-                        }
-                        warn!("su: manager launch failed ({})", output.status);
-                        // Do not log intent arguments: log/notify can include a
-                        // user's command. Keep framework diagnostics bounded.
-                        if action == "request" {
-                            let end = output.stderr.len().min(1024);
-                            warn!("{}", String::from_utf8_lossy(&output.stderr[..end]));
-                        }
-                    }
-                    break;
+            if !wait_for_launcher(&mut child, action) {
+                warn!("su: manager launch timed out");
+                continue;
+            }
+            if let Ok(output) = child.wait_with_output().log() {
+                if output.status.success()
+                    && !output.stdout.is_empty()
+                    && !output.stdout.contains(b"Error")
+                    && !output.stderr.contains(b"Error")
+                {
+                    return;
                 }
-                if Instant::now() >= launch_deadline {
-                    warn!("su: manager launch timed out");
-                    child.kill().ok();
-                    child.wait().ok();
-                    break;
+                warn!("su: manager launch failed ({})", output.status);
+                // Do not log intent arguments: log/notify can include a
+                // user's command. Keep framework diagnostics bounded.
+                if action == "request" {
+                    let end = output.stderr.len().min(1024);
+                    warn!("{}", String::from_utf8_lossy(&output.stderr[..end]));
                 }
-                std::thread::sleep(Duration::from_millis(20));
             }
         }
     }

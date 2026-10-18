@@ -1,0 +1,307 @@
+{
+  "schema": 1,
+  "workflow_run": 39064935566,
+  "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566",
+  "head_source": "9228e99228f26902febf9c3eb6958e159bfb9288",
+  "tested_merge_source": "88d36d8c82f28ca2e5f16838a5410b0d9c35ca2e",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "Test privileged host and transaction contracts",
+      "databaseId": 117498411077,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498411077"
+    },
+    {
+      "name": "Test API 23 (x86)",
+      "databaseId": 117498411490,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498411490"
+    },
+    {
+      "name": "Test API 23  (x86_64)",
+      "databaseId": 117498411627,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498411627"
+    },
+    {
+      "name": "Audit historical Kitsune inventory",
+      "databaseId": 117498411644,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498411644"
+    },
+    {
+      "name": "Test API 27 (x86)",
+      "databaseId": 117498411706,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498411706"
+    },
+    {
+      "name": "Test API 25 (x86)",
+      "databaseId": 117498411997,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498411997"
+    },
+    {
+      "name": "Test API 27  (x86_64)",
+      "databaseId": 117498412012,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412012"
+    },
+    {
+      "name": "Test API 24  (x86_64)",
+      "databaseId": 117498412049,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412049"
+    },
+    {
+      "name": "Test API 28 (x86)",
+      "databaseId": 117498412074,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412074"
+    },
+    {
+      "name": "Test API 25  (x86_64)",
+      "databaseId": 117498412081,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412081"
+    },
+    {
+      "name": "Test API 32  (x86_64)",
+      "databaseId": 117498412121,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412121"
+    },
+    {
+      "name": "Test API 26  (x86_64)",
+      "databaseId": 117498412124,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412124"
+    },
+    {
+      "name": "Test aosp_cf_x86_64_only_phone",
+      "databaseId": 117498412136,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412136"
+    },
+    {
+      "name": "Test API 29  (x86_64)",
+      "databaseId": 117498412150,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412150"
+    },
+    {
+      "name": "Test API 29 (x86)",
+      "databaseId": 117498412168,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412168"
+    },
+    {
+      "name": "Test API 24 (x86)",
+      "databaseId": 117498412202,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412202"
+    },
+    {
+      "name": "Test API 30  (x86_64)",
+      "databaseId": 117498412259,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412259"
+    },
+    {
+      "name": "Test API 26 (x86)",
+      "databaseId": 117498412328,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412328"
+    },
+    {
+      "name": "Test API 31  (x86_64)",
+      "databaseId": 117498412396,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412396"
+    },
+    {
+      "name": "Test API 28  (x86_64)",
+      "databaseId": 117498412483,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412483"
+    },
+    {
+      "name": "Test API 36  (x86_64)",
+      "databaseId": 117498412603,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412603"
+    },
+    {
+      "name": "Test API 34  (x86_64)",
+      "databaseId": 117498412625,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412625"
+    },
+    {
+      "name": "Test API 37.1 google_apis_ps16k (x86_64)",
+      "databaseId": 117498412634,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412634"
+    },
+    {
+      "name": "Test API 35  (x86_64)",
+      "databaseId": 117498412723,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412723"
+    },
+    {
+      "name": "Test API 30 (x86)",
+      "databaseId": 117498412737,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412737"
+    },
+    {
+      "name": "Test API 36.1 google_apis (x86_64)",
+      "databaseId": 117498412745,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412745"
+    },
+    {
+      "name": "Test API 33  (x86_64)",
+      "databaseId": 117498412782,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412782"
+    },
+    {
+      "name": "Test API 37.0 google_apis_ps16k (x86_64)",
+      "databaseId": 117498412913,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498412913"
+    },
+    {
+      "name": "Test API 37.0 google_apis (x86_64)",
+      "databaseId": 117498413053,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498413053"
+    },
+    {
+      "name": "Audit native Rust dependencies",
+      "databaseId": 117498427826,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498427826"
+    },
+    {
+      "name": "Test building on windows-2025",
+      "databaseId": 117498439977,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498439977"
+    },
+    {
+      "name": "Build Magisk artifacts",
+      "databaseId": 117498442559,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498442559"
+    },
+    {
+      "name": "Test building on ubuntu-24.04",
+      "databaseId": 117498444846,
+      "conclusion": "success",
+      "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39064935566/job/117498444846"
+    }
+  ],
+  "legacy_stock_controls": [
+    {
+      "target": "api23x64",
+      "cold_boot_ids": [
+        "03a01bcc-5d10-4a9f-883e-8d1c16c2b2fa",
+        "ee60aff1-45fd-4513-8991-4349285163ab",
+        "26cc4be6-d75b-4dab-b8a0-077fe93e2734",
+        "663d176c-3fdc-4b6b-9976-f50e6c81b2d9"
+      ],
+      "framework_restarts": 4,
+      "native_crashes_observed": 0,
+      "provisioning": {
+        "schema": 1,
+        "sdk_setup_disabled_on_disk": true,
+        "package_restrictions_sha256": "24f0c6478931c3c1c6b2a4a338d8f009c1196fd19f4d38c88c9438bee9567085",
+        "wait_seconds": 2.868
+      },
+      "stock_ramdisk_sha256": "30f62f5c18886658e4faeabecf761d27943f2fcdad80c15007ac2d821715bb0a"
+    },
+    {
+      "target": "api23x86",
+      "cold_boot_ids": [
+        "2c5e0a6e-2d36-4344-b5dc-45acf6a40a0f",
+        "7e7c9575-ca69-4a0e-b9f3-37a7ec000914",
+        "503994c7-313f-48f3-b319-511141505221",
+        "86523943-59aa-4342-8918-62538d48ee59"
+      ],
+      "framework_restarts": 4,
+      "native_crashes_observed": 0,
+      "provisioning": {
+        "schema": 1,
+        "sdk_setup_disabled_on_disk": true,
+        "package_restrictions_sha256": "7d9c1bcddf9978ff27c6eb923f61b75cec9e9514b64ead722852d2505ea651a3",
+        "wait_seconds": 3.703
+      },
+      "stock_ramdisk_sha256": "b97fb7e82fc6f9f0fee20fd0ad85ee5948605f9bdcd89b1a2df1b9de395616d2"
+    }
+  ],
+  "runtime_records": [
+    "docs/device-pr15/ci-api23x64-debug.json",
+    "docs/device-pr15/ci-api23x64-release.json",
+    "docs/device-pr15/ci-api23x86-debug.json",
+    "docs/device-pr15/ci-api23x86-release.json",
+    "docs/device-pr15/ci-api30-debug.json",
+    "docs/device-pr15/ci-api30-release.json",
+    "docs/device-pr15/cuttlefish-debug.json",
+    "docs/device-pr15/cuttlefish-release.json"
+  ],
+  "api30_retry": {
+    "initial_job": 117494732084,
+    "failure": "audioserver SIGSEGV during release guest startup, in AudioPolicyService::AudioCommandThread::changeAudioVolumeGroupCommand; app suites subsequently passed but the native-crash gate failed.",
+    "retry": "Only the failed job reran, with the same build artifact; debug/release boot records and all checks passed.",
+    "classification": "Cause not established; not declared fixed or exempted. Original failed logs remain in the workflow history."
+  },
+  "signing_scope": "CI release uses a disposable signer; the production-signed 57c9c9081 APKs were separately qualified locally.",
+  "additional_clean_run": {
+    "run_id": 39072209066,
+    "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39072209066",
+    "pull_request_head": "82142208f851661541bbc23d105ab05496ab7883",
+    "run_attempt": 1,
+    "conclusion": "success",
+    "jobs_passed": 33,
+    "scope": "Additional full CI run after the documentation-only module-boundary commit; no failed-job retry in this run. Earlier failure records remain retained.",
+    "job_conclusions": {
+      "Audit historical Kitsune inventory": "success",
+      "Test building on ubuntu-24.04": "success",
+      "Test privileged host and transaction contracts": "success",
+      "Audit native Rust dependencies": "success",
+      "Test building on windows-2025": "success",
+      "Build Magisk artifacts": "success",
+      "Test aosp_cf_x86_64_only_phone": "success",
+      "Test API 24 (x86)": "success",
+      "Test API 25 (x86)": "success",
+      "Test API 23 (x86)": "success",
+      "Test API 26 (x86)": "success",
+      "Test API 29 (x86)": "success",
+      "Test API 27 (x86)": "success",
+      "Test API 30 (x86)": "success",
+      "Test API 28 (x86)": "success",
+      "Test API 23  (x86_64)": "success",
+      "Test API 37.0 google_apis_ps16k (x86_64)": "success",
+      "Test API 36.1 google_apis (x86_64)": "success",
+      "Test API 27  (x86_64)": "success",
+      "Test API 24  (x86_64)": "success",
+      "Test API 37.1 google_apis_ps16k (x86_64)": "success",
+      "Test API 35  (x86_64)": "success",
+      "Test API 37.0 google_apis (x86_64)": "success",
+      "Test API 33  (x86_64)": "success",
+      "Test API 26  (x86_64)": "success",
+      "Test API 36  (x86_64)": "success",
+      "Test API 32  (x86_64)": "success",
+      "Test API 34  (x86_64)": "success",
+      "Test API 28  (x86_64)": "success",
+      "Test API 31  (x86_64)": "success",
+      "Test API 30  (x86_64)": "success",
+      "Test API 29  (x86_64)": "success",
+      "Test API 25  (x86_64)": "success"
+    }
+  }
+}

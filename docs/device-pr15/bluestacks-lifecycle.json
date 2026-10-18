@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+  "app_version_code": 31016,
+  "host": "BlueStacks Air 5.21.790.7505 on macOS",
+  "instance": "disposable Tiramisu64_2",
+  "route": "Supplied RootMac bootstrap plus the current host-initramfs adapter",
+  "full_suite": "passed",
+  "junit_tests": 120,
+  "su_stress": {
+    "batches": 8,
+    "parallel_requests": 6,
+    "repeated_after_third_boot": true
+  },
+  "vendor_root_enabled": false,
+  "unroot": {
+    "instance": "Tiramisu64_2",
+    "cold_boot_without_kitsune": "passed",
+    "root_gate_cleanup": "BSR_UNROOT_OK",
+    "adb_uid": 2000,
+    "magiskd_absent": true
+  },
+  "factory_restore": {
+    "factory_initrd_sha256": "393f386ebc880f21a3c7812d0c851508afa697c016e6537894970e123787329e",
+    "byte_exact_restore": true,
+    "task_instance_root_record_cleared": true
+  },
+  "cleanup": {
+    "removed_instance": "Tiramisu64_2",
+    "remaining_instances": [
+      "Tiramisu64"
+    ],
+    "primary_running": false,
+    "primary_root_access": "0",
+    "local_adb_preference_restored_to_resumed_session_value": "0",
+    "remote_adb_preference": "0",
+    "disposable_guest_key_removed_with_instance": true,
+    "owned_rootmac_instance_record_removed": true,
+    "primary_start_blocker": {
+      "port": 5555,
+      "owner": "Existing MuMu Android Device-0",
+      "scope": "Not the authorized Device-1 test target; left running",
+      "evidence": "Player.log reports AdbPort 5555 maybe inuse and exits during VM startup; lsof identifies MuMu Android Device PID 39109 listening on TCP 5555."
+    },
+    "user_disposition": "Leave original BlueStacks stopped; preserve the running MuMu Device-0 and existing ports."
+  },
+  "bootstrap": {
+    "version": "5.21.790.7505",
+    "instance": "Tiramisu64_2",
+    "before_sha256": "3273747a6bcf619e0d3642634d4e818983aef6b936fa547f0761496999e457f2",
+    "after_sha256": "a1a7a3a6ba62e2c3b5543c6ea4b765225cf0ad4e644891c3bbb1a04a2c891d79",
+    "apk_sha256": "f5e98efb5b275f70c4f1bb6a31f21ccd3ce361f2dc48e686674ad38fea6917db",
+    "bootstrap_sha256": "a967a3fa66251bbe47096e93c77c4a4d217fa3827da912ac6721338dc7c9d15d",
+    "build": {
+      "app_version_code": 31016,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+      "schema": 1,
+      "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+      "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.57c9c908"
+    }
+  },
+  "hiding_fallback": {
+    "record": "docs/module-pr15.json",
+    "targets": [
+      "blue-fallback316"
+    ]
+  },
+  "limits": [
+    "No magiskinit pre-init mounts in this host bootstrap.",
+    "Direct-System refused on the read-only system layout.",
+    "Host image and manager update together through the external bootstrap workflow.",
+    "Active permissive SELinux is not SELinux-disabled or Waydroid coverage.",
+    "No physical Samsung claim; the guest fingerprint is an emulator property.",
+    "The original global ADB preference was not recorded; no claim of byte-exact global preference restoration."
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "kitsune.device-qualification.v1",
+  "artifact": {
+    "sha256": "f5e98efb5b275f70c4f1bb6a31f21ccd3ce361f2dc48e686674ad38fea6917db",
+    "build": {
+      "app_version_code": 31016,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+      "schema": 1,
+      "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+      "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.57c9c908"
+    }
+  },
+  "guest": {
+    "fingerprint": "HUAWEI/ALN-AL00/ALN-AL00:12/W528JS/1136:user/release-keys",
+    "api": 32,
+    "abi": "arm64-v8a",
+    "page_size": 4096,
+    "kernel": "4.19.195-android-arm64-gedae1315d023",
+    "selinux": "Permissive"
+  },
+  "boots": [
+    {
+      "id": "0af4a45d-552c-434f-9857-107341132c1d",
+      "phase": "setup",
+      "at": "2026-10-17T20:56:35.004559+00:00"
+    },
+    {
+      "id": "9fa158e4-382f-4053-8889-a732f3ce528c",
+      "phase": "accepted",
+      "at": "2026-10-17T20:59:12.460197+00:00"
+    },
+    {
+      "id": "0c208a4d-b166-4743-8f75-5dd8613906ca",
+      "phase": "accepted",
+      "at": "2026-10-17T21:08:12.855195+00:00"
+    }
+  ]
+}

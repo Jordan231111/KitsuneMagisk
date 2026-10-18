@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "target": "MuMuPlayer Pro Android Device-1",
+  "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+  "app_version_code": 31016,
+  "application_id": "io.github.jordan231111.magisk",
+  "route": "Host-authorized debug Direct-System, vendor root disabled for acceptance",
+  "full_suite": {
+    "junit_tests": 120,
+    "passed": true,
+    "whiteout_transaction_checks": true,
+    "root_stress_requests": 48,
+    "root_concurrency": 6
+  },
+  "viper": {
+    "build": {
+      "app_version_code": 31016,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+      "schema": 1,
+      "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+      "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.57c9c908"
+    },
+    "module_sha256": "4dea5d0a5e1b99041398aabea52f14df3db401e7a37bbec877251452f17f4cfb",
+    "installed": true,
+    "enabled_after_cold_boot": true,
+    "audio_configuration": "v4a_fx {\n    path /system/vendor/lib/soundfx/libv4a_fx.so\n  v4a_standard_fx {\n    library v4a_fx",
+    "hardware_audio_processing_qualified": false
+  },
+  "hiding_fallback": {
+    "record": "docs/module-pr15.json",
+    "targets": [
+      "mumu-fallback316"
+    ]
+  },
+  "uninstall": {
+    "build": {
+      "app_version_code": 31016,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+      "schema": 1,
+      "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+      "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.57c9c908"
+    },
+    "uninstall": "passed",
+    "cold_boot_without_kitsune": "passed",
+    "vendor_root_off_adb_uid": 2000,
+    "user_sentinel_preserved": true,
+    "database_integrity": "ok",
+    "database_version": 12
+  },
+  "external_restore": {
+    "device": "Android Device-1",
+    "state": "stopped",
+    "restored_disk_sha256": {
+      "system.qcow2": "5a6bcb206a71039b6e212124e888a76a78acc8181bda18fc279e36c7ba3437ec",
+      "data.qcow2": "d1f204adabe8c6973d7787c6067e4227dab45dc98303e9b6fee4afcc8c67734f"
+    },
+    "settings_match_original": true,
+    "file_modes_match_original": true
+  },
+  "historical_namespace_upgrade_and_archive_evidence": {
+    "source_commit": "44143a6d2e70754931f36e21b00cc2069b0a8238",
+    "app_version_code": 31012,
+    "namespace_migration": {
+      "application_id": "io.github.jordan231111.magisk",
+      "prior_namespace_cycle_source": "0a15ecd2cbec0182ef410eb8e4ea4937575f7c0d",
+      "prior_uninstall": "passed",
+      "new_namespace_fresh_install_source": "3b62046b661f9b1d6bc366e3226d6584f4f073e8",
+      "new_namespace_fresh_install_tests": 116,
+      "bootstrap_note": "MuMu required a separate per-application root grant for the new package before host-authorized installation."
+    },
+    "upgrade": {
+      "build": {
+        "app_version_code": 31012,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "29f3df6e79bde1425d5adc0d72dcbe587151769fd6e479470ecb6d8e92427605",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.system-mode.transaction.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-44143a6d2e70754931f36e21b00cc2069b0a8238",
+        "schema": 1,
+        "source_commit": "44143a6d2e70754931f36e21b00cc2069b0a8238",
+        "source_digest": "cb57f3fc9e19097c39eac1bce329b9ea8a36db0bd8dd37376d8690b7c170bd6e",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "debug",
+        "version_name": "0.1.0-dev-kitsune.44143a6d"
+      },
+      "from_source": "3b62046b661f9b1d6bc366e3226d6584f4f073e8",
+      "whiteout_preserved": true,
+      "user_sentinel_preserved": true,
+      "state": "BOOT_VERIFIED",
+      "boot_id": "e2b9b556-a367-4464-8a4d-fc19d3b315d0"
+    },
+    "large_archive": {
+      "record": "docs/device-pr15/large-archive.json",
+      "post_patch_cold_boot_root": "passed",
+      "managed_receipt": "BOOT_VERIFIED",
+      "ordinary_update_inbox_absent": true
+    }
+  },
+  "limits": [
+    "Exact virtual target and debug-only System Mode capability.",
+    "Earlier upgrade and large-archive checks retain their separate source identities.",
+    "Vendor fingerprint is not physical OEM qualification."
+  ]
+}

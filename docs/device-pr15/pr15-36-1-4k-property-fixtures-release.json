@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "kind": "isolated-appcompat-property-fixtures",
+  "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+  "build": {
+    "app_version_code": 31016,
+    "application_id": "io.github.jordan231111.magisk",
+    "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+    "capabilities": [
+      "kitsune.boot-completed.v1",
+      "kitsune.build-info.v1",
+      "kitsune.early-mount.v2",
+      "kitsune.hide.v1",
+      "kitsune.module-root.v2",
+      "kitsune.su-consent.v1",
+      "kitsune.zygisk-provider.v1"
+    ],
+    "channel": "next-system-experimental",
+    "compat_version_code": 31000,
+    "product_name": "KitsuneMagisk Next",
+    "product_version": "0.1.0-dev",
+    "protocol_version": 1,
+    "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+    "schema": 1,
+    "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+    "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+    "source_dirty": false,
+    "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+    "upstream_version": "31.0",
+    "variant": "release",
+    "version_name": "0.1.0-dev-kitsune.57c9c908"
+  },
+  "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE4B.251210.005/14574095:user/release-keys",
+  "checks": {
+    "long-empty-short-transitions": "passed",
+    "ordinary-update": "passed",
+    "override-reader-view": "passed",
+    "short-override-update": "passed"
+  },
+  "outside_namespace_unchanged": true,
+  "scope": "Actual resetprop and platform readers on cloned property areas; not an OEM appcompat rollout claim."
+}

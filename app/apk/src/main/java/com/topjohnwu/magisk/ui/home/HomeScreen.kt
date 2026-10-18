@@ -809,8 +809,8 @@ private data class LinkInfo(val label: Int, val icon: Int, val url: String)
 private data class DeveloperInfo(val name: String, val links: List<LinkInfo>)
 
 private val developers = listOf(
-    DeveloperInfo("KitsuneMagisk", listOf(
-        LinkInfo(CoreR.string.github, CoreR.drawable.ic_github, Const.Url.SOURCE_CODE_URL),
+    DeveloperInfo("Jordan231111", listOf(
+        LinkInfo(CoreR.string.github, CoreR.drawable.ic_github, "https://github.com/Jordan231111"),
     )),
     DeveloperInfo("huskydg", listOf(
         LinkInfo(CoreR.string.github, CoreR.drawable.ic_github, "https://github.com/HuskyDG"),

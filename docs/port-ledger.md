@@ -19,7 +19,7 @@ Run `python tools/port_ledger.py --report out/pr8/port-audit.json` from the repo
 root. The command fails for unaccounted or changed paths, missing/corrupt archives,
 missing frozen releases/assets, unaccounted metadata references and provenance gaps.
 Failed retrievals have explicit evidence and a numbered disposition; they never become
-recovered-byte claims. Add `--release` to reject every deferred feature and unresolved
+recovered-byte claims. Add `--release` to reject every deferred feature, unqualified target and unresolved
 archive disposition. Full Git history is required; this check uses no network access.
 After a fresh clone, import the retained original Lite branch with:
 
@@ -37,22 +37,22 @@ git fetch --no-tags docs/port-history/original-lite.bundle refs/audit/pr8/origin
 
 ## Atomic decisions
 
-Each deferral has an implementation owner and migration guidance in the JSON. These
+Each deferral or unqualified target has an owner and migration guidance in the JSON. These
 are not acceptance results, and they cannot pass PR16. The [branch decision](pr8-branch-decision.md)
 selects the development foundation while retaining these explicit product gates.
 
 | ID | Status | Historical behavior | Observed shipment range | Decision | Owner |
 |---|---|---|---|---|---|
-| `SYS-001` | E | Direct-System core install on a writable system layout | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-002` | E | Manager entry, eligibility, warning, results, and recovery UI | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-003` | E | Persistent payload, ABI binaries, config, init triggers, tmpfs/applet bootstrap | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-004` | E | Live/offline SELinux policy selection, backup, patch, load, and restoration | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-005` | E | Upgrade/reinstall and migration from legacy payload, RC, config, sidecar, and addon layouts | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-006` | E | Exact System Mode uninstall and restoration of init/policy/runtime state | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-007` | E | Explicit recovery/ZIP `SYSTEMMODE` entry | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
+| `SYS-001` | E | Direct-System core install on a writable system layout | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `SYS-002` | E | Manager entry, eligibility, warning, results, and recovery UI | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `SYS-003` | E | Persistent payload, ABI binaries, config, init triggers, tmpfs/applet bootstrap | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `SYS-004` | E | Live/offline SELinux policy selection, backup, patch, load, and restoration | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `SYS-005` | E | Upgrade/reinstall and migration from legacy payload, RC, config, sidecar, and addon layouts | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `SYS-006` | E | Exact System Mode uninstall and restoration of init/policy/runtime state | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `SYS-007` | E | Explicit recovery/ZIP `SYSTEMMODE` entry | `original-stable` → `k31-25fa2159` | `retired-with-evidence` | PR15 |
 | `SYS-008` | E | Implicit privileged `systemmagisk` filename trigger | `original-stable` → `k31-25fa2159` | `retired-with-evidence` | PR15 |
-| `SYS-009` | E | Custom-ROM OTA/`addon.d` survival | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-010` | E | Historical API 23-24 System Mode availability/claim | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
+| `SYS-009` | E | Custom-ROM OTA/`addon.d` survival | `original-stable` → `k31-25fa2159` | `retired-with-evidence` | PR15 |
+| `SYS-010` | E | Historical API 23-24 System Mode availability/claim | `original-stable` → `k31-25fa2159` | `retired-with-evidence` | PR15 |
 | `HID-001` | E | Classic MagiskHide enable/disable/status independent of SuList and built-in Zygisk | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `HID-002` | E | Per-package/process add/remove/list persistence and CLI | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR12` | PR12 |
 | `HID-003` | E | Manager list/filter/system-app/expansion/per-process selection UI | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR13` | PR13 |
@@ -76,7 +76,7 @@ selects the development foundation while retaining these explicit product gates.
 | `ZYG-001-hide` | O | Older-tag built-in Zygisk integration with classic Hide/SuList | `b149cd26` → `k27-2-4-archive` | `ported-and-tested-in-PR12` | PR12 |
 | `ZYG-002` | O | Ptrace-init injection architecture | `original-stable` → `k27-2-4-archive` | `retired-with-evidence` | PR11 |
 | `ZYG-003` | O | GrapheneOS Android 14/QPR2 JNI specialization descriptors | `metadata-bb4af859-note-md` → `k27-2-4-archive` | `ported-and-tested-in-PR11` | PR11 |
-| `ZYG-003-device` | O | Physical GrapheneOS Android 14/QPR2 injection and recovery qualification | `metadata-bb4af859-note-md` → `k27-2-4-archive` | `deferred-to-PR15` | PR15 |
+| `ZYG-003-device` | O | Physical GrapheneOS Android 14/QPR2 injection and recovery qualification | `metadata-bb4af859-note-md` → `k27-2-4-archive` | `unqualified-target` | PR16 |
 | `ZYG-004` | O | Futile Hide handling for Zygisk module libraries | `b149cd26` → `k27-2-4-archive` | `retired-with-evidence` | PR11 |
 | `ZYG-005` | O | Faster revert/unmount path from `7072f9e9` | `b149cd26` → `k27-2-4-archive` | `retired-with-evidence` | PR11 |
 | `ZYG-006` | E | Zygote restart-monitor reliability fix from `be732edb` | `k27-2-1` → `k31-25fa2159` | `inherited-and-tested` | PR11 |
@@ -130,27 +130,27 @@ selects the development foundation while retaining these explicit product gates.
 | `DIST-002` | E | Both observed `v27.2-kitsune-4` source/release incarnations and intervening behavior | `k27-2-4-inherited` → `k27-2-4-archive` | `ported-and-tested-in-PR10` | PR10 |
 | `DIST-003` | O | Original Full stable/R65/R66 manager-stub channels, assets and upgrade migration | `original-stable` → `metadata-05003cd3-note-md` | `retired-with-evidence` | PR13 |
 | `DIST-004` | O | Original Lite always-SuList/no-Zygisk/no-modules/log-monitoring product and migration/retirement | `metadata-96724b2e-note_lite-md` → `metadata-64403347-note_lite-md` | `retired-with-evidence` | PR12 |
-| `BOOT-001` | E | P-521 boot-image signing and verification | `k27-2-4-inherited` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `BOOT-002` | E | 16 KiB binary/ZIP/runtime support, including disable/re-enable history | `k27-2-4-inherited` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `BOOT-003` | E | Tar input/output with entries larger than 8 GiB | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `BOOT-004` | E | `magiskboot split -n` compressed-kernel preservation | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `BOOT-005` | E | 2SI transition avoiding `/init` hexpatch when possible | `metadata-96724b2e-note_lite-md` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `BOOT-006` | E | Sony `init.real` handling removal and resulting legacy-Sony compatibility | `k27-2-1` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `DEV-001` | E | Emulator `/sbin` PATH and missing-directory creation | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `DEV-002` | E | Vivo `do_mount_check` kernel workaround | `k27-2-2` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `DEV-003` | E | Historical Samsung PROCA disable/rename workaround | `k27-2-2` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-001` | E | Select-and-Patch for `boot`, `init_boot`, `vendor_boot`, recovery, and supported archives | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-002` | E | Ordinary Direct Install | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-003` | E | Inactive-slot installation and OTA completion | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-004` | E | Ordinary recovery ZIP install/uninstall and stock restoration | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-005` | E | Emulator live setup independent of persistent System Mode | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-006` | E | MagiskBoot, `resetprop`, `magiskpolicy`, multicall applets, and bundled BusyBox compatibility | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `ORD-007` | E | Read-only resetprop serial-counter behavior and property waiter/override semantics | `metadata-02ba306e-note-md` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `BOOT-007` | E | Require the full /system/etc/init/hw/init.rc path before selecting the Android 11 init-RC location | `metadata-51fad676-note-md` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SYS-011` | O | Later Lite selects existing /debug_ramdisk when /sbin is absent instead of creating /sbin | `metadata-64403347-note_lite-md` → `metadata-64403347-note_lite-md` | `deferred-to-PR15` | PR15 |
+| `BOOT-001` | E | P-521 boot-image signing and verification | `k27-2-4-inherited` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `BOOT-002` | E | 16 KiB binary/ZIP/runtime support, including disable/re-enable history | `k27-2-4-inherited` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `BOOT-003` | E | Tar input/output with entries larger than 8 GiB | `k27-2-1` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `BOOT-004` | E | `magiskboot split -n` compressed-kernel preservation | `k27-2-1` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `BOOT-005` | E | 2SI transition avoiding `/init` hexpatch when possible | `metadata-96724b2e-note_lite-md` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `BOOT-006` | E | Sony `init.real` handling removal and resulting legacy-Sony compatibility | `k27-2-1` → `k31-25fa2159` | `unqualified-target` | PR16 |
+| `DEV-001` | E | Emulator `/sbin` PATH and missing-directory creation | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `DEV-002` | E | Vivo `do_mount_check` kernel workaround | `k27-2-2` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `DEV-003` | E | Historical Samsung PROCA disable/rename workaround | `k27-2-2` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `ORD-001` | E | Select-and-Patch for `boot`, `init_boot`, `vendor_boot`, recovery, and supported archives | `original-stable` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `ORD-002` | E | Ordinary Direct Install | `original-stable` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `ORD-003` | E | Inactive-slot installation and OTA completion | `original-stable` → `k31-25fa2159` | `unqualified-target` | PR16 |
+| `ORD-004` | E | Ordinary recovery ZIP install/uninstall and stock restoration | `original-stable` → `k31-25fa2159` | `unqualified-target` | PR16 |
+| `ORD-005` | E | Emulator live setup independent of persistent System Mode | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `ORD-006` | E | MagiskBoot, `resetprop`, `magiskpolicy`, multicall applets, and bundled BusyBox compatibility | `original-stable` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `ORD-007` | E | Read-only resetprop serial-counter behavior and property waiter/override semantics | `metadata-02ba306e-note-md` → `k31-25fa2159` | `ported-and-tested-in-PR15` | PR15 |
+| `BOOT-007` | E | Require the full /system/etc/init/hw/init.rc path before selecting the Android 11 init-RC location | `metadata-51fad676-note-md` → `k31-25fa2159` | `inherited-and-tested` | PR15 |
+| `SYS-011` | O | Later Lite selects existing /debug_ramdisk when /sbin is absent instead of creating /sbin | `metadata-64403347-note_lite-md` → `metadata-64403347-note_lite-md` | `ported-and-tested-in-PR15` | PR15 |
 | `HID-010-early` | E | Cleanup of the separately implemented PR14 early-mount and expanded-partition API | `original-stable` → `k31-25fa2159` | `ported-and-tested-in-PR14` | PR14 |
-| `HID-014-device` | E | Exact SELinux-disabled/Waydroid runtime qualification | `k31-70068d25` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
-| `SU-004-device` | E | SU and restorecon on exact SELinux-disabled/container targets | `original-stable` → `k31-25fa2159` | `deferred-to-PR15` | PR15 |
+| `HID-014-device` | E | Exact SELinux-disabled/Waydroid runtime qualification | `k31-70068d25` → `k31-25fa2159` | `unqualified-target` | PR16 |
+| `SU-004-device` | E | SU and restorecon on exact SELinux-disabled/container targets | `original-stable` → `k31-25fa2159` | `unqualified-target` | PR16 |
 
 ## Archive limits
 

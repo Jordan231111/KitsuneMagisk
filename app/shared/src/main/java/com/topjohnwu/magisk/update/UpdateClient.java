@@ -80,7 +80,8 @@ public final class UpdateClient {
         this.clock = clock;
         Context storage = Build.VERSION.SDK_INT >= 24 ? context.createDeviceProtectedStorageContext() : context;
         directory = new File(storage.getFilesDir(), "updates");
-        if (!directory.isDirectory() && !directory.mkdirs()) throw new IOException("Cannot create update state directory");
+        if (!directory.isDirectory() && !directory.mkdirs() && !directory.isDirectory())
+            throw new IOException("Cannot create update state directory");
         try {
             if (!android.system.OsConstants.S_ISDIR(Os.lstat(directory.getPath()).st_mode))
                 throw new IOException("Redirected update state directory");

@@ -1,0 +1,2984 @@
+{
+  "schema": 1,
+  "status": "available-lab-complete",
+  "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+  "application_id": "io.github.jordan231111.magisk",
+  "app_version_code": 31016,
+  "release_apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+  "primary_target": "Official API35 aosp_atd ARM64 4KiB, enforcing, Pixel6 profile",
+  "legacy_target": "Official API29 google_apis ARM64 4KiB, enforcing; final-candidate LSPosed and Riru comparisons.",
+  "method": "Pinned unmodified upstream ZIPs, clean userdata per case, prepared and tested cold boots, removal, selected functional probes, and official stable controls for failures or inconclusive probes. Providers also receive the project API v5 companion fixture.",
+  "scope": "Representative widely used modules, not an exhaustive ecosystem ranking. AVD profiles do not simulate OEM hardware. Physical audio, charging and hardware attestation are unqualified.",
+  "preinit_fix_acceptance": {
+    "source_commit": "95f6f1fd045024b0ad1599a2af6b1a6bf44f973a",
+    "app_version_code": 31013,
+    "module": "programminghoch10/ViPER4AndroidRepackaged",
+    "release_apk_sha256": "89f06e7362f8dc92b5b1ecc6ccccb6486da506b222c14a3458001d5282592a6c"
+  },
+  "modules": [
+    {
+      "repository": "LSPosed/ZygiskNext",
+      "tag": "v1.5.2",
+      "release_url": "https://github.com/LSPosed/ZygiskNext/releases/tag/v1.5.2",
+      "asset_url": "https://github.com/LSPosed/ZygiskNext/releases/download/v1.5.2/Zygisk-Next-1.5.2-864-a4a72ce-release.zip",
+      "sha256": "ce50b13fecb9e4456db69ef17b715f7cfbc094004dd9f30f7d6348dfab619a96",
+      "status": "Provider activation and client-module combinations passed",
+      "limits": "Only one provider enabled. Ordinary manager consent passes; stock providers are not the versioned Kitsune SuList adapter and do not imply policy parity.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "ce50b13fecb9e4456db69ef17b715f7cfbc094004dd9f30f7d6348dfab619a96",
+          "module_tag": "v1.5.2",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "88d65582-fda6-4a0e-a728-7cfdb6850680",
+          "prepared_boot": "e72047c5-a778-4d42-b6f0-503f19f268e5",
+          "module_boot": "74a8899e-d133-43fa-90fd-7a67f21ee10c",
+          "removal_boot": "0769e0bf-301f-4109-8769-7af43361f90e",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "[\u2705zygote, Root: \u2705Magisk (31000), ZL] Standalone implementation of Zygisk.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": "version_local:1.5.2-864-a4a72ce-release\nabi:arm64-v8a (primary)\nuname:6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k aarch64\nandroid_sdk:35\nversion:1.5.2-864-a4a72ce-release\nzygote_states:1\nzygote_state_0:1,0,386,zygote,3,0\ninject_state:1\nroot_status:\u2705Magisk (31000)\ndenylist_policy:0\nenforce_denylist:0\nmemory_type:0\nlinker:1\nhook_mode:255\nroot_impl:4\nroot_ver:31000\nmodules64:1,pr15_api5_probe\nmodules32:0\nmodules_with_issue:0"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": true,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "ce50b13fecb9e4456db69ef17b715f7cfbc094004dd9f30f7d6348dfab619a96",
+          "module_tag": "v1.5.2",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "980d94d1-4743-4fb7-b3d9-2da8ebe8366b",
+          "prepared_boot": "f288d38e-007c-4c83-b703-c4894c61a7f7",
+          "module_boot": "4b63b457-065a-485a-a5f0-7247d71c7908",
+          "removal_boot": "d92ac7e0-5aa3-443a-8928-e3195cb1b049",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "[\u2705zygote, Root: \u2705Magisk (31000), ZL] Standalone implementation of Zygisk.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": "version_local:1.5.2-864-a4a72ce-release\nabi:arm64-v8a (primary)\nuname:6.6.30-android15-8-gdd9c02ccfe27-ab11987101 aarch64\nandroid_sdk:35\nversion:1.5.2-864-a4a72ce-release\nzygote_states:1\nzygote_state_0:1,0,384,zygote,3,0\ninject_state:1\nroot_status:\u2705Magisk (31000)\ndenylist_policy:0\nenforce_denylist:0\nmemory_type:0\nlinker:1\nhook_mode:255\nroot_impl:4\nroot_ver:31000\nmodules64:1,pr15_api5_probe\nmodules32:0\nmodules_with_issue:0"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": true,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    },
+    {
+      "repository": "PerformanC/ReZygisk",
+      "tag": "v1.0.0",
+      "release_url": "https://github.com/PerformanC/ReZygisk/releases/tag/v1.0.0",
+      "asset_url": "https://github.com/PerformanC/ReZygisk/releases/download/v1.0.0/ReZygisk-v1.0.0-release.zip",
+      "sha256": "7904649b8dcaf2b060c3432df4fee302aeb1258da199d2b425335e82d49510e6",
+      "status": "Provider activation and client-module combinations passed",
+      "limits": "Only one provider enabled. Ordinary manager consent passes; stock providers are not the versioned Kitsune SuList adapter and do not imply policy parity.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "7904649b8dcaf2b060c3432df4fee302aeb1258da199d2b425335e82d49510e6",
+          "module_tag": "v1.0.0",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "f8f2ef50-5cf9-436d-9019-22fa53222529",
+          "prepared_boot": "58442227-7a13-4c2d-b4a6-74061d83daca",
+          "module_boot": "db778b4f-6b7b-43e5-90b2-88a392c0cbc0",
+          "removal_boot": "8552c01c-4b27-4558-bdb0-e00ff2369ee4",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "[Monitor: \u2705, ReZygisk 64-bit: \u2705] Standalone implementation of Zygisk.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": true,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "7904649b8dcaf2b060c3432df4fee302aeb1258da199d2b425335e82d49510e6",
+          "module_tag": "v1.0.0",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "7266fc6a-5949-4b79-a618-ff1354a59659",
+          "prepared_boot": "e2e09acf-b3d5-43dc-817c-8344b011f822",
+          "module_boot": "baff2301-04b8-44af-a670-3ce7f2e8fc08",
+          "removal_boot": "cfc7a314-ce7f-4125-9493-d77ec9773c4f",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "[Monitor: \u2705, ReZygisk 64-bit: \u2705] Standalone implementation of Zygisk.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": true,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    },
+    {
+      "repository": "LSPosed/LSPosed",
+      "tag": "v1.9.2",
+      "release_url": "https://github.com/LSPosed/LSPosed/releases/tag/v1.9.2",
+      "asset_url": "https://github.com/LSPosed/LSPosed/releases/download/v1.9.2/LSPosed-v1.9.2-7024-zygisk-release.zip",
+      "sha256": "0ebc6bcb465d1c4b44b7220ab5f0252e6b4eb7fe43da74650476d2798bb29622",
+      "status": "Manager active on API29; inactive on API35",
+      "limits": "The release declares Android 8.1\u201314 support. Both outcomes match official 30.7 controls.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "0ebc6bcb465d1c4b44b7220ab5f0252e6b4eb7fe43da74650476d2798bb29622",
+          "module_tag": "v1.9.2",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "92770114-fa62-4058-9622-c33cd60ede94",
+          "prepared_boot": "1d987f25-1bf6-495c-bdb7-b11284219fd7",
+          "module_boot": "652a4539-da3d-430c-8c73-881b9c11efee",
+          "removal_boot": "1b990971-0af8-4a5f-a377-27f407225241",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Another enhanced implementation of Xposed Framework. Supports Android 8.1 ~ 14. Requires Magisk 24.0+ and Zygisk enabled.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.lsposed.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+            "manager_ui": false
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "0ebc6bcb465d1c4b44b7220ab5f0252e6b4eb7fe43da74650476d2798bb29622",
+          "module_tag": "v1.9.2",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "a26fb539-6af9-4760-acf9-dd68ded17281",
+          "prepared_boot": "7f3b2fb7-0a7b-411f-9cc1-2b3c81211392",
+          "module_boot": "20d183a3-60d3-48b2-8d95-31fe805683b8",
+          "removal_boot": "3668e223-1023-4b8e-9927-0b6703a9e41b",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Another enhanced implementation of Xposed Framework. Supports Android 8.1 ~ 14. Requires Magisk 24.0+ and Zygisk enabled.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.lsposed.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+            "manager_ui": false
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "0ebc6bcb465d1c4b44b7220ab5f0252e6b4eb7fe43da74650476d2798bb29622",
+          "module_tag": "v1.9.2",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+            "ro.build.version.sdk": "29",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "4.14.175-gd7103c943974-dirty",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "72a56eaf-2e93-465c-b700-aed157bfbe14",
+          "prepared_boot": "1c186e4b-21a4-4948-88f6-a7c4554dbeaa",
+          "module_boot": "df0e7ee1-d0d7-4654-b306-277324bbddcf",
+          "removal_boot": "b689d247-16a8-45d8-b2e7-6534ae56a4c1",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Another enhanced implementation of Xposed Framework. Supports Android 8.1 ~ 14. Requires Magisk 24.0+ and Zygisk enabled.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.lsposed.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+            "manager_ui": true,
+            "manager_text": [
+              "Activated",
+              "1.9.2 (7024) - Zygisk",
+              "Need to update",
+              "Please install the latest version of LSPosed",
+              "Install",
+              "API version",
+              "100",
+              "Xposed API call protection",
+              "Enabled",
+              "Dex Optimizer Wrapper",
+              "Supported",
+              "Framework version",
+              "1.9.2 (7024)",
+              "Manager package name",
+              "Overview"
+            ],
+            "manager_active": true
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "page16k": []
+    },
+    {
+      "repository": "LSPosed/LSPosed.github.io",
+      "tag": "shamiko-414",
+      "release_url": "https://github.com/LSPosed/LSPosed.github.io/releases/tag/shamiko-414",
+      "asset_url": "https://github.com/LSPosed/LSPosed.github.io/releases/download/shamiko-414/Shamiko-v1.2.5-414-release.zip",
+      "sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+      "status": "Incompatible with this fork",
+      "limits": "1.2.5 refuses both debug and release Kitsune; official 30.7 and 31.0 controls work. Hiding the manager does not fix it. Zygisk Next does not list it as loaded, and selected-app mount hiding fails.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+          "module_tag": "shamiko-414",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "51532ede-5600-487c-bc0b-6c3ef2bfa0c5",
+          "prepared_boot": "14abdea0-b628-4c50-85d9-87e86eba74eb",
+          "module_boot": "3fe03796-7f89-454d-8caa-2010965058fb",
+          "removal_boot": "9e2554d7-0f77-4751-b77d-fbc84c591faa",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "[\u274c Unsupported environment] \u3053\u308c\u3067\u52dd\u3063\u305f\u3068\u601d\u3046\u306a\u3088\u2015\u2015\u2015!!",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "308d31b2f52a80e49eb58f46bc4c764a6588a79e4b8d101b44860832023f88b4",
+          "module_tag": "shamiko-414",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "a13c48b4-9c65-41c0-90f4-9a43ff7bb8ff",
+          "prepared_boot": "c24a5eab-7639-43f0-84f4-21eaf734feb6",
+          "module_boot": "69ed7546-b57f-490c-a7c7-0637e5dd2963",
+          "removal_boot": "7f89ae5e-75d7-4808-9b2d-5a959bddef43",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "[\ud83d\ude0b Shamiko is working as blacklist mode] \u3053\u308c\u3067\u52dd\u3063\u305f\u3068\u601d\u3046\u306a\u3088\u2015\u2015\u2015!!",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "snake-4/Zygisk-Assistant",
+      "tag": "v2.1.4",
+      "release_url": "https://github.com/snake-4/Zygisk-Assistant/releases/tag/v2.1.4",
+      "asset_url": "https://github.com/snake-4/Zygisk-Assistant/releases/download/v2.1.4/Zygisk-Assistant-v2.1.4-1013f8a-release.zip",
+      "sha256": "9eca30a269dc676a66f67a9339185dee55cccd47dc1fc8eeea5416124626d67a",
+      "status": "Selected-app mount hiding passed",
+      "limits": "Core enforcement was disabled. A real unprivileged app saw the marker before selection and could not see it after the module took ownership.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "9eca30a269dc676a66f67a9339185dee55cccd47dc1fc8eeea5416124626d67a",
+          "module_tag": "v2.1.4",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "7a1d30af-c183-45fb-b0fc-9ae3ab7424fd",
+          "prepared_boot": "72b06d09-158a-4d84-a92c-f49ba6a5d3d5",
+          "module_boot": "8a21e3a0-929a-4cfa-b338-80104e5323b6",
+          "removal_boot": "04c1fb3c-429e-4074-a34b-b63d1f5ea9a3",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "A Zygisk module to hide root.",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "9eca30a269dc676a66f67a9339185dee55cccd47dc1fc8eeea5416124626d67a",
+          "module_tag": "v2.1.4",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "931e89df-2532-4fd4-bdf5-9502eaf33c97",
+          "prepared_boot": "53a9d03c-8c5d-480b-9cc6-76450c10649e",
+          "module_boot": "d22315e6-cbdc-4e1b-9511-c2c9052d59d9",
+          "removal_boot": "4b562b60-f32e-4dcd-b77e-f7ea808f5c9b",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "A Zygisk module to hide root.",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    },
+    {
+      "repository": "osm0sis/PlayIntegrityFork",
+      "tag": "v18",
+      "release_url": "https://github.com/osm0sis/PlayIntegrityFork/releases/tag/v18",
+      "asset_url": "https://github.com/osm0sis/PlayIntegrityFork/releases/download/v18/PlayIntegrityFork-v18.zip",
+      "sha256": "625ebe65631f761e1521009f10a205d74255adf2e35732923d65106643cad9a6",
+      "status": "Install, cold boot and removal passed",
+      "limits": "Installation and lifecycle only on the account-free AOSP image. No Google integrity verdict or hardware-backed attestation claim.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "625ebe65631f761e1521009f10a205d74255adf2e35732923d65106643cad9a6",
+          "module_tag": "v18",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "733bfcfb-03b2-4ce9-b84b-9224c8e771be",
+          "prepared_boot": "c0cfb9f7-49bf-41c0-83b7-98528ea51ad1",
+          "module_boot": "cfbc42af-0701-4f6c-aa85-ba5f1c1d0434",
+          "removal_boot": "ac2958c4-50c9-4089-9bee-2a3250f62ad8",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Fix Play Integrity <A13 verdicts and Google Wallet/RCS on Android 7+",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "KOWX712/PlayIntegrityFix",
+      "tag": "v4.9-inject-s",
+      "release_url": "https://github.com/KOWX712/PlayIntegrityFix/releases/tag/v4.9-inject-s",
+      "asset_url": "https://github.com/KOWX712/PlayIntegrityFix/releases/download/v4.9-inject-s/PlayIntegrityFix_v4.9-inject-s.zip",
+      "sha256": "bc7a9d92638a6bd90a41b70d3aaf86bc549dd8d3a1e5e901b315a6c425852697",
+      "status": "Install, cold boot and removal passed",
+      "limits": "Installation and lifecycle only on the account-free AOSP image. No Google integrity verdict or hardware-backed attestation claim.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "bc7a9d92638a6bd90a41b70d3aaf86bc549dd8d3a1e5e901b315a6c425852697",
+          "module_tag": "v4.9-inject-s",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "a58dbfb2-2578-40e8-bf61-adbd5d8f6b33",
+          "prepared_boot": "152c80a4-9a08-429d-9cc6-7a3ff5c16223",
+          "module_boot": "3bd8abee-9911-4b3d-bb97-187fad206f90",
+          "removal_boot": "e6be0e1e-2a5f-47c1-8923-355907fff8ba",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Universal modular fix for Play Integrity on devices running Android 8-17",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "5ec1cff/TrickyStore",
+      "tag": "1.4.1",
+      "release_url": "https://github.com/5ec1cff/TrickyStore/releases/tag/1.4.1",
+      "asset_url": "https://github.com/5ec1cff/TrickyStore/releases/download/1.4.1/Tricky-Store-v1.4.1-245-72b2e84-release.zip",
+      "sha256": "2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9",
+      "status": "Install, cold boot and removal passed",
+      "limits": "Keystore modification and hardware attestation verdicts remain unqualified. The process-name probe was inconclusive on both current and stable cores; no external keybox was obtained.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9",
+          "module_tag": "1.4.1",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "81813182-a1f2-4326-b70d-aaa56dfd1455",
+          "prepared_boot": "c24e9adc-5a8e-47a8-97b5-ec504304375e",
+          "module_boot": "9e17840b-2878-47ed-9bf5-6b52916605f5",
+          "removal_boot": "25347d27-5a85-425b-8c98-f79cdb1534d1",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "A trick of keystore",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "service_process": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9",
+          "module_tag": "1.4.1",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "b9a12d0f-b736-470a-85dc-062a67115ccc",
+          "prepared_boot": "d31b77de-4219-4818-955d-c9e349f68d96",
+          "module_boot": "6ae5390e-5640-40bc-b021-125af710338a",
+          "removal_boot": "fece0886-5ad2-4a3f-b1fb-f33c9ad6969f",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "A trick of keystore",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "service_process": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "RikkaApps/Riru",
+      "tag": "v26.1.7",
+      "release_url": "https://github.com/RikkaApps/Riru/releases/tag/v26.1.7",
+      "asset_url": "https://github.com/RikkaApps/Riru/releases/download/v26.1.7/riru-v26.1.7.r530.ab3086ec9f-release.zip",
+      "sha256": "d920783409f452130257273ae80c01f255759f51068d1d0980414edfe1c9baef",
+      "status": "Installed, but injection unqualified",
+      "limits": "Riru reports not loaded on both cores in prepared API35 and API29 comparisons. Lifecycle passes; do not claim working injection.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d920783409f452130257273ae80c01f255759f51068d1d0980414edfe1c9baef",
+          "module_tag": "v26.1.7",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "959b35fb-9e1a-423d-976a-6af4d2f271bd",
+          "prepared_boot": "fb858d86-fbf7-43cd-a75a-7f0fa6d2ad03",
+          "module_boot": "28a0702d-db7b-4cae-827d-9f0630277ada",
+          "removal_boot": "391f5395-37d7-41c3-bbd2-3b2d0c4e5692",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "riru_status": "id=riru-core\nname=Riru\nversion=v26.1.7.r530.ab3086ec9f\nversionCode=530\nauthor=Rikka, yujincheng08\ndescription=[ \u26a0\ufe0f Riru is not loaded and the reason in unknown. ] Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.\nriruApi=26\nriruMinApi=24"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "d920783409f452130257273ae80c01f255759f51068d1d0980414edfe1c9baef",
+          "module_tag": "v26.1.7",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "b81f4e4a-4d76-49c1-a49a-f1b40d5a5607",
+          "prepared_boot": "cb2159c2-546f-4897-9975-efe9d2763a4f",
+          "module_boot": "bde7174a-76e5-4c90-850b-ac7c4eca6d27",
+          "removal_boot": "70c92fc3-dd07-4151-a192-a4cc4cc2ca87",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "riru_status": "id=riru-core\nname=Riru\nversion=v26.1.7.r530.ab3086ec9f\nversionCode=530\nauthor=Rikka, yujincheng08\ndescription=[ \u26a0\ufe0f Riru is not loaded and the reason in unknown. ] Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.\nriruApi=26\nriruMinApi=24"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d920783409f452130257273ae80c01f255759f51068d1d0980414edfe1c9baef",
+          "module_tag": "v26.1.7",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+            "ro.build.version.sdk": "29",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "4.14.175-gd7103c943974-dirty",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "bc8c72c1-8e7f-4d40-818c-e230f12b76b0",
+          "prepared_boot": "fdf5c362-f518-4d42-a9a0-aae03de7c2fe",
+          "module_boot": "8e57eef3-1cef-4eca-9fe7-cf74afeeea13",
+          "removal_boot": "4b6e8536-03e2-4115-858d-8eef64903410",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "riru_status": "id=riru-core\nname=Riru\nversion=v26.1.7.r530.ab3086ec9f\nversionCode=530\nauthor=Rikka, yujincheng08\ndescription=[ \u26a0\ufe0f Riru is not loaded and the reason in unknown. ] Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.\nriruApi=26\nriruMinApi=24"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "d920783409f452130257273ae80c01f255759f51068d1d0980414edfe1c9baef",
+          "module_tag": "v26.1.7",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone64_arm64/emulator64_arm64:10/QSR1.211112.011/13135432:userdebug/dev-keys",
+            "ro.build.version.sdk": "29",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "4.14.175-gd7103c943974-dirty",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "8ee0d2f3-237f-447a-8989-1bec8b7b053f",
+          "prepared_boot": "ee2a86c9-f8f3-4ac4-b46b-cae848b7692a",
+          "module_boot": "405b2c40-b1d5-474b-85ef-694eb9763e1c",
+          "removal_boot": "8f8d9050-21ba-4439-be4f-2e3ffad7d401",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "riru_status": "id=riru-core\nname=Riru\nversion=v26.1.7.r530.ab3086ec9f\nversionCode=530\nauthor=Rikka, yujincheng08\ndescription=[ \u26a0\ufe0f Riru is not loaded and the reason in unknown. ] Inject into zygote and run codes from \"Riru\" modules in apps or the system server. Support modules which use Riru API v24+.\nriruApi=26\nriruMinApi=24"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "page16k": []
+    },
+    {
+      "repository": "RikkaApps/Sui",
+      "tag": "v13.5.1",
+      "release_url": "https://github.com/RikkaApps/Sui/releases/tag/v13.5.1",
+      "asset_url": "https://github.com/RikkaApps/Sui/releases/download/v13.5.1/sui-zygisk-v13.5.1-release.zip",
+      "sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+      "status": "Server active at 4 KiB; no server observed at 16 KiB",
+      "limits": "Official 30.7 reproduces the 16 KiB linker failure. Zygisk Next/ReZygisk combinations also did not start the Sui server. Use this pinned version only within its qualified 4 KiB scope; not every downstream client is qualified.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+          "module_tag": "v13.5.1",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "31ea594a-2900-4fae-a71c-8582a5221766",
+          "prepared_boot": "cf7d4310-cacf-4b67-8a93-7e75d300d690",
+          "module_boot": "1e2f3615-a5d8-4c73-8a16-a00295e1fefc",
+          "removal_boot": "14cd9b70-999e-490d-b1b2-a18e7255584c",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "sui_process": "root           360     1   16147000 140032 futex_wait_queue    0 S sui"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+          "module_tag": "v13.5.1",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "a40c9a2e-5e72-4816-88d7-80fb6c6589c7",
+          "prepared_boot": "6fc6be8a-87a7-4907-aa36-8595d4741582",
+          "module_boot": "15c30c62-64aa-433e-834f-cab079748d24",
+          "removal_boot": "56618b31-6eb4-448e-a66b-613da28051cf",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "/data/adb/modules/zygisk-sui/zygisk/unloaded",
+            "sui_process": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "d488083c547f81bdeccb55be44e308569070cc8523d4db2aa463d0183e99cddd",
+          "module_tag": "v13.5.1",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "b8c60fbf-2318-4549-978b-a859068d3acc",
+          "prepared_boot": "37ae0192-342e-493d-beb3-86ab0ec2f9eb",
+          "module_boot": "e72faff2-73e4-406a-b17d-29d39514d426",
+          "removal_boot": "c85920ba-82f7-4a43-91ec-4242047b6afc",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "/data/adb/modules/zygisk-sui/zygisk/unloaded",
+            "sui_process": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    },
+    {
+      "repository": "Magisk-Modules-Repo/busybox-ndk",
+      "tag": "13614",
+      "release_url": "https://github.com/Magisk-Modules-Repo/busybox-ndk/releases/tag/13614",
+      "asset_url": "https://github.com/Magisk-Modules-Repo/busybox-ndk/releases/download/13614/UPDATE-Busybox.Installer.v1.36.1-ALL-signed.zip",
+      "sha256": "d6b0baeb4f224e994113d29c2d47e6df2413b6cd65fd8b88c2b7d53e0db26c09",
+      "status": "Executable works at 4 KiB; segfaults at 16 KiB",
+      "limits": "The identical installed binary fails on official 30.7 too. This pinned ZIP is not qualified for 16 KiB. Kitsune\u2019s own bundled BusyBox remains separately tested; no exhaustive applet-equivalence claim.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d6b0baeb4f224e994113d29c2d47e6df2413b6cd65fd8b88c2b7d53e0db26c09",
+          "module_tag": "13614",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "b1e0a8c7-f958-4f36-bf2f-fd10d7a17a8e",
+          "prepared_boot": "20c19fd0-97c2-4ccd-b479-efd8a3dac72a",
+          "module_boot": "638d1149-773a-496d-be9c-95ab4618731e",
+          "removal_boot": "fd4f06d3-b346-406f-9cd6-f63cd743eb41",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Static busybox binary for all Android architectures built with the NDK",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "busybox": "BusyBox v1.36.1-osm0sis (2023-09-02 19:01:41 ADT) multi-call binary."
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d6b0baeb4f224e994113d29c2d47e6df2413b6cd65fd8b88c2b7d53e0db26c09",
+          "module_tag": "13614",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "17e5f669-25f1-4e8f-9a8d-5dc0d14878d3",
+          "prepared_boot": "a1247b5a-2337-45c0-9ec6-7432d92723aa",
+          "module_boot": "4f830648-d8c7-47b1-a5cb-a198f2c1e4fc",
+          "removal_boot": "3792b7d1-9450-480f-bd57-baa089a97110",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Static busybox binary for all Android architectures built with the NDK",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "busybox": "",
+            "binary_exec_exit": 139,
+            "binary_exec_output": "-rwxr-xr-x 1 root root 2143584 2026-10-17 17:39 /system/xbin/busybox\nSegmentation fault \n",
+            "installed_binary_sha256": "77572806ccb8c29b84b7ce6b7c742cc727c49c4163d402d91038c06341f216b7"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "d6b0baeb4f224e994113d29c2d47e6df2413b6cd65fd8b88c2b7d53e0db26c09",
+          "module_tag": "13614",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "31c4b05a-14a9-4314-8e06-30a493a50cbd",
+          "prepared_boot": "bd66095c-cbde-48eb-b189-ab0774683f31",
+          "module_boot": "20d76995-ad26-4b41-ad1d-6e73408f223a",
+          "removal_boot": "6ee8651f-8b38-4f8f-8e15-d68d292e28eb",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Static busybox binary for all Android architectures built with the NDK",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "busybox": "",
+            "binary_exec_exit": 139,
+            "binary_exec_output": "-rwxr-xr-x 1 root root 2143584 2026-10-17 17:40 /system/xbin/busybox\nSegmentation fault \n",
+            "installed_binary_sha256": "77572806ccb8c29b84b7ce6b7c742cc727c49c4163d402d91038c06341f216b7"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    },
+    {
+      "repository": "programminghoch10/ViPER4AndroidRepackaged",
+      "tag": "v87",
+      "release_url": "https://github.com/programminghoch10/ViPER4AndroidRepackaged/releases/tag/v87",
+      "asset_url": "https://github.com/programminghoch10/ViPER4AndroidRepackaged/releases/download/v87/ViPER4AndroidFX-repackagedhoch87-37dc30d.zip",
+      "sha256": "4dea5d0a5e1b99041398aabea52f14df3db401e7a37bbec877251452f17f4cfb",
+      "status": "Install, cold boot and removal passed",
+      "limits": "Candidate 31016 keeps the module enabled, publishes audio-effect configuration and permits removal on AVD and MuMu. Physical audio/DSP output remains unqualified.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "4dea5d0a5e1b99041398aabea52f14df3db401e7a37bbec877251452f17f4cfb",
+          "module_tag": "v87",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "f895eb58-e40c-4d34-93b9-1b8d4fd62332",
+          "prepared_boot": "0d69e92c-267b-499d-ad76-7f038c136537",
+          "module_boot": "e48fe7cf-3032-4498-a257-eb714089f297",
+          "removal_boot": "23bf4cb9-0e0f-495a-86cd-004bfbad22fa",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "ViPER4AndroidFX v2.7.x reborn & repackaged",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "audio_config": "/vendor/etc/audio_effects.xml:18:        <library name=\"v4a_fx\" path=\"libv4a_fx.so\"/>\n/vendor/etc/audio_effects.xml:51:        <effect name=\"v4a_standard_fx\" library=\"v4a_fx\" uuid=\"41d3c987-e6cf-11e3-a88a-11aba5d5c51b\"/>\n/system/etc/audio_effects.xml:18:        <library name=\"v4a_fx\" path=\"libv4a_fx.so\"/>\n/system/etc/audio_effects.xml:51:        <effect name=\"v4a_standard_fx\" library=\"v4a_fx\" uuid=\"41d3c987-e6cf-11e3-a88a-11aba5d5c51b\"/>"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "Magisk-Modules-Repo/magiskhidepropsconf",
+      "tag": "v6.1.2",
+      "release_url": "https://github.com/Magisk-Modules-Repo/MagiskHidePropsConf/releases/tag/v6.1.2",
+      "asset_url": "https://github.com/Magisk-Modules-Repo/MagiskHidePropsConf/releases/download/v6.1.2/MagiskHidePropsConf-v6.1.2.zip",
+      "sha256": "d6505b804a09410fdcacb2a79b81c4769beec5938daf885d430501ebea64c9d5",
+      "status": "Install, cold boot and removal passed",
+      "limits": "Function-specific hardware behavior is not implied by lifecycle checks.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "d6505b804a09410fdcacb2a79b81c4769beec5938daf885d430501ebea64c9d5",
+          "module_tag": "v6.1.2",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "333ad331-1b0e-441e-a66c-de515e96b8bb",
+          "prepared_boot": "89a305ad-19a0-4f5b-a941-feada317fdaf",
+          "module_boot": "ce873899-0f08-43eb-a7f0-741b52beb919",
+          "removal_boot": "1d5af586-6120-4485-bbf5-1b9ef7cf5e8b",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Change your device's fingerprint, to pass SafetyNet's CTS Profile check. Set/reset MagiskHide sensitive prop values. Change any prop values easily, and set your own custom props.",
+            "root": true,
+            "boot_completed": true,
+            "flags": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "VR-25/acc",
+      "tag": "v2023.10.16",
+      "release_url": "https://github.com/VR-25/acc/releases/tag/v2023.10.16",
+      "asset_url": "https://github.com/VR-25/acc/releases/download/v2023.10.16/acc_v2023.10.16_202310160.zip",
+      "sha256": "fe071f77a6300f1c14aee1ffc8e22452e448635a7a40e6d97480f3b44fb8c795",
+      "status": "Standard module install and removal passed",
+      "limits": "Initial harness omitted the normal module directory; corrected tests pass both cores. Charging control requires matching physical power-supply hardware.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "fe071f77a6300f1c14aee1ffc8e22452e448635a7a40e6d97480f3b44fb8c795",
+          "module_tag": "v2023.10.16",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "441f1499-87d8-4349-9aac-56f12d49a895",
+          "prepared_boot": "9f351e88-a01c-48c8-982b-2d8681672890",
+          "module_boot": "dffe5280-8692-458a-a5f1-483b935aec9a",
+          "removal_boot": "0ba44b46-ada3-45d7-a158-3c2f31c55636",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Extend your battery's service life by controlling charging current, temperature, and voltage. Any root solution is supported. The installation is always \"systemless\". Works on Android and KaiOS.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "acc_status": "v2023.10.16 (202310160)"
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": []
+    },
+    {
+      "repository": "JingMatrix/Vector",
+      "tag": "v2.2",
+      "release_url": "https://github.com/JingMatrix/Vector/releases/tag/v2.2",
+      "asset_url": "https://github.com/JingMatrix/Vector/releases/download/v2.2/Vector-v2.2-3080-Release.zip",
+      "sha256": "9ee8323575d615f7b3f1076ff60b2a63a49390ef11881b52632311a37f6f79cc",
+      "status": "Framework and manager active",
+      "limits": "Corrected action category and Compose UI checks pass on both cores. Real root consent also passes with built-in, ReZygisk and NeoZygisk combinations.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "9ee8323575d615f7b3f1076ff60b2a63a49390ef11881b52632311a37f6f79cc",
+          "module_tag": "v2.2",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "2ffaac72-149b-4c6f-a28c-4301fbb10a3f",
+          "prepared_boot": "7db341c7-75f1-4ca4-aea9-d459c3cec6fd",
+          "module_boot": "d670b228-7acd-4708-b0c4-ddd0dc4fe6d9",
+          "removal_boot": "88ef4cf3-26de-44a9-bbe9-fd89e017c3c4",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+            "manager_ui": true
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "9ee8323575d615f7b3f1076ff60b2a63a49390ef11881b52632311a37f6f79cc",
+          "module_tag": "v2.2",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "4630ae77-8c32-4676-8153-a28a8e04a345",
+          "prepared_boot": "6adaeee9-d024-4417-a8a3-b765b31428ea",
+          "module_boot": "d86d65bd-89df-4918-a95a-1920b3673ece",
+          "removal_boot": "6d911b37-4f2f-4872-b391-0fea52a466df",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+            "manager_ui": true
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    },
+    {
+      "repository": "JingMatrix/NeoZygisk",
+      "tag": "v2.4",
+      "release_url": "https://github.com/JingMatrix/NeoZygisk/releases/tag/v2.4",
+      "asset_url": "https://github.com/JingMatrix/NeoZygisk/releases/download/v2.4/NeoZygisk-v2.4-289-release.zip",
+      "sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+      "status": "API v5 injection passes at 4 KiB; fails at 16 KiB",
+      "limits": "The same 16 KiB failure occurs on official 30.7. Shipped ARM64 binaries have incompatible 16 KiB load layouts; use a qualified provider at that page size. Stock providers do not implement the Kitsune SuList adapter.",
+      "lifecycle": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+          "module_tag": "v2.4",
+          "stock": {
+            "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+            "page_size": "4096",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "c1f357fc-8a75-4ce7-a2bd-bd1a2a20cf30",
+          "prepared_boot": "2081da4d-dce1-47de-b679-691a4ade0456",
+          "module_boot": "5eff7c17-697b-4089-883a-b52773830c05",
+          "removal_boot": "2a11232e-35ad-47ce-b852-6b4ceb4bc257",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Zygote injection with ptrace.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": true,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ],
+      "legacy_api29": [],
+      "page16k": [
+        {
+          "core": "kitsune",
+          "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+          "build": {
+            "app_version_code": 31016,
+            "application_id": "io.github.jordan231111.magisk",
+            "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+            "capabilities": [
+              "kitsune.boot-completed.v1",
+              "kitsune.build-info.v1",
+              "kitsune.early-mount.v2",
+              "kitsune.hide.v1",
+              "kitsune.module-root.v2",
+              "kitsune.su-consent.v1",
+              "kitsune.zygisk-provider.v1"
+            ],
+            "channel": "next-system-experimental",
+            "compat_version_code": 31000,
+            "product_name": "KitsuneMagisk Next",
+            "product_version": "0.1.0-dev",
+            "protocol_version": 1,
+            "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+            "schema": 1,
+            "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+            "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+            "source_dirty": false,
+            "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+            "upstream_version": "31.0",
+            "variant": "release",
+            "version_name": "0.1.0-dev-kitsune.57c9c908"
+          },
+          "module_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+          "module_tag": "v2.4",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "68bcb84a-e17d-47be-901b-b93321382d08",
+          "prepared_boot": "529ee711-434b-4609-a1f6-3fa6e0f7dac7",
+          "module_boot": "22bc4c39-04ae-456d-b6d0-8ff0fba2ea1c",
+          "removal_boot": "9a03a6d8-5c83-4543-b106-e6cfc3de929f",
+          "runtime_version": "0.1.0-dev-kitsune.57c9c908:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Zygote injection with ptrace.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": false,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        },
+        {
+          "core": "stable",
+          "apk_sha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+          "module_sha256": "93a1425c67bb89f58a0dcb9fc823ec93f6472214f221e667a70b67c6a6e061a1",
+          "module_tag": "v2.4",
+          "stock": {
+            "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+            "ro.build.version.sdk": "35",
+            "ro.product.cpu.abi": "arm64-v8a",
+            "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+            "page_size": "16384",
+            "selinux": "Enforcing"
+          },
+          "setup_boot": "df6e7432-b8b7-4286-b3e9-28f5592b99f8",
+          "prepared_boot": "89f7651a-e9b2-487c-88d9-5f0239b2a488",
+          "module_boot": "136cff33-fe7b-4ee7-84a9-1139060b67f9",
+          "removal_boot": "0c538273-fc8c-4a6c-a68d-66f008674e17",
+          "runtime_version": "30.7:MAGISK:R",
+          "install_exit": 0,
+          "runtime": {
+            "module_registered": true,
+            "description": "Zygote injection with ptrace.",
+            "root": true,
+            "boot_completed": true,
+            "flags": "",
+            "provider_status": ""
+          },
+          "removed": true,
+          "root_after_removal": true,
+          "api_probe": {
+            "version": 5,
+            "fixture_sha256": "6e0833543b3ca3e0b3f1c3dce44a62e3153cd1608dc4f85c4d71b4752f2735eb",
+            "test_apk_sha256": "afae95237523825c6f726f7c56d9e8823e18257c9eeb56750dfd78d1205b032b",
+            "scope": "Own module fixture beside the unmodified third-party provider; module directory, root companion, flags and post-specialization callback.",
+            "passed": false,
+            "removed": true
+          },
+          "scope": "installation, cold boot, runtime smoke and removal; no hardware or attestation claim"
+        }
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "name": "builtin-general",
+      "modules": [
+        "JingMatrix/Vector",
+        "RikkaApps/Sui",
+        "snake-4/Zygisk-Assistant",
+        "Magisk-Modules-Repo/busybox-ndk"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "885913fc-d900-4206-9b37-a74e64fc6c69",
+      "module_boot": "dbd0e102-ca94-4ab1-bb41-b640cfa25b4e",
+      "runtime": {
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": true,
+          "manager_text": [
+            "Take part",
+            "Review a change",
+            "Discussions",
+            "Try a canary",
+            "Report a problem",
+            "Recent activity",
+            "No commits in the last six months.",
+            "Taking a rest \u2014 saved activity. Pull to refresh.",
+            "Vector",
+            "Active",
+            "2.2 (3080)  \u00b7  API 102",
+            "Home",
+            "Modules",
+            "Store",
+            "Logs"
+          ],
+          "manager_active": true
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": "root           421     1   16120248 140260 futex_wait_queue    0 S sui"
+        },
+        "snake-4/Zygisk-Assistant": {
+          "module_registered": true,
+          "description": "A Zygisk module to hide root.",
+          "root": true,
+          "boot_completed": true,
+          "flags": ""
+        },
+        "Magisk-Modules-Repo/busybox-ndk": {
+          "module_registered": true,
+          "description": "Static busybox binary for all Android architectures built with the NDK",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "busybox": "BusyBox v1.36.1-osm0sis (2023-09-02 19:01:41 ADT) multi-call binary."
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "c1268c0c-b39a-4129-9ec8-1d36bc881faa",
+      "root_after_removal": true,
+      "all_removed": true
+    },
+    {
+      "name": "zygisknext",
+      "modules": [
+        "LSPosed/ZygiskNext",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "6542d57e-e74b-4453-be63-c4b94ba7fc44",
+      "module_boot": "1f5a42fa-e229-48f9-b77b-e028a9b2c23d",
+      "runtime": {
+        "LSPosed/ZygiskNext": {
+          "module_registered": true,
+          "description": "[\u2705zygote, Root: \u2705Magisk (31000), ZL] Standalone implementation of Zygisk.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": "version_local:1.5.2-864-a4a72ce-release\nabi:arm64-v8a (primary)\nuname:6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k aarch64\nandroid_sdk:35\nversion:1.5.2-864-a4a72ce-release\nzygote_states:1\nzygote_state_0:1,0,389,zygote,3,0\ninject_state:1\nroot_status:\u2705Magisk (31000)\ndenylist_policy:0\nenforce_denylist:0\nmemory_type:0\nlinker:1\nhook_mode:255\nroot_impl:4\nroot_ver:31000\nmodules64:2,zygisk_vector,zygisk-sui\nmodules32:0\nmodules_with_issue:0"
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": true,
+          "manager_text": [
+            "Take part",
+            "Review a change",
+            "Discussions",
+            "Try a canary",
+            "Report a problem",
+            "Recent activity",
+            "No commits in the last six months.",
+            "Taking a rest \u2014 saved activity. Pull to refresh.",
+            "Vector",
+            "Active",
+            "2.2 (3080)  \u00b7  API 102",
+            "Home",
+            "Modules",
+            "Store",
+            "Logs"
+          ],
+          "manager_active": true
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": "root           366     1   15950392 140532 futex_wait_queue    0 S sui\nroot           628     1   10817284   4864 do_sys_poll         0 S zn-zygisk-companion64 zygisk-sui"
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "3fe08fc7-8c9c-43b2-b2ae-2c5425a22e5a",
+      "root_after_removal": true,
+      "all_removed": true
+    },
+    {
+      "name": "rezygisk",
+      "modules": [
+        "PerformanC/ReZygisk",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "f1bef5e2-1e39-48ae-b948-5c8a310d4b2a",
+      "module_boot": "aef780f3-b61e-41c7-b79a-346ee0878fd5",
+      "runtime": {
+        "PerformanC/ReZygisk": {
+          "module_registered": true,
+          "description": "[Monitor: \u2705, ReZygisk 64-bit: \u2705] Standalone implementation of Zygisk.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": ""
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": true,
+          "manager_text": [
+            "Take part",
+            "Review a change",
+            "Discussions",
+            "Try a canary",
+            "Report a problem",
+            "Recent activity",
+            "No commits in the last six months.",
+            "Taking a rest \u2014 saved activity. Pull to refresh.",
+            "Vector",
+            "Active",
+            "2.2 (3080)  \u00b7  API 102",
+            "Home",
+            "Modules",
+            "Store",
+            "Logs"
+          ],
+          "manager_active": true
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": "root           366     1   16060984 140300 futex_wait_queue    0 S sui\nroot           633     1   10834736   3580 do_sys_poll         0 S zygiskd64-zygisk-sui"
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "8a1d7d39-5778-479b-9033-ae9221141e1f",
+      "root_after_removal": true,
+      "all_removed": true
+    },
+    {
+      "name": "neozygisk",
+      "modules": [
+        "JingMatrix/NeoZygisk",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "017e17bf-e204-45c2-8d95-fddffc2af4b9",
+      "module_boot": "0c112837-e3fd-4980-9247-eb5b587235a4",
+      "runtime": {
+        "JingMatrix/NeoZygisk": {
+          "module_registered": true,
+          "description": "Zygote injection with ptrace.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": ""
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": true,
+          "manager_text": [
+            "Take part",
+            "Review a change",
+            "Discussions",
+            "Try a canary",
+            "Report a problem",
+            "Recent activity",
+            "No commits in the last six months.",
+            "Taking a rest \u2014 saved activity. Pull to refresh.",
+            "Vector",
+            "Active",
+            "2.2 (3080)  \u00b7  API 102",
+            "Home",
+            "Modules",
+            "Store",
+            "Logs"
+          ],
+          "manager_active": true
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": "root           367     1   15970872 140508 futex_wait_queue    0 S sui\nroot           635   397   10773748   3584 unix_stream_read_generic 0 S zygiskd64-zygisk-sui"
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "74206010-74fd-4ecf-8515-f89ae78f6a5c",
+      "root_after_removal": true,
+      "all_removed": true
+    }
+  ],
+  "mount_visibility": [
+    {
+      "target": "fallback316-4k",
+      "name": "core-hide",
+      "modules": [],
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "setup_boot": "5a236944-8745-4efb-9b51-4e84e94aad4c",
+      "guest": {
+        "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "baseline_boot": "e5f79c7a-5088-4f92-98ee-568db9ae6cc0",
+      "visible_before": true,
+      "selected_boot": "70be83e2-4a84-4d36-9c0c-15c2f2705d9c",
+      "hidden_from_selected_app": true,
+      "core_status": "{\"schema\":1,\"database_version\":12,\"boot_ready\":true,\"enabled\":true,\"mode\":\"hide\",\"configured_mode\":\"hide\",\"reboot_required\":false,\"selection_table\":\"denylist\",\"engine\":\"builtin\",\"configured_provider\":\"core\",\"external_sulist_supported\":false}",
+      "module_properties": "id=pr15_marker\nname=PR15 visibility probe\nversion=1\nversionCode=1"
+    },
+    {
+      "target": "fallback316-4k",
+      "name": "zygisk-assistant",
+      "modules": [
+        "snake-4/Zygisk-Assistant"
+      ],
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "setup_boot": "e5246e39-39f3-46c2-a953-0ff4ab907917",
+      "guest": {
+        "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      },
+      "baseline_boot": "507a2338-8e7e-4dfb-a007-c2d9a93f2dc6",
+      "visible_before": true,
+      "selected_boot": "2d2a3acc-6159-44a5-a449-dc8c7fab5d4d",
+      "hidden_from_selected_app": true,
+      "core_status": "{\"schema\":1,\"database_version\":12,\"boot_ready\":true,\"enabled\":false,\"mode\":\"hide\",\"configured_mode\":\"hide\",\"reboot_required\":false,\"selection_table\":\"denylist\",\"engine\":\"builtin\",\"configured_provider\":\"core\",\"external_sulist_supported\":false}",
+      "module_properties": "id=pr15_marker\nname=PR15 visibility probe\nversion=1\nversionCode=1\nid=zygisk-assistant\nname=Zygisk Assistant\nversion=v2.1.4 (1013f8a-release)\nversionCode=214\nauthor=snake-4\ndescription=A Zygisk module to hide root.\nupdateJson=https://raw.githubusercontent.com/snake-4/Zygisk-Assistant/main/update_metadata/update.json"
+    },
+    {
+      "target": "fallback316-16k",
+      "name": "core-hide",
+      "modules": [],
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "setup_boot": "6fa8c433-7064-457c-8b5e-e77b22dff727",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "baseline_boot": "c31c5737-0b97-46ee-a0c1-2c68fd17891f",
+      "visible_before": true,
+      "selected_boot": "2c81a7f2-d2fa-429f-8dcd-d79be6348067",
+      "hidden_from_selected_app": true,
+      "core_status": "{\"schema\":1,\"database_version\":12,\"boot_ready\":true,\"enabled\":true,\"mode\":\"hide\",\"configured_mode\":\"hide\",\"reboot_required\":false,\"selection_table\":\"denylist\",\"engine\":\"builtin\",\"configured_provider\":\"core\",\"external_sulist_supported\":false}",
+      "module_properties": "id=pr15_marker\nname=PR15 visibility probe\nversion=1\nversionCode=1"
+    },
+    {
+      "target": "fallback316-16k",
+      "name": "zygisk-assistant",
+      "modules": [
+        "snake-4/Zygisk-Assistant"
+      ],
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "setup_boot": "6158ebc3-55ab-42ec-8f4b-85c959c4ad06",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "baseline_boot": "42453bca-fc5a-4e97-af40-603ecf2d009c",
+      "visible_before": true,
+      "selected_boot": "e37b0662-a536-466b-b8a8-9a42770ba957",
+      "hidden_from_selected_app": true,
+      "core_status": "{\"schema\":1,\"database_version\":12,\"boot_ready\":true,\"enabled\":false,\"mode\":\"hide\",\"configured_mode\":\"hide\",\"reboot_required\":false,\"selection_table\":\"denylist\",\"engine\":\"builtin\",\"configured_provider\":\"core\",\"external_sulist_supported\":false}",
+      "module_properties": "id=pr15_marker\nname=PR15 visibility probe\nversion=1\nversionCode=1\nid=zygisk-assistant\nname=Zygisk Assistant\nversion=v2.1.4 (1013f8a-release)\nversionCode=214\nauthor=snake-4\ndescription=A Zygisk module to hide root.\nupdateJson=https://raw.githubusercontent.com/snake-4/Zygisk-Assistant/main/update_metadata/update.json"
+    },
+    {
+      "target": "mumu-fallback316",
+      "serial": "127.0.0.1:26700",
+      "apk_sha256": "f5e98efb5b275f70c4f1bb6a31f21ccd3ce361f2dc48e686674ad38fea6917db",
+      "module_sha256": "9eca30a269dc676a66f67a9339185dee55cccd47dc1fc8eeea5416124626d67a",
+      "cases": [
+        {
+          "name": "core-hide",
+          "baseline_boot": "202e8d17-1cc9-4f88-b9e4-7b68c4d66436",
+          "selected_boot": "ad1d5b3a-d3a1-4f1d-a3a8-33c2ac4e7820",
+          "visible_before": true,
+          "hidden_from_selected_app": true,
+          "marker_visible_to_root": true,
+          "status": {
+            "schema": 1,
+            "database_version": 12,
+            "boot_ready": true,
+            "enabled": true,
+            "mode": "hide",
+            "configured_mode": "hide",
+            "reboot_required": false,
+            "selection_table": "denylist",
+            "engine": "builtin",
+            "configured_provider": "core",
+            "external_sulist_supported": false
+          }
+        },
+        {
+          "name": "zygisk-assistant",
+          "selected_boot": "60a5802d-ae70-42ad-b8e2-633dcb4faa2c",
+          "hidden_from_selected_app": true,
+          "marker_visible_to_root": true,
+          "core_enforcement_disabled": true,
+          "status": {
+            "schema": 1,
+            "database_version": 12,
+            "boot_ready": true,
+            "enabled": false,
+            "mode": "hide",
+            "configured_mode": "hide",
+            "reboot_required": false,
+            "selection_table": "denylist",
+            "engine": "builtin",
+            "configured_provider": "core",
+            "external_sulist_supported": false
+          }
+        }
+      ],
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.system-mode.transaction.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "debug",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "probe_policy_before": {
+        "uid": 10054,
+        "policy": 2,
+        "until": 0,
+        "logging": 1,
+        "notification": 1
+      },
+      "probe_root_grant_removed": true,
+      "temporarily_disabled_hiders": [
+        "zygisk_shamiko"
+      ],
+      "test_policy_and_hiders_restored": true,
+      "cleanup_boot": "d59c151e-b339-4aaa-829c-bddf9bd621a4",
+      "temporary_modules_removed": true
+    },
+    {
+      "target": "blue-fallback316",
+      "serial": "127.0.0.1:5575",
+      "apk_sha256": "f5e98efb5b275f70c4f1bb6a31f21ccd3ce361f2dc48e686674ad38fea6917db",
+      "module_sha256": "9eca30a269dc676a66f67a9339185dee55cccd47dc1fc8eeea5416124626d67a",
+      "cases": [
+        {
+          "name": "core-hide",
+          "baseline_boot": "f90218bc-b527-49a3-add1-ccd826adb903",
+          "selected_boot": "5a472130-826d-4fdd-bd47-e25db416f6d2",
+          "visible_before": true,
+          "hidden_from_selected_app": true,
+          "marker_visible_to_root": true,
+          "status": {
+            "schema": 1,
+            "database_version": 12,
+            "boot_ready": true,
+            "enabled": true,
+            "mode": "hide",
+            "configured_mode": "hide",
+            "reboot_required": false,
+            "selection_table": "denylist",
+            "engine": "builtin",
+            "configured_provider": "core",
+            "external_sulist_supported": false
+          }
+        },
+        {
+          "name": "zygisk-assistant",
+          "selected_boot": "60cb1b55-b447-4f4b-a7f3-865bd1a11b54",
+          "hidden_from_selected_app": true,
+          "marker_visible_to_root": true,
+          "core_enforcement_disabled": true,
+          "status": {
+            "schema": 1,
+            "database_version": 12,
+            "boot_ready": true,
+            "enabled": false,
+            "mode": "hide",
+            "configured_mode": "hide",
+            "reboot_required": false,
+            "selection_table": "denylist",
+            "engine": "builtin",
+            "configured_provider": "core",
+            "external_sulist_supported": false
+          }
+        }
+      ],
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.system-mode.transaction.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "debug",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "probe_policy_before": {
+        "uid": 10083,
+        "policy": 2,
+        "until": 0,
+        "logging": 1,
+        "notification": 1
+      },
+      "probe_root_grant_removed": true,
+      "temporarily_disabled_hiders": [
+        "zygisk_shamiko"
+      ],
+      "adb_authorization": {
+        "method": "Assistant changed ro.secure to 1 and ro.debuggable to 0; ADB required authentication and its dialog remained behind the vendor loading screen. Existing workstation public key was provisioned in this disposable guest by a temporary host bootstrap. The exact candidate initramfs was restored before the acceptance cold boot. BlueStacks local ADB switch was enabled for testing; remote ADB remained disabled.",
+        "private_key_copied": false,
+        "authentication_required_before_provisioning": true,
+        "ro_secure": "1",
+        "ro_debuggable": "0",
+        "ro_adb_secure": "",
+        "candidate_initrd_sha256": "a1a7a3a6ba62e2c3b5543c6ea4b765225cf0ad4e644891c3bbb1a04a2c891d79",
+        "accepted_boot": "60cb1b55-b447-4f4b-a7f3-865bd1a11b54",
+        "scope": "Tiramisu64_2, removed with the disposable instance"
+      },
+      "cleanup_boot": "a79f2bca-d7d4-4586-950d-2999210ae3c1",
+      "temporary_modules_removed": true,
+      "test_policy_and_hiders_restored": true
+    }
+  ],
+  "shamiko_diagnosis": "device-pr15/shamiko-signing-identity.json",
+  "page16k_limit_record": "docs/device-pr15/module-16k-limits.json",
+  "provider_combinations16k": [
+    {
+      "name": "zygisknext",
+      "modules": [
+        "LSPosed/ZygiskNext",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "0a7f68dd-2798-4e59-b281-509a2376f1d7",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "module_boot": "038af58c-5c38-4294-9a04-c673ad69e925",
+      "runtime": {
+        "LSPosed/ZygiskNext": {
+          "module_registered": true,
+          "description": "[\u2705zygote, \u26a0\ufe0f1 module(s) with issue: zygisk-sui, Root: \u2705Magisk (31000), ZL] Standalone implementation of Zygisk.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": "version_local:1.5.2-864-a4a72ce-release\nabi:arm64-v8a (primary)\nuname:6.6.30-android15-8-gdd9c02ccfe27-ab11987101 aarch64\nandroid_sdk:35\nversion:1.5.2-864-a4a72ce-release\nzygote_states:1\nzygote_state_0:1,0,398,zygote,3,0\ninject_state:1\nroot_status:\u2705Magisk (31000)\ndenylist_policy:0\nenforce_denylist:0\nmemory_type:0\nlinker:1\nhook_mode:255\nroot_impl:4\nroot_ver:31000\nmodules64:2,zygisk_vector,zygisk-sui\nmodules32:0\nmodules_with_issue:1,zygisk-sui=2"
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": true,
+          "manager_text": [
+            "Take part",
+            "Review a change",
+            "Discussions",
+            "Try a canary",
+            "Report a problem",
+            "Recent activity",
+            "No commits in the last six months.",
+            "Taking a rest \u2014 saved activity. Pull to refresh.",
+            "Vector",
+            "Active",
+            "2.2 (3080)  \u00b7  API 102",
+            "Home",
+            "Modules",
+            "Store",
+            "Logs"
+          ],
+          "manager_active": true
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": ""
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "6b7ccc42-6f39-41b2-9554-68978b923b5a",
+      "root_after_removal": true,
+      "all_removed": true
+    },
+    {
+      "name": "rezygisk",
+      "modules": [
+        "PerformanC/ReZygisk",
+        "JingMatrix/Vector",
+        "RikkaApps/Sui"
+      ],
+      "apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+      "build": {
+        "app_version_code": 31016,
+        "application_id": "io.github.jordan231111.magisk",
+        "build_id": "599333c95dfaa14caf71d13c773bf2e3f22bb989cda1c7391838a9043ba51d80",
+        "capabilities": [
+          "kitsune.boot-completed.v1",
+          "kitsune.build-info.v1",
+          "kitsune.early-mount.v2",
+          "kitsune.hide.v1",
+          "kitsune.module-root.v2",
+          "kitsune.su-consent.v1",
+          "kitsune.zygisk-provider.v1"
+        ],
+        "channel": "next-system-experimental",
+        "compat_version_code": 31000,
+        "product_name": "KitsuneMagisk Next",
+        "product_version": "0.1.0-dev",
+        "protocol_version": 1,
+        "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+        "schema": 1,
+        "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+        "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+        "source_dirty": false,
+        "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+        "upstream_version": "31.0",
+        "variant": "release",
+        "version_name": "0.1.0-dev-kitsune.57c9c908"
+      },
+      "setup_boot": "6c2a590a-70f2-4e84-9094-1fc4c41bc0d1",
+      "guest": {
+        "ro.build.fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101",
+        "page_size": "16384",
+        "selinux": "Enforcing"
+      },
+      "module_boot": "8d26a231-a6b9-46ef-ab09-4919a3f11850",
+      "runtime": {
+        "PerformanC/ReZygisk": {
+          "module_registered": true,
+          "description": "Standalone implementation of Zygisk.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "provider_status": ""
+        },
+        "JingMatrix/Vector": {
+          "module_registered": true,
+          "description": "A modern, Xposed-compatible framework for Android application hooking. (Android 8.1 ~ 17)",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "launch": "Starting: Intent { act=android.intent.action.MAIN cat=[org.matrix.vector.manager.LAUNCH_MANAGER] cmp=com.android.shell/.BugreportWarningActivity }",
+          "manager_ui": false,
+          "manager_text": [
+            "Sat, Oct 17",
+            "Phone",
+            "Messages",
+            "Chrome",
+            "KitsuneMagisk Next"
+          ],
+          "manager_active": false
+        },
+        "RikkaApps/Sui": {
+          "module_registered": true,
+          "description": "Modern superuser interface implementation. This module requires Magisk 24.0+ and Zygisk enabled. DO NOT add SystemUI and Settings to DenyList.",
+          "root": true,
+          "boot_completed": true,
+          "flags": "",
+          "sui_process": ""
+        }
+      },
+      "manager_consent_passed": true,
+      "removal_boot": "2f3c6c03-9c1c-4a42-9824-63d61dfcccc7",
+      "root_after_removal": true,
+      "all_removed": true
+    }
+  ],
+  "page16k_target": "Official API35 google_apis_ps16k ARM64 with measured 16384-byte pages; seven provider/client modules and both hiding fallback paths."
+}

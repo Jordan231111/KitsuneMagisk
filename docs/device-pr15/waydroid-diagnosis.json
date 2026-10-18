@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "scope": "Diagnostic reproduction and fixes; not acceptance of a mixed or dirty build. Consistent candidate 31017 qualification remains required.",
+  "guest": {
+    "android": 13,
+    "api": 33,
+    "architecture": "arm64_only",
+    "page_size": 4096,
+    "waydroid": "1.6.2",
+    "system_image": "lineage-20.0-20260927-VANILLA-waydroid_arm64_only-system.zip",
+    "kernel": "6.8.0-142-generic",
+    "host": "Disposable Ubuntu 24.04 ARM64 Lima VZ guest",
+    "selinux": "Disabled",
+    "active_host_lsms": [
+      "lockdown",
+      "capability",
+      "landlock",
+      "yama",
+      "apparmor"
+    ],
+    "container_securityfs_lsm_list": "not exposed",
+    "generic_context": "lxc-waydroid (complain)",
+    "named_apparmor_context": "lxc-waydroid (complain)",
+    "selinuxfs_in_registered_filesystems": false
+  },
+  "baseline": {
+    "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+    "app_version_code": 31016,
+    "release_apk_sha256": "315cc232c171103cc3ffdc13146a66330d368d9a521548f5a566c012df9594b7",
+    "basic_su": "passed from UID 2000 to UID 0 with an explicit lab grant",
+    "api5_probe": "failed: module result null; daemon access denied"
+  },
+  "fixes": [
+    {
+      "file": "native/src/core/selinux.rs",
+      "problem": "Hidden securityfs plus nonempty AppArmor context prevented detection of disabled SELinux, rejecting legitimate pre-specialization zygote clients.",
+      "change": "Require matching named AppArmor context and a well-formed kernel filesystem list containing proc but no selinuxfs. Missing, contradictory and I/O-error evidence fails closed. Existing root UID, executable, process-name and ancestry checks remain unchanged.",
+      "host_regression": "Observed Waydroid-shaped fixture fails before the change and passes afterward; active SELinux and identity rejection tests remain passing."
+    },
+    {
+      "file": "native/src/core/zygisk/mod.rs",
+      "problem": "fd_get_attr performed fgetxattr(security.selinux) on the companion socket; EOPNOTSUPP caused an early return without invoking the module or closing the client. Modules could block system-server startup.",
+      "syscall_observation": [
+        "fstat(socket) = 0",
+        "fgetxattr(socket, security.selinux) = -1 EOPNOTSUPP"
+      ],
+      "change": "Use fstat device/inode identity without security-label queries. Close the still-owned descriptor on initial metadata failure; preserve the existing protection against closing a descriptor reused by the callback.",
+      "host_regression": "Actual dispatcher tested with real sockets for delivery, close, replacement descriptors, metadata failure and invalid descriptors."
+    }
+  ],
+  "diagnostics": {
+    "first_native_sha256": "88ab264610f198a70958b3f20a04e1a4d94b3ee5bff0848abaee7d5fba887296",
+    "second_native_sha256": "cff94e695ccca8fafe58fd5fbfc12fe0ab86f508b0ddb1e35bceb4639ca450a0",
+    "running_build": {
+      "app_version_code": 31016,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "19d568783bcf0f53a07f8f9c4fce49dc4e2db96899f2ff626727140efcf58f4d",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-82142208f851661541bbc23d105ab05496ab7883",
+      "schema": 1,
+      "source_commit": "82142208f851661541bbc23d105ab05496ab7883",
+      "source_digest": "71e3f3e9cad4366ba95799836f0ec15c8d789ccf9ea288c6867fbf83f7325b7c",
+      "source_dirty": true,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "release",
+      "version_name": "0.1.0-dev-kitsune.82142208-dirty"
+    },
+    "api5_with_optional_fixtures_disabled": "passed after both fixes",
+    "api5_with_bundled_fixtures_enabled": "passed",
+    "bundled_fixture_versions": {
+      "Shamiko": "1.2.1 (383)",
+      "LSPosed": "2.1.1 (7790)"
+    },
+    "limit": "Bundled fixture acceptance is distinct from the separately tested Shamiko 1.2.5 signing-identity rejection."
+  },
+  "kernel_references": [
+    "https://github.com/torvalds/linux/blob/v6.8/security/selinux/selinuxfs.c#L2012",
+    "https://github.com/torvalds/linux/blob/v4.14/security/selinux/selinuxfs.c#L1806"
+  ],
+  "fixture_limits": [
+    "Private boot hook starts the exact native payload before zygote; magiskinit/OEM boot-image paths are not tested by this route.",
+    "The bootstrap payload is separate from the mutable app-managed databin.",
+    "The Android window must remain active in headless Weston; Waydroid otherwise freezes the container.",
+    "No physical OEM or hardware-attestation claim."
+  ]
+}

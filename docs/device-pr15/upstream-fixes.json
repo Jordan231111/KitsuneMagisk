@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "date": "2026-10-17",
+  "policy": "User selected v31.0 plus verified fixes; unreleased features remain separate work. Preserve interactive SU prompts, Kitsune Hide/SuList and authenticated manager handling.",
+  "baseline": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+  "compared_master": "af8c2566b07cfa0c2d4b145b88316a07f7d2bb6b",
+  "compared_commit_count": 90,
+  "candidate_version_code": 31015,
+  "selected_fixes": [
+    {
+      "commit": "931644551658ae18a5deb562691496fc2e0051fb",
+      "url": "https://github.com/topjohnwu/Magisk/commit/931644551658ae18a5deb562691496fc2e0051fb",
+      "disposition": "Port -g precedence over -G; copy the old primary group before growing the Rust Vec to avoid a dangling element reference."
+    },
+    {
+      "commit": "8376f7b27ce578fbe8c85d8f48e30ac64da62421",
+      "url": "https://github.com/topjohnwu/Magisk/commit/8376f7b27ce578fbe8c85d8f48e30ac64da62421",
+      "disposition": "Validate compression signatures and XZ header CRC; also recognize the valid empty bzip2 end marker."
+    },
+    {
+      "commit": "6d391dd5b1904122dae315bf2c07e100827c86ef",
+      "url": "https://github.com/topjohnwu/Magisk/commit/6d391dd5b1904122dae315bf2c07e100827c86ef",
+      "disposition": "Propagate decompression failure and remove partial output; additionally reject failed output opens before passing a descriptor to Rust."
+    },
+    {
+      "commit": "02656987101034e2562c54b8f03f21ddeafd529a",
+      "url": "https://github.com/topjohnwu/Magisk/commit/02656987101034e2562c54b8f03f21ddeafd529a",
+      "disposition": "Preserve the 512-byte Samsung SignerVer02 trailer after SEANDROIDENFORCE."
+    },
+    {
+      "commit": "07390a786092e41aa6245a85299fabf30be4f558",
+      "url": "https://github.com/topjohnwu/Magisk/commit/07390a786092e41aa6245a85299fabf30be4f558",
+      "disposition": "Retain original AVB2 descriptors when repacking; update the outer footer offsets without rewriting authenticated descriptor fields."
+    },
+    {
+      "commit": "887a97822b957dc0edd17fb384bd3a87e1497a3a",
+      "url": "https://github.com/topjohnwu/Magisk/commit/887a97822b957dc0edd17fb384bd3a87e1497a3a",
+      "disposition": "Search compressed zImage payload formats, preferring aligned offsets and retaining the unaligned fallback."
+    },
+    {
+      "commit": "511a246ca9c2c72c2c8c92935418c9d8cc03e3f5",
+      "url": "https://github.com/topjohnwu/Magisk/commit/511a246ca9c2c72c2c8c92935418c9d8cc03e3f5",
+      "disposition": "Sanitize module filenames using explicit control-character ranges; preserve uppercase letters rather than copying the upstream regex literally."
+    },
+    {
+      "commit": "87e72a582e019ae1bb3e65c90c259e994ecd66fa",
+      "url": "https://github.com/topjohnwu/Magisk/commit/87e72a582e019ae1bb3e65c90c259e994ecd66fa",
+      "disposition": "Already applied earlier in PR15: use Android-compatible DER ECDSA AVB1 signatures with independent verification."
+    }
+  ],
+  "already_covered": [
+    {
+      "commit": "a11ef9a4dee81cd8b6bb240e3033d5b811ee4bac",
+      "url": "https://github.com/topjohnwu/Magisk/commit/a11ef9a4dee81cd8b6bb240e3033d5b811ee4bac",
+      "disposition": "The bounded Kitsune consent launcher already clears the child signal mask before exec."
+    },
+    {
+      "commit": "441ac326235aec235aa1246402a7ae7b120687d2",
+      "url": "https://github.com/topjohnwu/Magisk/commit/441ac326235aec235aa1246402a7ae7b120687d2",
+      "disposition": "Existing connect_daemon callers already reject failed descriptors."
+    },
+    {
+      "commit": "806ecdf8e821909cdae7e7bb6208d12d89640db2",
+      "url": "https://github.com/topjohnwu/Magisk/commit/806ecdf8e821909cdae7e7bb6208d12d89640db2",
+      "disposition": "DbValues::get_text already maps SQLite NULL to an empty string for C++ and Rust readers. Confirmed on candidate 31014."
+    }
+  ],
+  "verification": {
+    "regressions": "tests/test_boot_format.py, tools/boot_qualification.py, AdditionalTest.kt",
+    "previous_candidate": "31014 / aeb14601677f09e8dd22ab35bcae4518c0e1254f",
+    "previous_failures": [
+      "su -G 3002 -g 3001 selected primary group 3002",
+      "Truncated gzip kernel unpack returned success",
+      "Samsung SignerVer02 trailer was not preserved",
+      "Non-compressed ANDROID magic masked the ARM32 zImage payload"
+    ],
+    "final_candidate_acceptance": "Exact candidate 31016 passes all eight AVD lanes; commercial-emulator lifecycle records are maintained separately.",
+    "accepted_candidate": {
+      "app_version_code": 31016,
+      "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+      "avd_acceptance": "docs/device-pr15/avd-lifecycle.json",
+      "ci_acceptance": "docs/device-pr15/ci-acceptance.json"
+    }
+  },
+  "additional_verified_fix": {
+    "area": "ARM32 zImage payload-size relocation",
+    "trigger": "A resized compressed payload changes length by a value not divisible by four.",
+    "before": "Both size pointers moved by the rounded GOT delta; a subsequent unpack could read a truncated gzip stream.",
+    "after": "The size literal and tagged pointer track the exact compressed payload end; GOT alignment still uses its own delta.",
+    "references": [
+      "https://github.com/torvalds/linux/blob/v6.18/arch/arm/boot/compressed/head.S",
+      "https://github.com/torvalds/linux/blob/v6.18/arch/arm/boot/compressed/vmlinux.lds.S"
+    ],
+    "test": "tools/boot_qualification.py zimage_payloads: independent zlib decode, exact pointers, aligned and unaligned payloads, repack/unpack and unchanged source."
+  }
+}

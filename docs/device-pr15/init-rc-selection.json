@@ -1,0 +1,12 @@
+{
+  "source": "native/src/init/rootdir.cpp",
+  "method": "compiled production selection block with deterministic filesystem calls",
+  "cases": 4,
+  "full_file_lookup": true,
+  "directory_only_falls_back": true,
+  "patch_fissiond_on_success": true,
+  "source_commit": "3b62046b661f9b1d6bc366e3226d6584f4f073e8",
+  "source_sha256": "bcc81c8305de61a7372248951935c1a76386677a6ccee614126b7aa1dca3514c",
+  "selection_sha256": "8f3cad40a44de0024ceef014f6b4edd8f6860f8463f62ec01c09f536e4f06551",
+  "scope": "Host behavior fixture with mocked access and patch calls; no physical-device boot claim"
+}

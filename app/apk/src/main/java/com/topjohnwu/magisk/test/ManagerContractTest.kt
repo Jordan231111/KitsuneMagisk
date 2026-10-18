@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.test
 
 import android.content.Intent
+import android.net.Uri
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import androidx.annotation.Keep
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -8,6 +9,7 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
+import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.cmp
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.model.HideFailure
@@ -17,6 +19,9 @@ import com.topjohnwu.magisk.core.model.ManagerDiagnostics
 import com.topjohnwu.magisk.core.model.su.SuPolicy
 import com.topjohnwu.magisk.core.su.SuRequestHandler
 import com.topjohnwu.magisk.core.tasks.ManagerMigration
+import com.topjohnwu.magisk.core.tasks.MagiskInstaller
+import com.topjohnwu.magisk.core.utils.MediaStoreUtils
+import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.runBlocking
@@ -25,7 +30,12 @@ import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Test
+import org.junit.Assume.assumeTrue
 import org.junit.runner.RunWith
+import java.io.File
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.util.UUID
 import com.topjohnwu.magisk.core.R as CoreR
 
 @Keep
@@ -33,6 +43,46 @@ import com.topjohnwu.magisk.core.R as CoreR
 class ManagerContractTest : BaseTest {
     companion object {
         @BeforeClass @JvmStatic fun before() = BaseTest.prerequisite()
+    }
+
+    @Test fun testSystemModePatchDoesNotQueueAnOrdinaryUpdate() = runBlocking {
+        assumeTrue(Info.isSystemMode)
+        val context = ServiceLocator.deContext
+        val inbox = File(context.filesDir.parent, "install")
+        assertFalse("A prior ordinary update is pending", inbox.exists())
+        assertTrue(inbox.mkdir())
+        val sentinel = File(inbox, "unrelated")
+        sentinel.writeText("preserve this inbox")
+        val input = File.createTempFile("patch-contract-", ".img", context.cacheDir)
+        // A bounded boot-v4 fixture. It is patched as a file, never flashed.
+        val image = ByteBuffer.allocate(8192).order(ByteOrder.LITTLE_ENDIAN)
+        image.put("ANDROID!".toByteArray())
+        image.putInt(16)
+        image.putInt(0)
+        image.putInt(0)
+        image.putInt(1584)
+        image.position(40)
+        image.putInt(4)
+        image.position(4096)
+        image.put(ByteArray(16) { 0x42 })
+        input.writeBytes(image.array())
+        val previousDir = Config.downloadDir
+        val directory = "kitsune-patch-test-${UUID.randomUUID()}"
+        Config.downloadDir = directory
+        val console = mutableListOf<String>()
+        try {
+            val success = MagiskInstaller.Patch(Uri.fromFile(input), console, console).exec()
+            assertTrue(console.toString(), success)
+            assertEquals("preserve this inbox", sentinel.readText())
+            assertEquals(listOf("unrelated"), inbox.list()?.toList())
+            assertFalse(File(context.filesDir.parent, Const.PATCH_INSTALL_DIR).exists())
+            assertFalse(RootUtils.fs.getFile(Const.PATCH_TMPDIR).exists())
+        } finally {
+            Config.downloadDir = previousDir
+            input.delete()
+            inbox.deleteRecursively()
+            RootUtils.fs.getFile(MediaStoreUtils.fullPath(directory)).deleteRecursively()
+        }
     }
 
     @Test fun testHideSelectionAndModeMismatch() = runBlocking {
@@ -203,7 +253,16 @@ class ManagerContractTest : BaseTest {
     }
 
     private fun grantVisibleRequest() {
-        assertTrue("Consent must be visible", device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.su_warning))), 15000))
+        val visible = device.wait(Until.hasObject(By.text(appContext.getString(CoreR.string.su_warning))), 15000)
+        if (!visible) {
+            // Retain the actual window state when a CI consent dialog is lost.
+            val hierarchy = java.io.ByteArrayOutputStream()
+            runCatching { device.dumpWindowHierarchy(hierarchy) }
+            hierarchy.toString("UTF-8").take(16384).chunked(3000).forEach {
+                android.util.Log.e("ConsentWindow", it)
+            }
+        }
+        assertTrue("Consent must be visible", visible)
         // The one-second consent delay is intentional tapjacking protection.
         android.os.SystemClock.sleep(1200)
         val grant = device.findObject(By.text(appContext.getString(CoreR.string.grant)))

@@ -673,6 +673,9 @@ sm_digest_path() {
         elif [ -d "$item" ]; then
           kind=directory
           digest=-
+        elif [ -c "$item" ] && [ "$("$SM_BB" stat -c '%t:%T' "$item")" = 0:0 ]; then
+          kind=whiteout
+          digest=-
         else
           kind=other
           digest=-
@@ -1690,9 +1693,21 @@ sm_verify_snapshot_sources() {
   return 0
 }
 
+sm_module_whiteout() {
+  local canonical="$1" path="$2"
+  case "$canonical" in
+    /data/adb/modules/*/*|/data/adb/modules_update/*/*|\
+    "${SM_STATE_DIR:-/data/adb/kitsune/system-mode}"/rollback/*/modules/data/*/*|\
+    "${SM_STATE_DIR:-/data/adb/kitsune/system-mode}"/rollback/*/modules_update/data/*/*) ;;
+    *) return 1 ;;
+  esac
+  [ ! -L "$path" ] && [ -c "$path" ] &&
+    [ "$("$SM_BB" stat -c '%t:%T' "$path")" = 0:0 ]
+}
+
 sm_managed_path_safe() {
   local purpose="$1" canonical="$2" path="$3" reject_link="${4:-false}"
-  local unexpected mounted mountinfo="${SM_MOUNTINFO_FILE:-/proc/self/mountinfo}"
+  local unexpected item mounted mountinfo="${SM_MOUNTINFO_FILE:-/proc/self/mountinfo}"
   sm_path_present "$path" || return 0
   if [ -L "$path" ]; then
     [ "$reject_link" != true ] || {
@@ -1706,10 +1721,22 @@ sm_managed_path_safe() {
     return 1
   }
   [ ! -d "$path" ] || {
-    unexpected="$({
+    unexpected="$(
       cd "$path" || exit 1
       "$SM_BB" find . -mindepth 1 ! -type f ! -type d ! -type l -print
-    } | "$SM_BB" head -n 1)" || return 1
+    )" || return 1
+    if [ -n "$unexpected" ]; then
+      unexpected="$(
+        while IFS= read -r item; do
+          sm_module_whiteout "$canonical/${item#./}" "$path/${item#./}" || {
+            printf '%s\n' "$item"
+            break
+          }
+        done <<EOF
+$unexpected
+EOF
+      )" || return 1
+    fi
     [ -z "$unexpected" ] || {
       sm_log "! $purpose contains a special node: $canonical/${unexpected#./}"
       return 1

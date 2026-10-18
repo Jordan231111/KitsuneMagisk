@@ -33,6 +33,8 @@ from tools.system_mode.qualification import (
     _inventory_digest,
     _exec_result_payload,
     _remote_database_digest,
+    _remote_node_evidence,
+    _validate_inventory,
     _sqlite_content_digest,
     _verify_init_exec_probe,
     _write_probe,
@@ -61,6 +63,34 @@ FIXTURE = ROOT / "tools" / "system_mode" / "fixtures" / "mumu-writable.json"
 
 
 class QualificationTest(unittest.TestCase):
+    def test_module_links_and_whiteouts_have_bounded_inventory_evidence(self) -> None:
+        for kind, digest, size in (("symlink", "a" * 64, 7), ("whiteout", None, 0)):
+            output = kind + "\n"
+            if digest:
+                output += digest + "  -\n"
+            output += f"{size}\t600\t0\t0\t1\n"
+            with mock.patch("tools.system_mode.qualification._root_checked", return_value=output):
+                for root in ("/data/adb/modules", "/data/adb/modules_update"):
+                    path = root + "/mount_test/system/bin/tool"
+                    node = _remote_node_evidence(mock.Mock(), path)
+                    self.assertEqual((kind, digest, size), (node["kind"], node["sha256"], node["size"]))
+                    inventory = [dict(node, path=p, kind="directory", sha256=None)
+                                 for p in _boot_critical_roots("/system/etc/init/magisk.rc")]
+                    inventory.append(node)
+                    inventory.sort(key=lambda item: item["path"])
+                    _validate_inventory(inventory, "/system/etc/init/magisk.rc", _inventory_digest(inventory))
+                    node["path"] = "/data/adb/magisk/tool"
+                    inventory.sort(key=lambda item: item["path"])
+                    with self.assertRaisesRegex(ValueError, "escaped its module directory"):
+                        _validate_inventory(inventory, "/system/etc/init/magisk.rc", _inventory_digest(inventory))
+                for path in ("/data/adb/magisk/tool", "/data/adb/modules/mount_test",
+                             "/data/adb/modules/../tool", "/system/etc/init/magisk.rc"):
+                    with self.assertRaisesRegex(ProbeError, "unsupported"):
+                        _remote_node_evidence(mock.Mock(), path)
+        with mock.patch("tools.system_mode.qualification._root_checked", return_value="special\n"):
+            with self.assertRaisesRegex(ProbeError, "unsupported"):
+                _remote_node_evidence(mock.Mock(), "/data/adb/modules/mount_test/system/bin/tool")
+
     def test_probe_transfer_preserves_binary_bytes_and_checks_digest(self) -> None:
         content = bytes(range(256)) * 2048
         path = "/system/etc/init/test.policy"

@@ -37,18 +37,64 @@ if [ ! -f /system/build.prop ]; then
 fi
 
 cd /data/local/tmp
-chmod 755 busybox
+[ -x ./busybox ] || chmod 755 busybox || exit 1
+
+if [ "$1" = --root-worker ]; then
+  WORK=$2
+  [ "$(./busybox id -u)" = 0 ] || exit 1
+  # The old Magisk daemon may be the caller's bootstrap provider. Keep the
+  # installation independent of its SU socket and report the final exit code.
+  : > "$WORK/started"
+  FIRST_STAGE=1 ASH_STANDALONE=1 ./busybox sh "$0" > "$WORK/log" 2>&1
+  echo $? > "$WORK/result.tmp"
+  ./busybox mv "$WORK/result.tmp" "$WORK/result"
+  exit
+fi
 
 if [ -z "$FIRST_STAGE" ]; then
   export FIRST_STAGE=1
   export ASH_STANDALONE=1
   if [ $(./busybox id -u) -ne 0 ]; then
     # Re-exec script with root
-    exec /system/xbin/su 0 /data/local/tmp/busybox sh $0
+    BOOTSTRAP_SU=$(command -v su) || {
+      echo '! Bootstrap root is required for live setup' >&2
+      exit 1
+    }
+    WORK=$(./busybox mktemp -d /data/local/tmp/.magisk-live.XXXXXX) || exit 1
+    # Pre-create private output files with the caller's ownership. A root
+    # worker can write them without making its output unreadable to the caller.
+    : > "$WORK/log"
+    : > "$WORK/result.tmp"
+    ./busybox chmod 600 "$WORK/log" "$WORK/result.tmp"
+    "$BOOTSTRAP_SU" -c "cd /data/local/tmp; ASH_STANDALONE=1 ./busybox setsid ./busybox sh ./live_setup.sh --root-worker '$WORK' </dev/null >/dev/null 2>&1 &"
+    STATUS=$?
+    if [ "$STATUS" -ne 0 ] && [ ! -f "$WORK/started" ]; then
+      ./busybox rm -rf "$WORK"
+      exit "$STATUS"
+    fi
+    COUNT=0
+    while [ ! -f "$WORK/result" ] && [ "$COUNT" -lt 180 ]; do
+      ./busybox sleep 1
+      COUNT=$((COUNT + 1))
+    done
+    ./busybox cat "$WORK/log"
+    if [ ! -f "$WORK/result" ]; then
+      echo "! Live setup did not finish; diagnostic output remains in $WORK" >&2
+      exit 1
+    fi
+    STATUS=$(./busybox cat "$WORK/result")
+    ./busybox rm -rf "$WORK"
+    case "$STATUS" in ''|*[!0-9]*) exit 1 ;; esac
+    exit "$STATUS"
   else
     # Re-exec script with busybox
     exec ./busybox sh $0
   fi
+fi
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo '! Bootstrap root did not grant access' >&2
+  exit 1
 fi
 
 pm install -r -g $(pwd)/magisk.apk

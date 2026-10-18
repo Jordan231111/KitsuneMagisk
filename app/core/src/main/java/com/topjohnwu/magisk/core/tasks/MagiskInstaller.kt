@@ -107,6 +107,7 @@ abstract class MagiskInstallImpl protected constructor(
 
     private lateinit var installDir: ExtendedFile
     private lateinit var srcBoot: ExtendedFile
+    private var isolatedPatch = false
     protected var systemModeOperation = false
         private set
 
@@ -159,13 +160,18 @@ abstract class MagiskInstallImpl protected constructor(
         return findImage(slot)
     }
 
-    private suspend fun extractFiles(systemMode: Boolean = false): Boolean {
+    private suspend fun extractFiles(systemMode: Boolean = false, patchOnly: Boolean = false): Boolean {
         console.add("- Device platform: ${Const.CPU_ABI}")
         console.add("- Installing: ${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})")
 
         // The daemon consumes "install" as an ordinary update at boot. A
-        // disconnected System Mode worker must never leave files in that inbox.
-        val directory = if (systemMode) Const.SYSTEM_MODE_INSTALL_DIR else "install"
+        // disconnected System Mode worker or a file patch on a managed runtime
+        // must never leave files in that inbox.
+        val directory = when {
+            patchOnly -> Const.PATCH_INSTALL_DIR
+            systemMode -> Const.SYSTEM_MODE_INSTALL_DIR
+            else -> "install"
+        }
         installDir = localFS.getFile(context.filesDir.parent, directory)
         installDir.deleteRecursively()
         installDir.mkdirs()
@@ -236,7 +242,7 @@ abstract class MagiskInstallImpl protected constructor(
 
         if (useRootDir) {
             // Move everything to tmpfs to workaround Samsung bullshit
-            rootFS.getFile(Const.TMPDIR).also {
+            rootFS.getFile(if (patchOnly) Const.PATCH_TMPDIR else Const.TMPDIR).also {
                 arrayOf(
                     "rm -rf $it",
                     "mkdir -p $it",
@@ -482,7 +488,7 @@ abstract class MagiskInstallImpl protected constructor(
 
         // Fix up binaries
         srcBoot.delete()
-        "cp_readlink $installDir".sh()
+        if (!isolatedPatch) "cp_readlink $installDir".sh()
 
         return true
     }
@@ -529,7 +535,7 @@ abstract class MagiskInstallImpl protected constructor(
 
         // Fix up binaries
         srcBoot.delete()
-        "cp_readlink $installDir".sh()
+        if (!isolatedPatch) "cp_readlink $installDir".sh()
 
         return true
     }
@@ -693,9 +699,15 @@ abstract class MagiskInstallImpl protected constructor(
         return true
     }
 
-    protected suspend fun patchFile(file: Uri) = extractFiles() && processFile(file)
+    protected suspend fun patchFile(file: Uri): Boolean {
+        isolatedPatch = Info.isSystemMode || systemModeNeedsManagedPath()
+        return extractFiles(patchOnly = isolatedPatch) && processFile(file)
+    }
 
-    protected suspend fun patchFile(url: String) = extractFiles() && processUrl(url)
+    protected suspend fun patchFile(url: String): Boolean {
+        isolatedPatch = Info.isSystemMode || systemModeNeedsManagedPath()
+        return extractFiles(patchOnly = isolatedPatch) && processUrl(url)
+    }
 
     protected suspend fun direct() =
         !rejectOrdinaryInstallOverSystemMode() && findImage() && extractFiles() && patchBoot() && flashBoot()
@@ -786,7 +798,9 @@ abstract class MagiskInstallImpl protected constructor(
             success
         } finally {
             try {
-                if (!success && ::installDir.isInitialized && !systemModeOperation) {
+                if (::installDir.isInitialized &&
+                    (isolatedPatch || !success && !systemModeOperation)
+                ) {
                     withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
                         Shell.cmd("rm -rf \"$installDir\"").exec()
                     }

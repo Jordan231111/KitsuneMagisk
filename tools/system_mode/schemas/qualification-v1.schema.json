@@ -319,7 +319,7 @@
       "required": ["path", "kind", "sha256", "size", "mode", "uid", "gid", "mtime_epoch", "selinux_context"],
       "properties": {
         "path": {"type": "string", "pattern": "^/"},
-        "kind": {"enum": ["absent", "directory", "file"]},
+        "kind": {"enum": ["absent", "directory", "file", "symlink", "whiteout"]},
         "sqlite_content_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
         "size": {"type": ["integer", "null"], "minimum": 0},

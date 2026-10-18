@@ -28,8 +28,8 @@ static int find_dtb_offset(const void *buf, size_t len) {
     return find_dtb_offset({static_cast<const uint8_t *>(buf), len});
 }
 
-static void decompress(FileFormat type, int fd, const void *in, size_t size) {
-    decompress_bytes(type, byte_view { in, size }, fd);
+static bool decompress(FileFormat type, int fd, const void *in, size_t size) {
+    return decompress_bytes(type, byte_view { in, size }, fd);
 }
 
 static off_t compress_len(FileFormat type, byte_view in, int fd) {
@@ -438,6 +438,11 @@ bool boot_img::parse_image(const uint8_t *addr, FileFormat type) {
         if (tail.size() >= 16 && BUFFER_MATCH(tail.data(), SEANDROID_MAGIC)) {
             fprintf(stderr, "SAMSUNG_SEANDROID\n");
             flags[SEANDROID_FLAG] = true;
+            if (tail.size() >= 16 + SIGNER_VER02_SZ &&
+                BUFFER_MATCH(tail.data() + 16, SIGNER_VER02_MAGIC)) {
+                fprintf(stderr, "SIGNER_VER02\n");
+                flags[SIGNER_VER02_FLAG] = true;
+            }
         } else if (tail.size() >= 16 && BUFFER_MATCH(tail.data(), LG_BUMP_MAGIC)) {
             fprintf(stderr, "LG_BUMP_IMAGE\n");
             flags[LG_BUMP_FLAG] = true;
@@ -471,9 +476,12 @@ int split_image_dtb(Utf8CStr filename, bool skip_decomp) {
 
         FileFormat fmt = check_fmt_lg(img.data(), img.size());
         if (!skip_decomp && fmt_compressed(fmt)) {
-            int fd = creat(KERNEL_FILE, 0644);
-            decompress(fmt, fd, img.data(), off);
-            close(fd);
+            owned_fd fd = xopen(KERNEL_FILE, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
+            if (fd < 0) return 1;
+            if (!decompress(fmt, fd, img.data(), off)) {
+                unlink(KERNEL_FILE);
+                return 1;
+            }
         } else {
             dump(img.data(), off, KERNEL_FILE);
         }
@@ -494,9 +502,12 @@ int unpack(Utf8CStr image, bool skip_decomp, bool hdr) {
     // Dump kernel
     if (!skip_decomp && fmt_compressed(boot.k_fmt)) {
         if (boot.hdr->kernel_size() != 0) {
-            int fd = creat(KERNEL_FILE, 0644);
-            decompress(boot.k_fmt, fd, boot.kernel, boot.hdr->kernel_size());
-            close(fd);
+            owned_fd fd = xopen(KERNEL_FILE, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
+            if (fd < 0) return RETURN_ERROR;
+            if (!decompress(boot.k_fmt, fd, boot.kernel, boot.hdr->kernel_size())) {
+                unlink(KERNEL_FILE);
+                return RETURN_ERROR;
+            }
         }
     } else {
         dump(boot.kernel, boot.hdr->kernel_size(), KERNEL_FILE);
@@ -509,6 +520,7 @@ int unpack(Utf8CStr image, bool skip_decomp, bool hdr) {
     if (boot.hdr->vendor_ramdisk_table_size()) {
         xmkdir(VND_RAMDISK_DIR, 0755);
         owned_fd dirfd = xopen(VND_RAMDISK_DIR, O_RDONLY | O_CLOEXEC);
+        if (dirfd < 0) return RETURN_ERROR;
         for (auto &it : boot.vendor_ramdisk_tbl()) {
             char file_name[40];
             if (it.ramdisk_name[0] == '\0') {
@@ -517,18 +529,25 @@ int unpack(Utf8CStr image, bool skip_decomp, bool hdr) {
                 ssprintf(file_name, sizeof(file_name), "%s.cpio", it.ramdisk_name);
             }
             owned_fd fd = xopenat(dirfd, file_name, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
+            if (fd < 0) return RETURN_ERROR;
             FileFormat fmt = check_fmt_lg(boot.ramdisk + it.ramdisk_offset, it.ramdisk_size);
             if (!skip_decomp && fmt_compressed(fmt)) {
-                decompress(fmt, fd, boot.ramdisk + it.ramdisk_offset, it.ramdisk_size);
+                if (!decompress(fmt, fd, boot.ramdisk + it.ramdisk_offset, it.ramdisk_size)) {
+                    unlinkat(dirfd, file_name, 0);
+                    return RETURN_ERROR;
+                }
             } else {
                 xwrite(fd, boot.ramdisk + it.ramdisk_offset, it.ramdisk_size);
             }
         }
     } else if (!skip_decomp && fmt_compressed(boot.r_fmt)) {
         if (boot.hdr->ramdisk_size() != 0) {
-            int fd = creat(RAMDISK_FILE, 0644);
-            decompress(boot.r_fmt, fd, boot.ramdisk, boot.hdr->ramdisk_size());
-            close(fd);
+            owned_fd fd = xopen(RAMDISK_FILE, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
+            if (fd < 0) return RETURN_ERROR;
+            if (!decompress(boot.r_fmt, fd, boot.ramdisk, boot.hdr->ramdisk_size())) {
+                unlink(RAMDISK_FILE);
+                return RETURN_ERROR;
+            }
         }
     } else {
         dump(boot.ramdisk, boot.hdr->ramdisk_size(), RAMDISK_FILE);
@@ -540,9 +559,12 @@ int unpack(Utf8CStr image, bool skip_decomp, bool hdr) {
     // Dump extra
     if (!skip_decomp && fmt_compressed(boot.e_fmt)) {
         if (boot.hdr->extra_size() != 0) {
-            int fd = creat(EXTRA_FILE, 0644);
-            decompress(boot.e_fmt, fd, boot.extra, boot.hdr->extra_size());
-            close(fd);
+            owned_fd fd = xopen(EXTRA_FILE, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
+            if (fd < 0) return RETURN_ERROR;
+            if (!decompress(boot.e_fmt, fd, boot.extra, boot.hdr->extra_size())) {
+                unlink(EXTRA_FILE);
+                return RETURN_ERROR;
+            }
         }
     } else {
         dump(boot.extra, boot.hdr->extra_size(), EXTRA_FILE);
@@ -775,6 +797,9 @@ void repack(Utf8CStr src_img, Utf8CStr out_img, bool skip_comp) {
         if (boot.flags[DHTB_FLAG]) {
             xwrite(fd, "\xFF\xFF\xFF\xFF", 4);
         }
+        if (boot.flags[SIGNER_VER02_FLAG]) {
+            xwrite(fd, boot.tail.data() + 16, SIGNER_VER02_SZ);
+        }
     } else if (boot.flags[LG_BUMP_FLAG]) {
         xwrite(fd, LG_BUMP_MAGIC, 16);
     }
@@ -880,35 +905,9 @@ void repack(Utf8CStr src_img, Utf8CStr out_img, bool skip_comp) {
         memcpy(footer, boot.avb_footer, sizeof(AvbFooter));
         footer->original_image_size = __builtin_bswap64(aosp_img_size);
         footer->vbmeta_offset = __builtin_bswap64(off.vbmeta);
-
-        auto vbmeta = reinterpret_cast<AvbVBMetaImageHeader*>(out.data() + off.vbmeta);
-
         if (check_env("PATCHVBMETAFLAG")) {
+            auto vbmeta = reinterpret_cast<AvbVBMetaImageHeader*>(out.data() + off.vbmeta);
             vbmeta->flags = __builtin_bswap32(3);
-        }
-
-        // Sync hash descriptor image_size with the new AOSP portion size.
-        // Without this, some bootloaders (e.g. Motorola) reject images.
-        for (auto &desc : vbmeta->descriptors()) {
-            if (__builtin_bswap64(desc.tag) != AVB_DESCRIPTOR_TAG_HASH)
-                continue;
-
-            // enforce size limits; protect against adversarial input.
-            size_t buf_remaining = out.data() + out.size() - reinterpret_cast<uint8_t *>(&desc);
-            if (buf_remaining < __builtin_bswap64(desc.num_bytes_following) || buf_remaining - __builtin_bswap64(desc.num_bytes_following) < sizeof(AvbDescriptor)) {
-                // beware: both conditions are necessary because underflow in the subtraction could wrap
-                fprintf(stderr, "AVB hash descriptor num_bytes_following overflows buffer\n");
-                break;
-            }
-
-            if (__builtin_bswap64(desc.num_bytes_following) < sizeof(AvbHashDescriptor) - sizeof(AvbDescriptor)) {
-                fprintf(stderr, "AvbDescriptor too small to hold AvbHashDescriptor\n");
-                break;
-            }
-
-            auto &hd = reinterpret_cast<AvbHashDescriptor &>(desc);
-            hd.image_size = __builtin_bswap64(aosp_img_size);
-            break;
         }
     }
 

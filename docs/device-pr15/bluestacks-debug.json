@@ -1,0 +1,60 @@
+{
+  "schema": "kitsune.device-qualification.v1",
+  "artifact": {
+    "sha256": "f5e98efb5b275f70c4f1bb6a31f21ccd3ce361f2dc48e686674ad38fea6917db",
+    "build": {
+      "app_version_code": 31016,
+      "application_id": "io.github.jordan231111.magisk",
+      "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+      "capabilities": [
+        "kitsune.boot-completed.v1",
+        "kitsune.build-info.v1",
+        "kitsune.early-mount.v2",
+        "kitsune.hide.v1",
+        "kitsune.module-root.v2",
+        "kitsune.su-consent.v1",
+        "kitsune.system-mode.transaction.v1",
+        "kitsune.zygisk-provider.v1"
+      ],
+      "channel": "next-system-experimental",
+      "compat_version_code": 31000,
+      "product_name": "KitsuneMagisk Next",
+      "product_version": "0.1.0-dev",
+      "protocol_version": 1,
+      "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+      "schema": 1,
+      "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+      "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+      "source_dirty": false,
+      "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+      "upstream_version": "31.0",
+      "variant": "debug",
+      "version_name": "0.1.0-dev-kitsune.57c9c908"
+    }
+  },
+  "guest": {
+    "fingerprint": "samsung/p3sxxx/p3s:13/TQ2B.230505.005.A1/jenkins08312143:user/release-keys",
+    "api": 33,
+    "abi": "arm64-v8a",
+    "page_size": 4096,
+    "kernel": "5.15.137-00001-gfdae1bb0ce90",
+    "selinux": "Permissive"
+  },
+  "boots": [
+    {
+      "id": "fde40791-769c-48a6-b603-1e9c7936c0da",
+      "phase": "setup",
+      "at": "2026-10-17T21:13:05.511899+00:00"
+    },
+    {
+      "id": "e455eee3-3c04-417e-9e1e-5d5cd2cdbe78",
+      "phase": "accepted",
+      "at": "2026-10-17T21:16:57.476552+00:00"
+    },
+    {
+      "id": "54ddf88f-fd38-4d61-a625-354d3c21657c",
+      "phase": "accepted",
+      "at": "2026-10-17T21:17:13.242311+00:00"
+    }
+  ]
+}

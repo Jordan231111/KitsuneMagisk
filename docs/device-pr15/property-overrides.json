@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "kind": "isolated-property-override-regression",
+  "date": "2026-10-17",
+  "trigger": "Updating an existing short ro.appcompat_override.* value with an active override tree",
+  "cause": "The inherited Update path looks for the prefixed name inside the shadow tree, where the name is unprefixed, then dereferences the absent entry.",
+  "fix": "Recreate prefixed properties through the existing delete/add path, which translates their names into the shadow tree. Ordinary updates retain the maintained v31 semantics.",
+  "method": "Actual CLI binaries and platform getprop readers; copied property areas bind-mounted in a private namespace. The original namespace was checked after each run.",
+  "controls": [
+    {
+      "implementation": "kitsune315",
+      "exit_code": 139,
+      "output": "Segmentation fault\n",
+      "outside_namespace_untouched": true,
+      "binary_sha256": "dc846c070a2ab24bc850fe01f179a70c8a6e809d45b5c174f84cd30faf2e7354",
+      "boot_id": "eb1258b5-2bd8-4e40-92ec-1da0cafc34b3",
+      "guest": {
+        "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      }
+    },
+    {
+      "implementation": "official307",
+      "exit_code": 139,
+      "output": "Segmentation fault\n",
+      "outside_namespace_untouched": true,
+      "binary_sha256": "2d8419018dda41f7d9aca94c0ca8f926f3b8447ca5cf7fb71faeb8d05e29694e",
+      "boot_id": "eb1258b5-2bd8-4e40-92ec-1da0cafc34b3",
+      "guest": {
+        "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      }
+    },
+    {
+      "implementation": "development",
+      "exit_code": 0,
+      "output": "short-override-update\nlong-empty-short-transitions\nordinary-update\noverride-reader-view\nresetprop: create prop [ro.kitsune.pr15.override]=[base] by direct modification\nresetprop: create prop [ro.appcompat_override.ro.kitsune.pr15.override]=[first] by direct modification\nresetprop: create prop [ro.appcompat_override.ro.kitsune.pr15.override]=[second] by direct modification\nresetprop: create prop [ro.appcompat_override.ro.kitsune.pr15.override]=[00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000] by direct modification\nresetprop: create prop [ro.appcompat_override.ro.kitsune.pr15.override]=[] by direct modification\nresetprop: get prop [ro.appcompat_override.ro.kitsune.pr15.override]=[]\nresetprop: create prop [ro.appcompat_override.ro.kitsune.pr15.override]=[final] by direct modification\nresetprop: create prop [ro.kitsune.pr15.override.normal]=[before] by direct modification\nresetprop: update prop [ro.kitsune.pr15.override.normal]=[after] by direct modification\n",
+      "outside_namespace_untouched": true,
+      "binary_sha256": "9cf865ac95defb80ceeae99305a26c0943c0574f982b84c6ae6394d3b2cf6594",
+      "boot_id": "eb1258b5-2bd8-4e40-92ec-1da0cafc34b3",
+      "guest": {
+        "ro.build.fingerprint": "Android/sdk_slim_arm64/emu64a:15/AE3A.240806.019/12368160:userdebug/test-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "kernel": "6.6.30-android15-8-gdd9c02ccfe27-ab11987101-4k",
+        "page_size": "4096",
+        "selinux": "Enforcing"
+      }
+    }
+  ],
+  "candidate_acceptance": "Candidate 31016 repeats tools/property_qualification.py using the exact APK in the AVD lanes.",
+  "references": [
+    "https://android.googlesource.com/platform/bionic/+/master/tests/system_properties_test.cpp",
+    "https://github.com/topjohnwu/system_properties/blob/2bf706b2a72caaf105d45e5929bb246068be4edc/system_properties.cpp"
+  ]
+}

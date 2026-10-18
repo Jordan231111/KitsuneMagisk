@@ -12,6 +12,7 @@ def function(path,signature):
  return s[start:i]
 s=function('native/src/core/selinux.rs','pub(crate) fn selinux_disabled()')
 s=s.replace('std::fs::metadata(path)','std::fs::metadata(root.join(path.trim_start_matches(\'/\')))').replace('std::fs::read_to_string("/proc/self/attr/current")','std::fs::read_to_string(root.join("proc/self/attr/current"))').replace('std::fs::read_to_string("/sys/kernel/security/lsm")', 'std::fs::read_to_string(root.join("sys/kernel/security/lsm"))').replace('selinux_disabled()', 'selinux_disabled(root: &std::path::Path)')
+s=s.replace('std::fs::read_to_string("/proc/self/attr/apparmor/current")', 'std::fs::read_to_string(root.join("proc/self/attr/apparmor/current"))').replace('std::fs::read_to_string("/proc/filesystems")', 'std::fs::read_to_string(root.join("proc/filesystems"))')
 prefix='mod libc { pub const ENOENT:i32=2; pub const EINVAL:i32=22; pub const ENODEV:i32=19; }\n'
 main=r'''
 fn main() {
@@ -35,6 +36,40 @@ fn main() {
   assert!(!selinux_disabled(&root));
  }
  std::fs::remove_file(root.join("sys/kernel/security/lsm")).expect("remove lsms");
+ // Waydroid hides securityfs but exposes a named AppArmor context and the
+ // kernel's registered filesystems. Active SELinux still registers selinuxfs.
+ std::fs::create_dir_all(root.join("proc/self/attr/apparmor")).expect("AppArmor directory");
+ std::fs::write(root.join("proc/self/attr/current"),"lxc-waydroid (complain)\n").expect("current context");
+ std::fs::write(root.join("proc/self/attr/apparmor/current"),"lxc-waydroid (complain)\n").expect("named AppArmor context");
+ std::fs::write(root.join("proc/filesystems"),"nodev\tsysfs\nnodev\tproc\n\text4\nnodev\tsecurityfs\n").expect("filesystems");
+ assert!(selinux_disabled(&root));
+ for filesystems in ["nodev\tproc\nnodev\tselinuxfs\n", "", "nodev\tsecurityfs\n", "nodev\tproc\nnodev\n", "nodev proc unexpected\n", "nodev proc\ninvalid!\n"] {
+  std::fs::write(root.join("proc/filesystems"),filesystems).expect("invalid or active filesystems");
+  assert!(!selinux_disabled(&root));
+ }
+ std::fs::write(root.join("proc/filesystems"),"nodev\tproc\n").expect("filesystems");
+ std::fs::write(root.join("proc/self/attr/apparmor/current"),"different\n").expect("mismatched context");
+ assert!(!selinux_disabled(&root));
+ std::fs::write(root.join("proc/self/attr/apparmor/current"),"lxc-waydroid (complain)\n").expect("named context");
+ std::fs::write(root.join("proc/self/attr/current"),"u:r:zygote:s0\0").expect("SELinux context");
+ assert!(!selinux_disabled(&root));
+ std::fs::write(root.join("proc/self/attr/apparmor/current"),"u:r:zygote:s0\0").expect("ambiguous named context");
+ assert!(!selinux_disabled(&root));
+ std::fs::write(root.join("proc/self/attr/apparmor/current"),"lxc-waydroid (complain)\n").expect("restore named context");
+ std::fs::write(root.join("proc/self/attr/current"),"lxc-waydroid (complain)\n").expect("AppArmor context");
+ std::fs::write(root.join("sys/kernel/security/lsm"),"capability,selinux\n").expect("authoritative active SELinux");
+ assert!(!selinux_disabled(&root));
+ std::fs::remove_file(root.join("sys/kernel/security/lsm")).expect("remove active list");
+ std::fs::create_dir(root.join("sys/kernel/security/lsm")).expect("LSM I/O failure");
+ assert!(!selinux_disabled(&root));
+ std::fs::remove_dir(root.join("sys/kernel/security/lsm")).expect("remove LSM failure");
+ std::fs::remove_file(root.join("proc/filesystems")).expect("remove filesystems");
+ assert!(!selinux_disabled(&root));
+ std::fs::create_dir(root.join("proc/filesystems")).expect("filesystem I/O failure");
+ assert!(!selinux_disabled(&root));
+ std::fs::remove_dir(root.join("proc/filesystems")).expect("remove failure");
+ std::fs::remove_file(root.join("proc/self/attr/apparmor/current")).expect("remove named context");
+ assert!(!selinux_disabled(&root));
  std::fs::write(root.join("proc/self/attr/current"),"").expect("empty");
  assert!(selinux_disabled(&root));
  std::fs::remove_file(root.join("proc/self/attr/current")).expect("remove");

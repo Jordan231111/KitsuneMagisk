@@ -1,0 +1,91 @@
+{
+  "serial": "127.0.0.1:26700",
+  "apk_sha256": "f5e98efb5b275f70c4f1bb6a31f21ccd3ce361f2dc48e686674ad38fea6917db",
+  "module_sha256": "9eca30a269dc676a66f67a9339185dee55cccd47dc1fc8eeea5416124626d67a",
+  "cases": [
+    {
+      "name": "core-hide",
+      "baseline_boot": "202e8d17-1cc9-4f88-b9e4-7b68c4d66436",
+      "selected_boot": "ad1d5b3a-d3a1-4f1d-a3a8-33c2ac4e7820",
+      "visible_before": true,
+      "hidden_from_selected_app": true,
+      "marker_visible_to_root": true,
+      "status": {
+        "schema": 1,
+        "database_version": 12,
+        "boot_ready": true,
+        "enabled": true,
+        "mode": "hide",
+        "configured_mode": "hide",
+        "reboot_required": false,
+        "selection_table": "denylist",
+        "engine": "builtin",
+        "configured_provider": "core",
+        "external_sulist_supported": false
+      }
+    },
+    {
+      "name": "zygisk-assistant",
+      "selected_boot": "60a5802d-ae70-42ad-b8e2-633dcb4faa2c",
+      "hidden_from_selected_app": true,
+      "marker_visible_to_root": true,
+      "core_enforcement_disabled": true,
+      "status": {
+        "schema": 1,
+        "database_version": 12,
+        "boot_ready": true,
+        "enabled": false,
+        "mode": "hide",
+        "configured_mode": "hide",
+        "reboot_required": false,
+        "selection_table": "denylist",
+        "engine": "builtin",
+        "configured_provider": "core",
+        "external_sulist_supported": false
+      }
+    }
+  ],
+  "build": {
+    "app_version_code": 31016,
+    "application_id": "io.github.jordan231111.magisk",
+    "build_id": "c836e35d5e6f0aa6cc4d95c59e17ad8756236908fa941e6a90810f9460786883",
+    "capabilities": [
+      "kitsune.boot-completed.v1",
+      "kitsune.build-info.v1",
+      "kitsune.early-mount.v2",
+      "kitsune.hide.v1",
+      "kitsune.module-root.v2",
+      "kitsune.su-consent.v1",
+      "kitsune.system-mode.transaction.v1",
+      "kitsune.zygisk-provider.v1"
+    ],
+    "channel": "next-system-experimental",
+    "compat_version_code": 31000,
+    "product_name": "KitsuneMagisk Next",
+    "product_version": "0.1.0-dev",
+    "protocol_version": 1,
+    "release_tag": "kitsune-canary-57c9c90813b65015d530ac119141baf32dddb9bd",
+    "schema": 1,
+    "source_commit": "57c9c90813b65015d530ac119141baf32dddb9bd",
+    "source_digest": "93613e01de69d49324b7dd29f1d549ff005d7caaa36e41ea49263f777bedd4f3",
+    "source_dirty": false,
+    "upstream_commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698",
+    "upstream_version": "31.0",
+    "variant": "debug",
+    "version_name": "0.1.0-dev-kitsune.57c9c908"
+  },
+  "probe_policy_before": {
+    "uid": 10054,
+    "policy": 2,
+    "until": 0,
+    "logging": 1,
+    "notification": 1
+  },
+  "probe_root_grant_removed": true,
+  "temporarily_disabled_hiders": [
+    "zygisk_shamiko"
+  ],
+  "test_policy_and_hiders_restored": true,
+  "cleanup_boot": "d59c151e-b339-4aaa-829c-bddf9bd621a4",
+  "temporary_modules_removed": true
+}

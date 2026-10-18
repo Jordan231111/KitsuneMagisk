@@ -21,7 +21,7 @@ SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 FEATURE_ID = re.compile(r"[A-Z]+-[0-9]{3}(?:-[a-z0-9]+)?\Z")
 DECISION = re.compile(
     r"(?:inherited-and-tested|ported-and-tested-in-PR[0-9]+|"
-    r"deferred-to-PR(?:9|1[0-5])|retired-with-evidence)\Z"
+    r"deferred-to-PR(?:9|1[0-5])|unqualified-target|retired-with-evidence)\Z"
 )
 
 
@@ -151,6 +151,15 @@ def validate_ledger(ledger: dict[str, Any], seed: dict[str, tuple[str, str]]) ->
             raise LedgerError(f"{key} needs a numbered owner PR")
         if decision.startswith("deferred-to-PR") and int(decision.split("PR")[1]) != owner:
             raise LedgerError(f"{key} deferral does not match its owner")
+        if decision == "unqualified-target":
+            blocker = row.get("qualification_blocker")
+            if owner != 16 or not isinstance(blocker, dict) or blocker.get("implementation_retained") is not True:
+                raise LedgerError(f"{key} needs an explicit PR16 target qualification blocker")
+            for field in ("target", "reason", "evidence"):
+                require_text(blocker.get(field), f"{key} qualification blocker {field}")
+            relative_path(blocker["evidence"])
+            if row.get("acceptance_evidence"):
+                raise LedgerError(f"{key} cannot claim acceptance while its target is unqualified")
         status = row.get("historical_status")
         if (not isinstance(status, list) or not status
                 or any(not isinstance(item, str) or item not in {"E", "O", "N"} for item in status)
@@ -172,7 +181,7 @@ def validate_ledger(ledger: dict[str, Any], seed: dict[str, tuple[str, str]]) ->
         for item in row["upstream_evidence"]:
             require_text(item, f"{key} upstream evidence")
         # An observation is source provenance, never proof that the new code works.
-        if not decision.startswith("deferred-to-"):
+        if not decision.startswith("deferred-to-") and decision != "unqualified-target":
             require_text(row.get("acceptance_evidence"), f"{key} acceptance evidence")
         for commit in row.get("commits", []):
             require_digest(commit, SHA1, f"{key} historical commit")
@@ -412,12 +421,18 @@ def audit(root: Path, ledger: dict[str, Any], *, release: bool = False) -> dict[
             gaps.append({"kind": "unverified-shipment", "feature": row["id"]})
         if not row["upstream_evidence"]:
             gaps.append({"kind": "unreviewed-upstream-behavior", "feature": row["id"]})
+        if row["decision"] == "unqualified-target":
+            evidence = (root / row["qualification_blocker"]["evidence"]).resolve()
+            if not evidence.is_relative_to(root.resolve()) or not evidence.is_file():
+                gaps.append({"kind": "missing-qualification-blocker", "feature": row["id"]})
     if release:
         for limit in ledger.get("archive_limits", []):
             gaps.append({"kind": "unresolved-archive-disposition", "limit": limit["id"]})
         for row in ledger["features"]:
             if row["decision"].startswith("deferred-to-"):
                 gaps.append({"kind": "deferred-feature", "feature": row["id"]})
+            elif row["decision"] == "unqualified-target":
+                gaps.append({"kind": "unqualified-target", "feature": row["id"]})
     return {
         "schema": 1, "gate": "PR16" if release else "PR8", "passed": not gaps,
         "candidate": ledger["candidate"], "feature_count": len(ledger["features"]),
@@ -452,7 +467,7 @@ def render_markdown(ledger: dict[str, Any], report: dict[str, Any]) -> str:
         "root. The command fails for unaccounted or changed paths, missing/corrupt archives,",
         "missing frozen releases/assets, unaccounted metadata references and provenance gaps.",
         "Failed retrievals have explicit evidence and a numbered disposition; they never become",
-        "recovered-byte claims. Add `--release` to reject every deferred feature and unresolved",
+        "recovered-byte claims. Add `--release` to reject every deferred feature, unqualified target and unresolved",
         "archive disposition. Full Git history is required; this check uses no network access.",
         "After a fresh clone, import the retained original Lite branch with:", "",
         "```sh",
@@ -466,7 +481,7 @@ def render_markdown(ledger: dict[str, Any], report: dict[str, Any]) -> str:
         lines.append(f"- **{limit['id']} (PR{limit['owner_pr']}):** {limit['finding']} {limit['disposition']}")
     lines += [
         "", "## Atomic decisions", "",
-        "Each deferral has an implementation owner and migration guidance in the JSON. These",
+        "Each deferral or unqualified target has an owner and migration guidance in the JSON. These",
         "are not acceptance results, and they cannot pass PR16. The [branch decision](pr8-branch-decision.md)",
         "selects the development foundation while retaining these explicit product gates.", "",
         "| ID | Status | Historical behavior | Observed shipment range | Decision | Owner |",
@@ -499,7 +514,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ledger", type=Path, default=ROOT / "docs/port-ledger.json")
     parser.add_argument("--report", type=Path)
     parser.add_argument("--markdown", type=Path, help="render the review inventory; does not waive audit failures")
-    parser.add_argument("--release", action="store_true", help="reject deferred PR9-PR15 features")
+    parser.add_argument("--release", action="store_true", help="reject deferred features and unqualified targets")
     args = parser.parse_args(argv)
     try:
         ledger = read_json(args.ledger)

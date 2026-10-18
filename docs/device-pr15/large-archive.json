@@ -1,0 +1,12 @@
+{
+  "source_commit": "44143a6d2e70754931f36e21b00cc2069b0a8238",
+  "method": "manager Select and Patch a File",
+  "large_entry_size": 8589934609,
+  "output_size": 8590420480,
+  "patched_boot_offset": 8589936128,
+  "patched_boot_size": 483328,
+  "patched_boot_sha256": "89923306edca31bc619d5bcff4ec341e5d20c3ebe5f813414e755038e50331ae",
+  "original_init_restored": true,
+  "input_unchanged_size": 8589949440,
+  "input_prefix_sha256": "f58c596d4bc6c70a0ff8796f91eaa34cd4fe2b8ffa9fb88b4b82ff0989fe8e00"
+}
