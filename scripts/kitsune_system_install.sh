@@ -59,12 +59,19 @@ ks_validate_identity() {
   return 0
 }
 
-ks_validate_debug_payload() {
+ks_validate_payload() {
   local identity
   [ -x "$KS_INSTALL_DIR/magisk" ] || { ks_fail "Magisk payload binary is unavailable"; return 1; }
-  identity="$("$KS_INSTALL_DIR/magisk" -c 2>/dev/null)"
-  [ "$identity" = "${MAGISK_VER}:MAGISK:D (${MAGISK_VER_CODE})" ] && return 0
-  ks_fail "System Mode remains disabled in release builds until the release matrix passes"
+  identity="$("$KS_INSTALL_DIR/magisk" -c 2>/dev/null)" || {
+    ks_fail "Unable to read the Magisk payload identity"
+    return 1
+  }
+  case "$identity" in
+    "${MAGISK_VER}:MAGISK:D (${MAGISK_VER_CODE})"|"${MAGISK_VER}:MAGISK:R (${MAGISK_VER_CODE})")
+      return 0
+      ;;
+  esac
+  ks_fail "The Magisk payload does not match this installer"
 }
 
 ks_validate_target() {
@@ -420,7 +427,7 @@ ks_rollback() {
 ks_install() {
   KS_ARTIFACT="$2"
   ks_validate_identity || return 1
-  ks_validate_debug_payload || return 1
+  ks_validate_payload || return 1
   ks_validate_target || return 1
   [ -f "$KS_ARTIFACT" ] || { ks_fail "The exact manager APK is unavailable"; return 1; }
   sm_begin_transaction "$KS_ARTIFACT" || return 1

@@ -20,13 +20,13 @@ source commit and upstream base separately. [Signed updates](docs/update-service
 project certificate; historical, debug and previous-package installations require the documented
 [backup/reinstall transition](docs/build-info.md#pr15-namespace-migration).
 
-- [Installation guide](docs/install.md), including [simple manual steps](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
+- [Installation guide](docs/install.md).
+- [Shamiko installation and the tested workaround](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
 - [Hide/SuList](docs/hide-policy.md) and [manager/SU controls](docs/manager-contract.md).
 - [Module APIs](docs/module-contract.md), [tested third-party modules](docs/module-compatibility.md)
   and [Zygisk providers](docs/adr/0001-zygisk-provider.md).
-- [System Mode qualification](docs/system-mode/pr7-machine-qualification.md): debug builds only,
-  with an exact writable target and verified external recovery copy.
-  [Release-APK support remains open](https://github.com/Jordan231111/KitsuneMagisk/issues/47).
+- [System Mode qualification](docs/system-mode/pr7-machine-qualification.md): release and debug
+  builds from code 31022, with an exact writable target and verified external recovery copy.
 - [Current source and artifact contract](docs/next-system-pr16.json).
 
 ## Building

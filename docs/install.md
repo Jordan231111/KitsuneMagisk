@@ -3,8 +3,6 @@
 Download **app-release.apk** from the [KitsuneMagisk releases](https://github.com/Jordan231111/KitsuneMagisk/releases).
 The current Beta 4 is experimental. Installing the APK installs the manager; it does not root the device.
 
-For a short walkthrough and help choosing the right route, see the
-[manual-install guide](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
 The [compatibility table](../compatibility/TESTED.md) lists tested targets.
 Physical-phone qualification remains [open](https://github.com/Jordan231111/KitsuneMagisk/issues/39).
 
@@ -51,10 +49,10 @@ for its restrictions.
 
 ## Emulators
 
-**System Mode installation is disabled in the release APK.**
-[Issue #47](https://github.com/Jordan231111/KitsuneMagisk/issues/47) tracks release support.
+System Mode is available in both release and debug builds from app version code **31022**.
+Older Beta 4/code 31021 release APKs still lack this feature.
 
-The tested writable-emulator route uses the matching debug APK, bootstrap root and the
+The writable-emulator route requires bootstrap root and the
 [host qualification procedure](system-mode/pr7-machine-qualification.md), including a verified
 external recovery backup. It currently requires technical preparation.
 

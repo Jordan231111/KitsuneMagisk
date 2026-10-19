@@ -74,7 +74,7 @@ execution order.
 | 3 | Roadmap PR3 — System Mode contract and read-only characterization | **Integrated into `kitsune`** | Reuse its schemas/driver for all current/next comparisons. |
 | 4 | Roadmap PR4 and PR4A — data/update containment and portable AVD lab | **Integrated into `kitsune`; corrected further by PR #26** | Do not revert the rollback-compatible database design or safe SDK/AVD restoration. |
 | 5 | Roadmap PR4B / GitHub #24 — upstream/security laboratory | **Merged** | Regenerate the ledger when upstream refs or release candidates change. |
-| 6 | Roadmap PR5 / GitHub #26 — production hardening and experimental System Mode containment | **Merged** | Preserve its release/data containment and debug-only System Mode boundary. |
+| 6 | Roadmap PR5 / GitHub #26 — production hardening and experimental System Mode containment | **Merged** | Preserve its historical release/data containment; code 31022 enables qualified release System Mode. |
 | 7 | Roadmap PR5A — one writable-target baseline-versus-hardened lifecycle | **Merged to `kitsune` by GitHub #27** | Preserve the exact MuMu 1.4.46 evidence and experimental/non-release boundary. |
 | 8 | Roadmap PR5B — conditional current-line durable transaction | **Merged to `kitsune` by GitHub #27** | Keep its tests/manifest contract as the behavioral oracle for PR7; do not turn the old core into a second permanent line. |
 | 9 | Roadmap PR6 — pristine official-v30.7 maintained base | **Complete on `next-system` at `eab2968c9`** | Preserve the recorded source/submodule/build identity and ordinary Magisk baseline. |
@@ -92,8 +92,9 @@ execution order.
 
 PR16 implementation and available-lab candidate qualification are merged on `next-system`.
 The remaining production gates are tracked in named GitHub issues; this is not stable-release acceptance.
-System Mode installation is still disabled in the release APK; delivery and qualification are
-tracked in [#47](https://github.com/Jordan231111/KitsuneMagisk/issues/47).
+Code 31022 enables System Mode installation and recovery in release as well as debug builds,
+with the same consent, target and recovery checks. [#47](https://github.com/Jordan231111/KitsuneMagisk/issues/47)
+tracks production-signed lifecycle acceptance and publication.
 PR14 implements the [versioned module contract](docs/module-contract.md) and closes its 22 historical
 ledger rows with [scoped evidence](docs/module-pr14.json). Physical phones, additional boot/storage
 layouts and release promotion retain their PR15/PR16 gates.

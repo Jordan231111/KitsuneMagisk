@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.BuildConfig.APP_VERSION_CODE
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
@@ -42,7 +41,7 @@ class InstallViewModel(svc: NetworkService) : BaseViewModel() {
     val isRooted get() = Info.isRooted
     val skipOptions = Info.isEmulator || (Info.isSAR && !Info.isFDE && Info.ramdisk)
     val noSecondSlot = !isRooted || !Info.isAB || Info.isEmulator || Info.isSystemMode
-    val allowSystemMode get() = BuildConfig.DEBUG && isRooted && Build.VERSION.SDK_INT >= 25 &&
+    val allowSystemMode get() = isRooted && Build.VERSION.SDK_INT >= 25 &&
         (!Info.hasMagiskState || Info.isSystemMode)
 
     private val _uiState = MutableStateFlow(UiState())

@@ -1,8 +1,8 @@
 # Kitsune manager and SU consent
 
-PR13 connects the maintained Compose manager to PR7 and PR12. System Mode remains
-experimental and debug-only. Production promotion, real phones, early mounting
-and release migration retain their PR14–PR16 gates.
+The Compose manager provides Hide/SuList, SU consent and System Mode. System Mode is
+experimental and available in release and debug builds from code 31022. Both require
+explicit consent, target qualification and verified external recovery.
 
 The [PR13 acceptance record](manager-pr13.json) identifies tested commits,
 artifacts, emulator lanes and limits. The final PR checks are required before merge.

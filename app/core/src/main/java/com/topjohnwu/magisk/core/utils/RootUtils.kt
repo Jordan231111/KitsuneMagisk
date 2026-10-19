@@ -11,7 +11,6 @@ import android.os.ParcelFileDescriptor
 import android.system.Os
 import androidx.core.content.getSystemService
 import com.topjohnwu.magisk.core.Const
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
@@ -86,8 +85,7 @@ class RootUtils(stub: Any?) : RootService() {
     private fun runSystemModeImpl(
         action: String, directory: String, apk: String, output: OutputStream
     ): Int {
-        if (action !in setOf("install", "uninstall", "recover") ||
-            (action == "install" && !BuildConfig.DEBUG))
+        if (action !in setOf("install", "uninstall", "recover"))
             return -1
         val dir = File(directory)
         val allowed = mutableSetOf(

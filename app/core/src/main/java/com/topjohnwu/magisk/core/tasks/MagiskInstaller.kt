@@ -713,10 +713,6 @@ abstract class MagiskInstallImpl protected constructor(
         !rejectOrdinaryInstallOverSystemMode() && findImage() && extractFiles() && patchBoot() && flashBoot()
 
     protected suspend fun directSystem(consent: String?): Boolean {
-        if (!BuildConfig.DEBUG) {
-            console.add("! System Mode is disabled in release builds")
-            return false
-        }
         if (!SystemModeConsent.consume(consent)) {
             console.add("! System Mode confirmation is missing or expired")
             return false

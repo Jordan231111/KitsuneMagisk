@@ -2,15 +2,15 @@
 
 ## Using KitsuneMagisk
 
-- [Installation](install.md), including the [simple manual-install guide](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
+- [Installation](install.md).
+- [Shamiko installation and workaround](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
 - [Frequently asked questions](faq.md).
 - [Tested devices and installation routes](../compatibility/TESTED.md).
 - [Module compatibility](module-compatibility.md).
 - [Hide and SuList](hide-policy.md).
-- [System Mode for emulators](system-mode/pr7-machine-qualification.md) — currently debug builds only.
+- [System Mode for emulators](system-mode/pr7-machine-qualification.md) — release and debug builds from code 31022.
 
-The current release is experimental. Physical-phone qualification and release-APK System Mode
-remain open; see the [release status](release.md).
+The current release is experimental. Physical-phone qualification remains open; see the [release status](release.md).
 
 ## Development
 

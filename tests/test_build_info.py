@@ -33,7 +33,7 @@ class BuildInfoTest(unittest.TestCase):
         release = build_info.variant_info(self.data, "release")
         self.assertNotEqual(debug["build_id"], release["build_id"])
         self.assertIn("kitsune.system-mode.transaction.v1", debug["capabilities"])
-        self.assertNotIn("kitsune.system-mode.transaction.v1", release["capabilities"])
+        self.assertIn("kitsune.system-mode.transaction.v1", release["capabilities"])
         self.assertIn("kitsune.early-mount.v2", debug["capabilities"])
         self.assertIn("kitsune.module-root.v2", debug["capabilities"])
 
