@@ -1,7 +1,7 @@
 # Installing KitsuneMagisk
 
 Download **app-release.apk** from the [KitsuneMagisk releases](https://github.com/Jordan231111/KitsuneMagisk/releases).
-The current release is **31023**. Installing the APK installs the manager; it does not root the device.
+The current release is **31024**. Installing the APK installs the manager; it does not root the device.
 
 The [compatibility table](../compatibility/TESTED.md) lists tested targets.
 Physical-phone qualification remains [open](https://github.com/Jordan231111/KitsuneMagisk/issues/39).

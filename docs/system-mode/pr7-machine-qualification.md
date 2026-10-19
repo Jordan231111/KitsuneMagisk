@@ -19,6 +19,9 @@ policies and scripts stay in place; they are not copied into recovery snapshots.
 APK is not duplicated in the persistent payload. Small ownership records support exact uninstall.
 **Recover System Mode** can finish an interrupted operation.
 
+Factory-reset recovery is not yet supported: clearing userdata removes the installation state.
+See [#53](https://github.com/Jordan231111/KitsuneMagisk/issues/53).
+
 On phones, use the normal [Magisk boot-image installation](../install.md#first-installation-on-a-phone)
 when supported. Existing ordinary Magisk installations should use **Direct Install**.
 

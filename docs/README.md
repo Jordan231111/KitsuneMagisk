@@ -10,7 +10,7 @@
 - [Hide and SuList](hide-policy.md).
 - [System Mode for emulators](system-mode/pr7-machine-qualification.md) — direct app installation from code 31024.
 
-Release 31023 is available on GitHub. See the [release status](release.md) and [tested targets](../compatibility/TESTED.md).
+Release 31024 is available on GitHub. See the [release status](release.md) and [tested targets](../compatibility/TESTED.md).
 
 ## Development
 

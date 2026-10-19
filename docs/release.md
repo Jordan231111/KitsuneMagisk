@@ -1,10 +1,10 @@
 # Release qualification
 
 [PR16](https://github.com/Jordan231111/KitsuneMagisk/pull/44) is merged. The
-[Release 31023 acceptance](release-pr16.json) records code 31023, immutable assets, public-feed verification
-and a clean production-stub update. [PR #50](https://github.com/Jordan231111/KitsuneMagisk/pull/50)
-enables release System Mode. The maintainer promoted this build to a regular GitHub release and
-Latest on 2026-10-19. Its APKs and qualification evidence are unchanged.
+[Release 31024 acceptance](release-pr16.json) records the tested APKs, public updates and cleanup.
+[PR #51](https://github.com/Jordan231111/KitsuneMagisk/pull/51) restores direct System Mode
+installation without host authorization or full user-data snapshots. Release 31024 is a regular
+GitHub release and Latest.
 
 Builds use the maintained `next-system` branch. The current release gate is
 [`next-system-pr16.json`](next-system-pr16.json). The upstream base remains official
@@ -13,7 +13,8 @@ Magisk v31.0 prerelease; v30.7 remains official stable as checked on 2026-10-18.
 Stable update-feed promotion is blocked by [physical qualification](https://github.com/Jordan231111/KitsuneMagisk/issues/39),
 [historical archive dispositions](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and
 [independent signing-key recovery](https://github.com/Jordan231111/KitsuneMagisk/issues/41).
-System Mode is available in both variants from code 31023. The release matrix must exercise
+System Mode is available in both variants from code 31023, with direct app installation from code 31024.
+The release matrix must exercise
 the actual production-signed APK; debug tests alone do not qualify it. The implementation and existing qualification
 records remain available. Candidate releases claim only their exact tested targets.
 
