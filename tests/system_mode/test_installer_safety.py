@@ -547,6 +547,7 @@ bb() { shift 2; "$@"; }
             ("BOOT_VERIFIED", False, True, 30700), ("BOOT_VERIFIED", True, True, 30700),
             ("COMMITTED", True, True, 30700), ("COMMITTED", False, False, 30700),
             ("BOOT_VERIFIED", False, False, 30700), ("BOOT_VERIFIED", False, True, 31002),
+            ("COMMITTED", False, True, 31024),
         ):
             with self.subTest(state=state, denied=denied, database_valid=database_valid, app_code=app_code), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -565,6 +566,11 @@ export DENIED="$3"
 export DATABASE_VALID="$4"
 SM_BB=bb
 SM_VERSION_CODE="$5"
+SM_STATE_DIR="$TEST_ROOT/state"
+SM_BOOT_PROOF="$SM_STATE_DIR/boot-verified.env"
+SM_COMMIT_BOOT_ID=11111111-1111-4111-8111-111111111111
+SM_BOOT_ATTEMPT_ID=22222222-2222-4222-8222-222222222222
+mkdir -p "$SM_STATE_DIR"
 SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 bb() {
   case "$1" in
@@ -581,6 +587,10 @@ sm_cleanup_terminal_rollback() { :; }
 sm_valid_hex() { :; }
 sm_log() { :; }
 sm_update_state() { SM_STATE="$1"; }
+sm_current_boot_id() { printf '%s\n' "$SM_BOOT_ATTEMPT_ID"; }
+sm_atomic_publish() { mv "$1" "$2"; }
+sm_prepare_persistent_mounts() { echo unexpected-system-remount >&2; return 99; }
+sm_restore_persistent_mounts() { echo unexpected-system-remount >&2; return 99; }
 getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
 ''' + function_body(self.transaction, "sm_verify_daemon_identity") + verify + '\nsm_verify_boot\nresult=$?\nprintf "%s\\n" "$SM_STATE"\nexit "$result"\n'
                 result = subprocess.run(
@@ -589,7 +599,7 @@ getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
                 )
                 rejected = denied or not database_valid
                 self.assertEqual(1 if rejected else 0, result.returncode, result.stderr)
-                expected = "ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED" if rejected else state
+                expected = ("ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED") if rejected else "BOOT_VERIFIED"
                 self.assertEqual(expected, result.stdout.strip())
                 self.assertEqual("2000\n", (root / "clients").read_text())
 
@@ -819,6 +829,8 @@ bb() {
         self.assertIn("kitsune.system_mode.post_fs_data.ready", verify)
         self.assertIn("kitsune.system_mode.boot_complete.ready", verify)
         self.assertIn("SERVICE_STAGE_ID", verify)
+        self.assertNotIn("sm_prepare_persistent_mounts", verify)
+        self.assertNotIn("sm_update_manifest_state", verify)
         self.assertIn("ROLLBACK_REQUIRED", verify)
 
     def test_phase_markers_are_published_only_after_success(self) -> None:

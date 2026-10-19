@@ -439,9 +439,7 @@ sm_record_persistent_remount() {
 sm_prepare_persistent_mounts() {
   local canonical real mountpoint options seen='' persistent_policy='' failed=0
   sm_require_lock || return 1
-  if [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ]; then
-    sm_quiesce_magisk || return 1
-  fi
+  sm_quiesce_magisk || return 1
   sm_configure_rescue_paths || return 1
   # Load the boot-scoped journal first. It survives process death, while a cold
   # boot both resets mount modes and discards /dev, so it never misclassifies a
@@ -3167,20 +3165,6 @@ sm_commit_transaction() {
   return 0
 }
 
-sm_update_manifest_state() {
-  local state="$1" manifest_real staged
-  manifest_real="$(sm_real_path "$SM_SYSTEM_DIR/install-manifest.json")" || return 1
-  [ -f "$manifest_real" ] || return 1
-  staged="$(sm_parent "$manifest_real")/.install-manifest.state-new"
-  "$SM_BB" sed "s/\"state\": \"COMMITTED\"/\"state\": \"$state\"/" "$manifest_real" >"$staged" || return 1
-  "$SM_BB" grep -q "\"state\": \"$state\"" "$staged" || return 1
-  sm_atomic_publish "$staged" "$manifest_real" "manifest-state:$state" || return 1
-  "$SM_BB" cp -a "$manifest_real" "$SM_STATE_DIR/.install-manifest.copy.new" || return 1
-  sm_atomic_publish "$SM_STATE_DIR/.install-manifest.copy.new" "$SM_MANIFEST_COPY" "manifest-copy-state:$state" || return 1
-  SM_MANIFEST_SHA256="$(sm_sha256_file "$manifest_real")" || return 1
-  sm_verify_manifest_copies
-}
-
 sm_verify_daemon_identity() {
   local client="$1" code="${2:-}" binary_version daemon_version
   if [ -z "$code" ]; then
@@ -3300,23 +3284,8 @@ sm_verify_boot() {
     sm_update_state ROLLBACK_REQUIRED
     return 1
   }
-  if ! sm_prepare_persistent_mounts; then
-    sm_restore_persistent_mounts || true
-    sm_log "! Unable to prepare persistent files for boot verification"
-    sm_update_state ROLLBACK_REQUIRED
-    return 1
-  fi
-  if ! sm_update_manifest_state BOOT_VERIFIED; then
-    sm_restore_persistent_mounts || true
-    sm_log "! Unable to publish the boot-verified manifest"
-    sm_update_state ROLLBACK_REQUIRED
-    return 1
-  fi
-  if ! sm_restore_persistent_mounts; then
-    sm_log "! Unable to restore persistent filesystem modes after boot verification"
-    sm_update_state ROLLBACK_REQUIRED
-    return 1
-  fi
+  # The manifests describe the committed installation and remain immutable.
+  # Boot status belongs in /data; module mounts must not cause system writes.
   sm_update_state BOOT_VERIFIED || { sm_log "! Unable to publish the boot-verified state"; return 1; }
   sm_cleanup_terminal_rollback || sm_log "W: Boot-verified rollback cleanup is incomplete"
   return 0
