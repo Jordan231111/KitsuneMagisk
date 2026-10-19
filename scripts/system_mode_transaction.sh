@@ -1947,7 +1947,7 @@ sm_assert_mutable_namespaces_idle() {
       sm_log "! Cannot inspect process $pid memory mappings"
       return 1
     fi
-    mapped="$($SM_BB awk '
+    mapped="$($SM_BB awk -v preparation="${SM_PREPARATION:-host}" '
       NF && (NF < 5 || $1 !~ /^[0-9a-f]+-[0-9a-f]+$/ || $2 !~ /^[r-][w-][x-][ps]$/) {
         exit 2
       }
@@ -1955,6 +1955,8 @@ sm_assert_mutable_namespaces_idle() {
         path=$6
         for (field=7; field<=NF; field++) path=path " " $field
         sub(/ \(deleted\)$/, "", path)
+        if (preparation == "app" && path != "/data/adb/magisk" &&
+            index(path, "/data/adb/magisk/") != 1) next
         if (path == "/data/adb/magisk" || index(path, "/data/adb/magisk/") == 1 ||
             path == "/data/adb/magisk.db" || path == "/data/adb/magisk.db-wal" ||
             path == "/data/adb/magisk.db-shm" || path == "/data/adb/modules" ||

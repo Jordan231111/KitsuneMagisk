@@ -2370,6 +2370,20 @@ MOUNTS
                 ! sm_assert_mutable_namespaces_idle
                 chmod 0700 "$SM_PROC_ROOT/456/fdinfo"
                 sm_assert_mutable_namespaces_idle
+
+                SM_PREPARATION=app
+                rm "$SM_PROC_ROOT/123/cwd"
+                ln -s /data/adb/modules/example "$SM_PROC_ROOT/123/cwd"
+                printf 'flags:\t0100002\n' >"$SM_PROC_ROOT/123/fdinfo/9"
+                printf '1000-2000 rw-p 00000000 00:00 0 /data/adb/modules/zygisk_lsposed/daemon.apk\n' \
+                  >"$SM_PROC_ROOT/123/maps"
+                sm_assert_mutable_namespaces_idle
+                printf '2000-3000 rw-s 00000000 00:00 0 /data/adb/magisk.db-shm\n' \
+                  >>"$SM_PROC_ROOT/123/maps"
+                sm_assert_mutable_namespaces_idle
+                printf '3000-4000 rw-p 00000000 00:00 0 /data/adb/magisk/file\n' \
+                  >>"$SM_PROC_ROOT/123/maps"
+                ! sm_assert_mutable_namespaces_idle
                 """,
                 Path(temp),
             )
