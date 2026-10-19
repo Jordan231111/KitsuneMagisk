@@ -3,8 +3,7 @@
   "production_blockers": [
     "https://github.com/Jordan231111/KitsuneMagisk/issues/39",
     "https://github.com/Jordan231111/KitsuneMagisk/issues/40",
-    "https://github.com/Jordan231111/KitsuneMagisk/issues/41",
-    "https://github.com/Jordan231111/KitsuneMagisk/issues/47"
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/41"
   ],
   "runtime": {
     "avd-29-4k-debug": {
@@ -89,6 +88,16 @@
     },
     "mumu-device-1-debug": {
       "variant": "debug",
+      "guest": {
+        "api": 32,
+        "abi": "arm64-v8a",
+        "page_size": 4096,
+        "selinux": "Permissive"
+      },
+      "cold_boots": 3
+    },
+    "mumu-device-1-release": {
+      "variant": "release",
       "guest": {
         "api": 32,
         "abi": "arm64-v8a",

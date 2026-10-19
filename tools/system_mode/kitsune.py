@@ -270,7 +270,7 @@ def _authorize(args: argparse.Namespace) -> int:
                 string_extras={"section": "install"},
             )
             print(
-                "installed exact debug APK and opened Install; choose System Mode, "
+                "installed exact APK and opened Install; choose System Mode, "
                 "confirm the warning, and start within five minutes",
                 file=sys.stderr,
             )

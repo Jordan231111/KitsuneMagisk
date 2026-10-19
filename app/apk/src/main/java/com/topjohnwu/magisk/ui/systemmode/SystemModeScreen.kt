@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.model.ManagerDiagnostics
@@ -91,7 +90,7 @@ fun SystemModeScreen(onBack: () -> Unit) {
             Button(onClick = { scope.launch { state = ManagerDiagnostics.systemState() } }) {
                 Text(stringResource(CoreR.string.manager_refresh))
             }
-            if (BuildConfig.DEBUG && Info.isRooted && state != null && state != "ABSENT") {
+            if (Info.isRooted && state != null && state != "ABSENT") {
                 Button(onClick = { recovery.showConfirm(
                     title = resources.getString(CoreR.string.system_mode_recovery),
                     content = resources.getString(CoreR.string.system_mode_recovery_msg)) }) {

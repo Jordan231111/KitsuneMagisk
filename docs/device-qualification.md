@@ -49,8 +49,8 @@ Use `mumutool`, Android Device-1 and an explicit ADB serial. Back up both stoppe
 verify their restore bytes, and cold start by fully closing and reopening the instance.
 Do not use `adb reboot`. Restore the user's original instance after testing.
 [System Mode qualification](system-mode/pr7-machine-qualification.md) is required before installation.
-The release APK still blocks System Mode; [#47](https://github.com/Jordan231111/KitsuneMagisk/issues/47)
-tracks that delivery gap.
+Release and debug System Mode use the same authorization and recovery checks from code 31022.
+Qualify the actual production-signed APK before publishing it.
 
 ### BlueStacks and Waydroid
 

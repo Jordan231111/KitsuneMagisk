@@ -72,7 +72,7 @@ def verify_acceptance(acceptance: dict, directory: Path, info: dict,
             uuid.UUID(boot["id"])
     lifecycle = json.loads(read_evidence(acceptance["mumu_lifecycle"], directory))
     if (lifecycle.get("source_commit") != info["source_commit"] or
-            lifecycle.get("apk_sha256") != artifacts["debug"]["sha256"] or
+            lifecycle.get("apk_sha256") != artifacts["release"]["sha256"] or
             any(lifecycle.get(key) is not True for key in
                 ("suite_passed", "upgrade_preserved_data", "vendor_root_disabled",
                  "uninstall_passed", "original_disks_restored", "original_settings_restored"))):

@@ -63,11 +63,38 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             self.assertIn(script, copy_payload)
             self.assertIn(f'"{script}"', self.magisk_installer)
 
-    def test_release_backend_rejects_before_transaction_preflight(self) -> None:
-        validate = function_body(self.installer, "ks_validate_debug_payload")
+    def test_payload_identity_is_checked_before_transaction_preflight(self) -> None:
+        validate = function_body(self.installer, "ks_validate_payload")
         install = function_body(self.installer, "ks_install")
-        self.assertIn(":MAGISK:D", validate)
-        self.assertLess(install.index("ks_validate_debug_payload"), install.index("sm_begin_transaction"))
+        self.assertLess(install.index("ks_validate_payload"), install.index("sm_begin_transaction"))
+        version = "0.1.0-dev-kitsune.01234567"
+        cases = [
+            (f"{version}:MAGISK:D (31000)", 0, True),
+            (f"{version}:MAGISK:R (31000)", 0, True),
+            (f"{version}:MAGISK:R (30700)", 0, False),
+            ("other-kitsune:MAGISK:R (31000)", 0, False),
+            (f"{version}:MAGISK:X (31000)", 0, False),
+            (f"{version}:MAGISK:R (31000)\nextra", 0, False),
+            (f"{version}:MAGISK:R (31000)", 1, False),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / "magisk"
+            binary.write_text(
+                "#!/bin/sh\nprintf '%s\\n' \"$TEST_IDENTITY\"\nexit \"$TEST_STATUS\"\n"
+            )
+            binary.chmod(0o755)
+            script = function_body(self.installer, "ks_fail") + "\n"
+            script = "ks_log() { printf '%s\\n' \"$1\"; }\n" + script
+            script += validate + "\nks_validate_payload\n"
+            for identity, status, accepted in cases:
+                with self.subTest(identity=identity, status=status):
+                    result = subprocess.run(
+                        ["sh", "-c", script], capture_output=True, text=True, check=False,
+                        env={"KS_INSTALL_DIR": directory, "MAGISK_VER": version,
+                             "MAGISK_VER_CODE": "31000", "TEST_IDENTITY": identity,
+                             "TEST_STATUS": str(status)},
+                    )
+                    self.assertEqual(result.returncode == 0, accepted, result.stdout)
 
     def test_persistent_mode_rejects_a_dirty_source_identity(self) -> None:
         generator = (ROOT / "tools/build_info.py").read_text()
@@ -270,12 +297,12 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn("-nostdlib++", cmake)
         self.assertIn("KITSUNE_ZYGISK_TEST_DLCLOSE=1", cmake)
 
-    def test_ui_requires_root_debug_and_android_7_1_or_newer(self) -> None:
+    def test_ui_requires_root_and_android_7_1_or_newer_in_both_variants(self) -> None:
         line = next(
             item for item in self.install_view_model.splitlines()
             if "val allowSystemMode" in item
         )
-        self.assertIn("BuildConfig.DEBUG", line)
+        self.assertNotIn("BuildConfig.DEBUG", line)
         self.assertIn("isRooted", line)
         self.assertIn("SDK_INT >= 25", line)
         self.assertIn("showSystemModeWarning = true", self.install_view_model)
@@ -295,8 +322,9 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('ProcessBuilder(command)', worker)
         self.assertIn('Binder.getCallingUid() != applicationInfo.uid', worker)
         self.assertIn('NonCancellable', worker)
-        self.assertIn('BuildConfig.DEBUG', direct)
-        self.assertLess(direct.index("BuildConfig.DEBUG"), direct.index("extractFiles"))
+        self.assertNotIn('BuildConfig.DEBUG', direct)
+        self.assertNotIn('BuildConfig.DEBUG', worker)
+        self.assertLess(direct.index("SystemModeConsent.consume"), direct.index("extractFiles"))
 
     def test_host_authorization_precedes_every_target_mutation(self) -> None:
         begin = function_body(self.transaction, "sm_begin_transaction")

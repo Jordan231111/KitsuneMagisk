@@ -11,9 +11,8 @@ Magisk v31.0 prerelease; v30.7 remains official stable as checked on 2026-10-18.
 Stable promotion is blocked by [physical qualification](https://github.com/Jordan231111/KitsuneMagisk/issues/39),
 [historical archive dispositions](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and
 [independent signing-key recovery](https://github.com/Jordan231111/KitsuneMagisk/issues/41).
-[System Mode delivery in the release APK](https://github.com/Jordan231111/KitsuneMagisk/issues/47)
-also remains unfinished; the published APK still rejects it. Debug emulator tests do not satisfy
-that release requirement. The implementation and existing qualification
+System Mode is available in both variants from code 31022. The release matrix must exercise
+the actual production-signed APK; debug tests alone do not qualify it. The implementation and existing qualification
 records remain available. Candidate releases claim only their exact tested targets.
 
 ## Prepare a candidate
@@ -60,7 +59,7 @@ and toolchain pins. It is not a complete Android or operating-system SBOM.
 
 Create a draft GitHub prerelease at the receipt's source/tag. Attach only the tested manager,
 matching stub, checksums, release receipt, Rust inventory and reviewed notes. An explicitly tested
-debug manager may accompany an experimental release for System Mode; it uses a different signer
+debug manager may accompany an experimental release for diagnostics; it uses a different signer
 and never enters the update feed. Exclude instrumentation APKs, private signing files and fault fixtures.
 
 Publish the immutable release, then update the package-specific channel on `update-feed`, preserving

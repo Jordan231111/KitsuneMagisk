@@ -1,7 +1,6 @@
 # System Mode machine qualification and one-shot installation
 
-System Mode is unavailable from release builds; [#47](https://github.com/Jordan231111/KitsuneMagisk/issues/47)
-tracks release support. Debug builds refuse installation until one exact
+System Mode is available in release and debug builds from code 31022. Both refuse installation until one exact
 target has a current, host-sealed qualification record. Typed boot counts, a backup filename,
 historical notes, consent to proceed without recovery, and hand-authored JSON are not evidence.
 
@@ -164,7 +163,7 @@ Store the record and seal key outside the repository:
 
 ```sh
 python3 tools/system_mode/kitsune.py system-mode qualify \
-  --artifact /absolute/path/app-debug.apk \
+  --artifact /absolute/path/app-release.apk \
   --connect 16384 \
   --output /absolute/external/path/pr7-qualification.json \
   --backup-location /absolute/external/path/new-vm0-clean-baseline \
@@ -196,12 +195,12 @@ contract to match the post-restore baseline.
 
 ## Exact install handoff
 
-With the exact debug APK built from the clean qualified commit:
+With the exact release or debug APK built from the clean qualified commit:
 
 ```sh
 python3 tools/system_mode/kitsune.py system-mode authorize \
   /absolute/external/path/pr7-doctor.json \
-  --artifact /absolute/path/app-debug.apk \
+  --artifact /absolute/path/app-release.apk \
   --seal-key /absolute/private/path/qualification-v1.key \
   --connect 16384
 ```
