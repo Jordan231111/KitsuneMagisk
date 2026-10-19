@@ -1,13 +1,22 @@
-# Magisk Documentation
+# KitsuneMagisk documentation
 
-- [Installation Instructions](install.md)
-- [Frequently Asked Questions](faq.md)
-- [Magisk Changelog](changes.md)
+## Using KitsuneMagisk
 
-The following sections are for developers
+- [Installation](install.md), including the [simple manual-install guide](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
+- [Frequently asked questions](faq.md).
+- [Tested devices and installation routes](../compatibility/TESTED.md).
+- [Module compatibility](module-compatibility.md).
+- [Hide and SuList](hide-policy.md).
+- [System Mode for emulators](system-mode/pr7-machine-qualification.md) — currently debug builds only.
 
-- [Building and Developing Magisk](build.md) (for developing Magisk itself)
-- [Developer Guides](guides.md) (for developers **using** Magisk)
-- [Magisk Tools](tools.md)
-- [Internal Details](details.md)
-- [Android Booting Shenanigans](boot.md)
+The current release is experimental. Physical-phone qualification and release-APK System Mode
+remain open; see the [release status](release.md).
+
+## Development
+
+- [Build instructions](build.md) and [module development](guides.md).
+- [Command-line tools](tools.md), [internals](details.md) and [Android booting](boot.md).
+- [Device testing](device-qualification.md) and [release preparation](release.md).
+- [Signed updates](update-service.md).
+- [Historical feature decisions](port-ledger.md) and [development roadmap](../DEVELOPMENT_ROADMAP.md).
+- Inherited upstream [Magisk changelog](changes.md) and [app changelog](app_changes.md).

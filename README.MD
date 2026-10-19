@@ -6,7 +6,9 @@ Maintained by [Jordan231111](https://github.com/Jordan231111).
 
 KitsuneMagisk provides Magisk root with Kitsune Hide/SuList, early mounting, module compatibility
 and System Mode for qualified writable targets. The maintained source is based on official Magisk
-v31.0 prerelease. Ordinary boot-image installation and recovery remain central to the project.
+v31.0 prerelease with selected later fixes. It does not include every change on upstream master;
+[follow-up integration](https://github.com/Jordan231111/KitsuneMagisk/issues/49) is tracked separately.
+Ordinary boot-image installation and recovery remain central to the project.
 
 The current [Beta 4](https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-b08538bab4e1d3f7ab6d35d22ab49dede01e008a)
 is experimental. Its [acceptance record](docs/release-pr16.json) identifies the tested APKs and remaining
@@ -18,11 +20,13 @@ source commit and upstream base separately. [Signed updates](docs/update-service
 project certificate; historical, debug and previous-package installations require the documented
 [backup/reinstall transition](docs/build-info.md#pr15-namespace-migration).
 
+- [Installation guide](docs/install.md), including [simple manual steps](https://github.com/Jordan231111/KitsuneMagisk/issues/48).
 - [Hide/SuList](docs/hide-policy.md) and [manager/SU controls](docs/manager-contract.md).
 - [Module APIs](docs/module-contract.md), [tested third-party modules](docs/module-compatibility.md)
   and [Zygisk providers](docs/adr/0001-zygisk-provider.md).
 - [System Mode qualification](docs/system-mode/pr7-machine-qualification.md): debug builds only,
   with an exact writable target and verified external recovery copy.
+  [Release-APK support remains open](https://github.com/Jordan231111/KitsuneMagisk/issues/47).
 - [Current source and artifact contract](docs/next-system-pr16.json).
 
 ## Building

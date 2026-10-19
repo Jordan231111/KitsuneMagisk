@@ -1,6 +1,7 @@
 # System Mode machine qualification and one-shot installation
 
-System Mode is unavailable from release builds and fails closed in debug builds until one exact
+System Mode is unavailable from release builds; [#47](https://github.com/Jordan231111/KitsuneMagisk/issues/47)
+tracks release support. Debug builds refuse installation until one exact
 target has a current, host-sealed qualification record. Typed boot counts, a backup filename,
 historical notes, consent to proceed without recovery, and hand-authored JSON are not evidence.
 

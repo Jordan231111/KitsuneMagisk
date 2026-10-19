@@ -11,7 +11,9 @@ Magisk v31.0 prerelease; v30.7 remains official stable as checked on 2026-10-18.
 Stable promotion is blocked by [physical qualification](https://github.com/Jordan231111/KitsuneMagisk/issues/39),
 [historical archive dispositions](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and
 [independent signing-key recovery](https://github.com/Jordan231111/KitsuneMagisk/issues/41).
-These are evidence gaps, not retired features. The implementation and existing qualification
+[System Mode delivery in the release APK](https://github.com/Jordan231111/KitsuneMagisk/issues/47)
+also remains unfinished; the published APK still rejects it. Debug emulator tests do not satisfy
+that release requirement. The implementation and existing qualification
 records remain available. Candidate releases claim only their exact tested targets.
 
 ## Prepare a candidate

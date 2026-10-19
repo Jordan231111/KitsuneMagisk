@@ -3,7 +3,8 @@
   "production_blockers": [
     "https://github.com/Jordan231111/KitsuneMagisk/issues/39",
     "https://github.com/Jordan231111/KitsuneMagisk/issues/40",
-    "https://github.com/Jordan231111/KitsuneMagisk/issues/41"
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/41",
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/47"
   ],
   "runtime": {
     "avd-29-4k-debug": {

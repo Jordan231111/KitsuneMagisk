@@ -1,30 +1,25 @@
-# Authenticated manager and stub updates (PR10)
+# Signed manager and stub updates
 
-PR10 replaces the inherited manager/stub update routes with one authenticated contract. The
-experimental beta and canary feeds are active; the [acceptance record](update-service-acceptance.json)
-binds the public APKs, hosted checks and clean-stub installation. The [release gate](release.md) records current qualification and remaining production blockers.
+The manager and hidden stub verify updates against the project signing certificate.
+Beta and canary feeds are active; stable promotion remains blocked by the [release gates](release.md).
+The [Beta 4 acceptance record](release-pr16.json) identifies the published APKs and clean-stub test.
 
 ## Ownership and identity
 
-The PR10 feed below belongs to the previous `io.github.huskydg.magisk.next`
-package. PR15 isolates the new `io.github.jordan231111.magisk` package under
-`v1/io.github.jordan231111.magisk/` on the same `update-feed` branch. It requires
-its own publication and acceptance. [PR16 / Beta 4](release-pr16.json) has now activated
-its signed beta/canary feeds and passed the clean-stub update; background checks remain off. See the [namespace migration](build-info.md#pr15-namespace-migration).
-The schema and signing certificate remain unchanged. Never publish a new-package
-manifest over an old-package channel.
-
-Historical PR10 feed:
+The current package is `io.github.jordan231111.magisk`. Its feeds are:
 
 ```
-https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/beta.json
-https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/stable.json
-https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/canary.json
+https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/io.github.jordan231111.magisk/beta.json
+https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/io.github.jordan231111.magisk/canary.json
 ```
+
+The previous `io.github.huskydg.magisk.next` package retains its separate files directly under
+`v1/`. Never replace an old-package feed with a new-package manifest.
+See the [package migration](build-info.md#pr15-namespace-migration).
 
 The experimental default is `beta`; stable promotion stays blocked by the [production gates](release.md). Existing installs
-remain opted out of background checks. Custom URLs must use HTTPS and end in one of those channel
-filenames, and retain the same pinned project signature. There is no unsigned JSON fallback or
+remain opted out of background checks. Custom URLs must use HTTPS and end in `beta.json`, `stable.json` or
+`canary.json`, and retain the same pinned project signature. There is no unsigned JSON fallback or
 public debug update channel. Old Debug selections resolve to the default beta channel,
 without changing signer trust or enabling background checks. The full manager retains its DNS-over-HTTPS preference.
 
@@ -90,54 +85,27 @@ This uses the platform's certificate collection with verification enabled, as in
 API 28+ requests both signature flags: [Android 9-10's archive parser](https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_r47/core/java/android/content/pm/PackageManager.java)
 requires the legacy flag to collect and verify certificates even when modern signing information is requested.
 
-## Candidate preparation and publication
+## Publication and verification
 
-1. Review and commit the source, increase `kitsune-build.json`'s Android upgrade code for new bytes,
-   and build/test the exact candidate with the external production config. Preserve the module
-   epoch `31000` and manager/daemon protocol `1`. Follow the [release gate](release.md).
-2. Run `scripts/release.sh verify --acceptance /path/to/evidence/acceptance.json`. The artifact check also binds the manager/stub trust assets to
-   the reviewed trust root and their actual signers. Retain the tests and artifact report.
-3. Prepare the signed metadata without publishing or rebuilding:
+Use the [release guide](release.md) to prepare, qualify and publish a candidate.
+Publish the exact tested APKs before their signed feed, preserve the channel sequence floor,
+and keep production and debug signing identities separate.
 
-   ```sh
-   scripts/env.py python3 tools/update_service.py prepare \
-     --config "$HOME/.config/kitsune-magisk/signing/production.prop" \
-     --qualification out/release-info.json \
-     --channel beta --sequence 1 --notes /path/to/reviewed-release-notes.md \
-     --output out/update-feed/v1/io.github.jordan231111.magisk/beta.json
-   ```
+Verify the actual public downloads:
 
-4. Enable [GitHub release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes)
-   before publication. Create a draft prerelease for the exact fork tag/source, attach the
-   tested production manager and matching stub plus public evidence, then publish. A separately
-   tested `app-debug.apk` may accompany a prerelease for emulator System Mode testing; record its
-   SHA-256 and separate signer in the evidence. The signed update feeds still carry only the
-   production manager/stub. Explain that System Mode requires debug, and switching between the
-   differently signed release/debug apps requires backing up settings and reinstalling the manager.
-   Do not publish instrumentation APKs, signing configs, private keys or `out/update-fixtures`.
-   Never replace tested bytes.
-5. Commit the signed channel file to the separate `update-feed` branch after its assets exist.
-   Preserve the previous channel files and compare the remote sequence before changing a feed.
-   For a metadata refresh, check out the published source tag and use its exact published APKs
-   with a higher sequence. Do not rebuild them; new APK bytes require a higher Android code.
-   Repository/branch publication is an explicit maintainer operation.
-6. Download and verify the actual public files, then install a clean production stub on the test
-   emulator and verify that it obtains exactly the advertised manager:
+```sh
+scripts/env.py python3 tools/update_service.py verify-published \
+  --url https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/io.github.jordan231111.magisk/beta.json \
+  --channel beta --output out/published-update-verification
+```
 
-   ```sh
-   scripts/env.py python3 tools/update_service.py verify-published \
-     --url https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/io.github.jordan231111.magisk/beta.json \
-     --channel beta --output out/published-update-verification
-   ```
+If the prerelease includes `app-debug.apk`, supply `--debug-apk-sha256` with its tested digest.
+The verifier rejects extra APKs unless explicitly pinned. Then test a clean production stub
+and confirm that its installed manager matches the published APK.
 
-   When the prerelease includes `app-debug.apk`, add `--debug-apk-sha256` with the SHA-256
-   of the locally verified APK. The verifier rejects extra APKs unless that exact debug asset
-   is explicitly pinned, and checks that the public download matches the tested bytes.
-
-No production key is needed by ordinary CI. CI signs its APKs/fixtures with its disposable key and
-runs the same verifier. `tools/update_service.py test-fixtures --config /path/to/config.prop`
-prepares the bounded failure corpus; `UpdateServiceTest` is included in the normal Android matrix.
-Local MuMu tests must use full application close/open for any cold boot, never `adb reboot`.
+CI uses a disposable signer. `tools/update_service.py test-fixtures --config /path/to/config.prop`
+prepares failure cases for `UpdateServiceTest`; it does not need the production key.
+MuMu cold boots require full CLI close/open, never `adb reboot`.
 
 ## Historical distribution and remaining gates
 
@@ -158,23 +126,8 @@ This is not proof of physical-phone root qualification.
 
 ## Acceptance evidence
 
-The four-ABI production-signed and debug artifacts passed the identity/signature/alignment gate.
-The shared verifier and download lifecycle passed 20 instrumentation tests (multiple fault cases per test), including
-real platform APK signature rejection, on MuMuPlayer Pro 1.9.2 / Android 12 ARM64. After the user
-selected the second instance, VM 0's original manager/root were restored and its test files removed.
-All subsequent tests used VM 1, which started without a Magisk package. The clean published
-stub at code 1 downloaded and installed the exact published manager at code 31002 through
-Android's installer, preserving its UID. The installed APK hash and signer matched the public
-asset. The full manager also fetched the authenticated feed and completed a reinstall through
-its update UI. No `adb reboot` or persistent root installation was used.
-
-The host suite exposed a macOS process-signal permission error in the inherited qualification
-harness. It is now an explicit indeterminate lifecycle result, so recovery cannot proceed without
-proof that the process group stopped; a focused injected-denial regression covers it.
-The complete host suite passed 274 tests with one Linux-only skip. App/stub lint and the legacy
-app's Kotlin compilation passed. All 33 hosted checks passed on the accepted source, including
-API 23–37.1 release/debug coverage, hide/restore and Cuttlefish. That matrix exposed and verified
-fixes for Android 9–10 archive-signature collection and Android 6 release-mode saved-state validation.
-The [acceptance record](update-service-acceptance.json) identifies the exact run, public bytes,
-feed commits and clean-stub/full-manager observations. Source is retained by the immutable tag;
-`mapping-release.txt.gz` contains the matching release R8 mapping.
+The [PR10 acceptance record](update-service-acceptance.json) retains the original package's
+public-download, clean-stub, manager-update and signer checks. The
+[Beta 4 record](release-pr16.json) covers the current package and published bytes, including
+production-stub installation and original MuMu state restoration. These results do not qualify
+physical-phone root or release-APK System Mode.

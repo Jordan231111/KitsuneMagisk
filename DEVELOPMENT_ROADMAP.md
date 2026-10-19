@@ -56,11 +56,8 @@
 > cut from official v30.7 for PR6 at `eab2968c9`; there is no separate `main` branch. Development and
 > release qualification use `next-system`, while archived source remains available for recovery.
 
-> The explicit history-backed purpose, install-route, and divergence report is
-> [`docs/faithfulness-audit.md`](docs/faithfulness-audit.md). It covers the complete reachable graph,
-> catalogued all 171 fork-only commits at its historical PR2 baseline, deeply reviews the
-> security/boot/product changes, and records what must be preserved, restored, tested, or retired.
-> PR4B's generated ledger is authoritative for later commit counts.
+> The [feature ledger](docs/port-ledger.md) records historical behavior, retained features,
+> tested replacements, retirements and remaining qualification gaps.
 
 This is a prioritized, implementation-oriented TODO for resuming active development. It is intentionally more conservative than a normal app roadmap because this project installs privileged native code during boot, grants root, and modifies mount namespaces and SELinux policy. A mistake in install, boot, or rollback logic can make an emulator or device unbootable.
 
@@ -91,10 +88,12 @@ execution order.
 | 17 | Roadmap PR13 / GitHub #36 — manager UI and SU authorization | **Complete; merged by GitHub #36** | Preserve the [manager contract](docs/manager-contract.md), [runtime record](docs/manager-pr13.json), authenticated migration and explicit historical replacements. |
 | 18 | Roadmap PR14 / GitHub #37 — module compatibility and early-mount v2 | **Complete in GitHub #37** | Preserve the [module contract](docs/module-contract.md), [acceptance](docs/module-pr14.json), and explicit device limits. |
 | 19 | Roadmap PR15 / GitHub #38 — emulator and device qualification | **Available-lab qualification complete; merged** | Preserve the [exact-target contract](docs/device-qualification.md), acceptance and cleanup records. Physical targets remain tracked in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39). |
-| 20 | Roadmap PR16 / GitHub #44 — candidate qualification and release | **Implementation merged; Beta 4 published; stable blocked** | Preserve the [exact candidate acceptance](docs/release-pr16.json). Stable promotion still requires the physical, archive and signing-recovery evidence in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39), [#40](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and [#41](https://github.com/Jordan231111/KitsuneMagisk/issues/41). |
+| 20 | Roadmap PR16 / GitHub #44 — candidate qualification and release | **Release tooling merged; Beta 4 published; production work remains** | Preserve the [exact candidate acceptance](docs/release-pr16.json). Stable promotion still requires the physical, archive and signing-recovery evidence in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39), [#40](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and [#41](https://github.com/Jordan231111/KitsuneMagisk/issues/41). |
 
 PR16 implementation and available-lab candidate qualification are merged on `next-system`.
 The remaining production gates are tracked in named GitHub issues; this is not stable-release acceptance.
+System Mode installation is still disabled in the release APK; delivery and qualification are
+tracked in [#47](https://github.com/Jordan231111/KitsuneMagisk/issues/47).
 PR14 implements the [versioned module contract](docs/module-contract.md) and closes its 22 historical
 ledger rows with [scoped evidence](docs/module-pr14.json). Physical phones, additional boot/storage
 layouts and release promotion retain their PR15/PR16 gates.
@@ -577,7 +576,7 @@ Start with current official code, but reuse current Kitsune behavior and fixture
 | Current official SELinux | Official Magisk stable/master use `topjohnwu/selinux` at `be1b39a6`, based on Android 16 QPR2-era AOSP plus Magisk compatibility patches | A maintained, directly compatible replacement exists; there is no need to invent the patch stack from scratch |
 | Hide database change | `25fa2159` selected standard `denylist` without migration. PR4 first implemented a schema-13 experiment; PR #26 corrects it to a rollback-compatible one-time reconciliation that keeps `user_version=12`, creates and verifies the first existing-database v12 backup, conservatively unions valid legacy rows, retains legacy/SuList data, and records a completion marker. Fresh databases skip the backup/import path. Runtime testing confirmed a valid marker prevents later legacy-row resurrection while canonical add/remove behavior remains live. | Current-line data preservation is contained without making older published daemons destructively reject the database or repeating a union on every start. Provider/process semantics still need PR12 qualification. |
 | External Zygisk contract | ReZygisk v1.0.0 removed its Kitsune/SuList adapter before `25fa2159`. Exact API 35 testing showed NeoZygisk v2.3 requires the lowercase `kitsune` version marker, recognizes canonical `denylist` rows, and starts Vector; however, its cached clean namespace did not remove Kitsune's custom `/system/bin` Magisk overlay. | Basic provider/module interoperation is real, but complete external DenyList hiding and any SuList contract are not established. Preserve the identity regression and carry the namespace gap into PR11/PR12. |
-| Full fork-faithfulness audit | The complete 6,855-commit reachable graph was traversed, all 171 fork-only commits were catalogued, high-impact diffs were reviewed, and every install route was traced. | The [faithfulness report](docs/faithfulness-audit.md) confirms PR3/PR4 scope, preserves ordinary install as a first-class invariant, and assigns unresolved divergences to discrete later PRs. |
+| Full fork-faithfulness audit | The complete 6,855-commit reachable graph was traversed, all 171 fork-only commits were catalogued, high-impact diffs were reviewed, and every install route was traced. | The [historical faithfulness report](https://github.com/Jordan231111/KitsuneMagisk/blob/da5359b66/docs/faithfulness-audit.md) confirms PR3/PR4 scope, preserves ordinary install as a first-class invariant, and assigns unresolved divergences to discrete later PRs. |
 
 ## Audit of every commit after “Last Commit”
 
@@ -2446,7 +2445,8 @@ cycle remain PR15/PR16 qualification work, not hidden claims of this exit.
 **Implementation status: complete on `next-system` at `eab2968c9`.** The branch was cut directly
 from official v30.7 (`e8a58776f`) after it remained the latest stable at the 2026-08-01 branch cut.
 The exact baseline, source delta, submodule gitlinks, build prerequisites, and artifact checks are
-recorded in `docs/next-system-baseline.md` and its machine-readable companion. Re-resolve official
+recorded in [`docs/next-system-baseline.json`](docs/next-system-baseline.json); the
+[historical narrative](https://github.com/Jordan231111/KitsuneMagisk/blob/da5359b66/docs/next-system-baseline.md) remains in Git history. Re-resolve official
 stable again before a later release candidate; do not rewrite this historical branch-cut record.
 
 - Re-check official releases at branch cut; if v30.7 remains latest stable, create `next-system` from
