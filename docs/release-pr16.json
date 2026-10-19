@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "experimental-beta-published",
+  "status": "release-published",
   "roadmap_pr": 16,
   "implementation_pr": "https://github.com/Jordan231111/KitsuneMagisk/pull/44",
   "merge_commit": "9bf1fa1399d7a6314898939495abd2eee9648f9d",
@@ -14,7 +14,7 @@
   "release": {
     "url": "https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-dd5ead427f5ab028787e65312f7aa6fb9b8b6760",
     "immutable": true,
-    "prerelease": true,
+    "prerelease": false,
     "assets": [
       {
         "name": "SHA256SUMS",
@@ -56,7 +56,20 @@
         "sha256": "bc8d55c47aa0a4d156b30edebcd0e07811afc2dcaef65205f1b9519069e46249",
         "size": 45689
       }
-    ]
+    ],
+    "latest": true,
+    "name": "KitsuneMagisk Next \u2014 Release 31023",
+    "promotion": {
+      "from": "Beta 5 prerelease",
+      "at": "2026-10-19T05:16:48.102314+00:00",
+      "maintainer_requested": true,
+      "artifacts_unchanged": true,
+      "update_feed_channels": [
+        "beta",
+        "canary"
+      ],
+      "public_downloads_reverified": true
+    }
   },
   "production_certificate_sha256": "9b09eb317c96036185884700d9584e63cc4a2a288825a0172633ba7bfe222ec6",
   "ci": {

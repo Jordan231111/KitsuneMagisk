@@ -1,7 +1,7 @@
 # Device testing
 
 The [compatibility table](../compatibility/TESTED.md) records exact tested targets and APKs.
-The [PR16 release record](release-pr16.json) identifies Beta 5; the
+The [PR16 release record](release-pr16.json) identifies Release 31023; the
 [PR15 requirement audit](device-pr15/requirements-audit.md) covers the preceding implementation.
 These are experimental results. Physical-phone qualification remains
 [open](https://github.com/Jordan231111/KitsuneMagisk/issues/39).

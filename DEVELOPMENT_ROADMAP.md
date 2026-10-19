@@ -28,7 +28,7 @@
 > [its contract and evidence](docs/hide-policy.md) retain the PR14/PR15 target dependencies. PR13's
 > manager implementation and local acceptance are complete in [GitHub #36](https://github.com/Jordan231111/KitsuneMagisk/pull/36),
 > with [scoped evidence](docs/manager-pr13.json), and is merged after passing its checks. PR14 is complete in [GitHub #37](https://github.com/Jordan231111/KitsuneMagisk/pull/37),
-> with [module acceptance and target limits](docs/module-pr14.json). PR15 available-lab qualification is complete and merged by [#38](https://github.com/Jordan231111/KitsuneMagisk/pull/38). PR16 implementation is merged by [#44](https://github.com/Jordan231111/KitsuneMagisk/pull/44), with [Beta 5 acceptance](docs/release-pr16.json); stable promotion remains blocked.
+> with [module acceptance and target limits](docs/module-pr14.json). PR15 available-lab qualification is complete and merged by [#38](https://github.com/Jordan231111/KitsuneMagisk/pull/38). PR16 implementation is merged by [#44](https://github.com/Jordan231111/KitsuneMagisk/pull/44), with [Release 31023 acceptance](docs/release-pr16.json); stable update-feed promotion remains blocked.
 > Production promotion remains gated.
 >
 > Product charter: KitsuneMagisk provides reliable Magisk root on real phones and emulators while
@@ -88,11 +88,12 @@ execution order.
 | 17 | Roadmap PR13 / GitHub #36 — manager UI and SU authorization | **Complete; merged by GitHub #36** | Preserve the [manager contract](docs/manager-contract.md), [runtime record](docs/manager-pr13.json), authenticated migration and explicit historical replacements. |
 | 18 | Roadmap PR14 / GitHub #37 — module compatibility and early-mount v2 | **Complete in GitHub #37** | Preserve the [module contract](docs/module-contract.md), [acceptance](docs/module-pr14.json), and explicit device limits. |
 | 19 | Roadmap PR15 / GitHub #38 — emulator and device qualification | **Available-lab qualification complete; merged** | Preserve the [exact-target contract](docs/device-qualification.md), acceptance and cleanup records. Physical targets remain tracked in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39). |
-| 20 | Roadmap PR16 / GitHub #44 — candidate qualification and release | **Release tooling merged; Beta 5 published; production work remains** | Preserve the [exact candidate acceptance](docs/release-pr16.json). Stable promotion still requires the physical, archive and signing-recovery evidence in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39), [#40](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and [#41](https://github.com/Jordan231111/KitsuneMagisk/issues/41). |
+| 20 | Roadmap PR16 / GitHub #44 — candidate qualification and release | **Release tooling merged; Release 31023 published; follow-up work remains** | Preserve the [exact candidate acceptance](docs/release-pr16.json). Stable update-feed promotion still requires the physical, archive and signing-recovery evidence in [#39](https://github.com/Jordan231111/KitsuneMagisk/issues/39), [#40](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and [#41](https://github.com/Jordan231111/KitsuneMagisk/issues/41). |
 
 PR16 implementation and available-lab candidate qualification are merged on `next-system`.
-The remaining production gates are tracked in named GitHub issues; this is not stable-release acceptance.
-Beta 5/code 31023 includes System Mode installation and recovery in release as well as debug builds,
+The maintainer promoted Release 31023 to a regular GitHub release and Latest on 2026-10-19.
+Remaining device/archive/key-recovery work and stable update-feed qualification are tracked in GitHub issues.
+Release 31023 includes System Mode installation and recovery in release as well as debug builds,
 with the same consent, target and recovery checks. [#50](https://github.com/Jordan231111/KitsuneMagisk/pull/50)
 merged the change after production-signed lifecycle acceptance and publication; #47 is closed.
 PR14 implements the [versioned module contract](docs/module-contract.md) and closes its 22 historical
@@ -3083,9 +3084,9 @@ in the detail:
 - **Done — PR12:** Hide/SuList core, rollback-compatible migration and the pinned external source
   adapter are qualified; preserve their exact evidence and limits.
 - **Closed — PR14:** versioned module implementation, lifecycle/recovery qualification and all 22 owned ledger dispositions are recorded in [GitHub #37](https://github.com/Jordan231111/KitsuneMagisk/pull/37) and [module acceptance](docs/module-pr14.json).
-- **Merged — PR15/PR16 available-lab work:** Beta 5 has exact source, signer, checksum, runtime and
+- **Merged — PR15/PR16 available-lab work:** Release 31023 has exact source, signer, checksum, runtime and
   public-update acceptance in [the release record](docs/release-pr16.json). **Open:** physical-device,
-  archive and independent-key-recovery gates in issues #39–#41; stable promotion remains blocked.
+  archive and independent-key-recovery gates in issues #39–#41; stable update-feed promotion remains blocked.
 
 The remaining work prioritizes recoverable rooting, tested historical feature parity and clear device support claims on the maintained upstream base.
 

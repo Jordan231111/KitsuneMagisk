@@ -10,7 +10,7 @@
 - [Hide and SuList](hide-policy.md).
 - [System Mode for emulators](system-mode/pr7-machine-qualification.md) — release and debug builds from code 31023.
 
-The current release is experimental. Physical-phone qualification remains open; see the [release status](release.md).
+Release 31023 is available on GitHub. See the [release status](release.md) and [tested targets](../compatibility/TESTED.md).
 
 ## Development
 

@@ -10,9 +10,9 @@ v31.0 prerelease with selected later fixes. It does not include every change on 
 [follow-up integration](https://github.com/Jordan231111/KitsuneMagisk/issues/49) is tracked separately.
 Ordinary boot-image installation and recovery remain central to the project.
 
-The current [Beta 5](https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-dd5ead427f5ab028787e65312f7aa6fb9b8b6760)
-is experimental. Its [acceptance record](docs/release-pr16.json) identifies the tested APKs and remaining
-production gates. [Compatibility records](compatibility/TESTED.md) retain their exact tested versions;
+The current [Release 31023](https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-dd5ead427f5ab028787e65312f7aa6fb9b8b6760)
+is GitHub’s latest release. Its [acceptance record](docs/release-pr16.json) identifies the tested APKs and
+follow-up work. [Compatibility records](compatibility/TESTED.md) retain their exact tested versions;
 virtual devices do not qualify physical phones. See the [roadmap](DEVELOPMENT_ROADMAP.md) for status.
 
 The manager package is `io.github.jordan231111.magisk`. Builds report their product version,

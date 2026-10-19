@@ -99,7 +99,7 @@ scripts/env.py python3 tools/update_service.py verify-published \
   --channel beta --output out/published-update-verification
 ```
 
-If the prerelease includes `app-debug.apk`, supply `--debug-apk-sha256` with its tested digest.
+If the release includes `app-debug.apk`, supply `--debug-apk-sha256` with its tested digest.
 The verifier rejects extra APKs unless explicitly pinned. Then test a clean production stub
 and confirm that its installed manager matches the published APK.
 

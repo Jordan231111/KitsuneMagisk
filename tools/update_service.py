@@ -302,8 +302,8 @@ def verify_release_assets(release: dict, metadata: dict, trust: dict,
                           output: Path, debug_sha256: str | None = None) -> dict:
     expected_apks = {urllib.parse.urlsplit(metadata[kind]["url"]).path.rsplit("/", 1)[-1] for kind in ("manager", "stub")}
     if debug_sha256 is not None:
-        if re.fullmatch(r"[0-9a-f]{64}", debug_sha256) is None or release.get("prerelease") is not True:
-            raise ValueError("Debug APK verification requires a prerelease and the tested APK's SHA-256")
+        if re.fullmatch(r"[0-9a-f]{64}", debug_sha256) is None:
+            raise ValueError("Debug APK verification requires the tested APK's SHA-256")
         expected_apks.add("app-debug.apk")
     published_apks = {asset["name"] for asset in release.get("assets", []) if asset["name"].endswith(".apk")}
     if published_apks != expected_apks:
@@ -386,7 +386,7 @@ def main() -> None:
     verify_parser.add_argument("--url", required=True)
     verify_parser.add_argument("--channel", choices=sorted(CHANNELS), required=True)
     verify_parser.add_argument("--output", type=Path, required=True)
-    verify_parser.add_argument("--debug-apk-sha256", help="also verify an explicitly approved prerelease debug APK against its tested SHA-256")
+    verify_parser.add_argument("--debug-apk-sha256", help="also verify an explicitly approved debug APK against its tested SHA-256")
     fixture_parser = commands.add_parser("test-fixtures", help="prepare isolated instrumentation inputs; never publish these")
     fixture_parser.add_argument("--config", type=Path, required=True)
     fixture_parser.add_argument("--apk", type=Path, default=ROOT / "out/app-release.apk")

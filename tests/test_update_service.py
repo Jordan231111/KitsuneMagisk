@@ -135,11 +135,18 @@ class PublishedAssetsTest(unittest.TestCase):
                     self.verify(self.digest)
                 fetch.assert_not_called()
 
-    def test_debug_pin_requires_prerelease_and_valid_digest(self):
+    def test_regular_release_accepts_exact_debug_companion(self):
+        self.release["prerelease"] = False
         self.release["assets"].append({"name": "app-debug.apk"})
-        for prerelease, digest in [(False, self.digest), (True, ""), (True, "x" * 64), (True, self.digest + "\n")]:
-            self.release["prerelease"] = prerelease
-            with self.subTest(prerelease=prerelease, digest=digest), self.assertRaises(ValueError):
+        with mock.patch.object(update, "fetch", return_value=self.debug):
+            records = self.verify(self.digest)
+        self.assertEqual(records["debug"]["sha256"], self.digest)
+        self.assertFalse(records["debug"]["update_feed"])
+
+    def test_debug_pin_requires_valid_digest(self):
+        self.release["assets"].append({"name": "app-debug.apk"})
+        for digest in ["", "x" * 64, self.digest + "\n"]:
+            with self.subTest(digest=digest), self.assertRaises(ValueError):
                 self.verify(digest)
 
 
