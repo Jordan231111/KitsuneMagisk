@@ -96,6 +96,9 @@ Remaining device/archive/key-recovery work and stable update-feed qualification 
 Release 31023 includes System Mode installation and recovery in release as well as debug builds,
 with the same consent, target and recovery checks. [#50](https://github.com/Jordan231111/KitsuneMagisk/pull/50)
 merged the change after production-signed lifecycle acceptance and publication; #47 is closed.
+Code 31024 restores direct **Install → System Mode** operation. Host doctor/authorization and
+full user-data snapshots are removed from the app path; checks are automatic and recovery copies
+cover only Magisk-owned files. Historical host-qualification requirements below describe earlier builds.
 PR14 implements the [versioned module contract](docs/module-contract.md) and closes its 22 historical
 ledger rows with [scoped evidence](docs/module-pr14.json). Physical phones, additional boot/storage
 layouts and release promotion retain their PR15/PR16 gates.

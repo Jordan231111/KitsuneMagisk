@@ -95,14 +95,14 @@ ks_validate_policy() {
   local output="$KS_INSTALL_DIR/.kitsune-sepolicy-$SM_TRANSACTION_ID"
   [ -d /sys/fs/selinux ] || return 0
   strategy="${strategy#live+}"
-  ks_log "- Validating SELinux strategy: $strategy"
+  ks_log "- Checking SELinux policy"
   case "$strategy" in
     disabled)
       return 0
       ;;
     precompiled|monolithic)
-      [ -n "$policy" ] || { ks_fail "The authorized SELinux source is missing"; return 1; }
-      [ -f "$policy" ] || { ks_fail "The authorized SELinux source is unavailable"; return 1; }
+      [ -n "$policy" ] || { ks_fail "The selected SELinux source is missing"; return 1; }
+      [ -f "$policy" ] || { ks_fail "The selected SELinux source is unavailable"; return 1; }
       "$KS_INSTALL_DIR/magiskpolicy" --load "$policy" --save "$output" --magisk || {
         ks_fail "The next-boot SELinux policy cannot be parsed with the included magiskpolicy"
         return 1
@@ -163,11 +163,6 @@ ks_stage_payload() {
   sm_remove_tree_safe "Payload staging cleanup target" "$SM_STAGING_PATH" "$stage" || return 1
   "$SM_BB" mkdir -p "$stage" || return 1
   ks_copy_payload "$KS_INSTALL_DIR" "$stage" || return 1
-  "$SM_BB" cp -aL "$KS_ARTIFACT" "$stage/magisk.apk" || return 1
-  [ "$(sm_sha256_file "$stage/magisk.apk")" = "$SM_ARTIFACT_SHA256" ] || {
-    ks_fail "The copied manager artifact does not match transaction identity"
-    return 1
-  }
   {
     printf 'SYSTEMMODE=true\n'
     printf 'SYSTEM_MODE_SCHEMA=1\n'
@@ -180,7 +175,7 @@ ks_stage_payload() {
   "$SM_BB" chmod 0755 "$stage" "$stage"/*.sh "$stage/busybox" "$stage/magisk" \
     "$stage/magiskboot" "$stage/magiskinit" "$stage/magiskpolicy" || return 1
   [ ! -f "$stage/magisk32" ] || "$SM_BB" chmod 0755 "$stage/magisk32" || return 1
-  "$SM_BB" chmod 0644 "$stage/magisk.apk" "$stage/stub.apk" "$stage/config" || return 1
+  "$SM_BB" chmod 0644 "$stage/stub.apk" "$stage/config" || return 1
   "$SM_BB" chown -R 0:0 "$stage" || return 1
   if [ -d /sys/fs/selinux ]; then
     chcon -R u:object_r:system_file:s0 "$stage" || {
@@ -376,7 +371,6 @@ ks_publish_runtime() {
   sm_remove_tree_safe "Runtime prior-version cleanup target" "$old" "$old" || return 1
   "$SM_BB" mkdir -p "$stage" || return 1
   ks_copy_payload "$SM_ACTIVE_PAYLOAD" "$stage" || return 1
-  "$SM_BB" cp -a "$SM_ACTIVE_PAYLOAD/magisk.apk" "$stage/magisk.apk" || return 1
   "$SM_BB" cp -a "$SM_ACTIVE_PAYLOAD/config" "$stage/config" || return 1
   "$SM_BB" chmod 0700 "$stage" || return 1
   "$SM_BB" chown -R 0:0 "$stage" || return 1
@@ -400,7 +394,6 @@ ks_publish_runtime() {
 
 ks_rollback() {
   local result=0 has_transaction=false
-  sm_cleanup_authorization_claim || result=1
   sm_recover_setup_marker || result=1
   sm_complete_rollback_terminal || result=1
   if [ "$result" = 0 ] && [ -f "$SM_TRANSACTION_FILE" ]; then
@@ -438,6 +431,8 @@ ks_install() {
   sm_journal_mark rescue-version-published "$SM_RESCUE_PAYLOAD" || return 1
   ks_publish_rescue_rc || return 1
   sm_journal_mark rescue-init-published "$SM_RESCUE_RC" || return 1
+  sm_update_state STAGED || return 1
+  sm_failpoint staged || return 1
   ks_remove_superseded_rescue || return 1
   sm_journal_mark rescue-superseded-removed "$SM_RESCUE_DIR" || return 1
   ks_publish_version || return 1
@@ -453,14 +448,13 @@ ks_install() {
     ks_fail "Installation committed, but filesystem modes could not be restored"
     return 1
   }
-  ks_log "- System Mode committed; reboot once to verify this transaction"
+  ks_log "- System Mode installed. Restart to finish."
   return 0
 }
 
 ks_recover() {
   local result=0
   ks_validate_target || return 1
-  sm_cleanup_authorization_claim || return 1
   sm_validate_secure_dir_base || return 1
   sm_recover_setup_marker || return 1
   sm_complete_rollback_terminal || return 1
@@ -476,13 +470,12 @@ ks_recover() {
   sm_abort_transaction || result=1
   sm_restore_persistent_mounts || result=1
   [ "$result" = 0 ] || return 1
-  ks_log "- Interrupted System Mode transaction recovered"
+  ks_log "- System Mode recovery complete. Restart to finish."
 }
 
 ks_uninstall() {
   local result=0
   ks_validate_target || return 1
-  sm_cleanup_authorization_claim || return 1
   sm_validate_secure_dir_base || return 1
   sm_load_transaction || { ks_fail "A valid System Mode receipt is required"; return 1; }
   if ! sm_prepare_persistent_mounts; then
@@ -493,7 +486,7 @@ ks_uninstall() {
   sm_restore_persistent_mounts || result=1
   [ "$result" = 0 ] || return 1
   "$SM_BB" sync
-  ks_log "- Exact System Mode uninstall completed; reboot to finish"
+  ks_log "- System Mode removed. Restart to finish."
 }
 
 ks_main() {
@@ -511,8 +504,11 @@ ks_main() {
       ks_install "$install_dir" "$3"
       result=$?
       if [ "$result" != 0 ]; then
-        ks_log "! System Mode installation failed; restoring the prior transaction"
-        ks_rollback || ks_log "! Automatic rollback failed; use the verified external restore"
+        case "${SM_STATE:-}" in
+          PREFLIGHTED|STAGED|COMMITTED|ROLLBACK_REQUIRED|ROLLING_BACK)
+            ks_log "- Restoring the previous installation" ;;
+        esac
+        ks_rollback || ks_log "! Automatic rollback failed; restore the device image if app recovery cannot finish"
       fi
       ;;
     recover) ks_recover; result=$? ;;

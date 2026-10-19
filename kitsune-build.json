@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "product_version": "0.1.0-dev",
-  "app_version_code": 31023,
+  "app_version_code": 31024,
   "application_id": "io.github.jordan231111.magisk",
   "product_name": "KitsuneMagisk Next",
   "channel": "next-system-experimental",
@@ -17,7 +17,8 @@
     "kitsune.module-root.v2",
     "kitsune.early-mount.v2",
     "kitsune.boot-completed.v1",
-    "kitsune.system-mode.transaction.v1"
+    "kitsune.system-mode.transaction.v1",
+    "kitsune.system-mode.direct.v1"
   ],
   "debug_capabilities": []
 }

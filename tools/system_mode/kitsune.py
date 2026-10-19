@@ -11,6 +11,7 @@ from pathlib import Path
 import sys
 import tempfile
 import uuid
+import zipfile
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -157,6 +158,15 @@ def _authorize(args: argparse.Namespace) -> int:
     reverse_port: int | None = None
     consumed = False
     try:
+        artifact = Path(args.artifact).expanduser()
+        if artifact.is_file() and not artifact.is_symlink():
+            with zipfile.ZipFile(artifact) as apk:
+                identity = json.loads(apk.read("assets/build-info.json"))
+            if not isinstance(identity, dict):
+                raise ValueError("APK build identity must be an object")
+            if "kitsune.system-mode.direct.v1" in identity.get("capabilities", []):
+                print("Install System Mode directly in the app; this APK does not use host authorization.")
+                return 0
         report_path = Path(args.report).expanduser()
         seal_key = Path(args.seal_key).expanduser() if args.seal_key else None
         report, raw = load_authorization_report(report_path)
@@ -277,7 +287,7 @@ def _authorize(args: argparse.Namespace) -> int:
             lease.wait(AUTHORIZATION_TTL_SECONDS + 5)
             wait_authorization_consumed(client)
             consumed = True
-    except (OSError, ProbeError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+    except (OSError, ProbeError, ValueError, TypeError, KeyError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
         print(f"authorization failed: {exc}", file=sys.stderr)
         return 2
     except (TimeoutError, RuntimeError) as exc:
@@ -326,7 +336,7 @@ def _qualify(args: argparse.Namespace) -> int:
             instance_kind=getattr(args, "instance_kind", "file"),
             repository_root=_source_root(args),
         )
-    except (OSError, ProbeError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+    except (OSError, ProbeError, ValueError, TypeError, KeyError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
         print(f"qualification failed: {exc}", file=sys.stderr)
         return 2
     print(json.dumps(record, indent=2, sort_keys=True))

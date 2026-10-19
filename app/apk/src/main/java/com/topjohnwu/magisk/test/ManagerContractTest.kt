@@ -110,11 +110,6 @@ class ManagerContractTest : BaseTest {
         assertEquals("UNKNOWN", ManagerDiagnostics.parseTransaction(listOf("SCHEMA_VERSION=1", "STATE=BOOT_VERIFIED", "STATE=STAGED")))
         assertEquals("UNKNOWN", ManagerDiagnostics.parseTransaction(listOf("SCHEMA_VERSION=2", "STATE=BOOT_VERIFIED")))
         assertEquals("BOOT_VERIFIED", ManagerDiagnostics.parseTransaction(listOf("SCHEMA_VERSION=1", "STATE=BOOT_VERIFIED")))
-        for (verdict in listOf("supported", "blocked", "needs_evidence", "error")) {
-            val report = JSONObject().put("schema_version", 1).put("assessment",
-                JSONObject().put("verdict", verdict).put("primary_reason", "INIT_IMPORT_UNPROVEN"))
-            assertEquals("$verdict: INIT_IMPORT_UNPROVEN", ManagerDiagnostics.parseDoctor(report.toString()))
-        }
         assertTrue(runCatching { HideStatus.parse("{\"schema\":2}") }.isFailure)
         val report = ManagerDiagnostics.collect()
         // Avoid the large vararg array after a suspension point: the API 23

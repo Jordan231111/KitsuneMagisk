@@ -91,7 +91,7 @@
       "additionalProperties": false,
       "required": ["external", "location", "sha256", "restore_command"],
       "properties": {
-        "external": {"const": true},
+        "external": {"type": "boolean"},
         "location": {"type": "string"},
         "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "restore_command": {"type": "string", "minLength": 1}

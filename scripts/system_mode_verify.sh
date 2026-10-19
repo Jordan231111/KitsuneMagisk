@@ -60,7 +60,7 @@ case "$SM_STATE" in
     ;;
   UNINSTALLED) smv_exit 0 ;;
   FAILED)
-    smv_log "System Mode requires the verified external restore"
+    smv_log "System Mode requires the device-image restore"
     smv_exit 1
     ;;
 esac
@@ -84,5 +84,5 @@ if sm_abort_transaction; then
   smv_reboot
 fi
 sm_restore_persistent_mounts || true
-smv_log "Automatic System Mode rollback failed; use the verified external restore"
+smv_log "Automatic System Mode rollback failed; restore the device image if app recovery cannot finish"
 smv_exit 1

@@ -326,23 +326,16 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertNotIn('BuildConfig.DEBUG', worker)
         self.assertLess(direct.index("SystemModeConsent.consume"), direct.index("extractFiles"))
 
-    def test_host_authorization_precedes_every_target_mutation(self) -> None:
+    def test_app_checks_precede_install_without_host_authorization(self) -> None:
         begin = function_body(self.transaction, "sm_begin_transaction")
-        self.assertLess(begin.index("sm_validate_authorization"), begin.index("SM_STATE=PREFLIGHTED"))
-        self.assertLess(begin.index("sm_validate_host_lease"), begin.index("sm_consume_authorization"))
-        self.assertLess(begin.index("sm_consume_authorization"), begin.index("sm_probe_writable_directory"))
-        self.assertIn("BACKUP_SHA256", function_body(self.transaction, "sm_validate_authorization"))
-        self.assertIn("SERIAL_SHA256", function_body(self.transaction, "sm_validate_authorization"))
-        self.assertIn("SOURCE_COMMIT", function_body(self.transaction, "sm_validate_authorization"))
-        self.assertIn("ARTIFACT_SHA256", function_body(self.transaction, "sm_validate_authorization"))
-        self.assertIn("QUALIFICATION_SHA256", function_body(self.transaction, "sm_validate_authorization"))
-        self.assertIn("INSTANCE_IDENTITY_SHA256", function_body(self.transaction, "sm_validate_authorization"))
-        lease = function_body(self.transaction, "sm_validate_host_lease")
-        self.assertIn("LEASE_NONCE_SHA256", lease)
-        self.assertIn("127.0.0.1:$SM_LEASE_PORT/$SM_AUTHORIZATION_ID", lease)
-        self.assertIn("wget -qO-", lease)
+        self.assertLess(begin.index("sm_quiesce_magisk"), begin.index("sm_prepare_app_target"))
+        self.assertLess(begin.index("sm_prepare_app_target"), begin.index("SM_STATE=PREFLIGHTED"))
+        self.assertLess(begin.index("sm_check_install_space"), begin.index("sm_probe_writable_directory"))
+        self.assertNotIn("sm_validate_authorization", self.transaction)
+        self.assertNotIn("sm_validate_host_lease", self.transaction)
         install = function_body(self.installer, "ks_install")
-        self.assertLess(install.index("sm_begin_transaction"), install.index("ks_stage_payload"))
+        self.assertLess(install.index("ks_publish_rescue_rc"), install.index("sm_update_state STAGED"))
+        self.assertLess(install.index("sm_update_state STAGED"), install.index("ks_publish_version"))
 
     def test_nonce_handoff_hashes_the_external_backup_once(self) -> None:
         cli = (
@@ -357,7 +350,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertNotIn("verify_report_qualification(", handoff)
         self.assertEqual(2, handoff.count("verify_report_qualification_evidence("))
 
-    def test_kernel_lock_and_atomic_auth_claim_cover_every_installer_action(self) -> None:
+    def test_kernel_lock_covers_every_installer_action(self) -> None:
         main = function_body(self.installer, "ks_main")
         acquire = main.index('sm_acquire_lock "installer-$action"')
         dispatch = main.index('case "$action" in', acquire)
@@ -367,9 +360,6 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         lock = function_body(self.transaction, "sm_acquire_lock")
         self.assertIn("flock -n 9", lock)
         self.assertIn("SM_LOCK_WAIT_ATTEMPTS", lock)
-        consume = function_body(self.transaction, "sm_consume_authorization")
-        self.assertLess(consume.index("sm_require_lock"), consume.index('mv "$SM_AUTHORIZATION_FILE" "$claim"'))
-        self.assertIn("SM_AUTH_FILE_SHA256", consume)
 
     def test_remount_prepare_and_rollback_are_self_unwinding(self) -> None:
         prepare = function_body(self.transaction, "sm_prepare_persistent_mounts")
@@ -398,15 +388,10 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
         self.assertIn('substr($2, 2, 1) == "w"', idle)
         self.assertNotIn('substr($2, 4, 1) == "s"', idle)
 
-    def test_persistent_state_and_authorization_reject_symlink_redirection(self) -> None:
+    def test_persistent_state_rejects_symlink_redirection(self) -> None:
         storage = function_body(self.transaction, "sm_validate_state_storage")
-        authorization = function_body(self.transaction, "sm_validate_authorization")
-        authorization_file = function_body(self.transaction, "sm_authorization_file_safe")
         self.assertIn('[ ! -L "$path" ]', storage)
         self.assertIn("sm_reject_unsafe_mode", storage)
-        self.assertIn('sm_authorization_file_safe "$auth"', authorization)
-        self.assertIn('[ ! -L "$path" ]', authorization_file)
-        self.assertIn("0:600|2000:600", authorization_file)
         self.assertIn("sm_validate_state_storage", function_body(self.transaction, "sm_load_transaction"))
 
     def test_policy_is_validated_with_current_cli_but_not_persistently_rewritten(self) -> None:
@@ -441,12 +426,13 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
             self.transaction,
         )
         stage = function_body(self.installer, "ks_stage_payload")
-        self.assertIn('sm_sha256_file "$stage/magisk.apk"', stage)
-        self.assertIn("SM_ARTIFACT_SHA256", stage)
+        self.assertNotIn("magisk.apk", stage)
+        self.assertIn('sm_sha256_file "$SM_ARTIFACT_PATH"', function_body(self.transaction, "sm_begin_transaction"))
+        self.assertIn("SM_ARTIFACT_SHA256", function_body(self.transaction, "sm_generate_manifest"))
 
-    def test_clean_install_check_precedes_authorization_consumption(self) -> None:
+    def test_clean_install_check_precedes_writable_probe(self) -> None:
         begin = function_body(self.transaction, "sm_begin_transaction")
-        self.assertLess(begin.index("sm_check_clean_install"), begin.index("sm_consume_authorization"))
+        self.assertLess(begin.index("sm_check_clean_install"), begin.index("sm_probe_writable_directory"))
 
     def test_rc_has_one_launcher_and_boot_stage_order(self) -> None:
         rc = function_body(self.installer, "ks_write_rc")
@@ -561,6 +547,7 @@ bb() { shift 2; "$@"; }
             ("BOOT_VERIFIED", False, True, 30700), ("BOOT_VERIFIED", True, True, 30700),
             ("COMMITTED", True, True, 30700), ("COMMITTED", False, False, 30700),
             ("BOOT_VERIFIED", False, False, 30700), ("BOOT_VERIFIED", False, True, 31002),
+            ("COMMITTED", False, True, 31024),
         ):
             with self.subTest(state=state, denied=denied, database_valid=database_valid, app_code=app_code), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -579,6 +566,11 @@ export DENIED="$3"
 export DATABASE_VALID="$4"
 SM_BB=bb
 SM_VERSION_CODE="$5"
+SM_STATE_DIR="$TEST_ROOT/state"
+SM_BOOT_PROOF="$SM_STATE_DIR/boot-verified.env"
+SM_COMMIT_BOOT_ID=11111111-1111-4111-8111-111111111111
+SM_BOOT_ATTEMPT_ID=22222222-2222-4222-8222-222222222222
+mkdir -p "$SM_STATE_DIR"
 SM_INSTALL_ID=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 bb() {
   case "$1" in
@@ -595,6 +587,10 @@ sm_cleanup_terminal_rollback() { :; }
 sm_valid_hex() { :; }
 sm_log() { :; }
 sm_update_state() { SM_STATE="$1"; }
+sm_current_boot_id() { printf '%s\n' "$SM_BOOT_ATTEMPT_ID"; }
+sm_atomic_publish() { mv "$1" "$2"; }
+sm_prepare_persistent_mounts() { echo unexpected-system-remount >&2; return 99; }
+sm_restore_persistent_mounts() { echo unexpected-system-remount >&2; return 99; }
 getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
 ''' + function_body(self.transaction, "sm_verify_daemon_identity") + verify + '\nsm_verify_boot\nresult=$?\nprintf "%s\\n" "$SM_STATE"\nexit "$result"\n'
                 result = subprocess.run(
@@ -603,7 +599,7 @@ getprop() { printf '%s\n' "$SM_INSTALL_ID"; }
                 )
                 rejected = denied or not database_valid
                 self.assertEqual(1 if rejected else 0, result.returncode, result.stderr)
-                expected = "ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED" if rejected else state
+                expected = ("ROLLBACK_REQUIRED" if state == "COMMITTED" else "FAILED") if rejected else "BOOT_VERIFIED"
                 self.assertEqual(expected, result.stdout.strip())
                 self.assertEqual("2000\n", (root / "clients").read_text())
 
@@ -833,6 +829,8 @@ bb() {
         self.assertIn("kitsune.system_mode.post_fs_data.ready", verify)
         self.assertIn("kitsune.system_mode.boot_complete.ready", verify)
         self.assertIn("SERVICE_STAGE_ID", verify)
+        self.assertNotIn("sm_prepare_persistent_mounts", verify)
+        self.assertNotIn("sm_update_manifest_state", verify)
         self.assertIn("ROLLBACK_REQUIRED", verify)
 
     def test_phase_markers_are_published_only_after_success(self) -> None:
@@ -934,7 +932,7 @@ bb() {
         self.assertIn("reboot -f", self.verifier)
         begin = function_body(self.transaction, "sm_begin_transaction")
         self.assertIn("sm_initialize_journal", begin)
-        self.assertLess(begin.index("sm_initialize_journal"), begin.index("sm_update_state STAGED"))
+        self.assertIn("rescue-ready", begin)
         self.assertIn("sm_journal_mark", self.installer)
 
     def test_recovery_reboots_only_with_the_boot_tmpfs_busybox(self) -> None:

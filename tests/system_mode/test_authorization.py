@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import base64
 import datetime as dt
 import hashlib
@@ -12,6 +13,7 @@ import unittest
 from unittest import mock
 import urllib.error
 import urllib.request
+import zipfile
 
 from tools.system_mode.authorization import (
     AUTHORIZATION_PATH,
@@ -25,6 +27,20 @@ from tools.system_mode.authorization import (
     verify_report_backup,
 )
 from tools.system_mode.doctor import CommandResult, classify_report, fixture_report
+
+
+class DirectInstallationTest(unittest.TestCase):
+    def test_direct_apk_never_stages_host_authorization(self):
+        from tools.system_mode import kitsune
+        with tempfile.TemporaryDirectory(prefix="kitsune-direct-cli-") as directory:
+            apk = Path(directory) / "manager.apk"
+            with zipfile.ZipFile(apk, "w") as archive:
+                archive.writestr("assets/build-info.json", json.dumps({
+                    "capabilities": ["kitsune.system-mode.direct.v1"]}))
+            with mock.patch.object(kitsune, "AdbClient") as client, mock.patch.object(kitsune, "load_authorization_report") as report:
+                self.assertEqual(0, kitsune._authorize(argparse.Namespace(artifact=str(apk))))
+                client.assert_not_called()
+                report.assert_not_called()
 
 
 ROOT = Path(__file__).resolve().parents[2]

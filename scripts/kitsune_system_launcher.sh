@@ -125,7 +125,7 @@ case "$SM_STATE" in
     ksl_exit 1
     ;;
   FAILED)
-    ksl_log "System Mode requires the verified external restore"
+    ksl_log "System Mode requires the device-image restore"
     ksl_exit 1
     ;;
   *) ksl_exit 1 ;;
@@ -462,7 +462,7 @@ ksl_run_prepare() {
       if ksl_recover_pending; then
         return 0
       fi
-      ksl_log "Managed rollback failed; verified external recovery is required"
+      ksl_log "Managed rollback failed; app recovery or a device-image restore is required"
       # Clear a partially detached boot tmpfs even when persistent rollback
       # itself cannot complete. A normal cleanup failure leaves this boot safe
       # enough to expose diagnostics instead of creating an automatic loop.
