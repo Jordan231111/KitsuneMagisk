@@ -95,7 +95,7 @@ ks_validate_policy() {
   local output="$KS_INSTALL_DIR/.kitsune-sepolicy-$SM_TRANSACTION_ID"
   [ -d /sys/fs/selinux ] || return 0
   strategy="${strategy#live+}"
-  ks_log "- Validating SELinux strategy: $strategy"
+  ks_log "- Checking SELinux policy"
   case "$strategy" in
     disabled)
       return 0
@@ -448,7 +448,7 @@ ks_install() {
     ks_fail "Installation committed, but filesystem modes could not be restored"
     return 1
   }
-  ks_log "- System Mode committed; reboot once to verify this transaction"
+  ks_log "- System Mode installed. Restart to finish."
   return 0
 }
 
@@ -470,7 +470,7 @@ ks_recover() {
   sm_abort_transaction || result=1
   sm_restore_persistent_mounts || result=1
   [ "$result" = 0 ] || return 1
-  ks_log "- Interrupted System Mode transaction recovered"
+  ks_log "- System Mode recovery complete. Restart to finish."
 }
 
 ks_uninstall() {
@@ -486,7 +486,7 @@ ks_uninstall() {
   sm_restore_persistent_mounts || result=1
   [ "$result" = 0 ] || return 1
   "$SM_BB" sync
-  ks_log "- Exact System Mode uninstall completed; reboot to finish"
+  ks_log "- System Mode removed. Restart to finish."
 }
 
 ks_main() {
@@ -504,7 +504,10 @@ ks_main() {
       ks_install "$install_dir" "$3"
       result=$?
       if [ "$result" != 0 ]; then
-        ks_log "! System Mode installation failed; restoring the prior transaction"
+        case "${SM_STATE:-}" in
+          PREFLIGHTED|STAGED|COMMITTED|ROLLBACK_REQUIRED|ROLLING_BACK)
+            ks_log "- Restoring the previous installation" ;;
+        esac
         ks_rollback || ks_log "! Automatic rollback failed; restore the device image if app recovery cannot finish"
       fi
       ;;

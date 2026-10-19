@@ -252,6 +252,40 @@ def run_harness(body: str, root: Path) -> subprocess.CompletedProcess[str]:
 
 class SystemModeTransactionTest(unittest.TestCase):
 
+    def test_installer_detaches_module_views_but_keeps_runtime_mounts(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-module-view-") as temp:
+            result = run_harness(
+                r"""
+                SM_MOUNTS_FILE="$TEST_ROOT/mounts"
+                SM_SLAVE_MOUNT_NAMESPACE=true
+                cat >"$SM_MOUNTS_FILE" <<'MOUNTS'
+magisk /debug_ramdisk tmpfs rw 0 0
+magisk /debug_ramdisk/.magisk/worker tmpfs rw 0 0
+magisk /system/etc tmpfs rw 0 0
+magisk /vendor/etc tmpfs rw 0 0
+magisk-worker /system/fonts tmpfs rw 0 0
+overlay /product overlay rw 0 0
+MOUNTS
+                view_bb() {
+                  case "$1" in
+                    mount) test "$2:$3" = '--make-rprivate:/' ;;
+                    umount)
+                      awk -v path="$3" '$2 != path && index($2, path "/") != 1' "$SM_MOUNTS_FILE" >"$SM_MOUNTS_FILE.new"
+                      mv "$SM_MOUNTS_FILE.new" "$SM_MOUNTS_FILE"
+                      ;;
+                    *) bb "$@" ;;
+                  esac
+                }
+                SM_BB=view_bb
+                sm_isolate_installer_mounts
+                test "$SM_SLAVE_MOUNT_NAMESPACE" = false
+                test "$(wc -l <"$SM_MOUNTS_FILE" | tr -d ' ')" = 3
+                grep -q '^magisk /debug_ramdisk ' "$SM_MOUNTS_FILE"
+                grep -q '^magisk /debug_ramdisk/.magisk/worker ' "$SM_MOUNTS_FILE"
+                grep -q '^overlay /product ' "$SM_MOUNTS_FILE"
+                """, Path(temp))
+            self.assertEqual(0, result.returncode, result.stderr)
+
     def test_direct_install_detects_target_without_host_files(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-direct-target-") as temp:
             result = run_harness(

@@ -328,6 +328,7 @@ class MaintainedBaseSystemModeSafetyTest(unittest.TestCase):
 
     def test_app_checks_precede_install_without_host_authorization(self) -> None:
         begin = function_body(self.transaction, "sm_begin_transaction")
+        self.assertLess(begin.index("sm_quiesce_magisk"), begin.index("sm_prepare_app_target"))
         self.assertLess(begin.index("sm_prepare_app_target"), begin.index("SM_STATE=PREFLIGHTED"))
         self.assertLess(begin.index("sm_check_install_space"), begin.index("sm_probe_writable_directory"))
         self.assertNotIn("sm_validate_authorization", self.transaction)

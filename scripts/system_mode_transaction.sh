@@ -1770,11 +1770,15 @@ sm_isolate_installer_mounts() {
   local target count=0
   [ "$SM_SLAVE_MOUNT_NAMESPACE" = true ] || return 0
   "$SM_BB" mount --make-rprivate / || return 1
-  # Earlier PR7 payloads named the worker tmpfs differently from upstream.
-  # Their daemon cannot recognize those module views during --stop. Detach
-  # them only in this installer namespace before reading persistent files.
+  # A copied private namespace can retain module overlays after --stop.
+  # Detach those views here while keeping the runtime tmpfs available.
   while :; do
-    target="$("$SM_BB" awk '$1 == "magisk-worker" { print $2; exit }' "$SM_MOUNTS_FILE")" || return 1
+    target="$("$SM_BB" awk '
+      $1 == "magisk-worker" || ($1 == "magisk" &&
+        $2 ~ /^\/(system|system_root|system_ext|vendor|odm|product)(\/|$)/) {
+        print $2; exit
+      }
+    ' "$SM_MOUNTS_FILE")" || return 1
     [ -n "$target" ] || break
     sm_valid_mountpoint "$target" || return 1
     case "$target" in /|*'\'*) return 1 ;; esac
@@ -1793,7 +1797,7 @@ sm_quiesce_magisk() {
     1) sm_isolate_installer_mounts; return $? ;;
     *) sm_log "! Magisk daemon state cannot be proven"; return 1 ;;
   esac
-  sm_log "- Quiescing Magisk before the exact mutable-state snapshot"
+  sm_log "- Stopping Magisk"
   for candidate in \
     "${SM_TRUSTED_STOP_CLIENT:-}" \
     "${SM_ACTIVE_PAYLOAD:+$SM_ACTIVE_PAYLOAD/magisk}" \
@@ -2677,6 +2681,12 @@ sm_begin_transaction() {
     prior_active_payload="$SM_ACTIVE_PAYLOAD"
   fi
   if [ "$upgrading" = true ]; then
+    SM_TRUSTED_STOP_CLIENT="$prior_active_payload/magisk"
+  else
+    SM_TRUSTED_STOP_CLIENT=
+  fi
+  sm_quiesce_magisk || return 1
+  if [ "$upgrading" = true ]; then
     sm_prepare_app_target "${prior_init%/*}" || return 1
   else
     sm_prepare_app_target || return 1
@@ -2703,11 +2713,6 @@ sm_begin_transaction() {
   # Preserve these v1 fields without supporting persistent policy mutation.
   SM_POLICY_MUTATED=false
   SM_LEGACY_MIGRATION=false
-  if [ "$upgrading" = true ]; then
-    SM_TRUSTED_STOP_CLIENT="$prior_active_payload/magisk"
-  else
-    SM_TRUSTED_STOP_CLIENT=
-  fi
   [ -f "$SM_ARTIFACT_PATH" ] || { sm_log "! Exact install artifact is unavailable"; return 1; }
   SM_ARTIFACT_SHA256="$(sm_sha256_file "$SM_ARTIFACT_PATH")" || return 1
   case "$SM_ARTIFACT_SHA256" in *[!a-f0-9]*|'') sm_log "! Cannot hash exact install artifact"; return 1 ;; esac
