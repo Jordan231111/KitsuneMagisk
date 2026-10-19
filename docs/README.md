@@ -8,7 +8,7 @@
 - [Tested devices and installation routes](../compatibility/TESTED.md).
 - [Module compatibility](module-compatibility.md).
 - [Hide and SuList](hide-policy.md).
-- [System Mode for emulators](system-mode/pr7-machine-qualification.md) — release and debug builds from code 31022.
+- [System Mode for emulators](system-mode/pr7-machine-qualification.md) — release and debug builds from code 31023.
 
 The current release is experimental. Physical-phone qualification remains open; see the [release status](release.md).
 

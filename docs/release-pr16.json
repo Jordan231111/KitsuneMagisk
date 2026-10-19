@@ -4,65 +4,65 @@
   "roadmap_pr": 16,
   "implementation_pr": "https://github.com/Jordan231111/KitsuneMagisk/pull/44",
   "merge_commit": "9bf1fa1399d7a6314898939495abd2eee9648f9d",
-  "source_commit": "b08538bab4e1d3f7ab6d35d22ab49dede01e008a",
-  "app_version_code": 31021,
+  "source_commit": "dd5ead427f5ab028787e65312f7aa6fb9b8b6760",
+  "app_version_code": 31023,
   "upstream": {
     "version": "31.0",
     "prerelease": true,
     "commit": "96221b69fae9910b1c0c75c2f92a4ebb2c2dc698"
   },
   "release": {
-    "url": "https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-b08538bab4e1d3f7ab6d35d22ab49dede01e008a",
+    "url": "https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-dd5ead427f5ab028787e65312f7aa6fb9b8b6760",
     "immutable": true,
     "prerelease": true,
     "assets": [
       {
+        "name": "SHA256SUMS",
+        "sha256": "430f7c264c7741b7560c31d61ec887fd5750f7ac981102fd142c6d4f0172c658",
+        "size": 584
+      },
+      {
         "name": "app-debug.apk",
-        "sha256": "40a1d7ab05e86c701baf7891e020bc489216ee113b4ebb3d032a5920ef1e8a60",
+        "sha256": "5a595776d4075c4d8c19e0288c7bee6011508920bdf1e291cd72817713f05685",
         "size": 41079440
       },
       {
         "name": "app-release.apk",
-        "sha256": "9f4d203a883585ce0cd057f23ab4077e49ab7f134623fc7566ebd8e52415da8f",
+        "sha256": "a56eacc3eb2bd34c7c50958fa2c09591961cb99c0c00848eafd382f2713bc109",
         "size": 11638762
       },
       {
         "name": "mapping-release.zip",
-        "sha256": "f7ee67dc264d9715beb6f5cd72154a3a9918f42a24d347fc8168f9d47634119e",
-        "size": 3705977
+        "sha256": "7069c5aa1bb21d5961f116dd8ce535cb3e6157155e8890682e3524a9928422c3",
+        "size": 3816372
       },
       {
         "name": "qualification.zip",
-        "sha256": "d011272f279b5c333672dea18370967517f98aec59e0bdc525cb548f9c0ff93c",
-        "size": 189044
+        "sha256": "275ec611110e1ee44c9931fceefd01668b9d8292595b40e92521ba7d178357fa",
+        "size": 263028
       },
       {
         "name": "release-info.json",
-        "sha256": "56078a1f00c5da80cb4cc46c203356d9370840b020b6834b303622e7c30126e4",
-        "size": 44941
+        "sha256": "07f1fa128a081fc0985b9a816ba6132a37b5d5c4e41cbc0ec72852b795dc4cc5",
+        "size": 45219
       },
       {
         "name": "rust-sbom.cdx.json",
-        "sha256": "507417b3f03663860afb60a1aaafbbb7f6e0fc014b32e30b1d2c537cae8abf65",
+        "sha256": "c194a154e1db9be1b417f2d21feec5df3236f1221bde43574354444f05e0ef39",
         "size": 36912
       },
       {
-        "name": "SHA256SUMS",
-        "sha256": "8182ae818d2dfb0f836f109919223a51d8a966b38abbbd41612b57c442bca97b",
-        "size": 584
-      },
-      {
         "name": "stub-release.apk",
-        "sha256": "b488b455633d82a34cd5feb5aec18331fd99db4a8df108519803b553ab2dc522",
+        "sha256": "bc8d55c47aa0a4d156b30edebcd0e07811afc2dcaef65205f1b9519069e46249",
         "size": 45689
       }
     ]
   },
   "production_certificate_sha256": "9b09eb317c96036185884700d9584e63cc4a2a288825a0172633ba7bfe222ec6",
   "ci": {
-    "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39179324896",
+    "url": "https://github.com/Jordan231111/KitsuneMagisk/actions/runs/39190047890",
     "jobs_passed": 36,
-    "host_tests": 350,
+    "host_tests": 351,
     "platform_builds": [
       "macOS",
       "Linux",
@@ -74,7 +74,10 @@
       "x86",
       "x86_64"
     ],
-    "scope": "CI uses its disposable signer; local runtime records identify the exact distributed APKs."
+    "scope": "CI uses its disposable signer; local runtime records identify the exact distributed APKs.",
+    "host_toolchain_skips": 10,
+    "attempt": 3,
+    "prior_failed_attempts": "https://github.com/Jordan231111/KitsuneMagisk/issues/43"
   },
   "local_avds": [
     {
@@ -168,12 +171,17 @@
   ],
   "mumu": {
     "schema": 1,
-    "source_commit": "b08538bab4e1d3f7ab6d35d22ab49dede01e008a",
-    "app_version_code": 31021,
-    "apk_sha256": "40a1d7ab05e86c701baf7891e020bc489216ee113b4ebb3d032a5920ef1e8a60",
+    "source_commit": "dd5ead427f5ab028787e65312f7aa6fb9b8b6760",
+    "app_version_code": 31023,
+    "apk_sha256": "a56eacc3eb2bd34c7c50958fa2c09591961cb99c0c00848eafd382f2713bc109",
     "suite_passed": true,
     "junit_tests": 121,
     "upgrade_preserved_data": true,
+    "upgrade_from": {
+      "source_commit": "52f0d43fa89e0482fd5c7a8bc87af60cd52af708",
+      "app_version_code": 31022,
+      "variant": "release"
+    },
     "vendor_root_disabled": true,
     "vendor_root_off_adb_uid": 2000,
     "root_stress_requests": 144,
@@ -181,13 +189,7 @@
     "uninstall_passed": true,
     "original_disks_restored": true,
     "original_settings_restored": true,
-    "checked_at": "2026-10-19T01:07:58.463968+00:00",
-    "limits": [
-      "Exact MuMu target; permissive SELinux; debug System Mode only.",
-      "An initial qualification drift refusal is tracked in issue #46.",
-      "The upgrade module was removed through the normal module lifecycle before the full fixture suite.",
-      "The first uninstall check was made before its asynchronous transaction finished; final checks waited for owned paths, transaction metadata and the manager to disappear."
-    ],
+    "checked_at": "2026-10-19T04:18:32.143014+00:00",
     "restore": {
       "schema": 1,
       "device": "Android Device-1",
@@ -206,49 +208,63 @@
         "setting/vm.json": {
           "sha256": "f5dcb23b729c4aaf454e3c65f890994d2b2764e8eda5e8a6a775bada4c720bf7",
           "mode": "0o644"
+        },
+        "config.json": {
+          "sha256": "6581ceafd0dd3a3823f61b8492d686ab6f39bf12a9c2b0f33c4dbd05ca05c319",
+          "mode": "0o644"
         }
-      }
+      },
+      "checked_at": "2026-10-19T04:18:20.822668+00:00"
     },
     "uninstall": {
-      "schema": 1,
-      "passed": true,
       "manager_removed": true,
-      "owned_boot_paths_absent": true,
-      "transaction_metadata_absent": true,
-      "user_data_and_module_whiteout_preserved": true,
-      "inspection": "Protected files checked with existing bootstrap ADB root after the uninstall finished.",
-      "cold_boot_id": "a7a731e9-7866-49de-9f3f-ab854fbb153e",
+      "owned_paths_absent": true,
+      "user_data_preserved": true,
+      "module_whiteout_preserved": true,
+      "policy_rows_preserved": true,
+      "preparation": "Disabled and removed instrumentation fixtures through the module lifecycle before retrying. The live-reference and malformed-FIFO guards correctly refused earlier attempts.",
+      "uninstalled_boot_id": "962b3062-3928-40c2-9b7a-e52797abafc4",
       "vendor_root_enabled": false,
       "adb_uid": 2000,
-      "root_request_exit": 127,
-      "root_request_output": "/system/bin/sh: su: inaccessible or not found",
+      "su_exit_code": 127,
       "root_absent_after_cold_boot": true
-    }
+    },
+    "recovery": "Release UI recovery passed for a healthy BOOT_VERIFIED transaction; no physical power-loss qualification claimed.",
+    "limits": [
+      "Exact MuMu target; permissive SELinux.",
+      "Initial uninstall attempts correctly refused live module references and a deliberate malformed FIFO test fixture.",
+      "Interrupted debug runs and an API28 cmd crash remain recorded in issue #43; passing repeats do not establish their cause."
+    ],
+    "debug_comparison": {
+      "apk_sha256": "5a595776d4075c4d8c19e0288c7bee6011508920bdf1e291cd72817713f05685",
+      "suite_passed": true,
+      "junit_tests": 121,
+      "cold_boots": 3,
+      "root_stress_requests": 144,
+      "vendor_root_disabled": true
+    },
+    "test_count_note": "Reported JUnit case counts include the existing assumptions for unavailable platform features."
   },
   "public_updates": {
-    "feed_commit": "5885601be2c39c658aba837d2e9479672bdbc714",
+    "feed_commit": "4180f861e8e99e2e151977a2992a556b339703d3",
     "beta_verified": true,
     "canary_verified": true,
-    "sequence": 1,
+    "sequence": 2,
     "package": "io.github.jordan231111.magisk",
     "clean_stub": {
       "schema": 1,
-      "source_commit": "b08538bab4e1d3f7ab6d35d22ab49dede01e008a",
+      "source_commit": "dd5ead427f5ab028787e65312f7aa6fb9b8b6760",
       "application_id": "io.github.jordan231111.magisk",
       "installed_initial_stub_version_code": 1,
-      "installed_full_version_code": 31021,
-      "stub_sha256": "b488b455633d82a34cd5feb5aec18331fd99db4a8df108519803b553ab2dc522",
-      "installed_manager_sha256": "9f4d203a883585ce0cd057f23ab4077e49ab7f134623fc7566ebd8e52415da8f",
-      "published_manager_sha256": "9f4d203a883585ce0cd057f23ab4077e49ab7f134623fc7566ebd8e52415da8f",
-      "feed": "https://raw.githubusercontent.com/Jordan231111/KitsuneMagisk/update-feed/v1/io.github.jordan231111.magisk/beta.json",
-      "passed": true,
-      "route": "Clean public production stub -> authenticated download -> Android package update",
-      "manager_started": true,
-      "displayed_installed_code": 31021,
-      "displayed_latest_code": 31021,
-      "native_root_install_performed": false,
-      "checked_at": "2026-10-19T01:29:48.176940+00:00"
-    }
+      "installed_full_version_code": 31023,
+      "stub_sha256": "bc8d55c47aa0a4d156b30edebcd0e07811afc2dcaef65205f1b9519069e46249",
+      "installed_manager_sha256": "a56eacc3eb2bd34c7c50958fa2c09591961cb99c0c00848eafd382f2713bc109",
+      "displayed_installed_code": 31023,
+      "displayed_latest_code": 31023,
+      "clean_public_stub_download_and_install_passed": true,
+      "checked_at": "2026-10-19T04:23:18.483048+00:00"
+    },
+    "propagation": "The first checks still received the previous cached feed. Both ordinary public URLs subsequently served and verified sequence 2."
   },
   "sdk_kernel_control": {
     "schema": 1,
@@ -260,7 +276,10 @@
     "verification": "ZIP CRC and exact SHA-256 match the retained PR15 kernel; only the required archive ranges were downloaded.",
     "installed_custom_kernel_sha256": "e9d52ce7388cd7eb0ba6c2a604dd94bde8670f2dfa00da679e851354137d2dba",
     "installed_custom_kernel_unchanged": true,
-    "scope": "Explicit -kernel override on disposable AVDs only."
+    "scope": "Explicit -kernel override on disposable AVDs only.",
+    "source_harness_sha256": "7131405b8239b4e942094eef60a2b1f32fcfabae80e540f3648d023db92258c3",
+    "test_harness_sha256": "8f7c8af4039e14b950ee7d35cccefb48f78017e62de428db790bd3e1616014c0",
+    "override_kernel_sha256": "518c33e1ffd4cd682ecf7eebbb0bf0ca1f6111876cd126fde57e3c9834726d1a"
   },
   "production_qualified": false,
   "production_blockers": [
@@ -272,7 +291,8 @@
     "https://github.com/Jordan231111/KitsuneMagisk/issues/42",
     "https://github.com/Jordan231111/KitsuneMagisk/issues/43",
     "https://github.com/Jordan231111/KitsuneMagisk/issues/45",
-    "https://github.com/Jordan231111/KitsuneMagisk/issues/46"
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/46",
+    "https://github.com/Jordan231111/KitsuneMagisk/issues/49"
   ],
   "repository": {
     "default_branch": "next-system",
@@ -304,11 +324,17 @@
         "setting/vm.json": {
           "sha256": "f5dcb23b729c4aaf454e3c65f890994d2b2764e8eda5e8a6a775bada4c720bf7",
           "mode": "0o644"
+        },
+        "config.json": {
+          "sha256": "6581ceafd0dd3a3823f61b8492d686ab6f39bf12a9c2b0f33c4dbd05ca05c319",
+          "mode": "0o644"
         }
-      }
+      },
+      "checked_at": "2026-10-19T04:23:28.179355+00:00"
     },
     "temporary_avds_absent": true,
     "owned_upgrade_worktree_archived": true,
+    "owned_feed_worktree_archived": true,
     "permanent_signing_assets_preserved": true,
     "generated_repository_build_outputs_removed": true,
     "private_adb_servers_stopped": [
@@ -317,6 +343,13 @@
     ],
     "owned_task_cache_removed": true,
     "legacy_output_artifacts_removed": true,
-    "user_sdk_kernel_preserved": true
+    "user_sdk_kernel_preserved": true,
+    "unrelated_worktree_preserved": "pr11-runtime"
+  },
+  "release_followup": {
+    "pull_request": "https://github.com/Jordan231111/KitsuneMagisk/pull/50",
+    "merge_commit": "a3428638fd49fbe0b49e41791cdbf832a2b9a240",
+    "tested_tree_matches_merge": true,
+    "change": "Enable System Mode installation and recovery in the release APK."
   }
 }

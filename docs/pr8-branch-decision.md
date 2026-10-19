@@ -30,6 +30,6 @@ Do not restore public production keys, signature bypasses or implicit filename-b
 to reproduce old implementation details. Older installations need their documented migration
 or recovery procedure.
 
-System Mode uses the same installation and recovery checks in release and debug builds from code 31022.
+System Mode uses the same installation and recovery checks in release and debug builds from code 31023.
 Stable promotion requires physical-device results and the remaining
 [release gates](release.md). Historical tests cannot establish support for new APKs or targets.

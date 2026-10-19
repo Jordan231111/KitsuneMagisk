@@ -1,7 +1,7 @@
 # Kitsune manager and SU consent
 
 The Compose manager provides Hide/SuList, SU consent and System Mode. System Mode is
-experimental and available in release and debug builds from code 31022. Both require
+experimental and available in release and debug builds from code 31023. Both require
 explicit consent, target qualification and verified external recovery.
 
 The [PR13 acceptance record](manager-pr13.json) identifies tested commits,

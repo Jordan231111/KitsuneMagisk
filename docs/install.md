@@ -1,7 +1,7 @@
 # Installing KitsuneMagisk
 
 Download **app-release.apk** from the [KitsuneMagisk releases](https://github.com/Jordan231111/KitsuneMagisk/releases).
-The current Beta 4 is experimental. Installing the APK installs the manager; it does not root the device.
+The current Beta 5 is experimental. Installing the APK installs the manager; it does not root the device.
 
 The [compatibility table](../compatibility/TESTED.md) lists tested targets.
 Physical-phone qualification remains [open](https://github.com/Jordan231111/KitsuneMagisk/issues/39).
@@ -49,7 +49,7 @@ for its restrictions.
 
 ## Emulators
 
-System Mode is available in both release and debug builds from app version code **31022**.
+System Mode is available in both release and debug builds from app version code **31023**.
 Older Beta 4/code 31021 release APKs still lack this feature.
 
 The writable-emulator route requires bootstrap root and the
@@ -63,7 +63,8 @@ Android Studio AVD testing uses the separate boot-image route described in
 
 ## Uninstalling
 
-Use **Uninstall** in the app and wait for completion before restarting.
+Use **Uninstall** in the app and wait for completion before restarting. If System Mode reports
+that a module is still in use, disable that module and cold-start the emulator before retrying.
 Managed System Mode keeps user modules, policies and scripts; its recovery and external-restore
 procedures are in the qualification guide. Legacy installations require their matching legacy
 uninstaller or recovery procedure.

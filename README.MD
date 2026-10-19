@@ -10,7 +10,7 @@ v31.0 prerelease with selected later fixes. It does not include every change on 
 [follow-up integration](https://github.com/Jordan231111/KitsuneMagisk/issues/49) is tracked separately.
 Ordinary boot-image installation and recovery remain central to the project.
 
-The current [Beta 4](https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-b08538bab4e1d3f7ab6d35d22ab49dede01e008a)
+The current [Beta 5](https://github.com/Jordan231111/KitsuneMagisk/releases/tag/kitsune-canary-dd5ead427f5ab028787e65312f7aa6fb9b8b6760)
 is experimental. Its [acceptance record](docs/release-pr16.json) identifies the tested APKs and remaining
 production gates. [Compatibility records](compatibility/TESTED.md) retain their exact tested versions;
 virtual devices do not qualify physical phones. See the [roadmap](DEVELOPMENT_ROADMAP.md) for status.
@@ -26,7 +26,7 @@ project certificate; historical, debug and previous-package installations requir
 - [Module APIs](docs/module-contract.md), [tested third-party modules](docs/module-compatibility.md)
   and [Zygisk providers](docs/adr/0001-zygisk-provider.md).
 - [System Mode qualification](docs/system-mode/pr7-machine-qualification.md): release and debug
-  builds from code 31022, with an exact writable target and verified external recovery copy.
+  builds from code 31023, with an exact writable target and verified external recovery copy.
 - [Current source and artifact contract](docs/next-system-pr16.json).
 
 ## Building

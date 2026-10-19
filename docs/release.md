@@ -1,8 +1,9 @@
 # Release qualification
 
 [PR16](https://github.com/Jordan231111/KitsuneMagisk/pull/44) is merged. The
-[Beta 4 acceptance](release-pr16.json) records code 31021, immutable assets, public-feed verification
-and a clean production-stub update. Stable promotion remains blocked by the gates below.
+[Beta 5 acceptance](release-pr16.json) records code 31023, immutable assets, public-feed verification
+and a clean production-stub update. [PR #50](https://github.com/Jordan231111/KitsuneMagisk/pull/50)
+enables release System Mode. Stable promotion remains blocked by the gates below.
 
 Builds use the maintained `next-system` branch. The current release gate is
 [`next-system-pr16.json`](next-system-pr16.json). The upstream base remains official
@@ -11,7 +12,7 @@ Magisk v31.0 prerelease; v30.7 remains official stable as checked on 2026-10-18.
 Stable promotion is blocked by [physical qualification](https://github.com/Jordan231111/KitsuneMagisk/issues/39),
 [historical archive dispositions](https://github.com/Jordan231111/KitsuneMagisk/issues/40), and
 [independent signing-key recovery](https://github.com/Jordan231111/KitsuneMagisk/issues/41).
-System Mode is available in both variants from code 31022. The release matrix must exercise
+System Mode is available in both variants from code 31023. The release matrix must exercise
 the actual production-signed APK; debug tests alone do not qualify it. The implementation and existing qualification
 records remain available. Candidate releases claim only their exact tested targets.
 

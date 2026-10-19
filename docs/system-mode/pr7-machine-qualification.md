@@ -1,6 +1,6 @@
 # System Mode machine qualification and one-shot installation
 
-System Mode is available in release and debug builds from code 31022. Both refuse installation until one exact
+System Mode is available in release and debug builds from code 31023. Both refuse installation until one exact
 target has a current, host-sealed qualification record. Typed boot counts, a backup filename,
 historical notes, consent to proceed without recovery, and hand-authored JSON are not evidence.
 

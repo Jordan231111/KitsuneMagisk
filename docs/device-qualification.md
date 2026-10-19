@@ -1,7 +1,7 @@
 # Device testing
 
 The [compatibility table](../compatibility/TESTED.md) records exact tested targets and APKs.
-The [PR16 release record](release-pr16.json) identifies Beta 4; the
+The [PR16 release record](release-pr16.json) identifies Beta 5; the
 [PR15 requirement audit](device-pr15/requirements-audit.md) covers the preceding implementation.
 These are experimental results. Physical-phone qualification remains
 [open](https://github.com/Jordan231111/KitsuneMagisk/issues/39).
@@ -49,7 +49,7 @@ Use `mumutool`, Android Device-1 and an explicit ADB serial. Back up both stoppe
 verify their restore bytes, and cold start by fully closing and reopening the instance.
 Do not use `adb reboot`. Restore the user's original instance after testing.
 [System Mode qualification](system-mode/pr7-machine-qualification.md) is required before installation.
-Release and debug System Mode use the same authorization and recovery checks from code 31022.
+Release and debug System Mode use the same authorization and recovery checks from code 31023.
 Qualify the actual production-signed APK before publishing it.
 
 ### BlueStacks and Waydroid
