@@ -30,7 +30,7 @@ class ReleaseQualificationTest(unittest.TestCase):
                                       for name in release.CHECKS},
                            "runtime": {"avd": self.save("avd.json", self.record)},
                            "mumu_lifecycle": self.save("lifecycle.json", {
-                               "source_commit": self.info["source_commit"], "apk_sha256": "b" * 64,
+                               "source_commit": self.info["source_commit"], "apk_sha256": "c" * 64,
                                **{key: True for key in ("suite_passed", "upgrade_preserved_data", "vendor_root_disabled",
                                                        "uninstall_passed", "original_disks_restored", "original_settings_restored")}})}
 
@@ -93,6 +93,13 @@ class ReleaseQualificationTest(unittest.TestCase):
         data["original_disks_restored"] = False
         self.acceptance["mumu_lifecycle"] = self.save("lifecycle.json", data)
         with self.assertRaisesRegex(ValueError, "restoration"):
+            self.verify()
+
+    def test_debug_lifecycle_cannot_qualify_release_system_mode(self):
+        data = json.loads(release.read_evidence(self.acceptance["mumu_lifecycle"], self.root))
+        data["apk_sha256"] = self.artifacts["debug"]["sha256"]
+        self.acceptance["mumu_lifecycle"] = self.save("lifecycle.json", data)
+        with self.assertRaisesRegex(ValueError, "MuMu installation"):
             self.verify()
 
     def test_old_source_and_missing_runtime_are_rejected(self):
