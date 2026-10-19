@@ -33,16 +33,12 @@ adb_pm_install fixture.apk fixture.package
                     expected = 'appops:set fixture.package REQUEST_INSTALL_PACKAGES allow\n' if sdk >= 26 and status == 0 else ''
                     self.assertEqual(expected, result.stdout)
 
-    def test_transaction_and_doctor_vocabularies_match_the_contract(self):
+    def test_transaction_vocabulary_matches_the_contract(self):
         source = (ROOT / 'app/core/src/main/java/com/topjohnwu/magisk/core/model/ManagerDiagnostics.kt').read_text()
         states = re.search(r'val transactionStates = setOf\((.*?)\)', source, re.S).group(1)
         actual = set(re.findall(r'"([A-Z_]+)"', states))
         contract = json.loads((ROOT / 'tools/system_mode/contracts/install-state-machine.json').read_text())
         self.assertEqual(set(contract['states']), actual)
-        verdicts = re.search(r'require\(verdict in setOf\((.*?)\)', source, re.S).group(1)
-        schema = json.loads((ROOT / 'tools/system_mode/schemas/doctor-v1.schema.json').read_text())
-        self.assertEqual(set(schema['properties']['assessment']['properties']['verdict']['enum']),
-                         set(re.findall(r'"([a-z_]+)"', verdicts)))
 
     def test_product_locales_retain_format_arguments(self):
         resources = ROOT / 'app/core/src/main/res'

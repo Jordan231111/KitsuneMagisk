@@ -48,8 +48,8 @@ sources and unsupported status changes fail validation.
 Use `mumutool`, Android Device-1 and an explicit ADB serial. Back up both stopped-instance disks,
 verify their restore bytes, and cold start by fully closing and reopening the instance.
 Do not use `adb reboot`. Restore the user's original instance after testing.
-[System Mode qualification](system-mode/pr7-machine-qualification.md) is required before installation.
-Release and debug System Mode use the same authorization and recovery checks from code 31023.
+[System Mode installation](system-mode/pr7-machine-qualification.md) runs directly in the app
+from code 31024. Host qualification is a development test, not an installation prerequisite.
 Qualify the actual production-signed APK before publishing it.
 
 ### BlueStacks and Waydroid
@@ -79,10 +79,10 @@ The implementation records retain the fixes and their exact test inputs:
 | Upstream fixes and Android-compatible AVB1 signing | [Applied changes](device-pr15/upstream-fixes.json) |
 | Module and third-party hiding limits | [Compatibility matrix](module-compatibility.md), [signing diagnosis](device-pr15/shamiko-signing-identity.json) |
 
-Managed System Mode requires Android 7.1/API 25 or later and live target/recovery authorization.
-Recovery-ZIP `SYSTEMMODE` and automatic managed `addon.d` replay are unsupported: recovery lacks
-the authorization, and an OTA changes the bound image. Ordinary Magisk recovery and `addon.d`
-remain separate routes. A changed writable image must be restored or requalified before reinstalling.
+System Mode requires Android 7.1/API 25 or later, root and a writable system filesystem.
+Recovery-ZIP `SYSTEMMODE` and automatic managed `addon.d` replay remain unsupported; use the
+app to check the running target and select the correct boot strategy after an image change.
+Ordinary Magisk recovery and `addon.d` remain separate routes.
 
 Physical GrapheneOS (`ZYG-003-device`), legacy Sony (`BOOT-006`), A/B OTA (`ORD-003`) and recovery
 ZIP/stock restoration (`ORD-004`) remain unqualified. The [feature ledger](port-ledger.md) preserves

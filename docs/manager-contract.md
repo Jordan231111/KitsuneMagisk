@@ -1,8 +1,8 @@
 # Kitsune manager and SU consent
 
 The Compose manager provides Hide/SuList, SU consent and System Mode. System Mode is
-experimental and available in release and debug builds from code 31023. Both require
-explicit consent, target qualification and verified external recovery.
+available in release and debug builds. From code 31024, installation uses explicit app consent
+and automatic on-device checks, with no required host authorization or full data snapshots.
 
 The [PR13 acceptance record](manager-pr13.json) identifies tested commits,
 artifacts, emulator lanes and limits. The final PR checks are required before merge.
@@ -89,13 +89,11 @@ the manager does not bypass a backend denial.
 ## System Mode, recovery and diagnostics
 
 The status screen reads the recorded transaction without sourcing its contents.
-Duplicate/unknown state or schema fields are shown as unknown. An imported doctor
-JSON is a bounded, read-only review summary; it never authorizes installation.
-The installer still rechecks the exact target, live host lease, manifests and
-external backup. Recovery invokes the existing managed recovery entry point after
-confirmation. A stored BOOT_VERIFIED state is a receipt, not a fresh disk audit.
-If Android cannot start, use the verified external backup. Emulator guidance calls
-for fully closing and reopening the player.
+Duplicate/unknown state or schema fields are shown as unknown. The installer checks the target,
+policy and writable filesystem directly. Temporary recovery copies cover Magisk-owned paths;
+user modules, policies and scripts stay in place. Recovery invokes the managed recovery entry
+point after confirmation. A stored BOOT_VERIFIED state records a completed boot.
+Emulator guidance calls for fully closing and reopening the player.
 
 Diagnostic export uses an allowlist of build identities, API, provider/Hide state,
 transaction state and operation result codes. It excludes package selections,

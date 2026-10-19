@@ -198,13 +198,6 @@ test_use_host_lock_storage() {
   }
 }
 
-test_accept_host_authorization() {
-  sm_authorization_file_safe() {
-    [ -f "$1" ] && [ ! -L "$1" ] || return 1
-    [ "$(bb stat -c %a "$1")" = 600 ]
-  }
-}
-
 test_write_receipt() {
   file="$1"
   install="$2"
@@ -258,6 +251,128 @@ def run_harness(body: str, root: Path) -> subprocess.CompletedProcess[str]:
 
 
 class SystemModeTransactionTest(unittest.TestCase):
+
+    def test_direct_install_detects_target_without_host_files(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-direct-target-") as temp:
+            result = run_harness(
+                r"""
+                test_use_host_lock_storage
+                SM_LOCK_HELD=true
+                SM_LOCK_ACTION=test
+                SM_STATE_DIR="$TEST_ROOT/state"
+                SM_MOUNTS_FILE="$TEST_ROOT/mounts"
+                mkdir -p "$TEST_ROOT/root/system/etc/init"
+                printf '/dev/block/system %s/root/system ext4 rw 0 0\n' "$TEST_ROOT" >"$SM_MOUNTS_FILE"
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                getprop() {
+                  case "$1" in
+                    ro.build.version.sdk) printf '32\n' ;;
+                    ro.product.cpu.abilist) printf 'arm64-v8a,armeabi-v7a\n' ;;
+                    ro.build.fingerprint) printf '%s\n' "${TEST_FINGERPRINT:-vendor/emulator/test:12/build:user/release-keys}" ;;
+                    ro.serialno) printf 'test-instance\n' ;;
+                    ro.boot.veritymode) printf '%s\n' "${TEST_VERITY:-}" ;;
+                    ro.boot.init_rc) printf '%s\n' "${TEST_INIT:-}" ;;
+                  esac
+                  return 0
+                }
+                cat() {
+                  if [ "$1" = /proc/sys/kernel/random/uuid ]; then
+                    printf 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\n'
+                  else command cat "$@"; fi
+                }
+                sm_prepare_app_target
+                test "$SM_PREPARATION" = app
+                test "$SM_AUTH_INIT_DIRECTORY" = /system/etc/init
+                test "$SM_BACKUP_LOCATION" = "$SM_STATE_DIR/original"
+                test "$SM_QUALIFICATION_SHA256" = "$(printf '%064d' 0)"
+                TEST_FINGERPRINT=another-emulator-model
+                sm_validate_live_target
+                TEST_VERITY=enforcing
+                ! sm_prepare_app_target
+                TEST_VERITY=
+                TEST_INIT=/vendor/custom-init.rc
+                ! sm_prepare_app_target
+                TEST_INIT=
+                printf 'overlay %s/root/system overlay rw 0 0\n' "$TEST_ROOT" >"$SM_MOUNTS_FILE"
+                ! sm_prepare_app_target
+                printf '/dev/block/system %s/root/system ext4 rw 0 0\n' "$TEST_ROOT" >"$SM_MOUNTS_FILE"
+                mv "$TEST_ROOT/root/system/etc/init" "$TEST_ROOT/root/system/etc/elsewhere"
+                ln -s elsewhere "$TEST_ROOT/root/system/etc/init"
+                ! sm_prepare_app_target
+                """, Path(temp).resolve())
+            self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_direct_install_preflight_restores_the_rescue_handoff(self) -> None:
+        for upgrading in (False, True):
+            with self.subTest(upgrading=upgrading), tempfile.TemporaryDirectory(prefix="kitsune-rescue-handoff-") as temp:
+                body = r"""
+                SM_PREPARATION=app
+                SM_POLICY_PATH=
+                SM_POLICY_MUTATED=false
+                SM_SYSTEM_DIR=/system/etc/init/magisk
+                SM_INIT_PATH=/system/etc/init/magisk.rc
+                SM_ROLLBACK_DIR="$TEST_ROOT/rollback"
+                sm_configure_rescue_paths
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                sm_snapshot_source_safe() { return 0; }
+                sm_cleanup_staging() { return 0; }
+                sm_restore_state_metadata() { return 0; }
+                sm_finish_rollback_storage() { return 0; }
+                mkdir -p "$TEST_ROOT/root/system/etc/init"
+                if [ UPGRADE = true ]; then
+                  mkdir -p "$TEST_ROOT/root$SM_RESCUE_DIR/versions/old"
+                  printf old-payload >"$TEST_ROOT/root$SM_RESCUE_DIR/versions/old/script"
+                  printf old-rc >"$TEST_ROOT/root$SM_RESCUE_RC"
+                fi
+                sm_snapshot_all
+                : >"$SM_ROLLBACK_DIR/rescue-ready"
+                mkdir -p "$TEST_ROOT/root$SM_RESCUE_DIR/versions/new"
+                printf new-payload >"$TEST_ROOT/root$SM_RESCUE_DIR/versions/new/script"
+                printf new-rc >"$TEST_ROOT/root$SM_RESCUE_RC"
+                sm_restore_preflight
+                if [ UPGRADE = true ]; then
+                  test "$(cat "$TEST_ROOT/root$SM_RESCUE_RC")" = old-rc
+                  test "$(cat "$TEST_ROOT/root$SM_RESCUE_DIR/versions/old/script")" = old-payload
+                  test ! -e "$TEST_ROOT/root$SM_RESCUE_DIR/versions/new"
+                else
+                  test ! -e "$TEST_ROOT/root$SM_RESCUE_RC"
+                  test ! -e "$TEST_ROOT/root$SM_RESCUE_DIR"
+                fi
+                """.replace("UPGRADE", "true" if upgrading else "false")
+                result = run_harness(body, Path(temp))
+                self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_direct_install_recovery_never_copies_user_namespaces(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kitsune-direct-scope-") as temp:
+            result = run_harness(
+                r"""
+                SM_PREPARATION=app
+                SM_POLICY_PATH=
+                SM_POLICY_MUTATED=false
+                SM_SYSTEM_DIR=/system/etc/init/magisk
+                SM_INIT_PATH=/system/etc/init/magisk.rc
+                SM_ROLLBACK_DIR="$TEST_ROOT/rollback"
+                SM_STATE_DIR="$TEST_ROOT/state"
+                SM_ORIGINAL_FILE="$SM_STATE_DIR/originals.tsv"
+                SM_RESCUE_RC=/system/etc/init/.kitsune-system-mode-rescue.rc
+                SM_RESCUE_DIR=/system/etc/init/.kitsune-system-mode-rescue
+                mkdir -p "$SM_STATE_DIR" "$TEST_ROOT/root/data/adb/modules/user-module"
+                printf 'keep user data' >"$TEST_ROOT/root/data/adb/modules/user-module/file"
+                sm_real_path() { printf '%s/root%s\n' "$TEST_ROOT" "$1"; }
+                sm_snapshot_source_safe() { return 0; }
+                sm_snapshot_all
+                test ! -e "$SM_ROLLBACK_DIR/modules"
+                test ! -e "$SM_ROLLBACK_DIR/magisk_db"
+                test ! -e "$SM_ROLLBACK_DIR/service"
+                sm_prepare_originals
+                ! grep -q '/data/adb/modules' "$SM_ORIGINAL_FILE"
+                ! grep -q '/data/adb/magisk.db' "$SM_ORIGINAL_FILE"
+                test ! -e "$SM_STATE_DIR/original/modules"
+                test "$(cat "$TEST_ROOT/root/data/adb/modules/user-module/file")" = 'keep user data'
+                """, Path(temp))
+            self.assertEqual(0, result.returncode, result.stderr)
+
+
     def test_clean_install_keeps_user_data_and_refuses_old_boot_paths(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-clean-install-") as temp:
             result = run_harness(
@@ -1798,26 +1913,21 @@ class SystemModeTransactionTest(unittest.TestCase):
             )
         self.assertEqual(0, result.returncode, result.stderr)
 
-    def test_lock_serializes_authorization_and_recovers_after_holder_death(self) -> None:
+    def test_lock_serializes_transactions_and_recovers_after_holder_death(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kitsune-transaction-lock-") as temp:
             result = run_harness(
                 r"""
                 test_use_host_lock_storage
-                test_accept_host_authorization
-                SM_AUTHORIZATION_FILE="$TEST_ROOT/authorization.env"
-                SM_AUTHORIZATION_CLAIM="$TEST_ROOT/authorization.claimed"
                 mutation="$TEST_ROOT/mutations"
                 : >"$mutation"
-                printf 'single-use-authorization\n' >"$SM_AUTHORIZATION_FILE"
-                chmod 0600 "$SM_AUTHORIZATION_FILE"
-                SM_AUTH_FILE_SHA256="$(sm_sha256_file "$SM_AUTHORIZATION_FILE")"
 
                 contender() {
                   name="$1"
                   : >"$TEST_ROOT/ready-$name"
                   while [ ! -f "$TEST_ROOT/start" ]; do sleep 0.01; done
                   if sm_acquire_lock "contender-$name"; then
-                    if sm_consume_authorization; then
+                    if [ ! -f "$TEST_ROOT/committed" ]; then
+                      : >"$TEST_ROOT/committed"
                       printf '%s\n' "$name" >>"$mutation"
                       sleep 0.2 9>&-
                       sm_release_lock || exit 33
@@ -1843,43 +1953,10 @@ class SystemModeTransactionTest(unittest.TestCase):
                 wait "$second"; second_status=$?
                 set -e
                 # The second process waits for the kernel lock, then observes
-                # that the authorization was atomically consumed. It cannot
+                # the committed transaction. It cannot
                 # enter a mutation even though it began concurrently.
                 case "$first_status:$second_status" in 0:31|31:0) ;; *) exit 35 ;; esac
                 test "$(wc -l <"$mutation" | tr -d ' ')" = 1
-                test ! -e "$SM_AUTHORIZATION_FILE"
-                test ! -e "$SM_AUTHORIZATION_CLAIM"
-
-                # A safe stale claim is not removable without the kernel lock,
-                # but a fresh locked flow may discard it before atomically
-                # claiming and consuming a newly issued authorization.
-                printf stale >"$SM_AUTHORIZATION_CLAIM"
-                chmod 0600 "$SM_AUTHORIZATION_CLAIM"
-                printf fresh >"$SM_AUTHORIZATION_FILE"
-                chmod 0600 "$SM_AUTHORIZATION_FILE"
-                SM_AUTH_FILE_SHA256="$(sm_sha256_file "$SM_AUTHORIZATION_FILE")"
-                ! sm_cleanup_authorization_claim
-                test -f "$SM_AUTHORIZATION_CLAIM"
-                sm_acquire_lock stale-claim-cleanup
-                sm_consume_authorization
-                sm_release_lock
-                test ! -e "$SM_AUTHORIZATION_FILE"
-                test ! -e "$SM_AUTHORIZATION_CLAIM"
-
-                # Unsafe stale state fails closed and leaves both pieces for
-                # inspection instead of deleting attacker-redirected bytes.
-                printf unsafe >"$SM_AUTHORIZATION_CLAIM"
-                chmod 0644 "$SM_AUTHORIZATION_CLAIM"
-                printf retry >"$SM_AUTHORIZATION_FILE"
-                chmod 0600 "$SM_AUTHORIZATION_FILE"
-                SM_AUTH_FILE_SHA256="$(sm_sha256_file "$SM_AUTHORIZATION_FILE")"
-                sm_acquire_lock unsafe-claim
-                ! sm_consume_authorization
-                sm_release_lock
-                test -f "$SM_AUTHORIZATION_FILE"
-                test -f "$SM_AUTHORIZATION_CLAIM"
-                rm -f "$SM_AUTHORIZATION_FILE" "$SM_AUTHORIZATION_CLAIM"
-
                 # The descriptor is the owner token. Killing its shell releases
                 # exclusion even though the diagnostic inode deliberately stays.
                 (

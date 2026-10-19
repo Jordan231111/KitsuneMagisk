@@ -18,22 +18,14 @@
     <string name="su_auth_summary">Yeni izinleri Android ile doğrulayın. Mevcut izinler iptal edilene kadar geçerlidir.</string>
     <string name="su_auth_unavailable">Ekran kilidi ayarlayın. Doğrulama kullanılamadığında doğrulama gerektiren yeni izinler reddedilir.</string>
     <string name="system_mode_title">Sistem Modu</string>
-    <string name="system_mode_status_summary">Kurulum durumu, tanılama raporu ve kurtarma</string>
     <string name="system_mode_running">Sistem Modu etkin.</string>
     <string name="system_mode_ordinary">Desteklendiğinde normal önyükleme imajı kurulumunu kullanın.</string>
     <string name="system_mode_state">Kayıtlı işlem: %1$s</string>
-    <string name="system_mode_doctor_summary">Kurulumdan önce bilgisayar, yazılabilir hedefi ve kurtarma yedeğini doğrulamalıdır.</string>
-    <string name="system_mode_open_report">Tanılama raporunu aç</string>
-    <string name="system_mode_report_notice">Rapor yalnızca inceleme içindir. Kurucu cihazı ve canlı kurtarma yetkisini yeniden denetler.</string>
-    <string name="system_mode_report_error">Rapor okunamıyor. Yeni bir sürüm 1 JSON raporu dışa aktarın.</string>
-    <string name="system_mode_recovery_help">Kurtarmadan sonra emülatörü tamamen kapatıp yeniden açın. Android açılmazsa doğrulanmış yedeği bilgisayardan geri yükleyin.</string>
     <string name="manager_refresh">Yenile</string>
     <string name="manager_diagnostics">Tanılamayı dışa aktar</string>
     <string name="su_auth_migration">Eski yönetici biyometrisi artık Android doğrulamasını kullanır. Ekran kilidini ayarlı tutun.</string>
     <string name="lite_migration">Eski Lite düzeni için SuList seçin, Zygisk kapalı kalsın ve yükseltmeden önce modülleri kapatın.</string>
     <string name="ota_restart">Kurulum tamamlandı. Android Sistem Güncellemeleri bölümündeki Yeniden Başlat ile güncellemeyi tamamlayın.</string>
-    <string name="direct_install_system_mode">Sistem Modu (yalnızca doğrulanmış yazılabilir hedefler)</string>
-    <string name="system_mode_warning">Sistem Modu kalıcı sistem ve init dosyalarını doğrudan değiştirir. Önce bu cihazın yazma, açılış ve harici kurtarma yeteneklerini bilgisayarda doğrulayın. Uyumsuz kurulum Android açılışını engelleyebilir.</string>
     <string name="system_mode_unavailable">Sistem Modu, üreticinin başlangıç root erişimini veya mevcut Sistem Modu kurulumunu gerektirir. Normal Magisk cihazında normal kurulumu kullanın.</string>
     <string name="system_mode_uninstall_msg">Bu Sistem Modu kurulumunu kaldırın. Modüller, root ilkeleri ve betikler korunur. Bitince cihazı yeniden başlatın.</string>
     <string name="system_mode_recovery">Sistem Modunu kurtar</string>
@@ -46,4 +38,9 @@
     <string name="hidden_cleanup">Tam uygulama kuruldu. Bu ekranda eski gizli uygulamayı kaldırın.</string>
     <string name="su_prompt_protection_summary">Örtülü dokunuşları ve ekran okuyucuların root istemlerini yönetmesini engelleyin. Güvendiğiniz erişilebilirlik hizmetleri için kapatın.</string>
     <string name="hidden_restore_defaults">Tam uygulama geri yüklendiğinde uygulama tercihleri varsayılana döner.</string>
+    <string name="direct_install_system_mode">Sistem Modu</string>
+    <string name="system_mode_warning">Magisk sistem bölümüne kurulsun mu? Uygulama uyumluluğu otomatik denetler. Kurulum bitince yeniden başlatın.</string>
+    <string name="system_mode_status_summary">Kurulum durumu ve kurtarma</string>
+    <string name="system_mode_install_summary">Ana ekranda Yükle, ardından Sistem Modu seçeneğini seçin. Uyumluluk otomatik denetlenir.</string>
+    <string name="system_mode_recovery_help">Kurtarmadan sonra yeniden başlatın. Emülatör örneğini tamamen kapatıp yeniden açın.</string>
 </resources>

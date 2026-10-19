@@ -49,22 +49,17 @@ for its restrictions.
 
 ## Emulators
 
-System Mode is available in both release and debug builds from app version code **31023**.
-Older Beta 4/code 31021 release APKs still lack this feature.
+From code **31024**, enable the emulator’s built-in root, install KitsuneMagisk, grant root,
+then choose **Install → System Mode**. Wait for completion and fully close and reopen the emulator.
+The app performs its checks automatically; no host authorization command or backup setup is needed.
+See [System Mode installation](system-mode/pr7-machine-qualification.md) for supported layouts.
 
-The writable-emulator route requires bootstrap root and the
-[host qualification procedure](system-mode/pr7-machine-qualification.md), including a verified
-external recovery backup. It currently requires technical preparation.
-
-For MuMu, fully close and reopen the selected instance using its CLI, then reconnect ADB.
-Do not use `adb reboot`. Phone fastboot instructions do not apply to MuMu.
-Android Studio AVD testing uses the separate boot-image route described in
-[device testing](device-qualification.md).
+For MuMu testing, use the CLI to close and reopen the instance; do not use `adb reboot`.
+Phone fastboot instructions do not apply to MuMu. Android Studio AVD testing uses the separate
+boot-image route described in [device testing](device-qualification.md).
 
 ## Uninstalling
 
-Use **Uninstall** in the app and wait for completion before restarting. If System Mode reports
-that a module is still in use, disable that module and cold-start the emulator before retrying.
-Managed System Mode keeps user modules, policies and scripts; its recovery and external-restore
-procedures are in the qualification guide. Legacy installations require their matching legacy
+Use **Uninstall** in the app and wait for completion before restarting.
+System Mode keeps user modules, policies and scripts. Its recovery action is in the app. Legacy installations require their matching legacy
 uninstaller or recovery procedure.

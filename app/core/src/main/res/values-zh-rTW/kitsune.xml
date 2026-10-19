@@ -18,22 +18,14 @@
     <string name="su_auth_summary">透過 Android 驗證新授權。既有授權在撤銷前仍有效。</string>
     <string name="su_auth_unavailable">請設定裝置螢幕鎖定。無法驗證時，將拒絕需要驗證的新授權。</string>
     <string name="system_mode_title">系統模式</string>
-    <string name="system_mode_status_summary">安裝狀態、診斷報告與復原</string>
     <string name="system_mode_running">系統模式已啟用。</string>
     <string name="system_mode_ordinary">裝置支援時，請使用一般開機映像安裝。</string>
     <string name="system_mode_state">已記錄的交易：%1$s</string>
-    <string name="system_mode_doctor_summary">安裝前，必須透過電腦驗證可寫入目標及其復原備份。</string>
-    <string name="system_mode_open_report">開啟診斷報告</string>
-    <string name="system_mode_report_notice">報告僅供檢閱。安裝程式會重新檢查此裝置及即時復原授權。</string>
-    <string name="system_mode_report_error">無法讀取此診斷報告。請重新匯出版本 1 的 JSON 報告。</string>
-    <string name="system_mode_recovery_help">復原後，請完全關閉並重新開啟模擬器。如果 Android 無法啟動，請透過電腦還原已驗證的備份。</string>
     <string name="manager_refresh">重新整理</string>
     <string name="manager_diagnostics">匯出診斷資訊</string>
     <string name="su_auth_migration">舊版管理員生物辨識現使用 Android 驗證。請保持裝置螢幕鎖定已設定。</string>
     <string name="lite_migration">若要沿用舊 Lite 設定，請選擇 SuList，關閉 Zygisk，並在升級前停用模組。</string>
     <string name="ota_restart">安裝完成。請使用 Android 系統更新中的「重新啟動」完成更新。</string>
-    <string name="direct_install_system_mode">系統模式（僅限已驗證的可寫入目標）</string>
-    <string name="system_mode_warning">系統模式會直接修改持久系統檔案和 init 檔案。請先透過電腦驗證此裝置的寫入、啟動與外部復原能力。不相容的安裝可能導致 Android 無法啟動。</string>
     <string name="system_mode_unavailable">系統模式需要廠商初始 root 或既有系統模式安裝。一般 Magisk 裝置請使用一般安裝。</string>
     <string name="system_mode_uninstall_msg">移除此系統模式安裝。保留模組、root 政策與指令碼。完成後請重新啟動裝置。</string>
     <string name="system_mode_recovery">復原系統模式</string>
@@ -46,4 +38,9 @@
     <string name="hidden_cleanup">完整應用程式已安裝。請在此畫面解除安裝舊的隱藏應用程式。</string>
     <string name="su_prompt_protection_summary">阻擋被遮蔽的觸控及螢幕閱讀器控制 root 提示。使用可信任的輔助服務時可關閉。</string>
     <string name="hidden_restore_defaults">還原完整應用程式後，應用程式偏好設定將恢復為預設值。</string>
+    <string name="direct_install_system_mode">系統模式</string>
+    <string name="system_mode_warning">將 Magisk 安裝到系統分割區？應用程式會自動檢查相容性。安裝完成後請重新啟動。</string>
+    <string name="system_mode_status_summary">安裝狀態與復原</string>
+    <string name="system_mode_install_summary">在主畫面選擇「安裝」，再選擇「系統模式」。應用程式會自動檢查相容性。</string>
+    <string name="system_mode_recovery_help">復原後請重新啟動。模擬器請完全關閉執行個體後重新開啟。</string>
 </resources>

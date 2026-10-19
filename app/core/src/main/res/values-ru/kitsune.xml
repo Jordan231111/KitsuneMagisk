@@ -18,22 +18,14 @@
     <string name="su_auth_summary">Подтверждать новые разрешения средствами Android. Выданные разрешения действуют до отзыва.</string>
     <string name="su_auth_unavailable">Настройте блокировку экрана. Пока аутентификация недоступна, новые разрешения с проверкой будут отклоняться.</string>
     <string name="system_mode_title">Системный режим</string>
-    <string name="system_mode_status_summary">Состояние установки, отчёт диагностики и восстановление</string>
     <string name="system_mode_running">Системный режим активен.</string>
     <string name="system_mode_ordinary">По возможности используйте обычную установку через загрузочный образ.</string>
     <string name="system_mode_state">Записанная транзакция: %1$s</string>
-    <string name="system_mode_doctor_summary">Перед установкой компьютер должен проверить возможность записи и резервную копию для восстановления.</string>
-    <string name="system_mode_open_report">Открыть отчёт диагностики</string>
-    <string name="system_mode_report_notice">Отчёт предназначен только для просмотра. Установщик повторно проверит устройство и действующее разрешение на восстановление.</string>
-    <string name="system_mode_report_error">Не удалось прочитать отчёт. Экспортируйте новый отчёт JSON версии 1.</string>
-    <string name="system_mode_recovery_help">После восстановления полностью закройте и откройте эмулятор. Если Android не запускается, восстановите проверенную копию с компьютера.</string>
     <string name="manager_refresh">Обновить</string>
     <string name="manager_diagnostics">Экспорт диагностики</string>
     <string name="su_auth_migration">Вместо биометрии старого менеджера теперь используется аутентификация Android. Сохраняйте блокировку экрана включённой.</string>
     <string name="lite_migration">Для прежней конфигурации Lite выберите SuList, оставьте Zygisk выключенным и отключите модули перед обновлением.</string>
     <string name="ota_restart">Установка завершена. Завершите обновление кнопкой перезапуска в обновлениях системы Android.</string>
-    <string name="direct_install_system_mode">Системный режим (только проверенные доступные для записи цели)</string>
-    <string name="system_mode_warning">Системный режим напрямую изменяет постоянные системные файлы и init. Сначала проверьте на компьютере запись, загрузку и внешнее восстановление именно этого устройства. Несовместимая установка может помешать запуску Android.</string>
     <string name="system_mode_unavailable">Для системного режима нужны исходные права root производителя или существующая установка системного режима. На обычном устройстве Magisk используйте обычную установку.</string>
     <string name="system_mode_uninstall_msg">Удалить эту установку системного режима. Модули, правила root и скрипты сохраняются. По завершении перезапустите устройство.</string>
     <string name="system_mode_recovery">Восстановить системный режим</string>
@@ -46,4 +38,9 @@
     <string name="hidden_cleanup">Полное приложение установлено. Удалите старое скрытое приложение на этом экране.</string>
     <string name="su_prompt_protection_summary">Блокировать касания под перекрывающими окнами и управление запросами root через экранный диктор. Отключите для доверенных служб специальных возможностей.</string>
     <string name="hidden_restore_defaults">При восстановлении полной версии приложения его настройки будут сброшены.</string>
+    <string name="direct_install_system_mode">Системный режим</string>
+    <string name="system_mode_warning">Установить Magisk в системный раздел? Приложение автоматически проверит совместимость. После установки перезапустите устройство.</string>
+    <string name="system_mode_status_summary">Состояние установки и восстановление</string>
+    <string name="system_mode_install_summary">На главном экране выберите «Установить», затем «Системный режим». Совместимость проверяется автоматически.</string>
+    <string name="system_mode_recovery_help">После восстановления перезапустите устройство. Для эмулятора полностью закройте и снова откройте экземпляр.</string>
 </resources>

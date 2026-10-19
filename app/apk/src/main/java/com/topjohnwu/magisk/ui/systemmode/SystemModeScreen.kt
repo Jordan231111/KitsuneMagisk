@@ -1,7 +1,5 @@
 package com.topjohnwu.magisk.ui.systemmode
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,46 +29,20 @@ import androidx.compose.ui.unit.dp
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.model.ManagerDiagnostics
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils.inputStream
 import com.topjohnwu.magisk.ui.component.rememberConfirmDialog
 import com.topjohnwu.magisk.ui.navigation.LocalNavigator
 import com.topjohnwu.magisk.ui.navigation.Route
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.topjohnwu.magisk.core.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemModeScreen(onBack: () -> Unit) {
     var state by remember { mutableStateOf<String?>(null) }
-    var report by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val navigator = LocalNavigator.current
     val resources = LocalResources.current
     val recovery = rememberConfirmDialog(onConfirm = { navigator.push(Route.Flash(Const.Value.RECOVER_SYSTEM_MODE)) })
-    val picker = rememberLauncherForActivityResult(GetContent()) { uri ->
-        uri?.let {
-            scope.launch {
-                report = withContext(Dispatchers.IO) {
-                    runCatching {
-                        val bytes = it.inputStream().use { stream ->
-                            val output = java.io.ByteArrayOutputStream()
-                            val buffer = ByteArray(8192)
-                            while (output.size() <= 4 * 1024 * 1024) {
-                                val count = stream.read(buffer)
-                                if (count < 0) break
-                                output.write(buffer, 0, count)
-                            }
-                            output.toByteArray()
-                        }
-                        require(bytes.size <= 4 * 1024 * 1024)
-                        ManagerDiagnostics.parseDoctor(bytes.toString(Charsets.UTF_8))
-                    }.getOrElse { resources.getString(CoreR.string.system_mode_report_error) }
-                }
-            }
-        }
-    }
     LaunchedEffect(Unit) { state = ManagerDiagnostics.systemState() }
     Scaffold(topBar = {
         TopAppBar(title = { Text(stringResource(CoreR.string.system_mode_title)) }, navigationIcon = {
@@ -83,10 +55,7 @@ fun SystemModeScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(stringResource(if (Info.isSystemMode) CoreR.string.system_mode_running else CoreR.string.system_mode_ordinary))
             Text(stringResource(CoreR.string.system_mode_state, state ?: stringResource(CoreR.string.loading)))
-            Text(stringResource(CoreR.string.system_mode_doctor_summary))
-            Button(onClick = { picker.launch("application/json") }) { Text(stringResource(CoreR.string.system_mode_open_report)) }
-            report?.let { Text(it) }
-            Text(stringResource(CoreR.string.system_mode_report_notice))
+            Text(stringResource(CoreR.string.system_mode_install_summary))
             Button(onClick = { scope.launch { state = ManagerDiagnostics.systemState() } }) {
                 Text(stringResource(CoreR.string.manager_refresh))
             }

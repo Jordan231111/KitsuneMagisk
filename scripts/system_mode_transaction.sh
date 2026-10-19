@@ -16,7 +16,6 @@ set -o pipefail || {
 }
 
 SM_SCHEMA_VERSION=1
-SM_AUTHORIZATION_FILE=/data/local/tmp/kitsune-system-mode-recovery-v1.env
 SM_STATE_DIR=/data/adb/kitsune/system-mode
 SM_TRANSACTION_FILE=$SM_STATE_DIR/transaction.env
 SM_MANIFEST_COPY=$SM_STATE_DIR/install-manifest.json
@@ -32,7 +31,6 @@ SM_LOCK_ROOT=/dev
 SM_LOCK_FILE=$SM_LOCK_ROOT/.kitsune-system-mode-transaction-v1.lock
 SM_REMOUNT_FILE=$SM_LOCK_ROOT/.kitsune-system-mode-remount-v1.env
 SM_MOUNTS_FILE=/proc/mounts
-SM_AUTHORIZATION_CLAIM=/data/local/tmp/.kitsune-system-mode-recovery-v1.claimed
 SM_LOCK_HELD=false
 SM_SLAVE_MOUNT_NAMESPACE=false
 SM_LOCK_ACTION=
@@ -737,6 +735,15 @@ sm_current_boot_id() {
 
 sm_validate_live_target() {
   local live_fingerprint live_api live_abis
+  if [ "${SM_PREPARATION:-host}" = app ]; then
+    # Emulator model profiles can change these properties without changing
+    # the installed filesystem. Verify owned files and executable identity,
+    # not a cosmetic fingerprint captured at installation.
+    live_api="$(getprop ro.build.version.sdk)"
+    case "$live_api" in *[!0-9]*|'') return 1 ;; esac
+    [ "$live_api" -ge 25 ]
+    return
+  fi
   live_fingerprint="$(printf '%s' "$(getprop ro.build.fingerprint)" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')"
   live_api="$(getprop ro.build.version.sdk)"
   live_abis="$(sm_live_abis)"
@@ -755,190 +762,93 @@ sm_validate_live_target() {
   return 0
 }
 
-sm_authorization_file_safe() {
-  local path="$1" uid mode
-  [ -f "$path" ] && [ ! -L "$path" ] || return 1
-  uid="$($SM_BB stat -c %u "$path")" || return 1
-  mode="$($SM_BB stat -c %a "$path")" || return 1
-  case "$uid:$mode" in 0:600|2000:600) return 0 ;; esac
-  return 1
-}
-
-sm_validate_authorization() {
-  local auth="$SM_AUTHORIZATION_FILE" schema serial fingerprint api
-  local adapter_b64 init_b64 selinux_b64 snapshot_b64 location_b64 restore_b64
-  local authorized_source authorized_artifact issued expires now live_boot boot_digest lease_port
-  sm_authorization_file_safe "$auth" || {
-    sm_log "! Run 'kitsune system-mode authorize' with a verified doctor report first"
+sm_prepare_app_target() {
+  local directory="${1:-/system/etc/init}" real resolved mountpoint filesystem source boot zero
+  sm_require_lock || return 1
+  SM_TARGET_API="$(getprop ro.build.version.sdk)"
+  SM_TARGET_ABIS="$(sm_live_abis)"
+  case "$SM_TARGET_API" in *[!0-9]*|'') return 1 ;; esac
+  [ "$SM_TARGET_API" -ge 25 ] || return 1
+  case "$SM_TARGET_ABIS" in *[!A-Za-z0-9,._-]*|''|,*|*,|*,,*) return 1 ;; esac
+  case "$directory" in /system/etc/init|/system/etc/init/hw) ;; *) return 1 ;; esac
+  # Android imports /system/etc/init automatically unless a custom primary
+  # init script replaces the platform boot-script loader.
+  [ -z "$(getprop ro.boot.init_rc)" ] || {
+    sm_log "! Custom init layout; use boot-image installation on this device"
     return 1
   }
-  schema="$(sm_get SCHEMA_VERSION "$auth")"
-  [ "$schema" = "$SM_SCHEMA_VERSION" ] || { sm_log "! Unsupported recovery authorization"; return 1; }
-  SM_REPORT_SHA256="$(sm_get REPORT_SHA256 "$auth")"
-  SM_AUTHORIZATION_ID="$(sm_get AUTHORIZATION_ID "$auth")"
-  issued="$(sm_get ISSUED_AT_EPOCH "$auth")"
-  expires="$(sm_get EXPIRES_AT_EPOCH "$auth")"
-  SM_TARGET_CONTRACT_SHA256="$(sm_get TARGET_CONTRACT_SHA256 "$auth")"
-  SM_AUTH_BOOT_ID_SHA256="$(sm_get BOOT_ID_SHA256 "$auth")"
-  SM_PROBE_SHA256="$(sm_get PROBE_SHA256 "$auth")"
-  authorized_source="$(sm_get SOURCE_COMMIT "$auth")"
-  authorized_artifact="$(sm_get ARTIFACT_SHA256 "$auth")"
-  SM_QUALIFICATION_SHA256="$(sm_get QUALIFICATION_SHA256 "$auth")"
-  SM_INSTANCE_IDENTITY_SHA256="$(sm_get INSTANCE_IDENTITY_SHA256 "$auth")"
-  lease_port="$(sm_get LEASE_PORT "$auth")"
-  SM_LEASE_NONCE_SHA256="$(sm_get LEASE_NONCE_SHA256 "$auth")"
-  serial="$(sm_get SERIAL_SHA256 "$auth")"
-  fingerprint="$(sm_get FINGERPRINT_SHA256 "$auth")"
-  SM_BACKUP_SHA256="$(sm_get BACKUP_SHA256 "$auth")"
-  case "$SM_REPORT_SHA256:$serial:$fingerprint:$SM_BACKUP_SHA256" in
-    *[!a-f0-9:]*|*::*|:*|*:) sm_log "! Invalid recovery authorization digest"; return 1 ;;
-  esac
-  [ "${#SM_REPORT_SHA256}" -eq 64 ] && [ "${#serial}" -eq 64 ] &&
-    [ "${#fingerprint}" -eq 64 ] &&
-    [ "${#SM_BACKUP_SHA256}" -eq 64 ] || {
-      sm_log "! Invalid recovery authorization digest length"
+  case "$(getprop ro.boot.veritymode)" in
+    enforcing|restart|eio)
+      sm_log "! System verification is enabled; use boot-image installation"
       return 1
-    }
-  if ! sm_valid_hex "$authorized_source" 40 || ! sm_valid_hex "$authorized_artifact" 64 ||
-     ! sm_valid_hex "$SM_QUALIFICATION_SHA256" 64 ||
-     ! sm_valid_hex "$SM_INSTANCE_IDENTITY_SHA256" 64 ||
-     ! sm_valid_hex "$SM_LEASE_NONCE_SHA256" 64; then
-    sm_log "! Invalid authorized source or artifact identity"
-    return 1
-  fi
-  sm_valid_uuid "$SM_AUTHORIZATION_ID" || { sm_log "! Invalid authorization identity"; return 1; }
-  case "$issued:$expires" in *[!0-9:]*|*::*|:*|*:) sm_log "! Invalid authorization lifetime"; return 1 ;; esac
-  now="$(date +%s 2>/dev/null)"
-  case "$now" in *[!0-9]*|'') sm_log "! Target clock cannot validate authorization lifetime"; return 1 ;; esac
-  [ "$now" -ge "$issued" ] && [ "$now" -lt "$expires" ] && [ $((expires - issued)) -le 300 ] || {
-    sm_log "! Recovery authorization expired or has an invalid lifetime"
-    return 1
-  }
-  case "$lease_port" in *[!0-9]*|'') sm_log "! Invalid host lease port"; return 1 ;; esac
-  [ "$lease_port" -ge 1 ] && [ "$lease_port" -le 65535 ] || {
-    sm_log "! Host lease port is outside the TCP range"
-    return 1
-  }
-  SM_LEASE_PORT="$lease_port"
-  SM_AUTH_EXPIRES_AT_EPOCH="$expires"
-  if ! sm_valid_hex "$SM_TARGET_CONTRACT_SHA256" 64 ||
-     ! sm_valid_hex "$SM_AUTH_BOOT_ID_SHA256" 64 || ! sm_valid_hex "$SM_PROBE_SHA256" 64; then
-    sm_log "! Invalid authorization target contract"
-    return 1
-  fi
-  live_boot="$(sm_current_boot_id)"
-  sm_valid_uuid "$live_boot" || { sm_log "! Unable to bind authorization to this boot"; return 1; }
-  boot_digest="$(printf '%s' "$live_boot" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')" || return 1
-  [ "$boot_digest" = "$SM_AUTH_BOOT_ID_SHA256" ] || {
-    sm_log "! Recovery authorization belongs to a different boot attempt"
-    return 1
-  }
-  [ "$authorized_source" = "${KITSUNE_SOURCE_COMMIT:-}" ] || {
-    sm_log "! Recovery authorization belongs to a different source commit"
-    return 1
-  }
-  SM_AUTH_ARTIFACT_SHA256="$authorized_artifact"
-  api="$(sm_get TARGET_API "$auth")"
-  case "$api" in *[!0-9]*|'') sm_log "! Invalid recovery authorization API"; return 1 ;; esac
-  adapter_b64="$(sm_get ADAPTER_ID_B64 "$auth")"
-  init_b64="$(sm_get INIT_DIRECTORY_B64 "$auth")"
-  selinux_b64="$(sm_get SELINUX_STRATEGY_B64 "$auth")"
-  snapshot_b64="$(sm_get SNAPSHOT_ID_B64 "$auth")"
-  location_b64="$(sm_get BACKUP_LOCATION_B64 "$auth")"
-  restore_b64="$(sm_get RESTORE_COMMAND_B64 "$auth")"
-  SM_TARGET_ABIS="$(sm_decode "$(sm_get TARGET_ABIS_B64 "$auth")")" || return 1
-  SM_ADAPTER_ID="$(sm_decode "$adapter_b64")" || return 1
-  SM_AUTH_INIT_DIRECTORY="$(sm_decode "$init_b64")" || return 1
-  SM_SELINUX_STRATEGY="$(sm_decode "$selinux_b64")" || return 1
-  SM_SNAPSHOT_ID="$(sm_decode "$snapshot_b64")" || return 1
-  SM_BACKUP_LOCATION="$(sm_decode "$location_b64")" || return 1
-  SM_RESTORE_COMMAND="$(sm_decode "$restore_b64")" || return 1
-  if ! sm_valid_single_line "$SM_TARGET_ABIS" || ! sm_valid_single_line "$SM_ADAPTER_ID" ||
-     ! sm_valid_single_line "$SM_AUTH_INIT_DIRECTORY" || ! sm_valid_single_line "$SM_SELINUX_STRATEGY" ||
-     ! sm_valid_single_line "$SM_SNAPSHOT_ID" || ! sm_valid_single_line "$SM_BACKUP_LOCATION" ||
-     ! sm_valid_single_line "$SM_RESTORE_COMMAND"; then
-    sm_log "! Recovery authorization contains invalid text"
-    return 1
-  fi
-  case "$SM_TARGET_ABIS" in *[!A-Za-z0-9,._-]*|''|,*|*,|*,,*) sm_log "! Invalid target ABI list"; return 1 ;; esac
-  case "$SM_ADAPTER_ID" in *[!A-Za-z0-9._-]*) sm_log "! Invalid adapter identifier"; return 1 ;; esac
-  case "$SM_RESTORE_COMMAND" in true|false|:|'/bin/true'|'/usr/bin/true'|'exit 0') sm_log "! Recovery command is a no-op"; return 1 ;; esac
-  case "$SM_AUTH_INIT_DIRECTORY" in
-    /system/etc/init|/system/etc/init/hw) ;;
-    *) sm_log "! Unauthorized init directory"; return 1 ;;
+      ;;
   esac
-  SM_SERIAL_SHA256="$serial"
-  SM_FINGERPRINT_SHA256="$fingerprint"
-  SM_TARGET_API="$api"
-  SM_AUTH_FILE_SHA256="$(sm_sha256_file "$auth")" || return 1
-  sm_validate_live_target || return 1
-  return 0
+  if [ "$(getprop ro.boot.verifiedbootstate)" = green ] &&
+     { [ "$(getprop ro.boot.flash.locked)" = 1 ] || [ "$(getprop ro.boot.vbmeta.device_state)" = locked ]; }; then
+    sm_log "! The verified system partition is locked; use boot-image installation"
+    return 1
+  fi
+  real="$(sm_real_path "$directory")" || return 1
+  resolved="$("$SM_BB" readlink -f "$real")" || return 1
+  [ "$resolved" = "$real" ] && [ -d "$real" ] || {
+    sm_log "! System init directory is missing or redirected"
+    return 1
+  }
+  mountpoint="$(sm_mountpoint_for "$real")" || return 1
+  filesystem="$("$SM_BB" awk -v path="$mountpoint" '$2 == path { print $3; exit }' "$SM_MOUNTS_FILE")" || return 1
+  source="$("$SM_BB" awk -v path="$mountpoint" '$2 == path { print $1; exit }' "$SM_MOUNTS_FILE")" || return 1
+  case "$filesystem" in
+    ext4|f2fs) ;;
+    *) sm_log "! System Mode needs a writable ext4 or f2fs system partition; use boot-image installation"; return 1 ;;
+  esac
+  case "$source" in /dev/*) ;; *) sm_log "! System init directory is not on a persistent device"; return 1 ;; esac
+  SM_AUTH_INIT_DIRECTORY="$directory"
+  SM_PREPARATION=app
+  SM_ADAPTER_ID=android-direct
+  SM_AUTHORIZATION_ID="$(cat /proc/sys/kernel/random/uuid)" || return 1
+  boot="$(sm_current_boot_id)" || return 1
+  sm_valid_uuid "$SM_AUTHORIZATION_ID" && sm_valid_uuid "$boot" || return 1
+  SM_FINGERPRINT_SHA256="$(printf '%s' "$(getprop ro.build.fingerprint)" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')" || return 1
+  SM_SERIAL_SHA256="$(printf '%s' "$(getprop ro.serialno)" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')" || return 1
+  SM_AUTH_BOOT_ID_SHA256="$(printf '%s' "$boot" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')" || return 1
+  SM_TARGET_CONTRACT_SHA256="$(printf '%s\n' "$SM_FINGERPRINT_SHA256" "$SM_TARGET_API" "$SM_TARGET_ABIS" "$directory" "$source" "$filesystem" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')" || return 1
+  # Keep the v1 receipt readable by an installed older rescue payload during
+  # upgrade. Zero denotes absent host evidence, never external qualification.
+  zero="$(printf '%064d' 0)"
+  SM_REPORT_SHA256="$zero"
+  SM_PROBE_SHA256="$zero"
+  SM_QUALIFICATION_SHA256="$zero"
+  SM_INSTANCE_IDENTITY_SHA256="$zero"
+  SM_BACKUP_SHA256="$zero"
+  SM_SNAPSHOT_ID=
+  SM_BACKUP_LOCATION="$SM_STATE_DIR/original"
+  SM_RESTORE_COMMAND='Use Recover System Mode or Uninstall in the app'
+  sm_log "- Checking System Mode installation on this device"
+  sm_validate_live_target
 }
 
-sm_validate_host_lease() {
-  local now timeout response digest
-  now="$(date +%s 2>/dev/null)"
-  case "$now" in *[!0-9]*|'') sm_log "! Target clock cannot validate host lease"; return 1 ;; esac
-  [ "$now" -lt "$SM_AUTH_EXPIRES_AT_EPOCH" ] || {
-    sm_log "! Recovery authorization expired before host handoff"
+sm_require_free_space() {
+  local path="$1" required="$2" available
+  available="$("$SM_BB" df -Pk "$path" | "$SM_BB" awk 'NR == 2 { print $4 }')" || return 1
+  case "$available:$required" in *[!0-9:]*|:*|*:) return 1 ;; esac
+  [ "$available" -ge "$required" ] || {
+    sm_log "! Not enough free space on $path for installation and recovery files"
     return 1
   }
-  timeout=$((SM_AUTH_EXPIRES_AT_EPOCH - now))
-  response="$(
-    "$SM_BB" timeout "$timeout" "$SM_BB" wget -qO- \
-      "http://127.0.0.1:$SM_LEASE_PORT/$SM_AUTHORIZATION_ID" 2>/dev/null
-  )" || {
-    sm_log "! Exact live ADB host lease was not available"
-    return 1
-  }
-  digest="$(printf '%s' "$response" | "$SM_BB" sha256sum | "$SM_BB" awk '{ print $1 }')" || return 1
-  [ "$digest" = "$SM_LEASE_NONCE_SHA256" ] || {
-    sm_log "! Host lease nonce did not match this authorization"
-    return 1
-  }
-  now="$(date +%s 2>/dev/null)"
-  case "$now" in *[!0-9]*|'') return 1 ;; esac
-  [ "$now" -lt "$SM_AUTH_EXPIRES_AT_EPOCH" ] || {
-    sm_log "! Recovery authorization expired during host verification"
-    return 1
-  }
-  return 0
 }
 
-sm_cleanup_authorization_claim() {
-  local claim="$SM_AUTHORIZATION_CLAIM"
-  sm_require_lock || return 1
-  sm_path_present "$claim" || return 0
-  sm_authorization_file_safe "$claim" || {
-    sm_log "! Stale recovery authorization claim is unsafe"
-    return 1
-  }
-  "$SM_BB" rm -f "$claim" || return 1
-  ! sm_path_present "$claim" || return 1
-  sm_fsync /data/local/tmp
-}
-
-sm_consume_authorization() {
-  local claim="$SM_AUTHORIZATION_CLAIM"
-  sm_require_lock || return 1
-  sm_cleanup_authorization_claim || return 1
-  sm_authorization_file_safe "$SM_AUTHORIZATION_FILE" || return 1
-  [ "$(sm_sha256_file "$SM_AUTHORIZATION_FILE")" = "$SM_AUTH_FILE_SHA256" ] || {
-    sm_log "! Recovery authorization changed before one-time consumption"
-    return 1
-  }
-  # Rename is the one-time claim. Unlike rm -f, it cannot let two consumers
-  # both report success after validating the same pathname. A death after the
-  # rename leaves no replayable canonical authorization; the next host handoff
-  # must issue a fresh one and may discard this root/shell-owned tombstone.
-  "$SM_BB" mv "$SM_AUTHORIZATION_FILE" "$claim" || return 1
-  sm_fsync /data/local/tmp || return 1
-  ! sm_path_present "$SM_AUTHORIZATION_FILE" || return 1
-  sm_authorization_file_safe "$claim" || return 1
-  [ "$(sm_sha256_file "$claim")" = "$SM_AUTH_FILE_SHA256" ] || return 1
-  "$SM_BB" rm -f "$claim" || return 1
-  ! sm_path_present "$claim" || return 1
-  sm_fsync /data/local/tmp
+sm_check_install_space() {
+  local payload snapshot=0 size path
+  payload="$("$SM_BB" du -skL "$SM_INSTALL_DIR" | "$SM_BB" awk '{ print $1 }')" || return 1
+  case "$payload" in *[!0-9]*|'') return 1 ;; esac
+  sm_require_free_space "$SM_AUTH_INIT_DIRECTORY" $((payload * 2 + 8192)) || return 1
+  for path in "$SM_SYSTEM_DIR" "$SM_RESCUE_DIR" /data/adb/magisk; do
+    sm_path_present "$path" || continue
+    size="$("$SM_BB" du -sk "$path" | "$SM_BB" awk '{ print $1 }')" || return 1
+    case "$size" in *[!0-9]*|'') return 1 ;; esac
+    snapshot=$((snapshot + size))
+  done
+  sm_require_free_space /data $((snapshot + payload + 8192))
 }
 
 sm_detect_preinit() {
@@ -1045,11 +955,11 @@ sm_select_strategies() {
   SM_INIT_PATH="$SM_AUTH_INIT_DIRECTORY/magisk.rc"
   sm_configure_rescue_paths || return 1
   real="$(sm_real_path "$SM_AUTH_INIT_DIRECTORY")" || return 1
-  [ -d "$real" ] && [ ! -L "$real" ] || { sm_log "! Authorized init directory is unavailable"; return 1; }
+  [ -d "$real" ] && [ ! -L "$real" ] || { sm_log "! System init directory is unavailable"; return 1; }
   uid="$($SM_BB stat -c %u "$real")" || return 1
   mode="$($SM_BB stat -c %a "$real")" || return 1
   if [ "$uid" != 0 ] || ! sm_reject_unsafe_mode "$mode"; then
-    sm_log "! Authorized init directory is unsafe"
+    sm_log "! System init directory is unsafe"
     return 1
   fi
 
@@ -1069,6 +979,17 @@ sm_select_strategies() {
       break
     fi
   done
+  if [ "${SM_PREPARATION:-host}" = app ]; then
+    if [ ! -d /sys/fs/selinux ]; then
+      SM_SELINUX_STRATEGY=disabled
+    else
+      case "$SM_POLICY_PATH" in
+        */precompiled_sepolicy) SM_SELINUX_STRATEGY=precompiled ;;
+        '') SM_SELINUX_STRATEGY=split ;;
+        *) SM_SELINUX_STRATEGY=monolithic ;;
+      esac
+    fi
+  fi
   case "$SM_SELINUX_STRATEGY" in
     precompiled) case "$SM_POLICY_PATH" in */precompiled_sepolicy) ;; *) sm_log "! Doctor and installer policy strategies disagree"; return 1 ;; esac ;;
     monolithic) case "$SM_POLICY_PATH" in /sepolicy|/sepolicy_debug|/system_root/sepolicy|/system_root/sepolicy_debug|/system_root/sepolicy.unlocked) ;; *) sm_log "! Doctor and installer policy strategies disagree"; return 1 ;; esac ;;
@@ -1094,6 +1015,7 @@ sm_write_transaction() {
     printf 'INSTALL_ID=%s\n' "$SM_INSTALL_ID"
     printf 'TRANSACTION_ID=%s\n' "$SM_TRANSACTION_ID"
     printf 'STATE=%s\n' "$SM_STATE"
+    printf 'PREPARATION=%s\n' "${SM_PREPARATION:-host}"
     printf 'PRIOR_STATE=%s\n' "$SM_PRIOR_STATE"
     printf 'SERIAL_SHA256=%s\n' "$SM_SERIAL_SHA256"
     printf 'FINGERPRINT_SHA256=%s\n' "$SM_FINGERPRINT_SHA256"
@@ -1148,6 +1070,11 @@ sm_load_transaction() {
   SM_INSTALL_ID="$(sm_get INSTALL_ID "$SM_TRANSACTION_FILE")"
   SM_TRANSACTION_ID="$(sm_get TRANSACTION_ID "$SM_TRANSACTION_FILE")"
   SM_STATE="$(sm_get STATE "$SM_TRANSACTION_FILE")"
+  SM_PREPARATION=host
+  if "$SM_BB" grep -q '^PREPARATION=' "$SM_TRANSACTION_FILE"; then
+    SM_PREPARATION="$(sm_get PREPARATION "$SM_TRANSACTION_FILE")" || return 1
+  fi
+  case "$SM_PREPARATION" in app|host) ;; *) return 1 ;; esac
   SM_PRIOR_STATE="$(sm_get PRIOR_STATE "$SM_TRANSACTION_FILE")"
   SM_SERIAL_SHA256="$(sm_get SERIAL_SHA256 "$SM_TRANSACTION_FILE")"
   SM_FINGERPRINT_SHA256="$(sm_get FINGERPRINT_SHA256 "$SM_TRANSACTION_FILE")"
@@ -1308,7 +1235,11 @@ sm_snapshot_state_metadata() {
     if sm_path_present "$source"; then
       sm_managed_path_safe "State snapshot source" "$source" "$source" true || return 1
       source_digest="$(sm_digest_path "$source")" || return 1
-      "$SM_BB" cp -a "$source" "$destination/data" || return 1
+      if [ "${SM_PREPARATION:-host}" = app ] && [ "$label" = original_dir ]; then
+        "$SM_BB" cp -al "$source" "$destination/data" || return 1
+      else
+        "$SM_BB" cp -a "$source" "$destination/data" || return 1
+      fi
       sm_fsync_tree "$destination/data" || return 1
       snapshot_digest="$(sm_digest_path "$destination/data")" || return 1
       sm_managed_path_safe "State snapshot source" "$source" "$source" true || return 1
@@ -1595,18 +1526,40 @@ sm_cleanup_staging() {
 }
 
 sm_restore_preflight() {
-  local rollback="$SM_ROLLBACK_DIR"
+  local rollback="$SM_ROLLBACK_DIR" label canonical real source
+  if [ "${SM_PREPARATION:-host}" = app ] && [ -f "$rollback/rescue-ready" ]; then
+    for label in rescue_rc rescue_dir; do
+      sm_validate_snapshot_entry "$label" || return 1
+      canonical="$(sm_label_path "$label")" || return 1
+      real="$(sm_real_path "$canonical")" || return 1
+      source="$rollback/$label"
+      sm_remove_tree_safe "Rescue handoff rollback" "$canonical" "$real" || return 1
+      if [ -f "$source/present" ]; then
+        "$SM_BB" cp -a "$source/data" "$real" || return 1
+        sm_fsync_tree "$real" || return 1
+      fi
+      sm_fsync_existing_parent "$real" || return 1
+    done
+  fi
   sm_cleanup_staging || {
     sm_update_state FAILED
     return 1
   }
   if ! sm_restore_state_metadata; then
     sm_update_state FAILED
-    sm_log "! Transaction metadata recovery failed; use the verified external restore"
+    sm_log "! Transaction metadata recovery failed; restore the device image if app recovery cannot finish"
     return 1
   fi
   sm_finish_rollback_storage || return 1
   return 0
+}
+
+sm_install_label() {
+  [ "${SM_PREPARATION:-host}" = app ] || return 0
+  case "$1" in
+    payload|legacy_rc|init_rc|runtime|addon_script|addon_dir|rescue_dir|rescue_rc) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 sm_snapshot_one() {
@@ -1667,6 +1620,7 @@ sm_verify_snapshot_sources() {
   for label in payload legacy_rc init_rc policy policy_gz bootanim bootanim_gz \
     runtime magisk_db magisk_db_wal magisk_db_shm modules modules_update post_fs_data service \
     preinit_rule magisk_log magisk_log_bak addon_script addon_dir rescue_dir rescue_rc; do
+    sm_install_label "$label" || continue
     if [ -z "$SM_POLICY_PATH" ] || [ "$SM_POLICY_MUTATED" != true ]; then
       case "$label" in policy|policy_gz) continue ;; esac
     fi
@@ -1890,6 +1844,9 @@ sm_assert_magisk_quiesced() {
 }
 
 sm_mutable_path() {
+  if [ "${SM_PREPARATION:-host}" = app ]; then
+    case "$1" in /data/adb/magisk|/data/adb/magisk/*) return 0 ;; *) return 1 ;; esac
+  fi
   case "$1" in
     /data/adb/magisk|/data/adb/magisk/*|\
     /data/adb/magisk.db|/data/adb/magisk.db-wal|/data/adb/magisk.db-shm|\
@@ -2043,6 +2000,7 @@ sm_snapshot_all() {
   for label in payload legacy_rc init_rc policy policy_gz bootanim bootanim_gz \
     runtime magisk_db magisk_db_wal magisk_db_shm modules modules_update post_fs_data service \
     preinit_rule magisk_log magisk_log_bak addon_script addon_dir rescue_dir rescue_rc; do
+    sm_install_label "$label" || continue
     if [ -z "$SM_POLICY_PATH" ] || [ "$SM_POLICY_MUTATED" != true ]; then
       case "$label" in policy|policy_gz) continue ;; esac
     fi
@@ -2211,8 +2169,41 @@ sm_check_clean_install() {
   done
 }
 
+sm_prepare_app_originals() {
+  local label canonical path existed digest size mode uid gid context backup
+  if [ -f "$SM_ORIGINAL_FILE" ]; then
+    sm_validate_originals || return 1
+    : >"$SM_ORIGINAL_FILE.new" || return 1
+    while IFS="$SM_TAB" read -r path existed digest size mode uid gid context backup; do
+      label="${backup#original/}"
+      label="${label%/data}"
+      if sm_install_label "$label"; then
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+          "$path" "$existed" "$digest" "$size" "$mode" "$uid" "$gid" "$context" "$backup" >>"$SM_ORIGINAL_FILE.new" || return 1
+      else
+        sm_remove_tree_safe "Unused legacy original" "$SM_STATE_DIR/original/$label" "$SM_STATE_DIR/original/$label" true || return 1
+      fi
+    done <"$SM_ORIGINAL_FILE"
+  else
+    sm_check_clean_install || return 1
+    "$SM_BB" mkdir -p "$SM_STATE_DIR/original" || return 1
+    : >"$SM_ORIGINAL_FILE.new" || return 1
+    for label in payload legacy_rc init_rc runtime addon_script addon_dir rescue_rc rescue_dir; do
+      [ "$label" != legacy_rc ] || [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ] || continue
+      canonical="$(sm_label_path "$label")" || return 1
+      sm_original_record "$canonical" "$label" /dev/null false || return 1
+    done
+  fi
+  sm_atomic_publish "$SM_ORIGINAL_FILE.new" "$SM_ORIGINAL_FILE" original-inventory || return 1
+  sm_fsync_tree "$SM_STATE_DIR/original"
+}
+
 sm_prepare_originals() {
   local policy_real bootanim_real
+  if [ "${SM_PREPARATION:-host}" = app ]; then
+    sm_prepare_app_originals
+    return
+  fi
   sm_configure_rescue_paths || return 1
   if [ -f "$SM_ORIGINAL_FILE" ]; then
     [ -f "$SM_MANIFEST_COPY" ] || { sm_log "! Original backups exist without an install manifest"; return 1; }
@@ -2271,6 +2262,7 @@ sm_restore_snapshot() {
   for label in magisk_log_bak magisk_log preinit_rule service post_fs_data modules_update modules \
     magisk_db_shm magisk_db_wal magisk_db runtime addon_dir addon_script \
     bootanim_gz bootanim policy_gz policy payload legacy_rc init_rc rescue_rc rescue_dir; do
+    sm_install_label "$label" || continue
     if [ -z "$SM_POLICY_PATH" ] || [ "$SM_POLICY_MUTATED" != true ]; then
       case "$label" in policy|policy_gz) continue ;; esac
     fi
@@ -2305,22 +2297,22 @@ sm_restore_snapshot() {
   done
   if [ "$failed" != 0 ]; then
     sm_update_state FAILED
-    sm_log "! Automatic rollback failed at ${canonical:-transaction setup}; use the verified external restore"
+    sm_log "! Automatic rollback failed at ${canonical:-transaction setup}; restore the device image if app recovery cannot finish"
     return 1
   fi
   if ! sm_cleanup_staging; then
     sm_update_state FAILED
-    sm_log "! Transaction staging cleanup failed; use the verified external restore"
+    sm_log "! Transaction staging cleanup failed; restore the device image if app recovery cannot finish"
     return 1
   fi
   if ! sm_restore_secure_dir_metadata; then
     sm_update_state FAILED
-    sm_log "! /data/adb metadata recovery failed; use the verified external restore"
+    sm_log "! /data/adb metadata recovery failed; restore the device image if app recovery cannot finish"
     return 1
   fi
   if ! sm_restore_state_metadata; then
     sm_update_state FAILED
-    sm_log "! Transaction metadata recovery failed; use the verified external restore"
+    sm_log "! Transaction metadata recovery failed; restore the device image if app recovery cannot finish"
     return 1
   fi
   sm_finish_rollback_storage || return 1
@@ -2568,7 +2560,7 @@ sm_recover_pending() {
       fi
       ;;
     FAILED)
-      sm_log "! System Mode transaction is failed; use the verified external restore"
+      sm_log "! System Mode transaction is failed; restore the device image if app recovery cannot finish"
       return 1
       ;;
   esac
@@ -2646,7 +2638,7 @@ sm_verify_manifest_copies() {
 
 sm_begin_transaction() {
   local upgrading=false init_real
-  local prior_adapter prior_init prior_policy prior_policy_source prior_runtime prior_selinux
+  local prior_init prior_policy prior_policy_source prior_runtime prior_selinux
   local prior_preinit_device prior_preinit_dir prior_active_payload
   local requested_source_commit="${KITSUNE_SOURCE_COMMIT:-}"
   local requested_upstream_base="${KITSUNE_UPSTREAM_BASE:-}"
@@ -2675,7 +2667,6 @@ sm_begin_transaction() {
       return 1
     fi
     upgrading=true
-    prior_adapter="$SM_ADAPTER_ID"
     prior_init="$SM_INIT_PATH"
     prior_policy="$SM_POLICY_PATH"
     prior_policy_source="$SM_POLICY_SOURCE"
@@ -2685,14 +2676,19 @@ sm_begin_transaction() {
     prior_preinit_dir="$SM_PREINIT_DIR"
     prior_active_payload="$SM_ACTIVE_PAYLOAD"
   fi
-  sm_validate_authorization || return 1
+  if [ "$upgrading" = true ]; then
+    sm_prepare_app_target "${prior_init%/*}" || return 1
+  else
+    sm_prepare_app_target || return 1
+  fi
   sm_select_strategies || return 1
+  sm_check_install_space || return 1
   if [ "$upgrading" = true ] &&
-     { [ "$SM_ADAPTER_ID" != "$prior_adapter" ] || [ "$SM_INIT_PATH" != "$prior_init" ] ||
+     { [ "$SM_INIT_PATH" != "$prior_init" ] ||
        [ "$SM_POLICY_PATH" != "$prior_policy" ] || [ "$SM_POLICY_SOURCE" != "$prior_policy_source" ] ||
        [ "$SM_RUNTIME_PATH" != "$prior_runtime" ] || [ "$SM_SELINUX_STRATEGY" != "$prior_selinux" ] ||
        [ "$SM_PREINIT_DEVICE" != "$prior_preinit_device" ] || [ "$SM_PREINIT_DIR" != "$prior_preinit_dir" ]; }; then
-    sm_log "! Refusing to change System Mode adapter or boot strategy during upgrade"
+    sm_log "! Refusing to change System Mode boot strategy during upgrade"
     return 1
   fi
   if [ "$upgrading" != true ]; then
@@ -2716,19 +2712,10 @@ sm_begin_transaction() {
   SM_ARTIFACT_SHA256="$(sm_sha256_file "$SM_ARTIFACT_PATH")" || return 1
   case "$SM_ARTIFACT_SHA256" in *[!a-f0-9]*|'') sm_log "! Cannot hash exact install artifact"; return 1 ;; esac
   [ "${#SM_ARTIFACT_SHA256}" -eq 64 ] || { sm_log "! Invalid install artifact digest"; return 1; }
-  [ "$SM_ARTIFACT_SHA256" = "$SM_AUTH_ARTIFACT_SHA256" ] || {
-    sm_log "! Recovery authorization belongs to different manager APK bytes"
-    return 1
-  }
-  # Revalidate the external backup and exact host-instance identity through a
-  # one-shot connection scoped to this live ADB transport. A copied guest
-  # authorization cannot replay the host nonce. Everything above is read-only;
-  # consume the authorization before the first write probe.
-  sm_validate_host_lease || return 1
-  sm_consume_authorization || return 1
+  sm_prepare_persistent_mounts || return 1
   init_real="$(sm_real_path "$SM_AUTH_INIT_DIRECTORY")" || return 1
   sm_probe_writable_directory "$init_real" || {
-    sm_log "! Authorized init directory is not durably writable"
+    sm_log "! System init directory is not writable"
     return 1
   }
   if [ -f "$SM_TRANSACTION_FILE" ]; then
@@ -2768,9 +2755,7 @@ sm_begin_transaction() {
     }
     "$SM_BB" rmdir "$SM_STATE_DIR/rollback" || return 1
   fi
-  # The setup marker is the first durable transaction byte outside the APK's
-  # one-shot authorization. Validate its parent before publishing anything
-  # into a security-sensitive root namespace.
+  # Validate the parent before publishing the durable setup marker.
   sm_validate_secure_dir_base || return 1
   sm_publish_setup_marker || return 1
   "$SM_BB" mkdir -p "$SM_ROLLBACK_DIR" || return 1
@@ -2783,8 +2768,10 @@ sm_begin_transaction() {
   sm_prepare_secure_dir_metadata || return 1
   sm_prepare_originals || return 1
   SM_ORIGINALS_SHA256="$(sm_sha256_file "$SM_ORIGINAL_FILE")" || return 1
+  SM_BACKUP_SHA256="$SM_ORIGINALS_SHA256"
+  SM_SNAPSHOT_ID="$SM_TRANSACTION_ID"
   SM_SECURE_DIR_SHA256="$(sm_sha256_file "$SM_SECURE_DIR_METADATA")" || return 1
-  # Bind a original inventory before any
+  # Bind the original inventory before any
   # boot-critical mutation. PREFLIGHT recovery remains able to restore the
   # prior metadata snapshot if power is lost on this publication boundary.
   sm_write_transaction || return 1
@@ -2794,8 +2781,8 @@ sm_begin_transaction() {
   sm_assert_magisk_quiesced || return 1
   sm_assert_mutable_namespaces_idle || return 1
   sm_initialize_journal || return 1
-  sm_update_state STAGED || return 1
-  sm_failpoint staged
+  : >"$SM_ROLLBACK_DIR/rescue-ready" || return 1
+  sm_fsync "$SM_ROLLBACK_DIR/rescue-ready" "$SM_ROLLBACK_DIR"
 }
 
 sm_add_owned_file() {
@@ -3059,7 +3046,8 @@ sm_json_value_or_null() {
 
 sm_generate_manifest() {
   local output="$SM_STATE_DIR/.install-manifest.json.new" first path digest size mode uid gid context kind
-  local existed backup sequence boundary operation before after committed abi old_ifs
+  local existed backup sequence boundary operation before after committed abi old_ifs external=true
+  [ "${SM_PREPARATION:-host}" != app ] || external=false
   {
     printf '{\n'
     printf '  "schema_version": 1,\n'
@@ -3122,8 +3110,8 @@ sm_generate_manifest() {
       first=false
     done <"$SM_ORIGINAL_FILE"
     printf '\n  ],\n'
-    printf '  "backup": {"external": true, "location": "%s", "sha256": "%s", "restore_command": "%s"},\n' \
-      "$(sm_json_escape "$SM_BACKUP_LOCATION")" "$SM_BACKUP_SHA256" "$(sm_json_escape "$SM_RESTORE_COMMAND")"
+    printf '  "backup": {"external": %s, "location": "%s", "sha256": "%s", "restore_command": "%s"},\n' \
+      "$external" "$(sm_json_escape "$SM_BACKUP_LOCATION")" "$SM_BACKUP_SHA256" "$(sm_json_escape "$SM_RESTORE_COMMAND")"
     printf '  "journal": [\n'
     first=true
     while IFS="$SM_TAB" read -r sequence boundary operation path before after committed; do
@@ -3510,12 +3498,13 @@ sm_validate_originals() {
   for label in payload init_rc bootanim runtime magisk_db magisk_db_wal magisk_db_shm \
     modules modules_update post_fs_data service preinit_rule magisk_log magisk_log_bak \
     addon_script addon_dir; do
+    sm_install_label "$label" || continue
     case "$seen" in *"|$label|"*) ;; *) return 1 ;; esac
   done
   if [ "$SM_SYSTEM_DIR.rc" != "$SM_INIT_PATH" ]; then
     case "$seen" in *'|legacy_rc|'*) ;; *) return 1 ;; esac
   fi
-  if [ -n "$SM_POLICY_PATH" ]; then
+  if [ -n "$SM_POLICY_PATH" ] && sm_install_label policy; then
     case "$seen" in *'|policy|'*) ;; *) return 1 ;; esac
   fi
   case "$seen" in
@@ -3608,7 +3597,7 @@ sm_uninstall() {
   if ! sm_quiesce_magisk || ! sm_assert_mutable_namespaces_idle ||
      ! sm_snapshot_all || ! sm_assert_magisk_quiesced ||
      ! sm_assert_mutable_namespaces_idle; then
-    sm_restore_preflight || sm_log "! Uninstall preflight recovery failed; use the verified external restore"
+    sm_restore_preflight || sm_log "! Uninstall preflight recovery failed; restore the device image if app recovery cannot finish"
     return 1
   fi
   sm_update_state STAGED || return 1

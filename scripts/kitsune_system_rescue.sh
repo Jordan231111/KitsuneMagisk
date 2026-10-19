@@ -53,20 +53,20 @@ sm_acquire_lock rescue || ksr_exit 1
 # failed install, transaction.env itself. Finish those idempotent handoffs
 # before treating an absent canonical receipt as a safe stock system.
 sm_recover_setup_marker || {
-  ksr_log "Invalid System Mode setup marker; verified external recovery is required"
+  ksr_log "Invalid System Mode setup marker; app recovery or a device-image restore is required"
   ksr_exit 1
 }
 sm_complete_rollback_terminal || {
-  ksr_log "Incomplete System Mode rollback terminal; verified external recovery is required"
+  ksr_log "Incomplete System Mode rollback terminal; app recovery or a device-image restore is required"
   ksr_exit 1
 }
 
 # An absent transaction now means the stock system is already safe. An invalid
-# transaction is never guessed at; its externally verified recovery remains
+# transaction is never guessed at; device-image recovery remains
 # the only authorized fallback.
 [ -f "$SM_TRANSACTION_FILE" ] || ksr_exit 0
 sm_load_transaction || {
-  ksr_log "Invalid System Mode state; verified external recovery is required"
+  ksr_log "Invalid System Mode state; app recovery or a device-image restore is required"
   ksr_exit 1
 }
 
@@ -98,7 +98,7 @@ case "$SM_STATE" in
     ksr_exit 0
     ;;
   FAILED)
-    ksr_log "System Mode recovery is failed; use the verified external restore"
+    ksr_log "System Mode recovery is failed; restore the device image if app recovery cannot finish"
     ksr_exit 1
     ;;
   *)
@@ -113,7 +113,7 @@ if ! sm_prepare_persistent_mounts; then
 fi
 if ! sm_abort_transaction; then
   sm_restore_persistent_mounts || true
-  ksr_log "Invariant rescue rollback failed; use the verified external restore"
+  ksr_log "Invariant rescue rollback failed; restore the device image if app recovery cannot finish"
   ksr_exit 1
 fi
 sm_restore_persistent_mounts || {
